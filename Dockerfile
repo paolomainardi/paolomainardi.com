@@ -12,12 +12,9 @@ RUN curl -Lo /tmp/${HUGO_BINARY} https://github.com/gohugoio/hugo/releases/downl
     && tar xzf /tmp/${HUGO_BINARY} -C /usr/local/bin \
     && rm -rf /tmp/*
 
-# Create working directory
-VOLUME /app
-WORKDIR /app
-
 # Add sources.
-ADD src/ /app
+WORKDIR /app
+ADD src/ .
 
 # By default, serve site.
 EXPOSE 1313 35729

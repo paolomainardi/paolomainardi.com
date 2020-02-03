@@ -13,13 +13,14 @@ variables:
   DOCKER_HOST: tcp://localhost:2375
   BASE_URL: www.paolomainardi.com
 
+
 build:
   stage: build
   script:
     - make hugo-build
     - docker save -o paolomainardi.tar paolomainardi/blog:latest
   cache:
-    key: "$CI_BUILD_REF"
+    key: "${CI_COMMIT_REF_SLUG}"
     paths:
       - output/
       - paolomainardi.tar
@@ -28,6 +29,8 @@ deploy:
   stage: deploy
   script:
     - docker load < ./paolomainardi.tar
-    - docker run -e FIREBASE_TOKEN -v ${PWD}/output:/output
+    - docker run -e FIREBASE_TOKEN -v ${PWD}:/app -w /app
       paolomainardi/blog:latest sh -c "firebase deploy"
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}"
 
