@@ -1,7 +1,9 @@
 version: "3.6"
 services:
   hugo:
-    build: .
+    build:
+      context: .
+    image: paolomainardi/blog:latest
     ports:
       - "1313:1313"
       - "35279:35279"

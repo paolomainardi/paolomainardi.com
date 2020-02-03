@@ -12,3 +12,16 @@ variables:
 build:
   script:
     - make hugo-build
+    - docker save -o paolomainardi.tar paolomainardi
+  cache:
+    key: "$CI_BUILD_REF"
+    paths:
+      - output/
+      - paolomainardi.tar
+
+deploy:
+  script:
+    - docker load < ./paolomainardi.tar
+    - docker run -e FIREBASE_TOKEN -v ${PWD}/output:/output
+      paolomainardi/blog:latest sh -c "firebase deploy"
+
