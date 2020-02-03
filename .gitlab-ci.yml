@@ -17,7 +17,7 @@ build:
   stage: build
   script:
     - make hugo-build
-    - docker save -o paolomainardi.tar paolomainardi
+    - docker save -o paolomainardi.tar paolomainardi/blog:latest
   cache:
     key: "$CI_BUILD_REF"
     paths:

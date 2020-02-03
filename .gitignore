@@ -5,3 +5,5 @@ src/public
 .idea/
 *.swp
 src/resources/_gen
+*.tar
+*.tgz
