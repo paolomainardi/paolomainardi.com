@@ -1,0 +1,30 @@
+include:
+  - remote: "https://raw.githubusercontent.com/sparkfabrik/spark-k8s-deployer/master/templates/.gitlab-ci-template.yml"
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  BASE_URL: /
+
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  script:
+    - make hugo-build
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - output/
+
+deploy:
+  image: node:14-alpine
+  stage: deploy
+  script:
+    - echo $GCP_SERVICE_ACCOUNT_BASE64 | base64 -d > sa.json
+    - export GOOGLE_APPLICATION_CREDENTIALS=$PWD/sa.json
+    - npm install -g firebase-tools
+    - firebase deploy
+  only:
+    - master

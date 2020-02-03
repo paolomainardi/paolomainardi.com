@@ -1,0 +1,12 @@
+.vscode
+.hugo_build.lock
+gen
+output
+output/*
+src/public
+!output/.gitkeep
+.idea/
+*.swp
+src/resources/_gen
+*.tar
+*.tgz

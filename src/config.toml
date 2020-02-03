@@ -1,0 +1,101 @@
+baseurl = "https://paolomainardi.com"
+title = "Paolo Mainardi"
+theme = "hugo-coder"
+languagecode = "en"
+defaultcontentlanguage = "en"
+googleAnalytics = "UA-158660821-1"
+
+paginate = 20
+canonifyurls = true
+
+pygmentsstyle = "bw"
+pygmentscodefences = true
+pygmentscodefencesguesssyntax = true
+disqusShortname = ""
+
+enableEmoji = true
+
+[params]
+    author = "Paolo Mainardi"
+    info = "CTO [@Sparkfabrik](https://www.sparkfabrik.com)"
+    description = "CTO @Sparkfabrik"
+    keywords = "blog,developer,personal"
+    avatarurl = "images/me.jpg"
+
+    colorScheme = "auto"
+
+    favicon_32 = "/img/favicon-32x32.png"
+    favicon_16 = "/img/favicon-16x16.png"
+
+    footercontent = "Writing about Containers, Kubernetes, Linux and cloud-native stuff"
+
+    hidecredits = false
+    hidecopyright = false
+    since = 2020
+
+    rtl = false
+    math = true
+
+    # Custom CSS
+    custom_css = []
+
+    # Custom JS
+    custom_js = []
+
+
+# Social links
+[[params.social]]
+    name = "Github"
+    icon = "fa fa-github fa-2x"
+    weight = 1
+    url = "https://github.com/paolomainardi/"
+[[params.social]]
+    name = "Gitlab"
+    icon = "fa fa-gitlab fa-2x"
+    weight = 2
+    url = "https://gitlab.com/paolomainardi/"
+[[params.social]]
+    name = "Twitter"
+    icon = "fa fa-twitter fa-2x"
+    weight = 3
+    url = "https://twitter.com/paolomainardi/"
+
+# Menu links
+
+[[menu.main]]
+    name = "Blog"
+    weight = 1
+    url = "posts/"
+[[menu.main]]
+    name = "Talks"
+    weight = 2
+    url = "/talks"
+[[menu.main]]
+    name = "About"
+    weight = 3
+    url = "/about"
+
+[markup]
+  [markup.highlight]
+    anchorLineNos = false
+    codeFences = true
+    guessSyntax = true
+    hl_Lines = ''
+    hl_inline = false
+    lineAnchors = ''
+    lineNoStart = 1
+    lineNos = true
+    lineNumbersInTable = true
+    noClasses = true
+    noHl = false
+    style = 'dracula'
+    tabWidth = 4
+
+[privacy]
+  [privacy.disqus]
+    disable = false
+  [privacy.googleAnalytics]
+    anonymizeIP = true
+    disable = false
+    respectDoNotTrack = true
+    useSessionStorage = true
