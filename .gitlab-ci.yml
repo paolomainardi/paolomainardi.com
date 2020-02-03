@@ -18,19 +18,14 @@ build:
   stage: build
   script:
     - make hugo-build
-    - docker save -o paolomainardi.tar paolomainardi/blog:latest
-  cache:
-    key: "${CI_COMMIT_REF_SLUG}"
+  artifacts:
+    expire_in: 1 hour
     paths:
       - output/
-      - paolomainardi.tar
 
 deploy:
+  image: node:10-alpine3.9
   stage: deploy
   script:
-    - docker load < ./paolomainardi.tar
-    - docker run -e FIREBASE_TOKEN -v ${PWD}:/app -w /app
-      paolomainardi/blog:latest sh -c "firebase deploy"
-  cache:
-    key: "${CI_COMMIT_REF_SLUG}"
+    - firebase deploy
 
