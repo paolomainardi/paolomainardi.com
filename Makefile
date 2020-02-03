@@ -10,7 +10,7 @@ cli:
 	docker-compose run --rm hugo ash
 
 hugo-build: build
-	docker-compose run --rm hugo hugo --theme hugo-code -d /app/output --baseUrl=${BASE_URL}
+	docker-compose run --rm hugo hugo --theme hugo-code -d /output --baseUrl=${BASE_URL}
 
 build-loc:
 	docker-compose run --rm hugo hugo --baseUrl=http://paolomainardi.loc
