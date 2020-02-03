@@ -3,6 +3,10 @@ image: sparkfabrik/spark-k8s-deployer:latest
 services:
   - docker:19.03-dind
 
+stages:
+  - build
+  - deploy
+
 variables:
   DOCKER_TLS_CERTDIR: ""
   DOCKER_DRIVER: overlay2
@@ -10,6 +14,7 @@ variables:
   BASE_URL: www.paolomainardi.com
 
 build:
+  stage: build
   script:
     - make hugo-build
     - docker save -o paolomainardi.tar paolomainardi
@@ -20,6 +25,7 @@ build:
       - paolomainardi.tar
 
 deploy:
+  stage: deploy
   script:
     - docker load < ./paolomainardi.tar
     - docker run -e FIREBASE_TOKEN -v ${PWD}/output:/output
