@@ -27,5 +27,6 @@ deploy:
   image: node:10-alpine3.9
   stage: deploy
   script:
+    - npm install -g firebase-tools
     - firebase deploy
 
