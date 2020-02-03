@@ -1,0 +1,13 @@
+version: "3.6"
+services:
+  hugo:
+    build: .
+    ports:
+      - "1313:1313"
+      - "35279:35279"
+    command: hugo server --bind 0.0.0.0 --theme=hugo-code --baseUrl=paolomainardi.loc
+    volumes:
+      - ./src:/app
+      - ./output:/output
+    labels:
+      - com.dnsdock.alias=paolomainardi.loc

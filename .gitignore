@@ -1,0 +1,7 @@
+output
+output/*
+src/public
+!output/.gitkeep
+.idea/
+*.swp
+src/resources/_gen

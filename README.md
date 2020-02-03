@@ -1,2 +1,2 @@
-# paolomainardi.com
+# Paolo Mainardi's personal website
 
