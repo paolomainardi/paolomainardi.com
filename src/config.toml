@@ -18,7 +18,7 @@ disqusShortname = "yourdiscussshortname"
     info = "CTO @Sparkfabrik"
     description = "Paolo Mainardi's personal website"
     keywords = "blog,developer,personal"
-    avatarurl = "images/avatar.jpg"
+    avatarurl = "images/me.jpg"
 
     favicon_32 = "/img/favicon-32x32.png"
     favicon_16 = "/img/favicon-16x16.png"
