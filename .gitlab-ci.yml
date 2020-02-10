@@ -8,6 +8,7 @@ stages:
   - deploy
 
 variables:
+  GIT_SUBMODULE_STRATEGY: recursive
   DOCKER_TLS_CERTDIR: ""
   DOCKER_DRIVER: overlay2
   DOCKER_HOST: tcp://localhost:2375
