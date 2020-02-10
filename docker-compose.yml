@@ -7,7 +7,7 @@ services:
     ports:
       - "1313:1313"
       - "35279:35279"
-    command: hugo server --bind 0.0.0.0 --theme=hugo-code --baseUrl=paolomainardi.loc
+    command: hugo server --bind 0.0.0.0 --theme=hugo-coder --baseUrl=paolomainardi.loc
     volumes:
       - ./src:/app
       - ./output:/output

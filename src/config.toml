@@ -1,6 +1,6 @@
 baseurl = "https://paolomainardi.com"
 title = "Paolo Mainardi"
-theme = "hugo-code"
+theme = "hugo-coder"
 languagecode = "en"
 defaultcontentlanguage = "en"
 
