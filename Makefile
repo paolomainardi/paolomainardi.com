@@ -11,7 +11,7 @@ cli:
 	docker-compose run --rm hugo ash
 
 hugo-build: build
-	docker-compose run --rm hugo hugo --theme hugo-coder -d /output --baseUrl=${BASE_URL}
+	docker-compose run --rm hugo hugo --minify --theme hugo-coder -d /output --baseUrl=${BASE_URL}
 
 build-loc:
 	docker-compose run --rm hugo hugo --baseUrl=http://paolomainardi.loc
