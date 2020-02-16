@@ -15,3 +15,6 @@ hugo-build: build
 
 build-loc:
 	docker-compose run --rm hugo hugo --baseUrl=http://paolomainardi.loc
+
+open:
+	xdg-open http://paolomainardi.loc:1313

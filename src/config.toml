@@ -3,6 +3,7 @@ title = "Paolo Mainardi"
 theme = "hugo-coder"
 languagecode = "en"
 defaultcontentlanguage = "en"
+googleAnalytics = "UA-123-45"
 
 paginate = 20
 canonifyurls = true
@@ -10,28 +11,35 @@ canonifyurls = true
 pygmentsstyle = "bw"
 pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
-
-disqusShortname = "yourdiscussshortname"
+disqusShortname = ""
 
 [params]
     author = "Paolo Mainardi"
     info = "CTO @Sparkfabrik"
-    description = "Paolo Mainardi's personal website"
+    description = "Paolo Mainardi's blog"
     keywords = "blog,developer,personal"
     avatarurl = "images/me.jpg"
+
+    colorscheme = "light"
 
     favicon_32 = "/img/favicon-32x32.png"
     favicon_16 = "/img/favicon-16x16.png"
 
-    footercontent = "Blogging about cloud-native stuff."
+    footercontent = "Writing about Containers, Kubernetes, Linux and cloud-native stuff"
 
     hidecredits = false
     hidecopyright = false
+    since = 2020
 
     rtl = false
-
     math = true
-    custom_css = ["css/custom.css"]
+
+    # Custom CSS
+    custom_css = []
+
+    # Custom JS
+    custom_js = []
+
 
 # Social links
 [[params.social]]
@@ -51,11 +59,12 @@ disqusShortname = "yourdiscussshortname"
     url = "https://twitter.com/paolomainardi/"
 
 # Menu links
+
 [[menu.main]]
-    name = "Blog"
-    weight = 1
-    url  = "/posts/"
+    name = "Talks"
+    weight = 2
+    url = "/talks"
 [[menu.main]]
     name = "About"
-    weight = 2
-    url = "/about/"
+    weight = 3
+    url = "/about"
