@@ -2,9 +2,9 @@
 title = "Talks"
 slug = "talks"
 +++
-
 * **The path to a serverless-native era with Kubernetes** (Container Day 2019/Devdays 2019 Baku/Devopsdays Madrid)
   * Slides: https://www.slideshare.net/sparkfabrik/containerday-2019-the-path-to-a-serverlessnative-era-with-kubernetes-1
+  * Video from Devopsdays Madrid 2020: https://www.youtube.com/watch?v=q52bEOIQTwk
 * **Alibaba Cloud Container Service deep dive** (ContainerDay 2018)
   * Video: https://www.youtube.com/watch?v=xfpXmlr1wiI
   * Slides: https://www.slideshare.net/sparkfabrik/containerday-2018-alibaba-cloud-container-service-deep-dive-125716319
