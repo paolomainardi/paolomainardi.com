@@ -2,7 +2,7 @@
 title = "Talks"
 slug = "talks"
 +++
-* **Sparkfabrik tech talk** Spark XMAS Talk: K8S Retrogaming | A retro game machine build as a Kubernetes custom controller
+* **Sparkfabrik tech talk** K8S Retrogaming | A retro game machine build as a Kubernetes custom controller
   * Abstract: 
     > AdditronK8S is a retro game machine build as a Kubernetes custom controller and implemented in Javascript.
   * Repository: https://github.com/paolomainardi/additronk8s-retrogames-kubernetes-controller
