@@ -2,7 +2,13 @@
 title = "Talks"
 slug = "talks"
 +++
-* Sparkfabrik tech talk:Fortran: deployare una scheda perforata serverless con Cloud Run e Github Actions 
++++
+* **Sparkfabrik tech talk** Spark XMAS Talk: K8S Retrogaming | SparkFabrik Tech Talk 
+  * Abstract: AdditronK8S is a retro game machine build as a Kubernetes custom controller and implemented in Javascript.
+  * Repository: https://github.com/paolomainardi/additronk8s-retrogames-kubernetes-controller
+  * Slides: https://www.slideshare.net/sparkfabrik/retro-gaming-machine-made-with-javascript-and-kubernetes-240654394
+  * Video: https://youtu.be/XlhSCWzgQ4k
+* **Sparkfabrik tech talk** Fortran: deployare una scheda perforata serverless con Cloud Run e Github Actions 
   * Video: https://www.youtube.com/watch?v=bMByfmHWzHk
 * **The path to a serverless-native era with Kubernetes** (Container Day 2019/Devdays 2019 Baku/Devopsdays Madrid)
   * Slides: https://www.slideshare.net/sparkfabrik/containerday-2019-the-path-to-a-serverlessnative-era-with-kubernetes-1
