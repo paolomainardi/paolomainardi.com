@@ -17,7 +17,7 @@ enableEmoji = true
 
 [params]
     author = "Paolo Mainardi"
-    info = "CTO @Sparkfabrik"
+    info = "CTO [@Sparkfabrik](https://www.sparkfabrik.com)"
     description = "CTO @Sparkfabrik"
     keywords = "blog,developer,personal"
     avatarurl = "images/me.jpg"
@@ -70,3 +70,19 @@ enableEmoji = true
     name = "About"
     weight = 3
     url = "/about"
+
+[markup]
+  [markup.highlight]
+    anchorLineNos = false
+    codeFences = true
+    guessSyntax = true
+    hl_Lines = ''
+    hl_inline = false
+    lineAnchors = ''
+    lineNoStart = 1
+    lineNos = true
+    lineNumbersInTable = true
+    noClasses = true
+    noHl = false
+    style = 'dracula'
+    tabWidth = 4
