@@ -1,19 +1,13 @@
-image: sparkfabrik/spark-k8s-deployer:latest
+include:
+  - remote: "https://raw.githubusercontent.com/sparkfabrik/spark-k8s-deployer/master/templates/.gitlab-ci-template.yml"
 
-services:
-  - docker:19.03-dind
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  BASE_URL: /
 
 stages:
   - build
   - deploy
-
-variables:
-  GIT_SUBMODULE_STRATEGY: recursive
-  DOCKER_TLS_CERTDIR: ""
-  DOCKER_DRIVER: overlay2
-  DOCKER_HOST: tcp://localhost:2375
-  BASE_URL: /
-
 
 build:
   stage: build
@@ -25,9 +19,10 @@ build:
       - output/
 
 deploy:
-  image: node:10-alpine3.9
+  image: node:14-alpine
   stage: deploy
   script:
     - npm install -g firebase-tools
     - firebase deploy
-
+  only:
+    - main

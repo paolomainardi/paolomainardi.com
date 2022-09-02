@@ -4,6 +4,9 @@ services:
     build:
       context: .
     image: paolomainardi/blog:latest
+    environment:
+      VIRTUAL_HOST: paolomainardi.loc
+      VIRTUAL_PORT: 1313
     ports:
       - "1313:1313"
       - "35279:35279"
