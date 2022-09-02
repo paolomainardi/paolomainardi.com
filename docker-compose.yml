@@ -6,11 +6,10 @@ services:
     image: paolomainardi/blog:latest
     environment:
       VIRTUAL_HOST: paolomainardi.loc
-      VIRTUAL_PORT: 1313
+      VIRTUAL_PORT: 80
     ports:
-      - "1313:1313"
       - "35279:35279"
-    command: hugo server --bind 0.0.0.0 --theme=hugo-coder --baseUrl=paolomainardi.loc
+    command: hugo server --bind 0.0.0.0 --port 80 --theme=hugo-coder --baseUrl=paolomainardi.loc
     volumes:
       - ./src:/app
       - ./output:/output

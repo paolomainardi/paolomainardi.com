@@ -1,4 +1,5 @@
 .vscode
+.hugo_build.lock
 gen
 output
 output/*

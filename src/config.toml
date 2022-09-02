@@ -13,6 +13,8 @@ pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 disqusShortname = ""
 
+enableEmoji = true
+
 [params]
     author = "Paolo Mainardi"
     info = "CTO @Sparkfabrik"
@@ -20,7 +22,7 @@ disqusShortname = ""
     keywords = "blog,developer,personal"
     avatarurl = "images/me.jpg"
 
-    colorscheme = "light"
+    colorScheme = "auto"
 
     favicon_32 = "/img/favicon-32x32.png"
     favicon_16 = "/img/favicon-16x16.png"
@@ -44,17 +46,17 @@ disqusShortname = ""
 # Social links
 [[params.social]]
     name = "Github"
-    icon = "fab fa-github fa-2x"
+    icon = "fa fa-github fa-2x"
     weight = 1
     url = "https://github.com/paolomainardi/"
 [[params.social]]
     name = "Gitlab"
-    icon = "fab fa-gitlab fa-2x"
+    icon = "fa fa-gitlab fa-2x"
     weight = 2
     url = "https://gitlab.com/paolomainardi/"
 [[params.social]]
     name = "Twitter"
-    icon = "fab fa-twitter fa-2x"
+    icon = "fa fa-twitter fa-2x"
     weight = 3
     url = "https://twitter.com/paolomainardi/"
 
