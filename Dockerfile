@@ -2,7 +2,7 @@ FROM alpine:3.11.3
 RUN apk add --no-cache vim py-pip python curl build-base libc6-compat
 
 # Download and install hugo
-ENV HUGO_VERSION 0.63.2
+ENV HUGO_VERSION 0.102.3
 ENV HUGO_BINARY hugo_extended_${HUGO_VERSION}_Linux-64bit.tar.gz
 ENV PS1='\[\033[1;36m\]\u\[\033[1;31m\]@\[\033[1;32m\]\h:\[\033[1;35m\]\w\[\033[1;31m\]\$\[\033[0m\] '
 
