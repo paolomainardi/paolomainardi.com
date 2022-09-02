@@ -1,3 +1,5 @@
+.vscode
+gen
 output
 output/*
 src/public
