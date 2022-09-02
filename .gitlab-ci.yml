@@ -19,7 +19,7 @@ build:
       - output/
 
 deploy:
-  image: node:10-alpine3.9
+  image: node:14-alpine
   stage: deploy
   script:
     - npm install -g firebase-tools
