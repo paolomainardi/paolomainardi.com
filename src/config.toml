@@ -86,3 +86,12 @@ enableEmoji = true
     noHl = false
     style = 'dracula'
     tabWidth = 4
+
+[privacy]
+  [privacy.disqus]
+    disable = false
+  [privacy.googleAnalytics]
+    anonymizeIP = true
+    disable = false
+    respectDoNotTrack = true
+    useSessionStorage = true
