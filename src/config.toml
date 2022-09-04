@@ -63,6 +63,10 @@ enableEmoji = true
 # Menu links
 
 [[menu.main]]
+    name = "Blog"
+    weight = 1
+    url = "posts/"
+[[menu.main]]
     name = "Talks"
     weight = 2
     url = "/talks"
