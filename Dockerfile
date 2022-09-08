@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 alpine:3.11.3
+FROM alpine:3.11.3
 RUN apk add --no-cache vim py-pip python curl build-base libc6-compat
 
 # Download and install hugo
