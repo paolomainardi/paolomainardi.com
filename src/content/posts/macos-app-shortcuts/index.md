@@ -2,7 +2,7 @@
 date = "2022-09-11"
 title = "How to open apps with keyboard shortcuts on macOS with skhd"
 slug = "macos-apps-shortcuts-skhd"
-tags = ["linux", "macos", "tiling-managers"]
+tags = ["linux", "macos", "tiling-managers", "dx"]
 categories = []
 draft = "false"
 featuredImage = "https://i.redd.it/z7gqo65ifqt71.png"
@@ -58,19 +58,20 @@ You need to create a configuration file in one of the following locations (in or
 And start adding your keyboard shortcuts, for now i have just 2:
 
 ```shell {linenos=inline}
-# (taken from here: https://git.arul.io/arul/dotfiles/src/branch/macOS/skhd/.config/skhd/skhdrc)
+## Inspirations
+# https://gist.github.com/armand1m/4094b37d8969fd365fdcc215277e9e67
+# https://git.arul.io/arul/dotfiles/src/branch/macOS/skhd/.config/skhd/skhdrc
 
+# Open iterm2.
 cmd - return : osascript -e 'tell application "iTerm2" to create window with default profile command ""' || open -na iTerm
 
-# open chrome
-
-# (taken from here: https://gist.github.com/armand1m/4094b37d8969fd365fdcc215277e9e67)
-
+# open Chrome.
 cmd + shift - return : open -n -a "Google Chrome"
-
 ```
 
-**With those two lines**, I've finally managed to have the **same shortcuts for both systems** and fix **something I've always felt very clunky** on **macOS**.
+**With those two lines**, I've finally managed to have the **same shortcuts for both systems** and fix **something I've always felt very clunky for years** on **macOS**.
+
+I hope you find this article useful, having a cozy environment is a crucial part of a good developer experience.
 
 [1]: https://thatnixguy.github.io/posts/ricing/#:~:text=The%20term%20'rice'%20is%20used,system%20becomes%20much%20more%20involved.
 [2]: https://en.wikipedia.org/wiki/Tiling_window_manager
@@ -79,7 +80,3 @@ cmd + shift - return : open -n -a "Google Chrome"
 [5]: https://ianyh.com/amethyst/
 [6]: https://github.com/koekeishiya/yabai
 [7]: https://github.com/koekeishiya/skhd
-
-```
-
-```
