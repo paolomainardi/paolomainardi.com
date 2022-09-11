@@ -25,3 +25,5 @@ ADD src/ .
 # By default, serve site.
 EXPOSE 1313 35729
 CMD hugo server --bind 0.0.0.0
+
+
