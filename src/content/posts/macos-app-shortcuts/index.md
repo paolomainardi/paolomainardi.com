@@ -1,7 +1,7 @@
 +++
 date = "2022-09-11"
 title = "How to open apps with keyboard shortcuts on macOS with skhd"
-slug = "hello-world"
+slug = "macos-apps-shortcuts-skhd"
 tags = ["linux", "macos", "tiling-managers"]
 categories = []
 draft = "false"
