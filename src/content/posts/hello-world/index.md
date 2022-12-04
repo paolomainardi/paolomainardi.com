@@ -3,7 +3,6 @@ date = "2022-09-03"
 title = "Hello world, and deep dive into procrastination"
 slug = "hello-world"
 tags = ["personal", "procrastination"]
-categories = []
 draft = "false"
 +++
 

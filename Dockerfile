@@ -1,5 +1,5 @@
 FROM alpine:3.11.3
-RUN apk add --no-cache vim py-pip python curl build-base libc6-compat
+RUN apk add --no-cache vim py-pip python curl build-base libc6-compat go git
 
 # Download and install hugo
 ARG TARGETARCH

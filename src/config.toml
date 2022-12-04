@@ -12,8 +12,12 @@ pygmentsstyle = "bw"
 pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 disqusShortname = ""
-
 enableEmoji = true
+
+
+[module]
+[[module.imports]]
+path = "cj.rs/gohugo-asciinema"
 
 [params]
     author = "Paolo Mainardi"
@@ -23,6 +27,8 @@ enableEmoji = true
     avatarurl = "images/me.jpg"
 
     colorScheme = "auto"
+
+    customCSS = ["css/custom.css"]
 
     favicon_32 = "/img/favicon-32x32.png"
     favicon_16 = "/img/favicon-16x16.png"

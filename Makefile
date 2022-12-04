@@ -4,6 +4,9 @@ build:
 	git submodule update --init
 	docker-compose build
 
+update-submodules:
+	git submodule update --remote --merge
+
 up: build
 	docker-compose up -d
 
