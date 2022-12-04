@@ -3,7 +3,6 @@ date = "2022-09-11"
 title = "How to open apps with keyboard shortcuts on macOS with skhd"
 slug = "macos-apps-shortcuts-skhd"
 tags = ["linux", "macos", "tiling-managers", "dx"]
-categories = []
 draft = "false"
 featuredImage = "https://i.redd.it/z7gqo65ifqt71.png"
 images = ["https://i.redd.it/z7gqo65ifqt71.png"]
@@ -17,10 +16,10 @@ Like the most known desktop environments (including **macOS**), they also have t
 
 In order of preference, the things I love about this workflow:
 
-1.  Opening a terminal with **Super+Enter**
-2.  Opening a new browser instance with **Super+Shift+Enter**
-3.  Move a window in another workspace with **Super+Shift+\[1,n\]**
-4.  Resize the windows (well, its frame) with **Super+r** plus the arrows
+1. Opening a terminal with **Super+Enter**
+2. Opening a new browser instance with **Super+Shift+Enter**
+3. Move a window in another workspace with **Super+Shift+\[1,n\]**
+4. Resize the windows (well, its frame) with **Super+r** plus the arrows
 
 Now, **approaching to the core of this article**, **I use** both **Linux and macOS** daily, and I **share** most of the **dotfiles** between the systems (_i use_ [_yadm_][4]); everything works very well except the desktop workflow and the keyboard shortcuts that i cannot easily share.
 

@@ -12,20 +12,27 @@ pygmentsstyle = "bw"
 pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 disqusShortname = ""
-
 enableEmoji = true
+
+
+[module]
+[[module.imports]]
+path = "cj.rs/gohugo-asciinema"
 
 [params]
     author = "Paolo Mainardi"
-    info = "CTO [@Sparkfabrik](https://www.sparkfabrik.com)"
-    description = "CTO @Sparkfabrik"
+    info = "Founder and CTO of [@Sparkfabrik](https://www.sparkfabrik.com)"
+    description = "I am Paolo Mainardi, founder and CTO of Sparkfabrik"
     keywords = "blog,developer,personal"
     avatarurl = "images/me.jpg"
 
     colorScheme = "auto"
 
-    favicon_32 = "/img/favicon-32x32.png"
-    favicon_16 = "/img/favicon-16x16.png"
+    customCSS = ["css/custom.css"]
+    customRemoteJS = ["https://unpkg.com/hugo-lyra@0.1.0-beta.4/dist/browser/hugo-lyra.js"]
+
+    favicon_32 = "/images/favicon-32x32.png"
+    favicon_16 = "/images/favicon-16x16.png"
 
     footercontent = "Writing about Containers, Kubernetes, Linux and cloud-native stuff"
 

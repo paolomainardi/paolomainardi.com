@@ -1,0 +1,40 @@
+```shell
+➜  ~ docker run --rm -it -v /Users/paolomainardi:$(pwd) alpine ash
+/ # ls -ltr
+total 60
+drwxr-xr-x   12 root     root          4096 May 23  2022 var
+drwxr-xr-x    7 root     root          4096 May 23  2022 usr
+drwxrwxrwt    2 root     root          4096 May 23  2022 tmp
+drwxr-xr-x    2 root     root          4096 May 23  2022 srv
+drwxr-xr-x    2 root     root          4096 May 23  2022 run
+drwxr-xr-x    2 root     root          4096 May 23  2022 opt
+drwxr-xr-x    2 root     root          4096 May 23  2022 mnt
+drwxr-xr-x    5 root     root          4096 May 23  2022 media
+drwxr-xr-x    7 root     root          4096 May 23  2022 lib
+drwxr-xr-x    2 root     root          4096 May 23  2022 home
+drwxr-xr-x    2 root     root          4096 May 23  2022 sbin
+drwxr-xr-x    2 root     root          4096 May 23  2022 bin
+dr-xr-xr-x   13 root     root             0 Dec 11 14:33 sys
+dr-xr-xr-x  260 root     root             0 Dec 11 14:33 proc
+drwxr-xr-x    1 root     root          4096 Dec 11 14:33 etc
+drwxr-xr-x    5 root     root           360 Dec 11 14:33 dev
+drwxr-xr-x    3 root     root          4096 Dec 11 14:33 Users
+drwx------    1 root     root          4096 Dec 11 14:33 root
+/ # ls -ltr /Users/paolomainardi/
+total 4
+drwxr-xr-x    4 root     root           128 Dec 18  2021 Public
+drwx------    4 root     root           128 Dec 18  2021 Music
+drwx------    5 root     root           160 Dec 18  2021 Pictures
+drwx------    4 root     root           128 Dec 18  2021 Movies
+drwxr-xr-x    4 root     root           128 Dec 18  2021 bin
+drwxr-xr-x    4 root     root           128 Dec 31  2021 go
+-rw-r--r--    1 root     root            98 Apr  1  2022 README.md
+drwxr-xr-x    5 root     root           160 Apr  3  2022 webapps
+drwx------    6 root     root           192 Nov 12 16:50 Applications
+drwxr-xr-x    3 root     root            96 Nov 28 21:23 Sites
+drwxr-xr-x   14 root     root           448 Nov 28 22:22 temp
+drwx------  105 root     root          3360 Dec  5 09:16 Library
+drwx------  164 root     root          5248 Dec  8 01:16 Downloads
+drwx------    5 root     root           160 Dec  8 01:27 Desktop
+drwx------   26 root     root           832 Dec  8 01:37 Documents
+```

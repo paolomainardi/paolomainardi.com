@@ -1,0 +1,6 @@
+<form id="search"
+    action='{{ with .GetPage "/posts" }}{{.Permalink}}{{end}}' method="get">
+    <label hidden for="search-input">Search</label>
+    <input type="text" id="search-input" name="q" placeholder="Type here to search...">
+    <input type="submit" value="Search">
+</form>
