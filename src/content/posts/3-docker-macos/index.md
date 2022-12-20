@@ -1,6 +1,6 @@
 +++
 date = "2022-12-04"
-title = "Why Docker volumes on MacOS are slow and how to fix it"
+title = "Docker volumes on MacOS are slow and how to fix it"
 slug = "docker-performance-macos"
 tags = ["linux", "docker", "macos"]
 draft = "false"
@@ -198,7 +198,7 @@ Preferences -> Resources -> File sharing
 
 As you can see from the image, we are mounting local paths like `/Users` as mount path on the Linux VM, and thanks to this, we can mount Mac directories as they were local:
 
-```shell
+```shell {linenos=inline}
 ➜  ~ docker run --rm -it -v /Users/paolomainardi:$(pwd) alpine ash
 / # ls -ltr
 total 60
