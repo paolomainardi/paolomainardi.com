@@ -1,6 +1,6 @@
 +++
 date = "2022-12-04"
-title = "Why Docker volumes on MacOS are slow and how to fix it"
+title = "Docker volumes on MacOS are slow and how to fix it"
 slug = "docker-performance-macos"
 tags = ["linux", "docker", "macos"]
 draft = "false"
@@ -10,8 +10,6 @@ images = ["images/posts/3-docker/dalle-container-apple-flag.webp"]
 
 Thanks to the [**DALL·E 2**](https://openai.com/dall-e-2/), we finally have a very nice graphic representation of
 **the feelings** of a Docker container inside a macOS environment, I will try with this article to make this poor container safe to the coast.
-
-Generated with: *“a container inside an apple computer in a ship in a stormy sea"*
 
 ## TL;DR
 
@@ -198,7 +196,7 @@ Preferences -> Resources -> File sharing
 
 As you can see from the image, we are mounting local paths like `/Users` as mount path on the Linux VM, and thanks to this, we can mount Mac directories as they were local:
 
-```shell
+```shell {linenos=inline}
 ➜  ~ docker run --rm -it -v /Users/paolomainardi:$(pwd) alpine ash
 / # ls -ltr
 total 60
