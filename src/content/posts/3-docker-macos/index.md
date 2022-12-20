@@ -184,7 +184,7 @@ A bind mount is a way to mount the host filesystem inside a container, and you c
 
 From 10 thousand feet, it works like this:
 
-{{< figure src="/images/posts/3-docker/docker-mac-diagram.excalidraw-black.png" caption="Docker bind mount diagram" >}}
+{{< figure src="/images/posts/3-docker/docker-mac-diagram.excalidraw-black.webp" caption="Docker bind mount diagram" >}}
 
 So, when you **mount a path from your Mac**, you are just **asking the Linux VM** to **mount the path** of the **network-shared filesystem** of your Mac.
 
@@ -194,7 +194,7 @@ You can find it what is mounted on Docker Desktop under:
 
 Preferences -> Resources -> File sharing
 
-{{< figure src="/images/posts/3-docker/docker-mac-bind-mounts.png" caption="Docker Desktop bind mount settings" >}}
+{{< figure src="/images/posts/3-docker/docker-mac-bind-mounts.webp" caption="Docker Desktop bind mount settings" >}}
 
 As you can see from the image, we are mounting local paths like `/Users` as mount path on the Linux VM, and thanks to this, we can mount Mac directories as they were local:
 
@@ -331,7 +331,7 @@ Now that we have a general overview of the moving pieces, how they work, and can
 
 This is an excellent question!
 
-{{< figure src="/images/posts/3-docker/docker-desktop-virtiofs.png" caption="Use VirtioFS" >}}
+{{< figure src="/images/posts/3-docker/docker-desktop-virtiofs.webp" caption="Use VirtioFS" >}}
 
 The short answer for now is: **Docker Desktop for Mac with VirtioFS**, is a good compromise between **performance and DX**, even if it is slower than Linux; for most cases, it is a **negligible difference**.
 
