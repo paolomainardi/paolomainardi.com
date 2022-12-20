@@ -17,7 +17,7 @@ At the time of writing, the only viable option to have a *decent performance*
 and a *good DX* are:
 
 1. **VirtioFS** to share the filesystem ([Docker Desktop](https://www.docker.com/blog/speed-boost-achievement-unlocked-on-docker-desktop-4-6-for-mac/), [Rancher Desktop](https://github.com/rancher-sandbox/rancher-desktop/issues/3488), [Colima](https://github.com/drud/ddev/issues/3750)) - [There are still some issues](https://github.com/docker/roadmap/issues/7#issuecomment-1360243730).
-1. Use **named volumes** and if you use VSCode you can rely on things like [DevContainers](https://code.visualstudio.com/docs/devcontainers/containers) to have a good DX. **BONUS**: [PoC project](https://github.com/paolomainardi/docker-backstage-devcontainers) with Backstage and DevContainers.
+1. Use **named volumes** and if you use VSCode you can rely on things like [DevContainers](https://code.visualstudio.com/docs/devcontainers/containers) to have a good DX - 🚀 **BONUS**: [PoC project](https://github.com/paolomainardi/docker-backstage-devcontainers) with Backstage and DevContainers.
 1. Use [DDEV](https://ddev.com) + [Mutagen](https://ddev.readthedocs.io/en/latest/users/install/performance/) for PHP projects (JS coming soon).
 1. If you are **VI/Emacs** user, all you need is your editor and tools in a container, or if you want a minimal Linux GUI env, [take some inspiration here](https://github.com/mitchellh/nixos-config).
 
