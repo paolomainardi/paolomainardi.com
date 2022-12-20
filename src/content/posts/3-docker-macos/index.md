@@ -11,8 +11,6 @@ images = ["images/posts/3-docker/dalle-container-apple-flag.webp"]
 Thanks to the [**DALL·E 2**](https://openai.com/dall-e-2/), we finally have a very nice graphic representation of
 **the feelings** of a Docker container inside a macOS environment, I will try with this article to make this poor container safe to the coast.
 
-Generated with: *“a container inside an apple computer in a ship in a stormy sea"*
-
 ## TL;DR
 
 At the time of writing, the only viable option to have a *decent performance*
