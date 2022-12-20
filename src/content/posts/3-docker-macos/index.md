@@ -420,21 +420,27 @@ The most significant competitors now are:
 - AWS Cloud9
 - Docker Development Environment
 
-#### How it workswe
+#### How it works
 
-You need to create a `.devcontainer/devcontainer.json` file inside the project's root, and a supporting editor (AKA VsCode) will run it.
+You need to create a `.devcontainer/devcontainer.json` file inside the project's root, and a supporting editor (AKA VsCode) will just run it.
 
 {{< figure src="https://code.visualstudio.com/assets/docs/devcontainers/containers/architecture-containers.png" caption="Developing inside a container" >}}
 
-You can find here [a very good quick start][49]. It covers almost all aspects, including using Docker Compose.
+You can find here [a very good quick start][49]. It covers almost all aspects, including using it with Docker Compose.
 
 There is also a [very nice guide on how to][50] use it to improve the performance of macOS using Volumes instead of just bind mounts, which we have already discussed.
 
-To make it easily understandable (at least for me), I've created a PoC project to put all the wires together; you can find the project here: [https://github.com/paolomainardi/docker-backstage-devcontainers][51]
+To make it easily understandable (at least for me), I've created a PoC project to connect all the wires;
+the project lives here: [https://github.com/paolomainardi/docker-backstage-devcontainers][51] and it's an empty
+[Backstage](https://backstage.io/) application to test the entire development workflow using the VSCode Dev Containers integration.
 
-The **README** explains everything, and you can just clone it and test it by yourself with or without devcontainers.
+To conclude, the overall idea is excellent, and since it is an open standard, it could be easily adopted by other vendors, and there are yet some efforts ongoing:
 
-I think that the idea is excellent, and this is what I like more:
+1. [Gitpod](https://github.com/gitpod-io/gitpod/issues/7721)
+1. [Jetbrains](https://youtrack.jetbrains.com/issue/IDEA-202267)
+1. [nVIM](https://codeberg.org/esensar/nvim)
+
+To summarize the key points, i like much:
 
 1. Everything is Container-based.
 2. I can define custom VSCode extensions: I can define a shared development environment between team members.
