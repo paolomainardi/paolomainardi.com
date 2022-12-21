@@ -1,6 +1,6 @@
 +++
 date = "2022-12-04"
-title = "Docker volumes on MacOS are slow and how to fix it"
+title = "Docker on MacOS is slow and how to fix it"
 slug = "docker-performance-macos"
 tags = ["linux", "docker", "macos"]
 draft = "false"
