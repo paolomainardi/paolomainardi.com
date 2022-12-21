@@ -21,7 +21,7 @@ path = "cj.rs/gohugo-asciinema"
 
 [params]
     author = "Paolo Mainardi"
-    info = "CTO [@Sparkfabrik](https://www.sparkfabrik.com)"
+    info = "Founder and CTO of [@Sparkfabrik](https://www.sparkfabrik.com)"
     description = "I am Paolo Mainardi, founder and CTO of Sparkfabrik"
     keywords = "blog,developer,personal"
     avatarurl = "images/me.jpg"
