@@ -4,8 +4,8 @@ title = "Docker on MacOS is slow and how to fix it"
 slug = "docker-performance-macos"
 tags = ["linux", "docker", "macos"]
 draft = "false"
-featuredImage = "images/posts/3-docker/dalle-container-apple-flag.webp"
-images = ["images/posts/3-docker/dalle-container-apple-flag.webp"]
+featuredImage = "images/posts/3-docker/docker-dalle-container-macbook.webp"
+images = ["images/posts/3-docker/docker-dalle-container-macbook.webp"]
 +++
 
 Thanks to the [**DALL·E 2**](https://openai.com/dall-e-2/), we finally have a very nice graphic representation of
