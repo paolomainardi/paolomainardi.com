@@ -463,7 +463,7 @@ Use what you like and what you find better for your workflow and, why not, **wha
 
 This is also a gift for the future me; next time, I should explain to someone how Docker works on Linux and outside, and I'll use this guide as a general reference.
 
-Thanks for reading all of this, and if you find something wrong or want to discuss some topics further, keep in touch with me.
+Thanks for reading all of this, and if you find something wrong or want to discuss some topics further, get in touch with me.
 
 [1]: https://news.ycombinator.com/item?id=11352594
 [2]: https://learn.microsoft.com/en-us/virtualization/windowscontainers/about/
