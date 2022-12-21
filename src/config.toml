@@ -30,8 +30,8 @@ path = "cj.rs/gohugo-asciinema"
 
     customCSS = ["css/custom.css"]
 
-    favicon_32 = "/img/favicon-32x32.png"
-    favicon_16 = "/img/favicon-16x16.png"
+    favicon_32 = "/images/favicon-32x32.png"
+    favicon_16 = "/images/favicon-16x16.png"
 
     footercontent = "Writing about Containers, Kubernetes, Linux and cloud-native stuff"
 
