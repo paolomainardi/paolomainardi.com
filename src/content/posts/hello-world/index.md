@@ -6,19 +6,19 @@ tags = ["personal", "procrastination"]
 draft = "false"
 +++
 
-{{< figure src="procrastination.webp" title="Procrastination" >}}
+{{< figure src="/images/posts/hello-world/procrastination.webp" title="Procrastination" >}}
 
 After years of **procrastination,** I've finally decided to give a chance to this simple space (based on [Hugo][1]), and just focus on writing contents.
 
 I will try to force the **nerd side of me** not to waste time on **techy stuff**, which is **most of the time** the way to **mark the bitter destiny** of personal **side projects**.
 
-{{< figure src="side-projects.webp" title="Side projects" >}}
+{{< figure src="/images/posts/hello-world/side-projects.webp" title="Side projects" >}}
 
 **Writing is hard** - it requires _focus, skills, and time_; ideas are unshaped, and training and patience are needed to transform them into understandable and compelling words.
 
 **We developers** tend to automate all the boring stuff and focus on business logic; that's why I am **experimenting** with **some tools** and **services** to make the **writing experience less painful**; maybe I'll write something on this subject in the future.
 
-{{< figure src="writing-is-hard.webp" title="Writing is hard" >}}
+{{< figure src="/images/posts/hello-world/writing-is-hard.webp" title="Writing is hard" >}}
 
 **Writing for me** is one of the **hardest things I've ever done _(_**_well, I tried to do it several times, miserably failing all the times)._
 
