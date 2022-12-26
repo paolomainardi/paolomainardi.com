@@ -4,6 +4,7 @@
   "name": "Paolo Mainardi website",
   "image": "mcr.microsoft.com/devcontainers/base:bullseye",
   "workspaceFolder": "${localWorkspaceFolder}",
+  "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind",
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   // "features": {},
