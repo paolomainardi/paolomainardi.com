@@ -3,7 +3,6 @@ import * as hugoParams from "@params";
   try {
     const params = new URLSearchParams(window.location.search);
     const query = params.get("q");
-
     if (query) {
       const db = await HugoLyra.fetchDb(
         `/search/hugo-lyra-english.json?cache=${hugoParams.cur}`
