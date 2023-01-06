@@ -29,6 +29,7 @@ path = "cj.rs/gohugo-asciinema"
     colorScheme = "auto"
 
     customCSS = ["css/custom.css"]
+    customRemoteJS = ["https://unpkg.com/hugo-lyra@0.1.0-beta.4/dist/browser/hugo-lyra.js"]
 
     favicon_32 = "/images/favicon-32x32.png"
     favicon_16 = "/images/favicon-16x16.png"

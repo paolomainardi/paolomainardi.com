@@ -1,26 +1,28 @@
-import * as params from "@params";
+import * as hugoParams from "@params";
 (async () => {
   try {
-    const response = await fetch(`/hugo-lyra-english.json?cache=${params.api}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const json = await response.text();
-    const db = await HugoLyra.bootstrap(json);
-    const res = await HugoLyra.search(db);
-    if (res?.q) {
-      document.getElementById("search-input").setAttribute("value", res.q);
-    }
-    if (res?.search?.count) {
-      const searchResults = document.getElementById("results");
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get("q");
+
+    if (query) {
+      const db = await HugoLyra.fetchDb(
+        `/search/hugo-lyra-english.json?cache=${hugoParams.cur}`
+      );
+      const res = await HugoLyra.search(db, { term: query, properties: "*" });
+      document
+        .getElementById("search-input")
+        .setAttribute("value", res.options.term);
       let resultList = "";
-      for (const hit of res.search.hits) {
-        const doc = hit.document;
-        resultList += "<li>";
-        resultList += '<span class="date">' + doc.meta.date + "</span>";
-        resultList +=
-          '<a class="title" href="' + doc.uri + '">' + doc.title + "</a>";
-        resultList += "</li>";
+      const searchResults = document.getElementById("results");
+      if (res?.search?.count) {
+        for (const hit of res.search.hits) {
+          const doc = hit.document;
+          resultList += "<li>";
+          resultList += '<span class="date">' + doc.meta.date + "</span>";
+          resultList +=
+            '<a class="title" href="' + doc.uri + '">' + doc.title + "</a>";
+          resultList += "</li>";
+        }
       }
       searchResults.innerHTML = resultList.length
         ? resultList

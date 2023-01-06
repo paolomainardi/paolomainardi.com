@@ -10,3 +10,4 @@ src/public
 src/resources/_gen
 *.tar
 *.tgz
+hugo-lyra-english.json

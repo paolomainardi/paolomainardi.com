@@ -1,4 +1,3 @@
-<script type="module" src="/js/bundle.js"></script>
 {{ $cur := now.Unix | printf "%d" }}
-{{ $js := resources.Get "js/search.js" | minify | fingerprint | js.Build (dict "params" (dict "cur" $cur )) }}
+{{ $js := resources.Get "js/search.js" | fingerprint | js.Build (dict "params" (dict "cur" $cur )) }}
 <script src="{{ $js.RelPermalink }}"></script>
