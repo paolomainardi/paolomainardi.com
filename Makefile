@@ -14,7 +14,9 @@ cli:
 	docker-compose run --rm hugo ash
 
 hugo-build: build
+	docker-compose run --rm hugo rm -rf /output/*
 	docker-compose run --rm hugo hugo --minify --theme hugo-coder -d /output --baseUrl=https://www.paolomainardi.com
+	docker-compose run --rm hugo npx --yes hugo-lyra@beta --content /content/posts --indexFormat json --indexFilePath /output/search
 
 build-loc:
 	docker-compose run --rm hugo hugo --baseUrl=http://paolomainardi.loc
