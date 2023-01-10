@@ -12,6 +12,6 @@ When i am not too busy with the company stuff, i like to [contribute to open sou
 
 ## Contact me.
 
-You can contact me at [paolo.mainardi[at]sparkfabirk.com](mailto:paolo.mainardi+blog@sparkfabrik.com).
+You can contact me at [paolo.mainardi[at]sparkfabrik.com](mailto:paolo.mainardi+blog@sparkfabrik.com).
 
 Stay in touch!
