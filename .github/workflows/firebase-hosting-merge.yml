@@ -33,8 +33,8 @@ jobs:
           hugo --minify --theme hugo-coder -d output --baseUrl=https://www.paolomainardi.com
           npx --yes hugo-lyra@beta --content content/posts --indexFormat json --indexFilePath output/search
 
+      - run: cd ../
       - uses: FirebaseExtended/action-hosting-deploy@v0
-        working-directory: .
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_CTO_SPACE }}"
