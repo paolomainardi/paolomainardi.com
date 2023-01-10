@@ -34,6 +34,7 @@ jobs:
           npx --yes hugo-lyra@beta --content content/posts --indexFormat json --indexFilePath output/search
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
+        working-directory: .
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_CTO_SPACE }}"
