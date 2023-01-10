@@ -12,4 +12,3 @@ The project is quite simple; it uses [Hugo](https://gohugo.it) and the lovely [
 Hugo coder](https://github.com/luizdepra/hugo-coder) theme.
 
 If you want to contact me, drop me a message on the contacts you can find [here](https://www.paolomainardi.com/about/).
-
