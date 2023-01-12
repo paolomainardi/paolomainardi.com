@@ -29,7 +29,7 @@ jobs:
         run: |
           mkdir -p output/search
           hugo --minify --theme hugo-coder -d output --baseUrl=https://www.paolomainardi.com
-          npx --yes hugo-lyra@beta --content content/posts --indexFormat json --indexFilePath output/search
+          npx --yes hugo-lyra@latest --content content/posts --indexFormat json --indexFilePath output/search
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
