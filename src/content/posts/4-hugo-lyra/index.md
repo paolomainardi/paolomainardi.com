@@ -1,5 +1,5 @@
 +++
-date = "2023-01-16"
+date = "2023-01-15"
 title = "A new search engine for your Hugo website based on Lyra"
 slug = "hugo-search-engine-lyra"
 tags = ["hugo", "lyra"]
