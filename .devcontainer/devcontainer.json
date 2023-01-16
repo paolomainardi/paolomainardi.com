@@ -22,7 +22,8 @@
         "DavidAnson.vscode-markdownlint",
         "znck.grammarly",
         "bungcip.better-toml",
-        "zaaack.markdown-editor"
+        "zaaack.markdown-editor",
+        "GitHub.copilot"
       ]
     }
   }
