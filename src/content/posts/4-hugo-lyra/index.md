@@ -28,7 +28,7 @@ And it only requires a **Javascript runtime** to work; this means that any brows
 
 Which **static site** today doesn’t need a **simple** and integrated **search engine**? And what, if you can have it **without paying** for **server-side computing power**? This is precisely the space of projects like Lyra; you can self-host your site along your search engine in the same space, hopefully for free.
 
-**I liked Lyra'**s **attention from the ground** up to the **performance** and t[he algorithms](https://github.com/LyraSearch/lyra/tree/main/src/radix-tree)' design, which is Michele’s passion, as he told us in the podcast.
+I liked Lyra's **attention from the ground** up to the **performance** and [the algorithms](https://github.com/LyraSearch/lyra/tree/main/src/radix-tree)' design, which is Michele’s passion, as he told us in the podcast.
 
 Lyra is an **open-source and** **modern Typescript project**, easy to extend thanks to its **plugin architecture;** you can already find several plugins on the [Lyrasearch organization](https://github.com/LyraSearch).
 
@@ -84,7 +84,7 @@ Instead, I want to share **what I learned** building this project:
 
 I finally had the chance to **refresh my knowledge of a rapidly evolving Javascript ecosystem**, not only by reading articles or quickly testing things but building from scratch a new one.
 
-Nothing **is more rewarding** than **envisioning building and releasing a product** with your hands**,** even the smaller one, contributing to the open-source ecosystem and being part of a community.
+Nothing **is more rewarding** than **envisioning building and releasing a product** with your hands, even the smaller one, contributing to the open-source ecosystem and being part of a community.
 
 **My advice** is to **find a topic** or a **project you like**, you want to **improve yourself**, or have always **wanted to learn** and **start building**; we live in such a **wonderful era for developers**; we can build unimaginable things and transform thoughts into living things potentially used by thousands, millions, or people in a matter of seconds.
 
