@@ -7,17 +7,20 @@ build:
 update-submodules:
 	git submodule update --remote --merge
 
-up: build
+up: build hugo-lyra-rebuild-dev
 	docker-compose up -d
 
 cli:
 	docker-compose run --rm hugo ash
 
+hugo-lyra-rebuild-dev:
+	docker-compose run --rm hugo hugo-lyra --content /app/content/posts --indexFormat json --indexFilePath /app/static/search
+
 hugo-build: build
 	docker-compose run --rm hugo rm -rf /output/*
 	docker-compose run --rm hugo hugo --minify --theme hugo-coder -d /output --baseUrl=https://www.paolomainardi.com
 	docker-compose run --rm hugo mkdir -p /output/search
-	docker-compose run --rm hugo npx --yes hugo-lyra@latest --content /app/content/posts --indexFormat json --indexFilePath /output/search
+	docker-compose run --rm hugo hugo-lyra --content /app/content/posts --indexFormat json --indexFilePath /output/search
 
 build-loc:
 	docker-compose run --rm hugo hugo --baseUrl=http://paolomainardi.loc
