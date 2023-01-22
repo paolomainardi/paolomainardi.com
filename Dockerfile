@@ -4,6 +4,7 @@ RUN apk add --no-cache vim py-pip python3 curl build-base libc6-compat go git no
 # Download and install hugo
 ARG TARGETARCH
 ENV HUGO_VERSION 0.102.3
+ENV HUGO_LYRA_VERSION 0.4.1
 
 # ENV HUGO_BINARY hugo_extended_${HUGO_VERSION}_Linux-64bit.tar.gz
 ENV PS1='\[\033[1;36m\]\u\[\033[1;31m\]@\[\033[1;32m\]\h:\[\033[1;35m\]\w\[\033[1;31m\]\$\[\033[0m\] '
@@ -17,6 +18,9 @@ RUN if [ $TARGETARCH == 'arm64' ]; then  \
     curl -Lo /tmp/${HUGO_BINARY} https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/${HUGO_BINARY} \
     && tar xzf /tmp/${HUGO_BINARY} -C /usr/local/bin \
     && rm -rf /tmp/*
+
+# Install hugo-lyra globally.
+RUN npm install -g hugo-lyra@${HUGO_LYRA_VERSION}
 
 # Add sources.
 WORKDIR /app
