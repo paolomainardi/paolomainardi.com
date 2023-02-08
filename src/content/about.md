@@ -14,7 +14,7 @@ When i am not too busy with the company stuff, i like to [contribute to open sou
 
 This is my current PGP public key with fingerprint `7175 CDC9 B3D8 395E 3F36  44BB A512 E1CF 8F32 2189` and id `8686CBECDF05A89F`:
 
-```shell {linenos=inline}
+```shell
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQINBGOM5i8BEADG2yEdC9xvDS6mPdBDpz9eIlR2XV3QqX2OXXc/PqD5WFzEapcY
