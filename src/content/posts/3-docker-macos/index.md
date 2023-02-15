@@ -21,6 +21,11 @@ and a *good DX* are:
 1. Use [DDEV](https://ddev.com) + [Mutagen](https://ddev.readthedocs.io/en/latest/users/install/performance/) for PHP projects (JS coming soon).
 1. If you are **VI/Emacs** user, all you need is your editor and tools in a container, or if you want a minimal Linux GUI env, [take some inspiration here](https://github.com/mitchellh/nixos-config).
 
+### Update 15/02/2023
+
+At the time of writing is still a beta option but it looks promising, from Docker Desktop 4.16.0 (https://docs.docker.com/desktop/release-notes/#4160) 
+it is possible to use Rosetta2 instead of QEMU to run x86 containers. You can enable it very easily from the experimental feature settings tab, it will increase dramaticaly the emulation performance.
+
 ## How does Docker work on macOS?
 
 {{< figure src="https://collabnix.com/wp-content/uploads/2018/05/Screen-Shot-2018-05-07-at-8.13.29-AM.png" caption="Docker architecture on macOS - Source <https://collabnix.com/how-docker-for-mac-works-under-the-hood>" >}}
