@@ -14,7 +14,7 @@ cli:
 	docker-compose run --rm hugo ash
 
 hugo-lyra-rebuild-dev:
-	docker-compose run --rm hugo hugo-lyra --content /app/content/posts --indexFormat json --indexFilePath /app/static/search
+	docker-compose run --rm hugo hugo-lyra --content /app/src/content/posts --indexFormat json --indexFilePath /app/src/static/search
 
 hugo-build: build
 	docker-compose run --rm hugo rm -rf /output/*
