@@ -1,13 +1,13 @@
 +++
 date = "2023-03-24"
-title = "Run a process in a container like a native one"
-slug = "docker-process-close-to-native"
+title = "How to make a process running in a container feel at home."
+slug = "container-process-feel-at-home"
 tags = ["docker"]
 +++
 
-If you know me, you know how much I love the container ecosystem (and Docker) and how breakthrough they have been in the market the last 10 years, they changed everything.
+If you know me, you know how much I love the container ecosystem (and Docker) and how breakthrough they have been in the market the last 10 years, containers changed everything.
 
-Even tho Docker has become an essential tool in the world of software development, as it allows developers to create, deploy and run applications in containers, sometimes a process needs more than just a container to run; maybe it assumes something from the env vars or a system socket (e.g., like X11).
+Even tho Docker/Podman have become an essential tool in the world of software development, as they allow developers to create, deploy and run applications in containers, sometimes a process needs more than just a container to run; maybe it assumes something from the env vars or a system socket (e.g., like X11).
 
 Another scenario can be that you need to run something from your CI job, the job is Docker-based (like Gitlab), and you cannot/want to change the docker base image. Still, you also want to avoid installing random stuff or running a container and losing the configured env vars.
 
