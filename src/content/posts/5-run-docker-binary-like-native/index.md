@@ -11,9 +11,19 @@ If you know me, you know how much I love the container ecosystem (and Docker) an
 
 Even tho Docker/Podman have become an essential tool in the world of software development, as they allow developers to create, deploy and run applications in containers, sometimes a process needs more than just a container to run; maybe it assumes something from the env vars or a system socket (e.g., like X11).
 
-Another scenario can be that you need to run something from your CI job, the job is Docker-based (like Gitlab), and you cannot/want to change the docker base image. Still, you also want to avoid installing random stuff or running a container and losing the configured env vars.
+```yaml {linenos=inline}
+image: gitlab-ci-base-image:latest
 
-Tough oh? The life of a process in a container is a challenging one.
+phpunit:
+  script: |
+             docker run --rm -it \
+             -e  CI_COMMIT_REF_SLUG=$CI_COMMIT_REF_SLUG
+	     -e MY_CUSTOM_CONFIG=$MY_CUSTOM_CONFIG
+             // all the other hardwired variables i know (i can miss something here).
+              php:8.2 php tests.php
+```
+
+So, assuming that an entire system is not just a filesystem with a bunch of binaries, to let the process behave more like running inside the host, we need, at minimum, the following stuff:
 
 So, assuming that an entire system is not just a filesystem with a bunch of binaries, to let the process behave more like running inside the host, we need, at minimum, the following stuff:
 
@@ -24,7 +34,7 @@ So, assuming that an entire system is not just a filesystem with a bunch of bina
 
 So i condensated everything in a small script i use regularly:
 
-```shell
+```shell {linenos=inline}
 #!/bin/sh
 
 if [ -z "$DOCKER_IMAGE" ]; then
