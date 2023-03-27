@@ -3,6 +3,8 @@ date = "2023-03-24"
 title = "How to make a process running in a container feel at home."
 slug = "container-process-feel-at-home"
 tags = ["docker"]
+featuredImage = "images/posts/5-docker-native/container-living-room.webp"
+images = ["images/posts/5-docker-native/container-living-room.webp"]
 +++
 
 If you know me, you know how much I love the container ecosystem (and Docker) and how breakthrough they have been in the market the last 10 years, containers changed everything.
