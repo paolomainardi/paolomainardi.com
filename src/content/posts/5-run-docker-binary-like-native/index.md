@@ -99,3 +99,4 @@ Or, for running GUI apps, I want to avoid installing them on my system.
 
 **Beware** that this solution cannot cover more sophisticated cases; there are better solutions, like [Distrobox](https://github.com/89luca89/distrobox).
 
+That's it, if I am missing something big or you want to discuss it, as always, drop me a message on the contacts you can find [here](/about) or drop me a message on [Mastodon](https://continuousdelivery.social/@paolomainardi).

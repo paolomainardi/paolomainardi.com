@@ -10,6 +10,8 @@ and doing **Kubernetes** consultancy at different levels, from the the cluster m
 
 When i am not too busy with the company stuff, i like to [contribute to open source projects](https://www.github.com/paolomainardi), [speaking and organizing conferences](/talks) and actively participating to the community.
 
+You can get in touch with me on Mastodon: [https://continuousdelivery.social/@paolomainardi](https://continuousdelivery.social/@paolomainardi)
+
 ## My PGP key
 
 This is my current PGP public key with fingerprint `7175 CDC9 B3D8 395E 3F36  44BB A512 E1CF 8F32 2189` and id `8686CBECDF05A89F`:
