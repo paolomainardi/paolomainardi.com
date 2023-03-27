@@ -1,6 +1,6 @@
 +++
 date = "2023-03-24"
-title = "How to make a process running in a container feel at home."
+title = "How to make a process running in a container feel at home"
 slug = "container-process-feel-at-home"
 tags = ["docker"]
 featuredImage = "images/posts/5-docker-native/container-living-room.webp"
