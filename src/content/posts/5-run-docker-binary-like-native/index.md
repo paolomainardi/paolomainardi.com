@@ -44,6 +44,16 @@ if [ -z "$DOCKER_IMAGE" ]; then
     exit 1
 fi
 
+# Operating system type.
+OS_TYPE=$(uname -s)
+
+# Check the operating system type to mount the docker socket.
+if [ "$OS_TYPE" = "Linux" ]; then
+    DOCKER_SOCKET=/var/run/docker.sock
+elif [ "$OS_TYPE" = "Darwin" ]; then
+    DOCKER_SOCKET=/var/run/docker.sock.raw
+fi
+
 # Pass dynamic arguments to the docker container.
 # Cycle env vars and pass them to the docker container.
 docker_env_vars=""
@@ -61,7 +71,7 @@ ${docker_env_vars[@]} \
 -v "${PWD}":"${PWD}" \
 -v /tmp:/tmp \
 -w "${PWD}" \
--v /var/run/docker.sock:/var/run/docker.sock:ro \
+-v "${DOCKER_SOCKET}":/var/run/docker.sock:ro \
 -v /var/run:/var/run:rw \
 -v /sys:/sys:ro \
 -v /tmp/.X11-unix:/tmp/.X11-unix \
