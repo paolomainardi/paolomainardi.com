@@ -38,6 +38,7 @@ So i condensated everything in a small script i use regularly:
 
 ```shell
 #!/bin/sh
+#!/bin/sh
 
 if [ -z "$DOCKER_IMAGE" ]; then
     echo "DOCKER_IMAGE is not set"
@@ -47,12 +48,24 @@ fi
 # Operating system type.
 OS_TYPE=$(uname -s)
 
+# Operating system hostname.
+HOSTNAME=$(hostname)
+
 # Check the operating system type to mount the docker socket.
 if [ "$OS_TYPE" = "Linux" ]; then
     DOCKER_SOCKET=/var/run/docker.sock
 elif [ "$OS_TYPE" = "Darwin" ]; then
     DOCKER_SOCKET=/var/run/docker.sock.raw
 fi
+
+if [ -n "${CI}" ]; then
+    INTERACTIVE=""
+else
+    INTERACTIVE="-it"
+fi
+
+# Use the configured USER_ID. If empty use the current user id.
+USER_ID=${USER_ID:-$(id -u)}
 
 # Pass dynamic arguments to the docker container.
 # Cycle env vars and pass them to the docker container.
@@ -62,11 +75,12 @@ for env_var in $(env); do
 done
 
 # Run the docker container. The container will be removed after the execution.
-docker run --rm -it \
+docker run --rm ${INTERACTIVE} \
 ${docker_env_vars[@]} \
 -h "${HOSTNAME}" \
 --net=host \
---user "$(id -u):$(id -g)" \
+--user "${USER_ID}" \
+-e SHELL=/bin/sh \
 -v "${HOME}":"${HOME}" \
 -v "${PWD}":"${PWD}" \
 -v /tmp:/tmp \
