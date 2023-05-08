@@ -317,8 +317,8 @@ Let's see them in action:
 | **Docker - Bind Mount + Volume** | Linux | 6,18
 | Native | macOS | 4.09
 | Docker | macOS | 6.80
-| Docker - Bind Mount | macOS | 7.65
-| **Docker - Bind Mount + Volume** | macOS | **21.05** 🏆
+| Docker - Bind Mount + Volume | macOS | 7.65
+| **Docker - Bind Mount**| macOS | **21.05** 🏆
 
 And finally, we can see the performance impact results; macOS is more or less x3.5 times slower ([10x times slower when using gRPC Fuse][38]) when using just the bind mount, and the culprit here is the `node\_modules` directory _\[328M and 37k files just for an empty React app\]._
 
