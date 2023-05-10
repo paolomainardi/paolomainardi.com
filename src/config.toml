@@ -3,7 +3,7 @@ title = "Paolo Mainardi"
 theme = "hugo-coder"
 languagecode = "en"
 defaultcontentlanguage = "en"
-googleAnalytics = "UA-158660821-1"
+googleAnalytics = "G-5LT57L2S53"
 
 paginate = 20
 canonifyurls = true

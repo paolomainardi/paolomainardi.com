@@ -1,9 +1,18 @@
-FROM alpine:3.17
-RUN apk add --no-cache vim py-pip python3 curl build-base libc6-compat go git nodejs npm
+FROM node:bullseye-slim
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    build-essential \
+    python3 \
+    python3-pip \
+    golang \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
 
 # Download and install hugo
 ARG TARGETARCH
-ENV HUGO_VERSION 0.109.0
+ENV HUGO_VERSION 0.111.3
 ENV HUGO_LYRA_VERSION 0.4.2
 
 # ENV HUGO_BINARY hugo_extended_${HUGO_VERSION}_Linux-64bit.tar.gz
