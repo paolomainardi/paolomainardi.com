@@ -9,3 +9,8 @@ body.colorscheme-dark article div.post-content a {
 body.colorscheme-dark article div.post-content a:hover {
     background-image: linear-gradient(transparent, transparent 4px, #ff79c6 4px, #ff79c6);
 }
+
+main .content table {
+    display: block;
+    overflow-x: auto;
+}
