@@ -12,7 +12,7 @@ images = ["images/posts/6-linux-workstation/featured.webp"]
 
 ## TL;DR
 
-This is not a guide on how-to install and configure Linux, but a list of the components I used to build my perfect Linux workstation, to avoid any compatibility issue and to exploit the best in terms of performance and stability. For who's asking, I am using [Arch Linux](https://archlinux.org/) as my daily driver and it is configured through the [Ansible playbook](https://github.com/paolomainardi/archlinux-ansible-provisioner) i made.
+This is not a guide on how-to install and configure Linux, but a list of the components I used to build my personal Linux workstation, to avoid any compatibility issue and to exploit the best in terms of performance and stability. For who's asking, I am using [Arch Linux](https://archlinux.org/) as my daily driver and it is configured through the [Ansible playbook](https://github.com/paolomainardi/archlinux-ansible-provisioner) i made.
 
 ## Introduction
 The last time I built (*assembled*) a PC, there still were [IDE ribbon cables](https://en.wikipedia.org/wiki/Ribbon_cable), the CPU didn’t strictly require a cooler, and 3Dfx was the best in class GPU you can have, floppy disk reader to boot OS (years later, BIOS became smarter enough to boot from USB or CD-ROM), no LED or other fancy stuff on the case, just a metal and cheap plastic white case with some activity led for the spinning drives and sometimes, the luckiest ones, [the mythical turbo button](https://en.m.wikipedia.org/wiki/Turbo_button) (well to be honest the turbo button disappeared after 486 CPUs).
@@ -26,7 +26,7 @@ What do I remember most of that days as a PC enthusiast? Three things:
 
 [https://www.youtube.com/watch?v=mN7wFjfs5OA&ab_channel=SUCRA](https://www.youtube.com/watch?v=mN7wFjfs5OA&ab_channel=SUCRA)
 
-1. **LINUX -** Still vivid memories of Installing Debian for the first time with [select](https://en.wikipedia.org/wiki/Dselect), apt-get was not yet invented, and how easy it was to finish in the land of [Dependency Hell](https://wiki.debian.org/DependencyHell).
+3. **LINUX -** Still vivid memories of Installing Debian for the first time with [select](https://en.wikipedia.org/wiki/Dselect), apt-get was not yet invented, and how easy it was to finish in the land of [Dependency Hell](https://wiki.debian.org/DependencyHell).
 Still, when you finally succeeded, it was mind-blowing; running in your computer a real UNIX-like system for free and having the opportunity to assemble your operating system from the ground up and making your hand dirty with terminals and stuff was very fun, and still, [it is.](https://github.com/paolomainardi/archlinux-ansible-provisioner)
 
 {{< notice tip >}}
