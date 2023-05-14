@@ -24,7 +24,7 @@ What do I remember most of that days as a PC enthusiast? Three things:
 1. [Pentium 90 with **MMX extensions**](https://en.wikipedia.org/wiki/Pentium_(original)#cite_note-4) - the first ever X86 multimedia extensions baked into a CPU, they could add a considerable amount of FPS. Still, of course, they required new games or substantial patches, [and it was very hard at the beginning to find MMX-supported games](https://archive.nytimes.com/www.nytimes.com/library/cyber/week/012497intel.html) or applications, so it was quite a disappointment.
 2. The first **3Dfx card** with [bilinear filtering in action](https://www.vgamuseum.info/index.php/cpu/item/867-bilinear-filtering) - this kind of technology changed everything; it was like having an arcade at home; everything was so smooth, fast, and sharp as never before; this was the beginning of a new era of gaming and the fast decline of arcades.
 
-[https://www.youtube.com/watch?v=mN7wFjfs5OA&ab_channel=SUCRA](https://www.youtube.com/watch?v=mN7wFjfs5OA&ab_channel=SUCRA)
+{{< youtube mN7wFjfs5OA >}}
 
 3. **LINUX -** Still vivid memories of Installing Debian for the first time with [select](https://en.wikipedia.org/wiki/Dselect), apt-get was not yet invented, and how easy it was to finish in the land of [Dependency Hell](https://wiki.debian.org/DependencyHell).
 Still, when you finally succeeded, it was mind-blowing; running in your computer a real UNIX-like system for free and having the opportunity to assemble your operating system from the ground up and making your hand dirty with terminals and stuff was very fun, and still, [it is.](https://github.com/paolomainardi/archlinux-ansible-provisioner)
