@@ -8,6 +8,13 @@ featuredImage = "images/posts/6-linux-workstation/featured.webp"
 images = ["images/posts/6-linux-workstation/featured.webp"]
 +++
 
+> The cover image has been generated with [DALL-E](https://openai.com/blog/dall-e/) and it is intentionally made like an illustration.
+
+## TL;DR
+
+This is not a guide on how-to install and configure Linux, but a list of the components I used to build my perfect Linux workstation, to avoid any compatibility issue and to exploit the best in terms of performance and stability. For who's asking, I am using [Arch Linux](https://archlinux.org/) as my daily driver and it is configured through the [Ansible playbook](https://github.com/paolomainardi/archlinux-ansible-provisioner) i made.
+
+## Introduction
 The last time I built (*assembled*) a PC, there still were [IDE ribbon cables](https://en.wikipedia.org/wiki/Ribbon_cable), the CPU didn’t strictly require a cooler, and 3Dfx was the best in class GPU you can have, floppy disk reader to boot OS (years later, BIOS became smarter enough to boot from USB or CD-ROM), no LED or other fancy stuff on the case, just a metal and cheap plastic white case with some activity led for the spinning drives and sometimes, the luckiest ones, [the mythical turbo button](https://en.m.wikipedia.org/wiki/Turbo_button) (well to be honest the turbo button disappeared after 486 CPUs).
 
 They were enjoyable days; Amazon or such wasn’t a thing; to buy components, you should physically go to local computer stores; the primary source of information to choose the best product were PC magazines, weekly or monthly, released on the newsstand.
@@ -73,6 +80,68 @@ Why did I make this switch? That is a very good question! There are several reas
 I used the [Arch Linux Ansible Provisioner](https://github.com/paolomainardi/archlinux-ansible-provisioner) that I wrote to automate the installation and configuration. This tool automates the entire process, from partitioning the disk to installing the necessary packages and configuring the system. It also installs and configures my preferred desktop environment, which is now the [Sway](https://swaywm.org/) window manager, [Wayland rocks](https://wiki.archlinux.org/title/wayland).
 
 To bootstrap this system i didn’t reinstalled from scratch, i’ve cloned another NVMe disk with [Clonezilla](https://clonezilla.org/) even capable to work with encrypted disks and then enlarged the filesystem to fit the new 1TB size, that’s it, everything worked out of the box.
+
+Some system data:
+
+```shell {inline=true}
+
+❯ inxi -F
+
+System:
+  Host: paolo-cto-arch Kernel: 6.3.1-arch1-1 arch: x86_64 bits: 64
+    Desktop: sway v: 1.8.1 Distro: Arch Linux
+Machine:
+  Type: Desktop System: ASUS product
+  Mobo: ASUSTeK model: PRIME X670E-PRO WIFI v: Rev 1.xx
+    serial: UEFI: American Megatrends v: 1408
+    date: 04/10/2023
+CPU:
+  Info: 12-core model: AMD Ryzen 9 7900X bits: 64 type: MT MCP cache:
+    L2: 24 MiB
+  Speed (MHz): avg: 3129 min/max: 3000/5733 cores: 1: 3311 2: 2981 3: 3000
+    4: 3000 5: 3000 6: 3000 7: 2879 8: 3000 9: 3000 10: 3000 11: 3000 12: 3000
+    13: 4512 14: 3000 15: 3000 16: 3000 17: 2879 18: 2854 19: 3000 20: 3000
+    21: 3000 22: 3000 23: 4700 24: 3000
+Graphics:
+  Device-1: AMD Raphael driver: amdgpu v: kernel
+  Device-2: Logitech C920 HD Pro Webcam driver: snd-usb-audio,uvcvideo
+    type: USB
+  Display: wayland server: X.org v: 1.21.1.8 with: Xwayland v: 23.1.1
+    compositor: sway v: 1.8.1 driver: X: loaded: amdgpu dri: radeonsi
+    gpu: amdgpu resolution: 2560x1440~60Hz
+  API: OpenGL v: 4.6 Mesa 23.0.3 renderer: AMD Radeon Graphics (gfx1036
+    LLVM 15.0.7 DRM 3.52 6.3.1-arch1-1)
+Audio:
+  Device-1: AMD Rembrandt Radeon High Definition Audio driver: snd_hda_intel
+  Device-2: AMD Family 17h/19h HD Audio driver: snd_hda_intel
+  API: ALSA v: k6.3.1-arch1-1 status: kernel-api
+  Server-1: PipeWire v: 0.3.70 status: active
+Network:
+  Device-1: Realtek RTL8125 2.5GbE driver: r8169
+  IF: eno1 state: up speed: 1000 Mbps duplex: full mac: c8:7f:54:03:4c:5d
+  Device-2: MEDIATEK MT7921K Wi-Fi 6E 80MHz driver: mt7921e
+  IF: wlp10s0 state: down mac: 72:6a:6d:65:09:60
+  Device-1: MediaTek Wireless_Device driver: btusb type: USB
+  Report: rfkill ID: hci0 rfk-id: 24 state: down bt-service: enabled,running
+    rfk-block: hardware: no software: yes address: see --recommends
+Drives:
+  Local Storage: total: 1.36 TiB used: 121.42 GiB (8.7%)
+  ID-1: /dev/nvme0n1 vendor: Samsung model: SSD 980 PRO 1TB size: 931.51 GiB
+  ID-2: /dev/nvme1n1 vendor: Western Digital model: WDS500G1X0E-00AFY0
+    size: 465.76 GiB
+Partition:
+  ID-1: / size: 880.97 GiB used: 121.28 GiB (13.8%) fs: btrfs dev: /dev/dm-0
+  ID-2: /boot size: 1022 MiB used: 139.6 MiB (13.7%) fs: vfat
+    dev: /dev/nvme0n1p1
+  ID-3: /home size: 880.97 GiB used: 121.28 GiB (13.8%) fs: btrfs
+    dev: /dev/dm-0
+Swap:
+  ID-1: swap-1 type: partition size: 49.52 GiB used: 4 KiB (0.0%)
+    dev: /dev/nvme0n1p3
+Sensors:
+  System Temperatures: cpu: 48.0 C mobo: N/A gpu: amdgpu temp: 42.0 C
+  Fan Speeds (RPM): N/A
+```
 
 ## Hardware
 
