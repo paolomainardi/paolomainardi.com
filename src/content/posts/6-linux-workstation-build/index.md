@@ -210,10 +210,6 @@ Then it was time to choose the cooling system; I wanted something simple, ultra-
 - [Noctua NH-D15 chromax.Black](https://amzn.to/3VN4cos)
 - [Noctua NA-HC4 chromax.White, Heatsink Cover](https://amzn.to/3NJyK8z)
 
-I also found interesting this video of Linus, a bit older now, but I guess still valid, even tho modern CPUs, especially the new gen, tend to become very hot.
-
-[https://youtu.be/1YFR20MmvpM](https://youtu.be/1YFR20MmvpM)
-
 ### Power supply
 
 The most interesting (and unexpected) part of choosing the power supply is that I learned about the existence of an official rating system, [the 80 Plus](https://en.wikipedia.org/wiki/80_Plus).
