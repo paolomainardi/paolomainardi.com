@@ -22,9 +22,9 @@ What do I remember most of that days as a PC enthusiast? Three things:
 1. **LINUX -** Still vivid memories of Installing Debian for the first time with [select](https://en.wikipedia.org/wiki/Dselect), apt-get was not yet invented, and how easy it was to finish in the land of [Dependency Hell](https://wiki.debian.org/DependencyHell).
 Still, when you finally succeeded, it was mind-blowing; running in your computer a real UNIX-like system for free and having the opportunity to assemble your operating system from the ground up and making your hand dirty with terminals and stuff was very fun, and still, [it is.](https://github.com/paolomainardi/archlinux-ansible-provisioner)
 
-### 90s hacker culture movies
+{{< notice tip >}}
 
-**AI GENERATED START**
+**AI GENERATED**
 
 If you want to experience some nostalgia for the 90s hacker culture, you can watch the following movies:
 
@@ -35,7 +35,7 @@ If you want to experience some nostalgia for the 90s hacker culture, you can wat
 
 These movies may not be the most accurate representation of hacking, but they capture the era's spirit and can be pretty entertaining to watch.
 
-**AI GENERATED END**
+{{< /notice >}}
 
 Fast forward to nowadays and why I have chosen to assemble a PC again.
 
@@ -47,14 +47,14 @@ So once the idea became a bit more solid and even thanks to some new coming proj
 
 ## Requirements
 
-- First and foremost, everything must run natively on Linux as a first-class citizen, and even better if the vendor supports everything baked into the Kernel.
-- Air or liquid cooling, ultra-silent and power efficient.
-- Integrated GPU as I don’t run games but still something powerful enough to accelerate video and desktop stuff and to drive one or multiple external 4K monitors.
-- A platform still supported for at least the next 3 years to let me upgrade parts such as RAM and CPU without changing everything.
+- First and foremost, **everything must run natively on Linux as a first-class citizen**, and even better if the vendor supports everything baked into the Kernel.
+- Air or liquid cooling, **ultra-silent** and **power efficient**.
+- **Integrated GPU** as I don’t run games but still something powerful enough to accelerate video and desktop stuff and to drive one or multiple external 4K monitors.
+- A **platform** still **supported for at least the next 3 years** to let me upgrade parts such as RAM and CPU without changing everything.
 - Capable of supporting at least 128GB of ECC RAM
 - At least 2 NVMe PCIe 4.0 slots and a bunch of high-speed SATA ports.
-- A solid, professional-looking ATX case with plenty of room to do nice and clean cable management.
-- 💰 Budget ~1500€
+- A **solid**, **professional-looking ATX case** with plenty of room to do nice and clean cable management.
+- **💰 Budget ~1500€**
 
 ## Software
 
@@ -64,10 +64,10 @@ Arch Linux is a "[lightweight and flexible Linux distribution that tries to keep
 
 Why did I make this switch? That is a very good question! There are several reasons:
 
-1. Things in hardware and SS are moving fast, and LTS distributions tend to age very quickly, like Kernel, media subsystems, or Desktop Environments, with a rolling release distribution you have always the most updated software.
+1. Things in hardware and OSS are moving fast, LTS distributions tend to age very quickly, like Kernel, media subsystems, or Desktop Environments, with a rolling release distribution you have always the most updated software or kernel, this means better hardware support and new features.
 2. Rolling release does not mean instability by design, as many could think, it is more having always the latest stable versions, this accelerate 3 factors: new features, deprecation and removals, you should just know this.
 3. [Archlinux Wiki](https://wiki.archlinux.org/) is the greatest piece of documentation ever written by a community
-4. AUR with all its defects it is the best and usable (PPA i am looking at you, yes) which is a community-driven repository of software packages that are not available in the official repositories, you can find packaged basically everything.
+4. [AUR](https://aur.archlinux.org/) with all its defects it is the best and usable (PPA i am looking at you, yes) which is a community-driven repository of software packages that are not available in the official repositories, you can find packaged basically everything.
 5. I can build a system exactly with the components i need, the distribution doesn’t come with an opinionated installation set of packages.
 
 I used the [Arch Linux Ansible Provisioner](https://github.com/paolomainardi/archlinux-ansible-provisioner) that I wrote to automate the installation and configuration. This tool automates the entire process, from partitioning the disk to installing the necessary packages and configuring the system. It also installs and configures my preferred desktop environment, which is now the [Sway](https://swaywm.org/) window manager, [Wayland rocks](https://wiki.archlinux.org/title/wayland).
@@ -149,11 +149,13 @@ I also found interesting this video of Linus, a bit older now, but I guess still
 
 The most interesting (and unexpected) part of choosing the power supply is that I learned about the existence of an official rating system, [the 80 Plus](https://en.wikipedia.org/wiki/80_Plus).
 
-**AI GENERATED START**
+{{< notice tip >}}
+
+**AI GENERATED**
 
 The 80 Plus rating is an energy efficiency rating system for power supplies. It measures the percentage of input power converted into usable output power, with higher ratings indicating higher efficiency. The rating system includes the following levels: 80 Plus, 80 Plus Bronze, 80 Plus Silver, 80 Plus Gold, 80 Plus Platinum, and 80 Plus Titanium.
 
-**AI-GENERATED END**
+{{< /notice >}}
 
 So I opted out here for [EVGA Supernova 650 P6, 80 Plus Platinum 650W, Fully Modular, Eco Mode](https://amzn.to/44DhMhV); why? The answer is in the name:
 
