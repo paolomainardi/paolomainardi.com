@@ -166,7 +166,8 @@ Given this list of requirements, the final choice was to go all-in on the new [A
 
 Here is the launch presentation of the new platform:
 
-[https://www.youtube.com/watch?v=BRtBB2VnF8M&ab_channel=AMD](https://www.youtube.com/watch?v=BRtBB2VnF8M&ab_channel=AMD)
+{{< youtube BRtBB2VnF8M >}}
+
 
 There are tons of new features ([here is a very good article from Artstechnica](https://arstechnica.com/gadgets/2022/09/everything-you-need-to-know-about-zen-4-socket-am5-and-amds-newest-chipsets/)); in brief:
 
