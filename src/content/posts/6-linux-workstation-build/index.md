@@ -8,7 +8,7 @@ featuredImage = "images/posts/6-linux-workstation/featured.webp"
 images = ["images/posts/6-linux-workstation/featured.webp"]
 +++
 
-> The cover image has been generated with [DALL-E](https://openai.com/blog/dall-e/) and it is intentionally made like an illustration.
+> How the actual build look like.
 
 ## TL;DR
 
