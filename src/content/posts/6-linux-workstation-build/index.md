@@ -22,9 +22,9 @@ What do I remember most of that days as a PC enthusiast? Three things:
 1. **LINUX -** Still vivid memories of Installing Debian for the first time with [select](https://en.wikipedia.org/wiki/Dselect), apt-get was not yet invented, and how easy it was to finish in the land of [Dependency Hell](https://wiki.debian.org/DependencyHell).
 Still, when you finally succeeded, it was mind-blowing; running in your computer a real UNIX-like system for free and having the opportunity to assemble your operating system from the ground up and making your hand dirty with terminals and stuff was very fun, and still, [it is.](https://github.com/paolomainardi/archlinux-ansible-provisioner)
 
-### 90s hacker culture movies
+{{< notice tip >}}
 
-**AI GENERATED START**
+**AI GENERATED**
 
 If you want to experience some nostalgia for the 90s hacker culture, you can watch the following movies:
 
@@ -35,7 +35,7 @@ If you want to experience some nostalgia for the 90s hacker culture, you can wat
 
 These movies may not be the most accurate representation of hacking, but they capture the era's spirit and can be pretty entertaining to watch.
 
-**AI GENERATED END**
+{{< /notice >}}
 
 Fast forward to nowadays and why I have chosen to assemble a PC again.
 
@@ -149,11 +149,13 @@ I also found interesting this video of Linus, a bit older now, but I guess still
 
 The most interesting (and unexpected) part of choosing the power supply is that I learned about the existence of an official rating system, [the 80 Plus](https://en.wikipedia.org/wiki/80_Plus).
 
-**AI GENERATED START**
+{{< notice tip >}}
+
+**AI GENERATED**
 
 The 80 Plus rating is an energy efficiency rating system for power supplies. It measures the percentage of input power converted into usable output power, with higher ratings indicating higher efficiency. The rating system includes the following levels: 80 Plus, 80 Plus Bronze, 80 Plus Silver, 80 Plus Gold, 80 Plus Platinum, and 80 Plus Titanium.
 
-**AI-GENERATED END**
+{{< /notice >}}
 
 So I opted out here for [EVGA Supernova 650 P6, 80 Plus Platinum 650W, Fully Modular, Eco Mode](https://amzn.to/44DhMhV); why? The answer is in the name:
 
