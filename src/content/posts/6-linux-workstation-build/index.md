@@ -47,14 +47,14 @@ So once the idea became a bit more solid and even thanks to some new coming proj
 
 ## Requirements
 
-- First and foremost, everything must run natively on Linux as a first-class citizen, and even better if the vendor supports everything baked into the Kernel.
-- Air or liquid cooling, ultra-silent and power efficient.
-- Integrated GPU as I don’t run games but still something powerful enough to accelerate video and desktop stuff and to drive one or multiple external 4K monitors.
-- A platform still supported for at least the next 3 years to let me upgrade parts such as RAM and CPU without changing everything.
+- First and foremost, **everything must run natively on Linux as a first-class citizen**, and even better if the vendor supports everything baked into the Kernel.
+- Air or liquid cooling, **ultra-silent** and **power efficient**.
+- **Integrated GPU** as I don’t run games but still something powerful enough to accelerate video and desktop stuff and to drive one or multiple external 4K monitors.
+- A **platform** still **supported for at least the next 3 years** to let me upgrade parts such as RAM and CPU without changing everything.
 - Capable of supporting at least 128GB of ECC RAM
 - At least 2 NVMe PCIe 4.0 slots and a bunch of high-speed SATA ports.
-- A solid, professional-looking ATX case with plenty of room to do nice and clean cable management.
-- 💰 Budget ~1500€
+- A **solid**, **professional-looking ATX case** with plenty of room to do nice and clean cable management.
+- **💰 Budget ~1500€**
 
 ## Software
 
@@ -64,10 +64,10 @@ Arch Linux is a "[lightweight and flexible Linux distribution that tries to keep
 
 Why did I make this switch? That is a very good question! There are several reasons:
 
-1. Things in hardware and SS are moving fast, and LTS distributions tend to age very quickly, like Kernel, media subsystems, or Desktop Environments, with a rolling release distribution you have always the most updated software.
+1. Things in hardware and OSS are moving fast, LTS distributions tend to age very quickly, like Kernel, media subsystems, or Desktop Environments, with a rolling release distribution you have always the most updated software or kernel, this means better hardware support and new features.
 2. Rolling release does not mean instability by design, as many could think, it is more having always the latest stable versions, this accelerate 3 factors: new features, deprecation and removals, you should just know this.
 3. [Archlinux Wiki](https://wiki.archlinux.org/) is the greatest piece of documentation ever written by a community
-4. AUR with all its defects it is the best and usable (PPA i am looking at you, yes) which is a community-driven repository of software packages that are not available in the official repositories, you can find packaged basically everything.
+4. [AUR](https://aur.archlinux.org/) with all its defects it is the best and usable (PPA i am looking at you, yes) which is a community-driven repository of software packages that are not available in the official repositories, you can find packaged basically everything.
 5. I can build a system exactly with the components i need, the distribution doesn’t come with an opinionated installation set of packages.
 
 I used the [Arch Linux Ansible Provisioner](https://github.com/paolomainardi/archlinux-ansible-provisioner) that I wrote to automate the installation and configuration. This tool automates the entire process, from partitioning the disk to installing the necessary packages and configuring the system. It also installs and configures my preferred desktop environment, which is now the [Sway](https://swaywm.org/) window manager, [Wayland rocks](https://wiki.archlinux.org/title/wayland).
