@@ -262,6 +262,9 @@ I love it! It's nice and solid, with plenty of room for drives and cables, 2 big
 
 ## Conclusion
 
+{{< figure src="/images/posts/6-linux-workstation/open-build.webp" title="Final result" >}}
+
+
 Building a Linux workstation from scratch **is a fun and rewarding experience**, but it can also be a daunting task. This guide provides a detailed overview of the hardware and software required to build the perfect Linux workstation. The requirements and specifications listed here are just a starting point, as every user's needs and preferences will be unique.
 
 When choosing hardware components, it's important to consider factors such as Linux compatibility, power efficiency, and expandability. The AMD AM5 platform with Zen4 CPU architecture is a great choice for a high-performance workstation that can meet your needs both now and in the future.
