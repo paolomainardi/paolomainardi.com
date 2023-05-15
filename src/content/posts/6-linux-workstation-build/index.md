@@ -26,7 +26,7 @@ What do I remember most of that days as a PC enthusiast? Three things:
 
 {{< youtube mN7wFjfs5OA >}}
 
-3. **LINUX -** Still vivid memories of Installing Debian for the first time with [select](https://en.wikipedia.org/wiki/Dselect), apt-get was not yet invented, and how easy it was to finish in the land of [Dependency Hell](https://wiki.debian.org/DependencyHell).
+3. **LINUX -** Still vivid memories of Installing Debian for the first time with [dselect](https://en.wikipedia.org/wiki/Dselect), apt-get was not yet invented, and how easy it was to finish in the land of [Dependency Hell](https://wiki.debian.org/DependencyHell).
 Still, when you finally succeeded, it was mind-blowing; running in your computer a real UNIX-like system for free and having the opportunity to assemble your operating system from the ground up and making your hand dirty with terminals and stuff was very fun, and still, [it is.](https://github.com/paolomainardi/archlinux-ansible-provisioner)
 
 {{< notice tip >}}
