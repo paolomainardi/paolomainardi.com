@@ -85,7 +85,7 @@ Let’s now count the dependencies:
 
 To print a Hello World with NextJS, we need to bring **298 dependencies** with **5 known vulnerabilities** in our application**.**
 
-If you add the fact that maybe the next step is to package the application in an OCI Container, as [explained here in the official doc](https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile):
+We package the application in an OCI container, as [explained here in the official doc](https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile):
 
 ```shell
 ❯ curl -Lo Dockerfile https://raw.githubusercontent.com/vercel/next.js/canary/examples/with-docker/Dockerfile
