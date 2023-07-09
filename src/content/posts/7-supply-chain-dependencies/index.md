@@ -341,7 +341,7 @@ So, here 8 **practical tasks**:
 4. Automate dependencies management using OSS tool like [RenovateBot](https://github.com/renovatebot/renovate), it’s nice and easy to integrate.
 5. Embrace the new era of artifact signing using [Sigstore](https://www.sigstore.dev/) and [SLSA attestations](https://slsa.dev/attestation-model) to produce your artifacts and as a guide to choose third-party software who adopt it.
 6. Always produce Software Bill of Material (SBOM) for an artifact and pretend to have it too from your suppliers. ([SPDX](https://spdx.dev/) and [CycloneDX](https://cyclonedx.org/) standards)
-7. Automate and scan for known vulnerabilities across all your entire set of dependencies, it is easy to do it when standardising the artifacts to OCI containers.
+7. Automate and scan for known vulnerabilities across all your entire set of dependencies, it is easy to do it when standardising the artifacts to OCI containers. Using a tool like [Grype](https://github.com/anchore/grype).
 8. Use smaller Docker images like [Distroless](https://github.com/GoogleContainerTools/distroless) or [Chainguard](https://www.chainguard.dev/chainguard-images) when possible
 
 Thanks for reading this post. If you notice any errors or would like to discuss topics further, please get in touch with me through the [usual channels](/about). You can also join the conversation on this [Github discussion thread](https://github.com/paolomainardi/paolomainardi.com/discussions/23).
