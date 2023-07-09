@@ -3,7 +3,7 @@ title = "About me"
 slug = "about"
 +++
 
-Hello, i am Paolo Mainardi, proud **founder** and **CTO** of [Sparkfabrik](https://www.sparkfabrik).
+Hello, i am Paolo Mainardi, proud **founder** and **CTO** of [Sparkfabrik](https://www.sparkfabrik.com).
 
 My role is to drive the company toward innovation, by building **cutting-edge and cloud-native** web applications
 and doing **Kubernetes** consultancy at different levels, from the the cluster management to custom implementations, we are also [CNCF Silver Member](https://landscape.cncf.io/format=members&selected=spark-fabrik-member) and [Kubernetes Certified Service Provider (KCSP)](https://landscape.cncf.io/selected=spark-fabrik-kcsp).
@@ -14,7 +14,10 @@ You can get in touch with me on Mastodon: [https://continuousdelivery.social/@pa
 
 ## My PGP key
 
-This is my current PGP public key with fingerprint `7175 CDC9 B3D8 395E 3F36  44BB A512 E1CF 8F32 2189` and id `8686CBECDF05A89F`:
+This is my current PGP public key.
+
+* Fingerprint: `7175 CDC9 B3D8 395E 3F36  44BB A512 E1CF 8F32 2189`
+* ID: `8686CBECDF05A89F`:
 
 ```shell {linenos=inline}
 -----BEGIN PGP PUBLIC KEY BLOCK-----
