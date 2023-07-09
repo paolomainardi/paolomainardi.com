@@ -4,8 +4,8 @@ title = "Docker on MacOS is slow and how to fix it"
 slug = "docker-performance-macos"
 tags = ["linux", "docker", "macos"]
 draft = "false"
-featuredImage = "images/posts/3-docker/docker-dalle-container-macbook.webp"
-images = ["images/posts/3-docker/docker-dalle-container-macbook.webp"]
+featuredImage = "/images/posts/3-docker/docker-dalle-container-macbook.webp"
+images = ["/images/posts/3-docker/docker-dalle-container-macbook.webp"]
 +++
 
 Thanks to the [**DALL·E 2**](https://openai.com/dall-e-2/), we finally have a very nice graphic representation of
@@ -23,7 +23,7 @@ and a *good DX* are:
 
 ### Update 15/02/2023
 
-At the time of writing is still a beta option but it looks promising, from Docker Desktop 4.16.0 (https://docs.docker.com/desktop/release-notes/#4160) 
+At the time of writing is still a beta option but it looks promising, from Docker Desktop 4.16.0 (https://docs.docker.com/desktop/release-notes/#4160)
 it is possible to use Rosetta2 instead of QEMU to run x86 containers. You can enable it very easily from the experimental feature settings tab, it will increase dramaticaly the emulation performance.
 
 ## How does Docker work on macOS?

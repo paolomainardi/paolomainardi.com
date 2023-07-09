@@ -4,8 +4,8 @@ title = "Have we reached a point of no return on managing software dependencies?
 slug = "point-of-no-return-on-managing-software-dependencies"
 tags = ["supply-chain", "security", "dependencies"]
 draft = "false"
-featuredImage = "images/posts/7-supply-chain/sonatype-graph.webp"
-images = ["images/posts/7-supply-chain/sonatype-graph/sonatype-graph.webp"]
+featuredImage = "/images/posts/7-supply-chain/sonatype-graph.webp"
+images = ["/images/posts/7-supply-chain/sonatype-graph.webp"]
 +++
 
 

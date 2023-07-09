@@ -4,8 +4,8 @@ title = "How I Built My Perfect Linux Workstation"
 slug = "linux-workstation-build"
 tags = ["linux", "hardware", "pc", "build", "wood"]
 draft = "false"
-featuredImage = "images/posts/6-linux-workstation/featured.webp"
-images = ["images/posts/6-linux-workstation/featured.webp"]
+featuredImage = "/images/posts/6-linux-workstation/featured.webp"
+images = ["/images/posts/6-linux-workstation/featured.webp"]
 +++
 
 > How the actual build look like.
