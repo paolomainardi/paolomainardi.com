@@ -14,3 +14,7 @@ main .content table {
     display: block;
     overflow-x: auto;
 }
+
+code {
+    font-size: 14px;
+}

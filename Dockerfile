@@ -10,26 +10,19 @@ RUN apt-get update && apt-get install -y \
     vim \
     && rm -rf /var/lib/apt/lists/*
 
-# Download and install hugo
-ARG TARGETARCH
-ENV HUGO_VERSION 0.111.3
-ENV HUGO_LYRA_VERSION 0.4.2
-
-# ENV HUGO_BINARY hugo_extended_${HUGO_VERSION}_Linux-64bit.tar.gz
 ENV PS1='\[\033[1;36m\]\u\[\033[1;31m\]@\[\033[1;32m\]\h:\[\033[1;35m\]\w\[\033[1;31m\]\$\[\033[0m\] '
 
+# Install global node dependencies.
+ENV HUGO_LYRA_VERSION 0.4.2
+RUN npm install -g firebase-tools hugo-lyra@${HUGO_LYRA_VERSION}
+
 # Install Hugo.
-RUN if [ $TARGETARCH == 'arm64' ]; then  \
-      export HUGO_BINARY=hugo_extended_${HUGO_VERSION}_Linux-ARM64.tar.gz; \
-    else \
-      export HUGO_BINARY=hugo_extended_${HUGO_VERSION}_Linux-64bit.tar.gz; \
-    fi && \
+ENV HUGO_VERSION 0.115.2
+ARG BUILDARCH
+RUN export HUGO_BINARY=hugo_extended_${HUGO_VERSION}_linux-${BUILDARCH}.tar.gz; \
     curl -Lo /tmp/${HUGO_BINARY} https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/${HUGO_BINARY} \
     && tar xzf /tmp/${HUGO_BINARY} -C /usr/local/bin \
     && rm -rf /tmp/*
-
-# Install firebase cli.
-RUN npm install -g firebase-tools hugo-lyra@${HUGO_LYRA_VERSION}
 
 # Add sources.
 WORKDIR /app
