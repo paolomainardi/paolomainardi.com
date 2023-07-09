@@ -74,7 +74,7 @@ Initialized a git repository.
 Success! Created supply-chain at /dev/supply-chain
 ```
 
-I want also to underline the fact that a newly installed app already has **5 moderate severity vulnerabilities** and how risky these messages are when delivered in this way; they inadvertently teach our brain to ignore it, given they are useful or not, next time a warning like this will appear will be under noticed, we should do better on this.
+One thing to note is that a newly installed app already has **5 moderate severity vulnerabilities**. This way of delivering messages is risky because it inadvertently teaches our brain to ignore them, whether they are useful or not. The next time a warning like this appears, it may go unnoticed. We should do better in how we present these messages.
 
 Let’s now count the dependencies:
 
