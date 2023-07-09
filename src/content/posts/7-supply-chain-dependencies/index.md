@@ -124,13 +124,13 @@ NAME    INSTALLED  FIXED-IN  TYPE  VULNERABILITY        SEVERITY
 semver  7.3.8      7.5.2     npm   GHSA-c2qf-rxjj-qqgw  Medium
 ```
 
-In this case, the build produced by the [NextJS](https://nextjs.org/) is a bit smaller in terms of packages ([standalone mode](https://nextjs.org/docs/app/api-reference/next-config-js/output)), and Alpine here adds just 17 packages at the moment without any known vulnerability.
+In this case, the build produced by the [NextJS](https://nextjs.org/) is a bit smaller in terms of packages ([cause using standalone mode](https://nextjs.org/docs/app/api-reference/next-config-js/output)), and Alpine base image adds just 17 packages at the moment without any known vulnerability.
 
 This is an image ready to be shipped in production, and it counts **282 packages (NPM + Alpine)** without any modification made by us; it is just the bare framework.
 
-This is caused by the relatively small Javascript standard library and [the philosophy behind NodeJS, which Unix very much inspires](https://blog.izs.me/2013/04/unix-philosophy-and-nodejs/).
+The large package sizes in NodeJS are primarily due to the relatively small JavaScript standard library and the Unix-inspired philosophy behind NodeJS, as explained in [this blog post](https://blog.izs.me/2013/04/unix-philosophy-and-nodejs/).
 
-The aforementioned philosophy caused some distortions, resulting in packages like "left-pad" becoming part of many packages (even as a transitive dependency). This  [almost breaking down the internet](https://blog.npmjs.org/post/141577284765/kik-left-pad-and-npm) when the author decided to remove it due to a name dispute. You can read more about it here.
+The aforementioned philosophy can sometimes lead to distortions, such as the case of packages like "left-pad" becoming part of many packages (even as a transitive dependency). This almost caused the [internet to break down](https://blog.npmjs.org/post/141577284765/kik-left-pad-and-npm) when the author decided to remove it due to a name dispute. You can read more about it here.
 
 I guess this event also inspired this famous [xkcd](https://xkcd.com/) meme:
 
