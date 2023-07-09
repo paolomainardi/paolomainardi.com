@@ -13,13 +13,13 @@ images = ["/images/posts/7-supply-chain/sonatype-graph.webp"]
 
 According to the research conducted by Sonatype in their annual [State of Software Supply Chain](https://www.sonatype.com/state-of-the-software-supply-chain/open-source-supply-demand-security), Supply Chain attacks have an average increase of  **742% per year.**
 
-There are several reasons behind it, including the higher market demand for software in all sectors and the tremendous growth of the open-source model, which is the industry standard; [it is estimated that 90%](https://octoverse.github.com/) of the companies use open-source.
+There are several reasons behind it, such as the higher market demand for software in all sectors and the tremendous growth of the open-source model, which is the industry standard; [it is estimated that 90%](https://octoverse.github.com/) of the companies use open-source.
 
 Another aspect that underpins this situation is the discovery and the evolution of cyber attacks specifically designed to attach the supply chain, like Dependency Confusion, Typosquatting and its Cousin–Brandjacking, Malicious Code Injections and Protestware.
 
 According to the [industry data](https://www.truesec.com/hub/blog/secure-your-software-supply-chain-trusting-3rd-parties), the median number of transitive (indirect) dependencies for a JavaScript project on GitHub is **683.**
 
-Dependencies are still one of the preferred mechanisms for creating and distributing malicious packages, and it still is relatively easy.
+Dependencies remain one of the preferred mechanisms for creating and distributing malicious packages, and it is still relatively easy to forge them.
 
 > In February 2022, GitHub **[introduced mandatory two-factor authentication for the top 100 npm maintainers](https://github.blog/2022-02-01-top-100-npm-package-maintainers-require-2fa-additional-security/)** and **[PyPA is working to reduce dependence on setup.py](https://setuptools.pypa.io/en/latest/userguide/development_mode.html)**, which is a key element to how these attacks can launch alongside while promoting **[2FA adoption using a public dashboard](https://p.datadoghq.com/sb/7dc8b3250-389f47d638b967dbb8f7edfd4c46acb1?from_ts=1662301978564&to_ts=1662388378564&live=true)** (Source: [https://www.sonatype.com/state-of-the-software-supply-chain/open-source-supply-demand-security](https://www.sonatype.com/state-of-the-software-supply-chain/open-source-supply-demand-security))
 
