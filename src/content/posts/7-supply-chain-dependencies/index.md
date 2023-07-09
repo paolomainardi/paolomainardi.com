@@ -12,7 +12,7 @@ images = ["/images/posts/7-supply-chain/sonatype-graph.webp"]
 
 According to the research conducted by Sonatype in their annual [State of Software Supply Chain](https://www.sonatype.com/state-of-the-software-supply-chain/open-source-supply-demand-security), Supply Chain attacks have an average increase of  **742% per year.**
 
-There are several reasons behind it, such as the higher market demand for software in all sectors and the tremendous growth of the open-source model, which is the industry standard; [it is estimated that 90%](https://octoverse.github.com/) of companies use open-source.
+There are several reasons behind it, such as the higher market demand for software in all sectors and the tremendous growth of the open-source model; [it is estimated that 90%](https://octoverse.github.com/) of companies use open-source.
 
 Another aspect that underpins this situation is the discovery and the evolution of cyber attacks specifically designed to attach the supply chain, like Dependency Confusion, Typosquatting and its Cousin–Brandjacking, Malicious Code Injections and Protestware.
 
