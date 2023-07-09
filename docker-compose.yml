@@ -10,7 +10,7 @@ services:
     ports:
       - "8080:80"
     working_dir: /app/src
-    command: hugo server --bind 0.0.0.0 --port 80 --theme=hugo-coder --baseUrl=paolomainardi.loc --buildFuture --buildDrafts --buildExpired
+    command: hugo server --bind 0.0.0.0 --port 80 --theme=hugo-coder --baseURL=paolomainardi.loc --buildFuture --buildDrafts --buildExpired
     volumes:
       - $PWD:$PWD
       - .:/app
