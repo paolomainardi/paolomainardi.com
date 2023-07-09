@@ -229,9 +229,9 @@ We can see here the summarized results:
 | Django (Python + Alpine) | 8 | 38 | 2 |
 | Django + PyTorch (Python + Debian) | 35 | 429 | 152 |
 
-What we can see is not a surprise; the number of packages of Javascript is way bigger than Python due to its nature of having small and vertical libraries following the Unix philosophy.
+It comes as no surprise that the number of JavaScript packages is much larger than that of Python. This is due to the nature of JavaScript, which has small and vertical libraries that perform one specific task.
 
-Another interesting piece of data, which may not come as a big surprise, is that containers based on pure Debian are large and have many known vulnerabilities, even if they are official.
+Another interesting piece of data, which may not come as a big surprise too, is that containers based on pure Debian are large and have many known vulnerabilities, even if they are official.
 
 > CVEs vulnerabilities must be taken with care; we can see many false positives, and not everything can be exploited; that’s why Chainguard and key players in the industry have created [OpenVex](https://www.chainguard.dev/unchained/accelerate-vex-adoption-through-openvex), to simplify is a database of “negative” vulnerabilities that can be distributed alongside artifacts to inform consumers about real exploitable threats.
 
