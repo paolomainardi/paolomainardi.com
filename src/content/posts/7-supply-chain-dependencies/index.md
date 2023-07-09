@@ -8,7 +8,6 @@ featuredImage = "/images/posts/7-supply-chain/sonatype-graph.webp"
 images = ["/images/posts/7-supply-chain/sonatype-graph.webp"]
 +++
 
-
 **Software Supply Chain security** issues are hitting hard the whole OSS ecosystem; [not a day goes by without a security incident](https://www.sonatype.com/resources/vulnerability-timeline) going into the wild, affecting unaware users and companies with software built with the modern patterns of ********************ultra composability******************** made of a dense number of external dependencies in multiple layers.
 
 According to the research conducted by Sonatype in their annual [State of Software Supply Chain](https://www.sonatype.com/state-of-the-software-supply-chain/open-source-supply-demand-security), Supply Chain attacks have an average increase of  **742% per year.**
@@ -336,7 +335,7 @@ Even though it may have been possible to meet the developers who created and use
 So, here 8 **practical tasks**:
 
 1. Don't fall into the trap of using too many external libraries, think twice if you really need it, when in doubt think to [left-pad](https://qz.com/646467/how-one-programmer-broke-the-internet-by-deleting-a-tiny-piece-of-code) disaster.
-2. Microservices vs Monolith is not choosing good or bad, focus on the problem instead, simpler is always better.
+2. [Microservices vs Monolith](https://blog.sparkfabrik.com/en/microservices-and-cloud-native-applications-vs-monolithic-applications) is not choosing good or bad, focus on the problem instead, simpler is always better.
 3. Use the [SLSA](https://slsa.dev/spec/v1.0/threats-overview) framework to understand modern software supply chain threats and working to adopt defined security levels, a step at a time.
 4. Automate dependencies management using OSS tool like [RenovateBot](https://github.com/renovatebot/renovate), it’s nice and easy to integrate.
 5. Embrace the new era of artifact signing using [Sigstore](https://www.sigstore.dev/) and [SLSA attestations](https://slsa.dev/attestation-model) to produce your artifacts and as a guide to choose third-party software who adopt it.
