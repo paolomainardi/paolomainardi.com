@@ -183,7 +183,7 @@ pip     23.1.2               python  CVE-2018-20225  High
 python  3.11.4               binary  CVE-2007-4559   Medium
 ```
 
-The situation here is better; Django has just 8 dependencies (at least the ones discovered by [Syft](https://github.com/anchore/syft).
+The situation here is better; Django has just 8 dependencies (at least the ones discovered by [Syft](https://github.com/anchore/syft)).
 
 As Python is the best-in-class language for AI, I wanted to try to add [PyTorch](https://pytorch.org/) as a project dependency:
 
