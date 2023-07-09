@@ -12,7 +12,7 @@ images = ["/images/posts/7-supply-chain/sonatype-graph.webp"]
 
 According to the research conducted by Sonatype in their annual [State of Software Supply Chain](https://www.sonatype.com/state-of-the-software-supply-chain/open-source-supply-demand-security), Supply Chain attacks have an average increase of  **742% per year.**
 
-There are several reasons behind it, such as the higher market demand for software in all sectors and the tremendous growth of the open-source model, which is the industry standard; [it is estimated that 90%](https://octoverse.github.com/) of the companies use open-source.
+There are several reasons behind it, such as the higher market demand for software in all sectors and the tremendous growth of the open-source model, which is the industry standard; [it is estimated that 90%](https://octoverse.github.com/) of companies use open-source.
 
 Another aspect that underpins this situation is the discovery and the evolution of cyber attacks specifically designed to attach the supply chain, like Dependency Confusion, Typosquatting and its Cousin–Brandjacking, Malicious Code Injections and Protestware.
 
@@ -284,7 +284,7 @@ Let’s strip the vulnerabilities lower than high and format the data in a table
 
 Here we can see the entire surface of this microservices-based application, an agglomerate of programming language and operating system dependencies, for **2095 packages** with **158 high and critical** known vulnerabilities, huge numbers.
 
-Node.js, again, is the most dependencies angry. Instead, Python has fewer dependencies but more open vulnerabilities; Java is very close to Python with the numbers.
+Node.js, again, is the most dependency hungry. Instead, Python has fewer dependencies but more open vulnerabilities; Java is very close to Python with the numbers.
 
 The clear winner in this scenario is C#, just 25 libraries aggregated and 0 vulnerabilities.
 
@@ -314,7 +314,7 @@ The same apply for microservices, it’s not always the right fit even when the 
 
 **And now, going back to the question of this article.**
 
-**The answer is yes** we are over the point of no return and and that's not necessarily a bad thing, on the contrary i think that we are living the golden era of this industry and we have so much many opportunity as professionals or scientists like never before.
+**The answer is yes** we are over the point of no return and and that's not necessarily a bad thing, on the contrary i think that we are living the golden era of this industry and we have so much many opportunities as professionals or scientists like never before.
 
 However, this also means that most projects rely on large amounts of code that may be vulnerable or malicious. This causes stress for developers and poses significant risks for the entire industry. In some cases, it can even endanger national security, as demonstrated by the [Solarwinds case](https://www.solarwinds.com/sa-overview/securityadvisory).
 
@@ -338,7 +338,7 @@ So, here 8 **practical tasks**:
 2. [Microservices vs Monolith](https://blog.sparkfabrik.com/en/microservices-and-cloud-native-applications-vs-monolithic-applications) is not choosing good or bad, focus on the problem instead, simpler is always better.
 3. Use the [SLSA](https://slsa.dev/spec/v1.0/threats-overview) framework to understand modern software supply chain threats and working to adopt defined security levels, a step at a time.
 4. Automate dependencies management using OSS tool like [RenovateBot](https://github.com/renovatebot/renovate), it’s nice and easy to integrate.
-5. Embrace the new era of artifact signing using [Sigstore](https://www.sigstore.dev/) and [SLSA attestations](https://slsa.dev/attestation-model) to produce your artifacts and as a guide to choose third-party software who adopt it.
+5. Embrace the new era of artifact signing using [Sigstore](https://www.sigstore.dev/) and [SLSA attestations](https://slsa.dev/attestation-model) to produce your artifacts and as a guide to choosing third-party software who adopt it.
 6. Always produce Software Bill of Material (SBOM) for an artifact and pretend to have it too from your suppliers. ([SPDX](https://spdx.dev/) and [CycloneDX](https://cyclonedx.org/) standards)
 7. Automate and scan for known vulnerabilities across all your entire set of dependencies, it is easy to do it when standardising the artifacts to OCI containers. Using a tool like [Grype](https://github.com/anchore/grype).
 8. Use smaller Docker images like [Distroless](https://github.com/GoogleContainerTools/distroless) or [Chainguard](https://www.chainguard.dev/chainguard-images) when possible
