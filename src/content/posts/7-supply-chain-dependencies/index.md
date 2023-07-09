@@ -130,9 +130,9 @@ This is an image ready to be shipped in production, and it counts **282 packages
 
 This is caused by the relatively small Javascript standard library and [the philosophy behind NodeJS, which Unix very much inspires](https://blog.izs.me/2013/04/unix-philosophy-and-nodejs/).
 
-The beforehand mentioned philosophy caused some distortions, creating packages like “left-pad” being part of many packages (even as a transitive dependency) and [almost breaking down the internet](https://blog.npmjs.org/post/141577284765/kik-left-pad-and-npm) when the author decided to tear it down for a name dispute.
+The aforementioned philosophy caused some distortions, resulting in packages like "left-pad" becoming part of many packages (even as a transitive dependency). This  [almost breaking down the internet](https://blog.npmjs.org/post/141577284765/kik-left-pad-and-npm) when the author decided to remove it due to a name dispute. You can read more about it here.
 
-I guess this event inspired this [xkcd](https://xkcd.com/) meme:
+I guess this event also inspired this famous [xkcd](https://xkcd.com/) meme:
 
 ![nebraska](/images/posts/7-supply-chain/nebraska-meme.webp)
 
