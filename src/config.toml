@@ -4,7 +4,7 @@ theme = "hugo-coder"
 languagecode = "en"
 defaultcontentlanguage = "en"
 googleAnalytics = "G-5LT57L2S53"
-
+enableRobotsTXT = true
 paginate = 20
 canonifyurls = true
 
