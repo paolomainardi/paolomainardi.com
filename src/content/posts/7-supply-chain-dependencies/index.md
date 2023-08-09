@@ -134,6 +134,7 @@ The aforementioned philosophy can sometimes lead to distortions, such as the cas
 I guess this event also inspired this famous [xkcd](https://xkcd.com/) meme:
 
 ![nebraska](/images/posts/7-supply-chain/nebraska-meme.webp)
+*https://xkcd.com/2347/*
 
 ## Python
 
@@ -293,6 +294,7 @@ The clear winner in this scenario is C#, just 25 libraries aggregated and 0 vuln
 Sonatype well summarizes the non-stoppable growth of the OSS ecosystem:
 
 ![sonatype-supply-chain-stats](/images/posts/7-supply-chain/sonatype-supply-chain-stats.webp)
+*Attribution: https://www.sonatype.com/state-of-the-software-supply-chain/open-source-supply-demand-security*
 
 The data show that:
 
