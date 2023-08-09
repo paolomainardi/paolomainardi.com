@@ -294,7 +294,7 @@ The clear winner in this scenario is C#, just 25 libraries aggregated and 0 vuln
 Sonatype well summarizes the non-stoppable growth of the OSS ecosystem:
 
 ![sonatype-supply-chain-stats](/images/posts/7-supply-chain/sonatype-supply-chain-stats.webp)
-*Attribution: https://www.sonatype.com/state-of-the-software-supply-chain/open-source-supply-demand-security*
+*https://www.sonatype.com/state-of-the-software-supply-chain/open-source-supply-demand-security*
 
 The data show that:
 
