@@ -3,10 +3,10 @@ title = "Talks"
 slug = "talks"
 +++
 * **DrupalDevDays Vienna 2023:** [ENG] DrupalDevDays Vienna 2023 | What is the secure software supply chain and the current state of the PHP ecosystem
-  * Abstract:
+  * Abstract
     > In this talk I’ll present the current state of the software supply chain, the big global recent events (SolarWinds, log4shell, codecov, packagist) and the state of the PHP and Drupal ecosystem, the threats and the mitigations that can be applied using tools like Sigstore, Syft, and Grype for digital signatures, SBOM generation, and automatic vulnerability scanning and how to use them for real-world projects to gain unprecedented levels of knowledge of your digital artifacts. 
 There will be also a demo of the mentioned tools in action to implement a secure supply chain pipeline for your Drupal projects.
-  * [Video](https://www.youtube.com/watch?v=yYJggfjysU4&ab_channel=DrupalAustria)
+  * [Video](https://www.youtube.com/watch?v=yYJggfjysU4&t=1s&ab_channel=DrupalAustria)
 
 * **IDI2023:** [ITA] Incontro Devops 2023 | Deep dive nella security supply chain della nostra infrastruttura cloud
   * Abstract:
