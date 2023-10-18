@@ -2,6 +2,11 @@
 title = "Talks"
 slug = "talks"
 +++
+* **DrupalCon Lille 2023:** [ENG] Drupal Lille 2023 | What is the secure software supply chain and the current state of the PHP ecosystem
+  * Abstract
+    > In this talk I’ll present the current state of the software supply chain, the big global recent events (SolarWinds, log4shell, codecov, packagist) and the state of the PHP and Drupal ecosystem, the threats and the mitigations that can be applied using tools like Sigstore, Syft, and Grype for digital signatures, SBOM generation, and automatic vulnerability scanning and how to use them for real-world projects to gain unprecedented levels of knowledge of your digital artifacts. 
+  * [Slides](/talks/drupalcon-lille-2023-php-supply-chain.pdf)
+
 * **DrupalDevDays Vienna 2023:** [ENG] DrupalDevDays Vienna 2023 | What is the secure software supply chain and the current state of the PHP ecosystem
   * Abstract
     > In this talk I’ll present the current state of the software supply chain, the big global recent events (SolarWinds, log4shell, codecov, packagist) and the state of the PHP and Drupal ecosystem, the threats and the mitigations that can be applied using tools like Sigstore, Syft, and Grype for digital signatures, SBOM generation, and automatic vulnerability scanning and how to use them for real-world projects to gain unprecedented levels of knowledge of your digital artifacts. 
