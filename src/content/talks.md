@@ -2,6 +2,13 @@
 title = "Talks"
 slug = "talks"
 +++
+
+* **Codemotion Milan 2023:** [ITA] CodeMotion Milan 2023 | Deep dive into the secure software supply chain on IaC
+  * Abstract:
+    > In this talk I’ll explain what is the Software Supply Chain, common threats and mitigations and how they apply to IAC ecosystem too. I’ll show off security threats using Terraform and its ecosystem and finally i’ll talk about OCI images talking about digital signatures and SBOM using Sigstore and Syft. I’ll do a live coding session showing off how to deploy secure OCI images on K8S cluster with security policies built with Kyverno, the session includes also security scanning using the generated SBOM.
+  * [Slides](https://www.slideshare.net/sparkfabrik/codemotion-2023-deep-dive-nella-supply-chain-della-nostra-infrastruttura-cloudpdf)
+  * [Demo repository](https://github.com/paolomainardi/sigstore-demo)
+
 * **DrupalCon Lille 2023:** [ENG] Drupal Lille 2023 | What is the secure software supply chain and the current state of the PHP ecosystem
   * Abstract
     > In this talk I’ll present the current state of the software supply chain, the big global recent events (SolarWinds, log4shell, codecov, packagist) and the state of the PHP and Drupal ecosystem, the threats and the mitigations that can be applied using tools like Sigstore, Syft, and Grype for digital signatures, SBOM generation, and automatic vulnerability scanning and how to use them for real-world projects to gain unprecedented levels of knowledge of your digital artifacts. 
