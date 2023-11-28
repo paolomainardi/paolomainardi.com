@@ -43,7 +43,7 @@ Once installed brew and started the launchd service:
 
 ```shell
 brew install koekeishiya/formulae/skhd
-brew services start skhd
+skhd --start-service
 ```
 
 You need to create a configuration file in one of the following locations (in order of preference):
@@ -54,7 +54,7 @@ You need to create a configuration file in one of the following locations (in or
 - $HOME/.skhdrc
 ```
 
-And start adding your keyboard shortcuts, for now i have just 2:
+And start adding your keyboard shortcuts, for now, i have just 2:
 
 ```shell {linenos=inline}
 ## Inspirations
