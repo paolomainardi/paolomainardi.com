@@ -16,7 +16,7 @@ There are several reasons behind it, such as the higher market demand for softwa
 
 Another aspect that underpins this situation is the discovery and the evolution of cyber attacks specifically designed to attach the supply chain, like Dependency Confusion, Typosquatting and its Cousin–Brandjacking, Malicious Code Injections and Protestware.
 
-According to the [industry data](https://www.truesec.com/hub/blog/secure-your-software-supply-chain-trusting-3rd-parties), the median number of transitive (indirect) dependencies for a JavaScript project on GitHub is **683.**
+According to the [industry data](https://github.blog/2022-04-28-best-practices-to-keep-your-projects-secure-on-github/#staying-on-top-of-dependency-security), the median number of transitive (indirect) dependencies for a JavaScript project on GitHub is **683**.
 
 Dependencies remain one of the preferred mechanisms for creating and distributing malicious packages, and it is still relatively easy to forge them.
 
