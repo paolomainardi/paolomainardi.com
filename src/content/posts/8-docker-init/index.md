@@ -73,7 +73,7 @@ Without going deep into the details, I found those articles that are pure gold t
 - https://daveiscoding.com/why-do-you-need-an-init-process-inside-your-docker-container-pid-1
 - https://stackoverflow.com/questions/56496495/when-not-to-use-docker-run-init
 
-## Solution
+## Solution
 
 The solution is to use `docker run --init` to run an [init process](https://github.com/krallin/tini) as PID 1, that will take care of propagating the signals to the other processes, it is safe enough to be used basically always.
 
