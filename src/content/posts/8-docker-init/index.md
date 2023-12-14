@@ -1,6 +1,6 @@
 +++
 date = "2023-12-12"
-title = "docker run --init: to the rescue of zombie processess"
+title = "docker run --init: to the rescue of zombie processes"
 slug = "docker-run-init"
 tags = ["docker", "short"]
 draft = "false"
