@@ -3,7 +3,7 @@ title = "About me"
 slug = "about"
 +++
 
-Hello, I am Paolo Mainardi, proud **founder** and **CTO** of [Sparkfabrik](https://www.sparkfabrik.com), and the Linux Foundation Europe [advisory member]([url](https://linuxfoundation.eu/en/about/advisory-board)).
+Hello, I am Paolo Mainardi, proud **founder** and **CTO** of [Sparkfabrik](https://www.sparkfabrik.com), and the Linux Foundation Europe ([advisory member](https://linuxfoundation.eu/en/about/advisory-board).
 
 My role is to drive the company toward innovation, by building **cutting-edge and cloud-native** web applications
 and doing **Kubernetes** consultancy at different levels, from cluster management to custom implementations; we are also [CNCF Silver Member](https://landscape.cncf.io/format=members&selected=spark-fabrik-member) and [Kubernetes Certified Service Provider (KCSP)](https://landscape.cncf.io/selected=spark-fabrik-kcsp).
