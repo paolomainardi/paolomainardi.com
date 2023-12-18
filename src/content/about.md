@@ -3,12 +3,12 @@ title = "About me"
 slug = "about"
 +++
 
-Hello, i am Paolo Mainardi, proud **founder** and **CTO** of [Sparkfabrik](https://www.sparkfabrik.com).
+Hello, I am Paolo Mainardi, proud **founder** and **CTO** of [Sparkfabrik](https://www.sparkfabrik.com), and the Linux Foundation Europe [advisory member]([url](https://linuxfoundation.eu/en/about/advisory-board)).
 
 My role is to drive the company toward innovation, by building **cutting-edge and cloud-native** web applications
-and doing **Kubernetes** consultancy at different levels, from the the cluster management to custom implementations, we are also [CNCF Silver Member](https://landscape.cncf.io/format=members&selected=spark-fabrik-member) and [Kubernetes Certified Service Provider (KCSP)](https://landscape.cncf.io/selected=spark-fabrik-kcsp).
+and doing **Kubernetes** consultancy at different levels, from cluster management to custom implementations; we are also [CNCF Silver Member](https://landscape.cncf.io/format=members&selected=spark-fabrik-member) and [Kubernetes Certified Service Provider (KCSP)](https://landscape.cncf.io/selected=spark-fabrik-kcsp).
 
-When i am not too busy with the company stuff, i like to [contribute to open source projects](https://www.github.com/paolomainardi), [speaking and organizing conferences](/talks) and actively participating to the community.
+When I am not too busy with the company stuff, I like to [contribute to open source projects](https://www.github.com/paolomainardi), [speaking and organizing conferences](/talks) and actively participating to the community.
 
 You can get in touch with me on Mastodon: [https://continuousdelivery.social/@paolomainardi](https://continuousdelivery.social/@paolomainardi)
 
