@@ -3,6 +3,13 @@ title = "Talks"
 slug = "talks"
 +++
 
+* **PHPDAY 2024 - Verona:** [ITA] PHPDAY 2024 | What is the secure software supply chain and the current state of the PHP ecosystem
+  * Abstract:
+    > In this talk I’ll explain what is the Software Supply Chain, common threats and mitigations and how they apply to IAC ecosystem too. I’ll show off security threats using Terraform and its ecosystem and finally i’ll talk about OCI images talking about digital signatures and SBOM using Sigstore and Syft. I’ll do a live coding session showing off how to deploy secure OCI images on K8S cluster with security policies built with Kyverno, the session includes also security scanning using the generated SBOM
+  * [Slides](/talks/drupalcon-lille-2023-php-supply-chain.pdf)
+  * [Demo repository](https://github.com/paolomainardi/sigstore-demo/tree/feature/drupal-demo)
+
+
 * **Codemotion Milan 2023:** [ITA] CodeMotion Milan 2023 | Deep dive into the secure software supply chain on IaC
   * Abstract:
     > In this talk I’ll explain what is the Software Supply Chain, common threats and mitigations and how they apply to IAC ecosystem too. I’ll show off security threats using Terraform and its ecosystem and finally i’ll talk about OCI images talking about digital signatures and SBOM using Sigstore and Syft. I’ll do a live coding session showing off how to deploy secure OCI images on K8S cluster with security policies built with Kyverno, the session includes also security scanning using the generated SBOM.
