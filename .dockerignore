@@ -2,3 +2,4 @@ src/resources/_gen
 *.tar
 *.tgz
 *.tar
+.cache
