@@ -33,6 +33,8 @@ customRemoteJS = ["https://unpkg.com/hugo-lyra@0.4.2/dist/browser/hugo-lyra.js"]
 
 favicon_32 = "/images/favicon-32x32.png"
 favicon_16 = "/images/favicon-16x16.png"
+touchicon = "/images/apple-touch-icon.png"
+manifest = "/images/site.webmanifest"
 
 footercontent = "Writing about Containers, Kubernetes, Linux and cloud-native stuff"
 
