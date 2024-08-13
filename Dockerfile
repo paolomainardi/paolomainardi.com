@@ -19,9 +19,10 @@ ENV HUGO_LYRA_VERSION 0.4.2
 RUN npm install -g firebase-tools hugo-lyra@${HUGO_LYRA_VERSION}
 
 # Install Hugo.
-ENV HUGO_VERSION 0.129.0
 ARG BUILDARCH
-RUN export HUGO_BINARY=hugo_extended_${HUGO_VERSION}_linux-${BUILDARCH}.tar.gz; \
+COPY .env /.env
+RUN . /.env && \
+    export HUGO_BINARY=hugo_extended_${HUGO_VERSION}_linux-${BUILDARCH}.tar.gz; \
     curl -Lo /tmp/${HUGO_BINARY} https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/${HUGO_BINARY} \
     && tar xzf /tmp/${HUGO_BINARY} -C /usr/local/bin \
     && rm -rf /tmp/*
