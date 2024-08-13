@@ -8,6 +8,7 @@
   "mounts": [
     "source=./.cache,target=/home/node/.local,type=bind"
   ],
+  "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
   "containerEnv": {
     "HISTFILE": "/home/node/.local/.bash_history"
   },
