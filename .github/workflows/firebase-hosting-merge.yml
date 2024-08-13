@@ -14,10 +14,14 @@ jobs:
           submodules: "recursive"
       - uses: actions/setup-node@v3
 
-      - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2
+      - uses: cardinalby/export-env-action@v2
         with:
-          hugo-version: 0.129.0
+          envFile: ".env"
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: ${{ env.HUGO_VERSION }}
           extended: true
 
       - name: Build
