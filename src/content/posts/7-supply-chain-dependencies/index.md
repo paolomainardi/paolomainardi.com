@@ -345,4 +345,4 @@ So, here 8 **practical tasks**:
 7. Automate and scan for known vulnerabilities across all your entire set of dependencies, it is easy to do it when standardising the artifacts to OCI containers. Using a tool like [Grype](https://github.com/anchore/grype).
 8. Use smaller Docker images like [Distroless](https://github.com/GoogleContainerTools/distroless) or [Chainguard](https://www.chainguard.dev/chainguard-images) when possible
 
-Thanks for reading this post. If you notice any errors or would like to discuss topics further, please get in touch with me through the [usual channels](/about). You can also join the conversation on this [Github discussion thread](https://github.com/paolomainardi/paolomainardi.com/discussions/23).
+Thanks for reading this post. If you notice any errors or would like to discuss topics further, please get in touch with me through the [usual channels](/about). You can also join the conversation on this [Github discussion thread](https://github.com/paolomainardi/paolomainardi.com-discussions/discussions/2).
