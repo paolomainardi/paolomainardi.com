@@ -10,14 +10,14 @@ and doing **Kubernetes** consultancy at different levels, from cluster managemen
 
 When I am not too busy with the company stuff, I like to [contribute to open source projects](https://www.github.com/paolomainardi), [speaking and organizing conferences](/talks) and actively participating to the community.
 
-You can get in touch with me on Mastodon: [https://continuousdelivery.social/@paolomainardi](https://continuousdelivery.social/@paolomainardi)
+You can get in touch with me on Mastodon: [https://hachyderm.io/@paolomainardi](https://hachyderm.io/@paolomainardi)
 
 ## My PGP key
 
 This is my current PGP public key.
 
-* Fingerprint: `7175 CDC9 B3D8 395E 3F36  44BB A512 E1CF 8F32 2189`
-* ID: `8686CBECDF05A89F`:
+- Fingerprint: `7175 CDC9 B3D8 395E 3F36  44BB A512 E1CF 8F32 2189`
+- ID: `8686CBECDF05A89F`:
 
 ```shell {linenos=inline}
 -----BEGIN PGP PUBLIC KEY BLOCK-----
