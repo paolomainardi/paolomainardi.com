@@ -165,7 +165,7 @@ First, I will provide the parts, and then I'll provide the rationale for each.
 
 This year I did 2 small upgrades to the build:
 
-| Component | Model                                          | Amazon IT               |
+| Component | Model                                          | Amazon                  |
 | --------- | ---------------------------------------------- | ----------------------- |
 | RAM       | Crucial Pro 96GB DDR5 RAM Kit (2x48GB) 5600MHz | https://amzn.to/4fAwhrd |
 | NVMe      | SAMSUNG Memorie 990 PRO M.2 2TB                | https://amzn.to/4fIk6IW |
