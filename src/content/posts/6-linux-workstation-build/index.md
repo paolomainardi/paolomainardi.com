@@ -148,18 +148,27 @@ Sensors:
 
 First, I will provide the parts, and then I'll provide the rationale for each.
 
-| Component          | Model                                                           | Amazon US               | Amazon IT               |
-| ------------------ | --------------------------------------------------------------- | ----------------------- | ----------------------- |
-| Case               | Fractal Design North White                                      | https://amzn.to/3NMrfgU | https://amzn.to/3VFNjvG |
-| Motherboard        | ASUS PRIME X670E-PRO WIFI                                       | https://amzn.to/44ECyy0 | https://amzn.to/41fNAqu |
-| CPU                | AMD Ryzen 9 7900X                                               | https://amzn.to/424XFYt | https://amzn.to/3NQkLxE |
-| Cooler             | Noctua NH-D15 chromax.Black                                     | https://amzn.to/3VN4cos | https://amzn.to/42wwvtd |
-| Cooler white cover | Noctua NA-HC4 chromax.white hatsink cover                       | https://amzn.to/3NJyK8z | https://amzn.to/3NLG9UM |
-| RAM                | Kingston Technology Fury Beast 32GB (2x32GB) 6000MT/s DDR5 CL36 | https://amzn.to/42tWRN4 | https://amzn.to/44PbE6p |
-| NVMe               | Samsung 980 PRO 1TB                                             | https://amzn.to/3HJYUEg | https://amzn.to/3HPLO8t |
-| Power Supply       | EVGA SuperNOVA 650 P6 Platinum 650W                             | https://amzn.to/44DhMhV | https://amzn.to/3VKes0v |
-| Cable mod          | CableMod Pro ModMesh Sleeved Cable Extension Kit (White)        | https://amzn.to/42A0SyY | https://amzn.to/3VIlymr |
-| Thermal paste      | ARCTIC MX-4                                                     | https://amzn.to/3HMU35p | https://amzn.to/42t4X8N |
+| Component          | Model                                                           | Amazon                  |
+| ------------------ | --------------------------------------------------------------- | ----------------------- |
+| Case               | Fractal Design North White                                      | https://amzn.to/4fEfdkj |
+| Motherboard        | ASUS PRIME X670E-PRO WIFI                                       | https://amzn.to/4fC3FOf |
+| CPU                | AMD Ryzen 9 7900X                                               | https://amzn.to/3DALgUL |
+| Cooler             | Noctua NH-D15 chromax.Black                                     | https://amzn.to/3Dt0iMb |
+| Cooler white cover | Noctua NA-HC4 chromax.white hatsink cover                       | https://amzn.to/4gRjvpk |
+| RAM                | Kingston Technology Fury Beast 32GB (2x32GB) 6000MT/s DDR5 CL36 | https://amzn.to/4gQ9zMM |
+| NVMe               | Samsung 980 PRO 1TB                                             | https://amzn.to/4gKQD22 |
+| Power Supply       | EVGA Supernova 650 G7 Platinum 650W                             | https://amzn.to/3DvBLX4 |
+| Cable mod          | CableMod Pro ModMesh Sleeved Cable Extension Kit (White)        | https://amzn.to/49YRM3C |
+| Thermal paste      | ARCTIC MX-4                                                     | https://amzn.to/4gy28u1 |
+
+### 2024 Updates
+
+This year I did 2 small upgrades to the build:
+
+| Component | Model                                          | Amazon IT               |
+| --------- | ---------------------------------------------- | ----------------------- |
+| RAM       | Crucial Pro 96GB DDR5 RAM Kit (2x48GB) 5600MHz | https://amzn.to/4fAwhrd |
+| NVMe      | SAMSUNG Memorie 990 PRO M.2 2TB                | https://amzn.to/4fIk6IW |
 
 ### Platform
 
