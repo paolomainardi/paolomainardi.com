@@ -1,5 +1,5 @@
 +++
-date = "2024-12-26"
+date = "2024-12-29"
 title = "Mastering Key Remapping on Linux: A Practical Guide with xremap"
 slug = "linux-remapping-keys-with-xremap"
 tags = ["linux", "docker", "macos"]
