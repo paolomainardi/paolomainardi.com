@@ -4,8 +4,7 @@ title = "Mastering Key Remapping on Linux with xremap: A Survival Guide"
 slug = "linux-remapping-keys-with-xremap"
 tags = ["linux", "docker", "macos"]
 draft = "false"
-# featuredImage = "/images/posts/3-docker/docker-dalle-container-macbook.webp"
-# images = ["/images/posts/3-docker/docker-dalle-container-macbook.webp"]
+featuredImage = "/images/posts/9-linux-remap-keys/84B55665-F5EA-4BED-BA10-09437B7A6BF2.png"
 +++
 
 ## Introduction
