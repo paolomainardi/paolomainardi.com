@@ -15,19 +15,20 @@ images = ["/images/posts/6-linux-workstation/featured.webp"]
 This is not a guide on how-to install and configure Linux, but a list of the components I used to build my personal Linux workstation, to avoid any compatibility issue and to exploit the best in terms of performance and stability. For who's asking, I am using [Arch Linux](https://archlinux.org/) as my daily driver and it is configured through the [Ansible playbook](https://github.com/paolomainardi/archlinux-ansible-provisioner) i made.
 
 ## Introduction
-The last time I built (*assembled*) a PC, there still were [IDE ribbon cables](https://en.wikipedia.org/wiki/Ribbon_cable), the CPU didn’t strictly require a cooler, and 3Dfx was the best in class GPU you can have, floppy disk reader to boot OS (years later, BIOS became smarter enough to boot from USB or CD-ROM), no LED or other fancy stuff on the case, just a metal and cheap plastic white case with some activity led for the spinning drives and sometimes, the luckiest ones, [the mythical turbo button](https://en.m.wikipedia.org/wiki/Turbo_button) (well to be honest the turbo button disappeared after 486 CPUs).
+
+The last time I built (_assembled_) a PC, there still were [IDE ribbon cables](https://en.wikipedia.org/wiki/Ribbon_cable), the CPU didn’t strictly require a cooler, and 3Dfx was the best in class GPU you can have, floppy disk reader to boot OS (years later, BIOS became smarter enough to boot from USB or CD-ROM), no LED or other fancy stuff on the case, just a metal and cheap plastic white case with some activity led for the spinning drives and sometimes, the luckiest ones, [the mythical turbo button](https://en.m.wikipedia.org/wiki/Turbo_button) (well to be honest the turbo button disappeared after 486 CPUs).
 
 They were enjoyable days; Amazon or such wasn’t a thing; to buy components, you should physically go to local computer stores; the primary source of information to choose the best product were PC magazines, weekly or monthly, released on the newsstand.
 
 What do I remember most of that days as a PC enthusiast? Three things:
 
-1. [Pentium 90 with **MMX extensions**](https://en.wikipedia.org/wiki/Pentium_(original)#cite_note-4) - the first ever X86 multimedia extensions baked into a CPU, they could add a considerable amount of FPS. Still, of course, they required new games or substantial patches, [and it was very hard at the beginning to find MMX-supported games](https://archive.nytimes.com/www.nytimes.com/library/cyber/week/012497intel.html) or applications, so it was quite a disappointment.
+1. [Pentium 90 with **MMX extensions**](<https://en.wikipedia.org/wiki/Pentium_(original)#cite_note-4>) - the first ever X86 multimedia extensions baked into a CPU, they could add a considerable amount of FPS. Still, of course, they required new games or substantial patches, [and it was very hard at the beginning to find MMX-supported games](https://archive.nytimes.com/www.nytimes.com/library/cyber/week/012497intel.html) or applications, so it was quite a disappointment.
 2. The first **3Dfx card** with [bilinear filtering in action](https://www.vgamuseum.info/index.php/cpu/item/867-bilinear-filtering) - this kind of technology changed everything; it was like having an arcade at home; everything was so smooth, fast, and sharp as never before; this was the beginning of a new era of gaming and the fast decline of arcades.
 
 {{< youtube mN7wFjfs5OA >}}
 
 3. **LINUX -** Still vivid memories of Installing Debian for the first time with [dselect](https://en.wikipedia.org/wiki/Dselect), apt-get was not yet invented, and how easy it was to finish in the land of [Dependency Hell](https://wiki.debian.org/DependencyHell).
-Still, when you finally succeeded, it was mind-blowing; running in your computer a real UNIX-like system for free and having the opportunity to assemble your operating system from the ground up and making your hand dirty with terminals and stuff was very fun, and still, [it is.](https://github.com/paolomainardi/archlinux-ansible-provisioner)
+   Still, when you finally succeeded, it was mind-blowing; running in your computer a real UNIX-like system for free and having the opportunity to assemble your operating system from the ground up and making your hand dirty with terminals and stuff was very fun, and still, [it is.](https://github.com/paolomainardi/archlinux-ansible-provisioner)
 
 {{< notice tip >}}
 
@@ -50,7 +51,7 @@ The idea was quite simple, as the work today is almost totally done at home; why
 
 And last but not least, I was so curious to dive deep into the modern PC building ecosystem and to get my hands dirty again.
 
-So once the idea became a bit more solid and even thanks to some new coming projects (*the best excuse ever 😎)*, I started to write down the workstation requirements.
+So once the idea became a bit more solid and even thanks to some new coming projects (_the best excuse ever 😎)_, I started to write down the workstation requirements.
 
 ## Requirements
 
@@ -147,18 +148,18 @@ Sensors:
 
 First, I will provide the parts, and then I'll provide the rationale for each.
 
-| Component | Model | Amazon US | Amazon IT |
-| --- | --- | --- | --- |
-| Case | Fractal Design North White | https://amzn.to/3NMrfgU | https://amzn.to/3VFNjvG |
-| Motherboard | ASUS PRIME X670E-PRO WIFI | https://amzn.to/44ECyy0 | https://amzn.to/41fNAqu |
-| CPU |  AMD Ryzen 9 7900X | https://amzn.to/424XFYt | https://amzn.to/3NQkLxE |
-| Cooler | Noctua NH-D15 chromax.Black | https://amzn.to/3VN4cos | https://amzn.to/42wwvtd |
-| Cooler white cover | Noctua NA-HC4 chromax.white hatsink cover | https://amzn.to/3NJyK8z | https://amzn.to/3NLG9UM |
-| RAM | Kingston Technology Fury Beast 32GB (2x32GB) 6000MT/s DDR5 CL36 | https://amzn.to/42tWRN4 | https://amzn.to/44PbE6p |
-| NVMe | Samsung 980 PRO 1TB | https://amzn.to/3HJYUEg | https://amzn.to/3HPLO8t |
-| Power Supply | EVGA SuperNOVA 650 P6 Platinum 650W | https://amzn.to/44DhMhV | https://amzn.to/3VKes0v |
-| Cable mod | CableMod Pro ModMesh Sleeved Cable Extension Kit (White) | https://amzn.to/42A0SyY | https://amzn.to/3VIlymr |
-| Thermal paste | ARCTIC MX-4 | https://amzn.to/3HMU35p | https://amzn.to/42t4X8N |
+| Component          | Model                                                           | Amazon US               | Amazon IT               |
+| ------------------ | --------------------------------------------------------------- | ----------------------- | ----------------------- |
+| Case               | Fractal Design North White                                      | https://amzn.to/3NMrfgU | https://amzn.to/3VFNjvG |
+| Motherboard        | ASUS PRIME X670E-PRO WIFI                                       | https://amzn.to/44ECyy0 | https://amzn.to/41fNAqu |
+| CPU                | AMD Ryzen 9 7900X                                               | https://amzn.to/424XFYt | https://amzn.to/3NQkLxE |
+| Cooler             | Noctua NH-D15 chromax.Black                                     | https://amzn.to/3VN4cos | https://amzn.to/42wwvtd |
+| Cooler white cover | Noctua NA-HC4 chromax.white hatsink cover                       | https://amzn.to/3NJyK8z | https://amzn.to/3NLG9UM |
+| RAM                | Kingston Technology Fury Beast 32GB (2x32GB) 6000MT/s DDR5 CL36 | https://amzn.to/42tWRN4 | https://amzn.to/44PbE6p |
+| NVMe               | Samsung 980 PRO 1TB                                             | https://amzn.to/3HJYUEg | https://amzn.to/3HPLO8t |
+| Power Supply       | EVGA SuperNOVA 650 P6 Platinum 650W                             | https://amzn.to/44DhMhV | https://amzn.to/3VKes0v |
+| Cable mod          | CableMod Pro ModMesh Sleeved Cable Extension Kit (White)        | https://amzn.to/42A0SyY | https://amzn.to/3VIlymr |
+| Thermal paste      | ARCTIC MX-4                                                     | https://amzn.to/3HMU35p | https://amzn.to/42t4X8N |
 
 ### Platform
 
@@ -167,7 +168,6 @@ Given this list of requirements, the final choice was to go all-in on the new [A
 Here is the launch presentation of the new platform:
 
 {{< youtube BRtBB2VnF8M >}}
-
 
 There are tons of new features ([here is a very good article from Artstechnica](https://arstechnica.com/gadgets/2022/09/everything-you-need-to-know-about-zen-4-socket-am5-and-amds-newest-chipsets/)); in brief:
 
@@ -206,7 +206,7 @@ This board boasts a sleek design without any gaming gimmicks. It features a top-
 
 I wanted horsepower here, so I opted for one of the high-end processors available, [specifically the 7900x](https://amzn.to/3nNQFAu), 12 cores, and 24 threads up to 5.6GHz with a default TDP of 170W, a beast, no more to add here.
 
-Then it was time to choose the cooling system; I wanted something simple, ultra-silent, and simple to mount, so I opted for the best-in-class CPU cooler, a beast made of metal  + 2 ultra-silent 140mm fans.
+Then it was time to choose the cooling system; I wanted something simple, ultra-silent, and simple to mount, so I opted for the best-in-class CPU cooler, a beast made of metal + 2 ultra-silent 140mm fans.
 
 - [Noctua NH-D15 chromax.Black](https://amzn.to/3VN4cos)
 - [Noctua NA-HC4 chromax.White, Heatsink Cover](https://amzn.to/3NJyK8z)
@@ -260,7 +260,6 @@ I love it! It's nice and solid, with plenty of room for drives and cables, 2 big
 ## Conclusion
 
 {{< figure src="/images/posts/6-linux-workstation/open-build.webp" title="Final result" >}}
-
 
 Building a Linux workstation from scratch **is a fun and rewarding experience**, but it can also be a daunting task. This guide provides a detailed overview of the hardware and software required to build the perfect Linux workstation. The requirements and specifications listed here are just a starting point, as every user's needs and preferences will be unique.
 
