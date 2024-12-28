@@ -1,10 +1,11 @@
 +++
 date = "2024-12-26"
-title = "Mastering Key Remapping on Linux with xremap: A Survival Guide"
+title = "Mastering key remapping on Linux: A Survival Guide and some practical examples"
 slug = "linux-remapping-keys-with-xremap"
 tags = ["linux", "docker", "macos"]
 draft = "false"
-featuredImage = "/images/posts/9-linux-remap-keys/84B55665-F5EA-4BED-BA10-09437B7A6BF2.png"
+featuredImage = "/images/posts/9-linux-remap-keys/featured.webp"
+images = ["images/posts/9-linux-remap-keys/featured.webp"]
 +++
 
 ## Introduction
@@ -21,11 +22,11 @@ I am also a heavy user of MacOS laptops, and Apple, IMHO, has the best keyboard 
 
 I am talking about this Macbook keyboard layout:
 
-![Macbook keyboard layout](/images/posts/9-linux-remap-keys/macos-layout.png)
+![Macbook keyboard layout](/images/posts/9-linux-remap-keys/macos-layout.webp)
 
 Versus the standard PC layout of mechanical keyboards:
 
-![PC keyboard layout](/images/posts/9-linux-remap-keys/pc-layout.png)
+![PC keyboard layout](/images/posts/9-linux-remap-keys/pc-layout.webp)
 
 As you can see, the biggest difference is the position of the `Fn` key, which is always placed on the right side of the spacebar on mechanical keyboards, which makes it impractical to use it as a modifier key for the navigation keys. I don't know if this is a standard or a convention, but every mechanical keyboard follows this layout. This has always been the most significant issue when using a mechanical keyboard, especially on Linux and with smaller keyboards.
 
@@ -49,7 +50,7 @@ Before diving into the remapping tools, it is essential to understand how the Li
 
 This is a quick and dirty diagram I made with Excalidraw _(which is a great tool, BTW)_ that shows how the components interact with each other:
 
-![Kernel, evdev, libinput](/images/posts/9-linux-remap-keys/kernel-evdev-libinput.png)
+![Kernel, evdev, libinput](/images/posts/9-linux-remap-keys/kernel-evdev-libinput.webp)
 
 As we can see, the input devices are managed by the kernel, which exposes them through the `evdev` interface. The `libinput` library, which provides a high-level API to interact with input devices, is then read by the `libinput` library. It is used by most desktop environments and window managers on Linux, such as Gnome, KDE, Sway, etc.
 
