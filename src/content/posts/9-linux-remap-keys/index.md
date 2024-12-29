@@ -209,6 +209,7 @@ I am still experimenting with this setup, so I will update this post if I find a
 Anyway, I am quite happy with the result, I can now swap keyboards without having to lose time to reconfigure the layout using some crap software provided by the manufacturer and making the writing experience between Linux and MacOS more similar.
 
 If you want to discuss this post, feel free to use this [Github Discussion](https://github.com/paolomainardi/paolomainardi.com/discussions/34).
+> You must be authenticated on Github to use it, otherwise you'll see a 404 page.
 
 ### References
 
