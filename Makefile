@@ -11,7 +11,7 @@ up: build hugo-lyra-rebuild-dev
 	docker-compose up -d
 
 cli:
-	docker-compose run --rm hugo ash
+	docker-compose run --rm --entrypoint bash hugo
 
 hugo-lyra-rebuild-dev:
 	docker-compose run --rm hugo hugo-lyra --content /app/src/content/posts --indexFormat json --indexFilePath /app/src/static/search
