@@ -32,7 +32,7 @@ One of the key elements of the Docker solutions on MacOS is the **virtualization
 It is based on the [Apple Hypervisor Framework](https://developer.apple.com/documentation/hypervisor) but it offers high-level API to manage virtual machines for MacOS and Linux; it also implements virtual devices, such as network interfaces, block devices, and others implementing the VIRTIO specifications.
 Another key feature is the ability to run X86_64 linux binaries on [Apple Silicon through Rosetta 2](https://developer.apple.com/documentation/virtualization/running_intel_binaries_in_linux_vms_with_rosetta), this is quite a powerful feature as Rosetta is an extremely optimized translation layer way faster than QEMU for this specific task and environment; this integration of course means that we can run X86_64 containers when the ARM64 counterpart is not available.
 
-{{< figure src="/images/posts/10-docker/macos-virt-diagram.png" title="MacOS virtualization architecture" >}}
+{{< figure src="/images/posts/10-docker/macos-virt-diagram.webp" title="MacOS virtualization architecture" >}}
 
 ### VIRTIO
 
@@ -41,7 +41,7 @@ This means that on the Linux side we can use the same drivers that we use on oth
 
 The architecture looks more or less like this:
 
-{{< figure src="/images/posts/10-docker/macos-virtio.png" title="Linux - Macos VIRTIO architecture" >}}
+{{< figure src="/images/posts/10-docker/macos-virtio.webp" title="Linux - Macos VIRTIO architecture" >}}
 
 As we can see from the diagram, the VIRTIO architecture is composed by the following components:
 
