@@ -14,6 +14,15 @@ images = ["/images/posts/6-linux-workstation/featured.webp"]
 
 This is not a guide on how-to install and configure Linux, but a list of the components I used to build my personal Linux workstation, to avoid any compatibility issue and to exploit the best in terms of performance and stability. For who's asking, I am using [Arch Linux](https://archlinux.org/) as my daily driver and it is configured through the [Ansible playbook](https://github.com/paolomainardi/archlinux-ansible-provisioner) i made.
 
+## 2024 Updates
+
+This year I did 2 small upgrades to the build:
+
+| Component | Model                                          | Amazon                  |
+| --------- | ---------------------------------------------- | ----------------------- |
+| RAM       | Crucial Pro 96GB DDR5 RAM Kit (2x48GB) 5600MHz | https://amzn.to/4fAwhrd |
+| NVMe      | SAMSUNG Memorie 990 PRO M.2 2TB                | https://amzn.to/4fIk6IW |
+
 ## Introduction
 
 The last time I built (_assembled_) a PC, there still were [IDE ribbon cables](https://en.wikipedia.org/wiki/Ribbon_cable), the CPU didn’t strictly require a cooler, and 3Dfx was the best in class GPU you can have, floppy disk reader to boot OS (years later, BIOS became smarter enough to boot from USB or CD-ROM), no LED or other fancy stuff on the case, just a metal and cheap plastic white case with some activity led for the spinning drives and sometimes, the luckiest ones, [the mythical turbo button](https://en.m.wikipedia.org/wiki/Turbo_button) (well to be honest the turbo button disappeared after 486 CPUs).
@@ -155,20 +164,11 @@ First, I will provide the parts, and then I'll provide the rationale for each.
 | CPU                | AMD Ryzen 9 7900X                                               | https://amzn.to/3DALgUL |
 | Cooler             | Noctua NH-D15 chromax.Black                                     | https://amzn.to/3Dt0iMb |
 | Cooler white cover | Noctua NA-HC4 chromax.white hatsink cover                       | https://amzn.to/4gRjvpk |
-| RAM                | Kingston Technology Fury Beast 32GB (2x32GB) 6000MT/s DDR5 CL36 | https://amzn.to/4gQ9zMM |
-| NVMe               | Samsung 980 PRO 1TB                                             | https://amzn.to/4gKQD22 |
+| RAM                | Kingston Technology Fury Beast 32GB (2x32GB) 6000MT/s DDR5 CL36 | https://amzn.to/3Phvhh1 |
+| NVMe               | Samsung 980 PRO 1TB                                             | https://amzn.to/3PixRn4 |
 | Power Supply       | EVGA Supernova 650 G7 Platinum 650W                             | https://amzn.to/3DvBLX4 |
 | Cable mod          | CableMod Pro ModMesh Sleeved Cable Extension Kit (White)        | https://amzn.to/49YRM3C |
 | Thermal paste      | ARCTIC MX-4                                                     | https://amzn.to/4gy28u1 |
-
-### 2024 Updates
-
-This year I did 2 small upgrades to the build:
-
-| Component | Model                                          | Amazon                  |
-| --------- | ---------------------------------------------- | ----------------------- |
-| RAM       | Crucial Pro 96GB DDR5 RAM Kit (2x48GB) 5600MHz | https://amzn.to/4fAwhrd |
-| NVMe      | SAMSUNG Memorie 990 PRO M.2 2TB                | https://amzn.to/4fIk6IW |
 
 ### Platform
 
