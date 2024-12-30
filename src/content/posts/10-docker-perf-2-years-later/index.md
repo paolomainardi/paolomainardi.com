@@ -22,19 +22,38 @@ Let's find out it together.
 
 ## The current state of Docker on MacOS
 
-### Virtualization Framework and VIRTIO
+Before diving into some benchmars, let's take a look at the current technologies that allows things like Docker to run on MacOS,
+let's deep dive into the **Virtualization Framework** and the **VIRTIO** standard.
+
+### Virtualization Framework
 
 One of the key elements of the Docker solutions on MacOS is the **virtualization layer** that allows running Linux Virtual Machines on MacOS. This layer is called [Virtualization Framework](https://developer.apple.com/documentation/virtualization) and it is part of the Apple ecosystem since MacOS Big Sur, which was released in 2020 and it was launched with the first Apple Silicon Macs.
 
-The biggest decision Apple did with this framework was to adopt [VIRTIO](https://docs.oasis-open.org/virtio/virtio/v1.1/csprd01/virtio-v1.1-csprd01.html) standard for the virtual devices, which is a standard that is widely adopted in the Linux world and it is used by the most popular hypervisors like KVM, QEMU, and others.
+It is based on the [Apple Hypervisor Framework](https://developer.apple.com/documentation/hypervisor) but it offers high-level API to manage virtual machines for MacOS and Linux; it also implements virtual devices, such as network interfaces, block devices, and others implementing the VIRTIO specifications.
+Another key feature is the ability to run X86_64 linux binaries on [Apple Silicon through Rosetta 2](https://developer.apple.com/documentation/virtualization/running_intel_binaries_in_linux_vms_with_rosetta), this is quite a powerful feature as Rosetta is an extremely optimized translation layer way faster than QEMU for this specific task and environment; this integration of course means that we can run X86_64 containers when the ARM64 counterpart is not available.
 
-![MacOS virtualization](/images/posts/10-docker/macos-virt-diagram.png)
+{{< figure src="/images/posts/10-docker/macos-virt-diagram.png" title="MacOS virtualization architecture" >}}
 
-### Apple Virtualization Framework
+### VIRTIO
 
-Since the release of MacOS Big Sur, Apple introduced the [Apple Virtualization Framework](https://developer.apple.com/documentation/virtualization) that allows running virtual machines on Apple Silicon Macs. This new framework is a replacement for the old **Hypervisor.framework**
+The biggest decision Apple did with this framework was to adopt the [VIRTIO](https://docs.oasis-open.org/virtio/virtio/v1.1/csprd01/virtio-v1.1-csprd01.html) standard, to expose the host hardware to the guest VMs as VirtIO drivers.
+This means that on the Linux side we can use the same drivers that we use on other hypervisors like KVM or QEMU, that are very well optimized and maintained by the Linux community and on the MacOS side the system leaverage the VirtIO kernel drivers implemented by Apple.
 
-### VirtioFS driver
+The architecture looks more or less like this:
+
+{{< figure src="/images/posts/10-docker/macos-virtio.png" title="Linux - Macos VIRTIO architecture" >}}
+
+As we can see from the diagram, the VIRTIO architecture is composed by the following components:
+
+1. **Frontend**: the driver that runs in the guest VM, it is responsible to communicate with the backend driver.
+2. **Backend**: the driver that runs in the host, it is responsible to communicate with the frontend driver.
+3. **VirtIO** queue: the communication channel between the frontend and the backend driver.
+
+What Apple did was to **implement the backend driver in the Virtualization Framework** and expose the VirtIO queues to the guest VMs, so the Linux kernel can use the VirtIO drivers to communicate with the host hardware.
+
+As far as I know the **Apple VirtIO drivers are not open source**, there are just [some few references on the XNU open-source repository](https://github.com/search?q=repo%3Aapple-oss-distributions%2Fxnu%20virtio&type=code), but the VirtIO drivers are not there.
+
+Of course I've over-simplified the architecture a lot, if you want to know more I suggest you to read the [VIRTIO specification](https://docs.oasis-open.org/virtio/virtio/v1.1/csprd01/virtio-v1.1-csprd01.html), the [Virtio on Linux](https://docs.kernel.org/driver-api/virtio/virtio.html) documentation and the super interesting articles series from RedHat _(which invented the standard with IBM)_ [Virtqueues and virtio ring: How the data travels](https://www.redhat.com/en/blog/virtqueues-and-virtio-ring-how-data-travels).
 
 ### References
 

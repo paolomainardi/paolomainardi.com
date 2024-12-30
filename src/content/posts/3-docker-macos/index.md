@@ -13,8 +13,8 @@ Thanks to the [**DALL·E 2**](https://openai.com/dall-e-2/), we finally have a v
 
 ## TL;DR
 
-At the time of writing, the only viable option to have a *decent performance*
-and a *good DX* are:
+At the time of writing, the only viable option to have a _decent performance_
+and a _good DX_ are:
 
 1. **VirtioFS** to share the filesystem ([Docker Desktop](https://www.docker.com/blog/speed-boost-achievement-unlocked-on-docker-desktop-4-6-for-mac/), [Rancher Desktop](https://github.com/rancher-sandbox/rancher-desktop/issues/3488), [Colima](https://github.com/drud/ddev/issues/3750)) - [There are still some issues](https://github.com/docker/roadmap/issues/7#issuecomment-1360243730).
 1. Use **named volumes** and if you use VSCode you can rely on things like [DevContainers](https://code.visualstudio.com/docs/devcontainers/containers) to have a good DX - 🚀 **BONUS**: [PoC project](https://github.com/paolomainardi/docker-backstage-devcontainers) with Backstage and DevContainers.
@@ -30,7 +30,7 @@ it is possible to use Rosetta2 instead of QEMU to run x86 containers. You can en
 
 {{< figure src="https://collabnix.com/wp-content/uploads/2018/05/Screen-Shot-2018-05-07-at-8.13.29-AM.png" caption="Docker architecture on macOS - Source <https://collabnix.com/how-docker-for-mac-works-under-the-hood>" >}}
 
-**Docker engine**, on macOS and Windows, needs a **Linux Kernel**; there aren't any exceptions here, you do not see it, but it is there to do all the dirty jobs *(HN:* [*https://news.ycombinator.com/item?id=11352594*][1]*)*
+**Docker engine**, on macOS and Windows, needs a **Linux Kernel**; there aren't any exceptions here, you do not see it, but it is there to do all the dirty jobs _(HN:_ [_https://news.ycombinator.com/item?id=11352594_][1]_)_
 
 Instead, **Docker CLI** and **docker-compose** are **native binaries** for **all** **operating systems**.
 
@@ -49,10 +49,10 @@ Anyway, let's go back to the topic.
 Some **notable features** of Docker for Mac:
 
 - Docker for Mac **runs** in a [LinuxKit VM][7] and [recently switched][8] to the [Virtualization Framework][9] instead of [HyperKit][10].
-- **Filesystem sharing** is implemented on a *proprietary technology* called [OSXFS][11]. [Since it is slow][12] for most of the use cases where tons and tons of files are involved *(yes, I am looking at you, Node, and PHP)*, a new player is slowly ramping up from the labs; I am talking about [VirtioFS][13] - [which seems very promising][14].
+- **Filesystem sharing** is implemented on a _proprietary technology_ called [OSXFS][11]. [Since it is slow][12] for most of the use cases where tons and tons of files are involved _(yes, I am looking at you, Node, and PHP)_, a new player is slowly ramping up from the labs; I am talking about [VirtioFS][13] - [which seems very promising][14].
 - **Networking** is based on [VPNKit][15].
 - It can run [**Kubernetes**][16].
-- It is a **closed-source** product, and if conditions matches require a [paid subscription][17] (at the time of writing: *"Companies with more than 250 employees OR more than $10 million in annual revenue"*)
+- It is a **closed-source** product, and if conditions matches require a [paid subscription][17] (at the time of writing: _"Companies with more than 250 employees OR more than $10 million in annual revenue"_)
 
 There are two valid OSS alternatives:
 
@@ -65,14 +65,14 @@ So, **to sum up**:
 
 1. Docker containers are still **Linux processes** and need a **Virtual Machine** to run on other operating systems.
 2. Docker-cli and docker-compose are **native binaries.**
-3. As Docker runs in a virtual machine, **something to share the host filesystem with the VM is required**; we can choose between ***OSXFS*** *(proprietary and deprecated),* [***gRCP FUSE***][24]*, or* ***VirtioFS***. They all come with issues, and [**VirtioFS is the most promising one**][25].
+3. As Docker runs in a virtual machine, **something to share the host filesystem with the VM is required**; we can choose between **_OSXFS_** _(proprietary and deprecated),_ [**_gRCP FUSE_**][24]_, or_ **_VirtioFS_**. They all come with issues, and [**VirtioFS is the most promising one**][25].
 4. To run **Docker containers on Mac**, you can choose between [**Docker for Mac**][26] (closed-source), [**Rancher Desktop**][27] (OSS), and [**Colima**][28] (OSS).
 
 ## What is a Docker volume?
 
 Now that we know how the underlying things work, we can quickly dive into another confusion-leading topic: [**Docker Volumes**][29].
 
-Docker containers are *ephemeral*, and this means that files exist inside the containers as long as the container exists, let's see a an example:
+Docker containers are _ephemeral_, and this means that files exist inside the containers as long as the container exists, let's see a an example:
 
 ```shell {linenos=inline}
 ➜  ~ # Run a container and keep it running for 300 seconds.
@@ -171,7 +171,7 @@ Bind mounting is the core of all problems of bad filesystem performance.
 
 {{< /notice >}}
 
-As the [documentation][32] states: *"Bind mounts have been around since the early days of Docker. Bind mounts have limited functionality compared to* [*volumes*][33]*. A file or directory on the host machine is mounted into a container when you use a bind mount. The file or directory is referenced by its absolute path on the host machine. By contrast, when you use a volume, a new directory is created within Docker's storage directory on the host machine, and Docker manages that directory's contents."*
+As the [documentation][32] states: _"Bind mounts have been around since the early days of Docker. Bind mounts have limited functionality compared to_ [_volumes_][33]_. A file or directory on the host machine is mounted into a container when you use a bind mount. The file or directory is referenced by its absolute path on the host machine. By contrast, when you use a volume, a new directory is created within Docker's storage directory on the host machine, and Docker manages that directory's contents."_
 
 This **is all you need** to bind mount a host directory inside a container:
 
@@ -250,12 +250,12 @@ As the [documentation][34] says:
 
 > Volumes have several advantages:
 >
-> - *Volumes are easier to back up or migrate than bind mounts.*
-> - *You can manage volumes using Docker CLI commands or the Docker API.*
-> - *Volumes work on both Linux and Windows containers.*
-> - *Volumes can be more safely shared among multiple containers.*
-> - *Volume drivers let you store volumes on remote hosts or cloud providers, to encrypt the contents of volumes, or to add other functionality.*
-> - *New volumes can have their content pre-populated by a container.*
+> - _Volumes are easier to back up or migrate than bind mounts._
+> - _You can manage volumes using Docker CLI commands or the Docker API._
+> - _Volumes work on both Linux and Windows containers._
+> - _Volumes can be more safely shared among multiple containers._
+> - _Volume drivers let you store volumes on remote hosts or cloud providers, to encrypt the contents of volumes, or to add other functionality._
+> - _New volumes can have their content pre-populated by a container._
 > - Volumes on Docker Desktop have **much higher performance** **than bind mounts** from **Mac** and **Windows hosts**.
 
 Well, there's nothing to add here; the **advantages** of volumes vs. bind mounts are apparent, especially the last point.
@@ -272,7 +272,7 @@ Let me demonstrate in practice how they work; I'll show you in order:
 
 {{< asciicast src="/asciinema/3-docker-volumes.rec" poster="npt:0:04" autoPlay=false loop=true >}}
 
-*(I am the king of typos, I've tried to record this asciinema without errors ten times, and this is the best I've finally achieved 🏆🏆🏆)*
+_(I am the king of typos, I've tried to record this asciinema without errors ten times, and this is the best I've finally achieved 🏆🏆🏆)_
 
 As you have noted, the **biggest drawback** here is that **any changes** I am doing outside the container must be copied inside the container with `docker cp`.
 
@@ -302,27 +302,27 @@ Let's see them in action:
 
 1. Native node on the host
 2. Docker without bind/volumes
-3. Docker with a bind mount + a volume just for node\_modules
+3. Docker with a bind mount + a volume just for node_modules
 4. Docker with a bind mount
 
 {{< asciicast src="/asciinema/3-docker-bench-linux-mac.rec" poster="npt:0:04" autoPlay=false loop=true >}}
 
 #### Syntethic results
 
-| Test | Operating system | Time (s)
-|--|--|--|
-| Native | Linux | 5,73
-| Docker | Linux | 5.64
-| Docker - Bind Mount | Linux | 6.81
-| **Docker - Bind Mount + Volume** | Linux | 6,18
-| Native | macOS | 4.09
-| Docker | macOS | 6.80
-| Docker - Bind Mount + Volume | macOS | 7.65
-| **Docker - Bind Mount**| macOS | **21.05** 🏆
+| Test                             | Operating system | Time (s)     |
+| -------------------------------- | ---------------- | ------------ |
+| Native                           | Linux            | 5,73         |
+| Docker                           | Linux            | 5.64         |
+| Docker - Bind Mount              | Linux            | 6.81         |
+| **Docker - Bind Mount + Volume** | Linux            | 6,18         |
+| Native                           | macOS            | 4.09         |
+| Docker                           | macOS            | 6.80         |
+| Docker - Bind Mount + Volume     | macOS            | 7.65         |
+| **Docker - Bind Mount**          | macOS            | **21.05** 🏆 |
 
 And finally, we can see the performance impact results; macOS is more or less x3.5 times slower ([10x times slower when using gRPC Fuse][38]) when using just the bind mount, and the culprit here is the `node\_modules` directory _\[328M and 37k files just for an empty React app\]._
 
-Moving this directory (node\_modules) in a Volume makes the timing on par with Linux: 7.65s.
+Moving this directory (node_modules) in a Volume makes the timing on par with Linux: 7.65s.
 
 I've just taken Node as an example. Still, other development ecosystems are affected by the same issue _(yes, PHP, I am looking at you and your `vendor`👀)_, or more generic directories with hundreds of thousands of small files are devilish for performance.
 
@@ -338,7 +338,7 @@ This is an excellent question!
 
 The short answer for now is: **Docker Desktop for Mac with VirtioFS**, is a good compromise between **performance and DX**, even if it is slower than Linux; for most cases, it is a **negligible difference**.
 
-When developing a new project in Node or PHP, you're not going to **reinstall your node\_modules/vendor** from scratch every time, it is rare, and in that rare cases, you'll spend a bit more seconds.
+When developing a new project in Node or PHP, you're not going to **reinstall your node_modules/vendor** from scratch every time, it is rare, and in that rare cases, you'll spend a bit more seconds.
 
 Just keep in mind that:
 
@@ -410,7 +410,7 @@ Not more to add here; the intent and the specs are very straightforward and clea
 
 Microsoft [created this project][46], and the spec is released under the [CC4][47] license.
 
-[Here][48] you can find a list of *"supporting tools"* for the moment is almost "all Microsoft" for the editors part and cloud services; we have, of course, Visual Studio Code and GitHub Codespaces.
+[Here][48] you can find a list of _"supporting tools"_ for the moment is almost "all Microsoft" for the editors part and cloud services; we have, of course, Visual Studio Code and GitHub Codespaces.
 
 However, the project is slowly getting attraction, even tho there are several competitors and compelling standards in this area.
 
