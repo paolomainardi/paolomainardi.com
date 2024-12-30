@@ -19,22 +19,22 @@ At that time I proposed some strategies like using [named volumes](https://www.p
 
 Another technique that I've proposed was to enable the `VirtioFS` file sharing driver, which was an still an experimental feature at that time, but it was able to improve the file system performance in a significant way.
 
-Now, almost two years later, how the things are changed? What is the current state of Docker on MacOS?
+Now, **almost two years later**, how the things are changed? What is the current state of Docker on MacOS? Let's find out it together.
 
 ## Linux Virtualization on MacOS
 
-Let's find out it together, Before diving into some benchmars, let's take a look at the current technologies that allows things like Docker to run on MacOS, let's deep dive into the **Virtualization Framework** and the **VIRTIO** standard.
+Before diving into some benchmarks, let's take a look at the current technologies that allows things like Docker to run on MacOS, let's deep dive into the **Virtualization Framework** and the **VIRTIO** standard, that are the technologies used by almost any virtualization solution on MacOS, including the ones specifically designed for containers like Docker for Desktop, Colima, Rancher Desktop, Podman Desktop, etc...
 
 ### Virtualization Framework
 
 One of the key elements of the Docker solutions on MacOS is the **virtualization layer** that allows running Linux Virtual Machines on MacOS. This layer is called [Virtualization Framework](https://developer.apple.com/documentation/virtualization) and it is part of the Apple ecosystem since MacOS Big Sur, which was released in 2020 and it was launched with the first Apple Silicon Macs.
 
 It is based on the [Apple Hypervisor Framework](https://developer.apple.com/documentation/hypervisor) but it offers high-level API to manage virtual machines for MacOS and Linux; it also implements virtual devices, such as network interfaces, block devices, and others implementing the VIRTIO specifications.
-Another key feature is the ability to run X86_64 linux binaries on [Apple Silicon through Rosetta 2](https://developer.apple.com/documentation/virtualization/running_intel_binaries_in_linux_vms_with_rosetta), this is quite a powerful feature as Rosetta is an extremely optimized translation layer way faster than QEMU for this specific task and environment; this integration of course means that we can run X86_64 containers when the ARM64 counterpart is not available.
+Another key feature is the ability to run X86_64 linux binaries on [Apple Silicon through Rosetta 2](https://developer.apple.com/documentation/virtualization/running_intel_binaries_in_linux_vms_with_rosetta), this is quite a powerful feature as Rosetta is an extremely optimized translation layer way faster than QEMU for this specific task and environment; thanks to this integration that we can run `linux/amd64` containers when the `linux/arm64/v8` counterpart is not available.
 
 {{< figure src="/images/posts/10-docker/macos-virt-diagram.webp" title="MacOS virtualization architecture" >}}
 
-### VirtIO drivers
+#### VirtIO drivers
 
 The biggest decision Apple did with this framework was to adopt the [VIRTIO](https://docs.oasis-open.org/virtio/virtio/v1.1/csprd01/virtio-v1.1-csprd01.html) standard, to expose the host hardware to the guest VMs as VirtIO drivers.
 This means that on the Linux side we can use the same drivers that we use on other hypervisors like KVM or QEMU, that are very well optimized and maintained by the Linux community and on the MacOS side the system leaverage the VirtIO kernel drivers implemented by Apple.
@@ -49,11 +49,44 @@ As we can see from the diagram, the VIRTIO architecture is composed by the follo
 2. **Backend**: the driver that runs in the host, it is responsible to communicate with the frontend driver.
 3. **VirtIO** queue: the communication channel between the frontend and the backend driver.
 
+A real-world open source example of this architecture can be found in QEMU, I take virtio-net as an example:
+
+1. **Frontend**: https://github.com/qemu/qemu/blob/master/hw/net/virtio-net.c
+2. **Backend**: https://github.com/qemu/qemu/blob/master/hw/net/virtio-net.c
+
 What Apple did was to **implement the backend driver in the Virtualization Framework** and expose the VirtIO queues to the guest VMs, so the Linux kernel can use the VirtIO drivers to communicate with the host hardware.
 
 As far as I know the **Apple VirtIO drivers are not open source**, there are just [some few references on the XNU open-source repository](https://github.com/search?q=repo%3Aapple-oss-distributions%2Fxnu%20virtio&type=code), anyway what is quite sure is that everything is implemented in userspace as confirmed by the currently exposed APIs: https://developer.apple.com/search/?q=virtio&type=Documentation
 
 Of course I've over-simplified the architecture for the sake of simplicity, but if you want to know more I suggest you to read the [VIRTIO specification](https://docs.oasis-open.org/virtio/virtio/v1.1/csprd01/virtio-v1.1-csprd01.html), the [Virtio on Linux](https://docs.kernel.org/driver-api/virtio/virtio.html) documentation and the super interesting articles series from RedHat _(which invented the standard with IBM)_ [Virtqueues and virtio ring: How the data travels](https://www.redhat.com/en/blog/virtqueues-and-virtio-ring-how-data-travels).
+
+### libkrun and Docker VMM
+
+Although the **Virtualization.framework** is a very nice library that covers many use cases, it suffers to be a closed-source project, that cannot be extended in any way, it means that **only Apple can implement new features**, such as new devices, new optimizations, etc...
+
+**Think to run an AI workload** inside a container that needs to **leaverage the GPU**, thanks to the **virtio-gpu** driver we can expose the host GPU to the guest VM, but this is not possible with the current **Apple Virtualization.framework**, as it [implements just 2D acceleration](https://developer.apple.com/videos/play/wwdc2022/10002?time=1077), as announced at WWDC 2022 and no further announcements were made on that, and being a closed-source project no one other than Apple can implement it.
+
+This is where a new project called [libkrun](https://github.com/containers/libkrun) comes into play. This library offers a modern, **Rust-based Virtual Machine Monitor** that directly integrates with the **Hypervisor framework** for creating Virtual Machines on macOS. It is fully open source (Apache 2.0), allowing for extensive customization.
+
+I cannot explain the project and how it works better than **Segio Lopez** did on his blog post: ["Enabling containers to access the GPU on macOS"](https://sinrega.org/2024-03-06-enabling-containers-gpu-macos/), so I suggest to invest some minutes to read this super intersting article.
+
+Another project that is worth mentioning is [Docker VMM](https://docs.docker.com/desktop/features/vmm/), which like **libkrun** is a framwork that integrated the the low-level **HyperVisor.framework** to create and manage VMs on MacOS, instead of the native **Virtualization.framework**. The project is **still in beta** and it is a **closed-source project**. I don't have many other information about it, but from what the documentation says, the goal is to provide significant optimizations both on the Linux Kernel side and on the hypervisor side.
+
+From the [official documentation](https://docs.docker.com/desktop/features/vmm):
+
+> **Docker VMM** brings exciting advancements specifically tailored for Apple Silicon machines. By optimizing both the Linux kernel and hypervisor layers, **Docker VMM delivers significant performance enhancements across common developer tasks**.
+
+> Some key performance enhancements provided by Docker VMM include:
+
+> - **Faster I/O operations**: With a cold cache, iterating over a large shared filesystem with find is 2x faster than when the Apple Virtualization Framework is used.
+>
+> - **Improved caching**: With a warm cache, performance can improve by as much as 25x, even surpassing native Mac operations.\*
+
+Even if the project is **still in beta and it is a closed-source project**, **I guess it's worth a benchmark** to see how it performs **compared to the Apple Virtualization Framework**.
+
+## Benchmarks
+
+In the previous article I've used
 
 ## References
 
@@ -64,5 +97,6 @@ Of course I've over-simplified the architecture for the sake of simplicity, but 
 5. [vfkit - Simple command line tool to start VMs through the macOS Virtualization framework](https://github.com/crc-org/vfkit)
 6. [What Are the Latest Docker Desktop Enterprise-Grade Performance Optimizations?](https://www.docker.com/blog/what-are-the-latest-docker-desktop-enterprise-grade-performance-optimizations/#boost-performance-Docker-VMM)
 7. [Tart is a virtualization toolset to build, run and manage macOS and Linux virtual machines on Apple Silicon](https://tart.run/)
-8. [Podman 5.2 Enhances macOS VMs with GPU Support](https://linuxiac.compodman-5-2-enhances-macos-vms-with-gpu-support/)
+8. [Podman 5.2 Enhances macOS VMs with GPU Support](https://linuxiac.com/podman-5-2-enhances-macos-vms-with-gpu-support/)
 9. [Introduction to VirtIO](https://blogs.oracle.com/linux/post/introduction-to-virtio)
+10. [Virgl not functionning under Apple's virtualization.framework](https://github.com/utmapp/UTM/discussions/5482)
