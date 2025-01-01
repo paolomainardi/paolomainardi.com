@@ -1,0 +1,225 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+  <style>
+    .bar { transition: opacity 0.3s; cursor: pointer; }
+    .bar:hover { opacity: 0.7; }
+    .bar:hover + .tooltip { opacity: 1; }
+    .tooltip { opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .tooltip-bg { fill: #2d333b; stroke: #444c56; stroke-width: 1; rx: 4; }
+    .tooltip-text { font-size: 12px; fill: #adbac7; }
+    .label { font-size: 12px; fill: #adbac7; }
+    .platform { font-size: 14px; font-weight: bold; fill: #adbac7; }
+    .axis { font-size: 12px; fill: #768390; }
+  </style>
+
+  <rect width="800" height="500" fill="#22272e"/>
+
+  <!-- Grid -->
+  <g stroke="#2d333b">
+    <line x1="100" y1="400" x2="750" y2="400"/>
+    <line x1="100" y1="100" x2="100" y2="400"/>
+    <line x1="100" y1="370" x2="750" y2="370" stroke-dasharray="2,2"/>
+    <line x1="100" y1="340" x2="750" y2="340" stroke-dasharray="2,2"/>
+    <line x1="100" y1="310" x2="750" y2="310" stroke-dasharray="2,2"/>
+    <line x1="100" y1="280" x2="750" y2="280" stroke-dasharray="2,2"/>
+    <line x1="100" y1="250" x2="750" y2="250" stroke-dasharray="2,2"/>
+    <line x1="100" y1="220" x2="750" y2="220" stroke-dasharray="2,2"/>
+    <line x1="100" y1="190" x2="750" y2="190" stroke-dasharray="2,2"/>
+    <line x1="100" y1="160" x2="750" y2="160" stroke-dasharray="2,2"/>
+    <line x1="100" y1="130" x2="750" y2="130" stroke-dasharray="2,2"/>
+    <line x1="100" y1="100" x2="750" y2="100" stroke-dasharray="2,2"/>
+  </g>
+
+  <!-- Y-axis -->
+  <g class="axis" text-anchor="end">
+    <text x="90" y="400">0s</text>
+    <text x="90" y="370">1s</text>
+    <text x="90" y="340">2s</text>
+    <text x="90" y="310">3s</text>
+    <text x="90" y="280">4s</text>
+    <text x="90" y="250">5s</text>
+    <text x="90" y="220">6s</text>
+    <text x="90" y="190">7s</text>
+    <text x="90" y="160">8s</text>
+    <text x="90" y="130">9s</text>
+    <text x="90" y="100">10s</text>
+  </g>
+
+  <!-- Lima -->
+  <g transform="translate(150,0)">
+    <rect class="bar" x="0" y="310" width="20" height="90" fill="#a371f7"/>
+    <g class="tooltip" transform="translate(-40,280)">
+      <rect class="tooltip-bg" x="0" y="0" width="110" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">Lima Native</tspan>
+        <tspan x="10" y="35">3.000s</tspan>
+      </text>
+    </g>
+
+    <rect class="bar" x="25" y="278.4" width="20" height="121.6" fill="#3fb950"/>
+    <g class="tooltip" transform="translate(-15,250)">
+      <rect class="tooltip-bg" x="0" y="0" width="110" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">No volumes</tspan>
+        <tspan x="10" y="35">4.054s</tspan>
+      </text>
+    </g>
+
+    <rect class="bar" x="50" y="284" width="20" height="116" fill="#f0883e"/>
+    <g class="tooltip" transform="translate(10,255)">
+      <rect class="tooltip-bg" x="0" y="0" width="120" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">Bind mount + vol</tspan>
+        <tspan x="10" y="35">3.868s</tspan>
+      </text>
+    </g>
+
+    <rect class="bar" x="75" y="134.3" width="20" height="265.7" fill="#f85149"/>
+    <g class="tooltip" transform="translate(35,105)">
+      <rect class="tooltip-bg" x="0" y="0" width="110" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">Bind mount</tspan>
+        <tspan x="10" y="35">8.856s</tspan>
+      </text>
+    </g>
+
+    <text class="platform" x="47.5" y="430" text-anchor="middle">Lima</text>
+  </g>
+
+  <!-- Docker-VZ -->
+  <g transform="translate(300,0)">
+    <rect class="bar" x="0" y="310" width="20" height="90" fill="#a371f7"/>
+    <g class="tooltip" transform="translate(-40,280)">
+      <rect class="tooltip-bg" x="0" y="0" width="110" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">Docker-VZ Native</tspan>
+        <tspan x="10" y="35">3.000s</tspan>
+      </text>
+    </g>
+
+    <rect class="bar" x="25" y="254.2" width="20" height="145.8" fill="#3fb950"/>
+    <g class="tooltip" transform="translate(-15,225)">
+      <rect class="tooltip-bg" x="0" y="0" width="110" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">No volumes</tspan>
+        <tspan x="10" y="35">4.859s</tspan>
+      </text>
+    </g>
+
+    <rect class="bar" x="50" y="289" width="20" height="111" fill="#f0883e"/>
+    <g class="tooltip" transform="translate(10,260)">
+      <rect class="tooltip-bg" x="0" y="0" width="120" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">Bind mount + vol</tspan>
+        <tspan x="10" y="35">3.701s</tspan>
+      </text>
+    </g>
+
+    <rect class="bar" x="75" y="111.04" width="20" height="288.96" fill="#f85149"/>
+    <g class="tooltip" transform="translate(35,82)">
+      <rect class="tooltip-bg" x="0" y="0" width="110" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">Bind mount</tspan>
+        <tspan x="10" y="35">9.632s</tspan>
+      </text>
+    </g>
+
+    <text class="platform" x="47.5" y="430" text-anchor="middle">Docker-VZ</text>
+  </g>
+
+  <!-- Docker-VMM -->
+  <g transform="translate(450,0)">
+    <rect class="bar" x="0" y="310" width="20" height="90" fill="#a371f7"/>
+    <g class="tooltip" transform="translate(-40,280)">
+      <rect class="tooltip-bg" x="0" y="0" width="110" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">Docker-VMM Native</tspan>
+        <tspan x="10" y="35">3.000s</tspan>
+      </text>
+    </g>
+
+    <rect class="bar" x="25" y="283.9" width="20" height="116.1" fill="#3fb950"/>
+    <g class="tooltip" transform="translate(-15,255)">
+      <rect class="tooltip-bg" x="0" y="0" width="110" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">No volumes</tspan>
+        <tspan x="10" y="35">3.871s</tspan>
+      </text>
+    </g>
+
+    <rect class="bar" x="50" y="298.6" width="20" height="101.4" fill="#f0883e"/>
+    <g class="tooltip" transform="translate(10,270)">
+      <rect class="tooltip-bg" x="0" y="0" width="120" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">Bind mount + vol</tspan>
+        <tspan x="10" y="35">3.381s</tspan>
+      </text>
+    </g>
+
+    <rect class="bar" x="75" y="152.41" width="20" height="247.59" fill="#f85149"/>
+    <g class="tooltip" transform="translate(35,123)">
+      <rect class="tooltip-bg" x="0" y="0" width="110" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">Bind mount</tspan>
+        <tspan x="10" y="35">8.253s</tspan>
+      </text>
+    </g>
+
+    <text class="platform" x="47.5" y="430" text-anchor="middle">Docker-VMM</text>
+  </g>
+
+  <!-- Docker-VZ-sync -->
+  <g transform="translate(600,0)">
+    <rect class="bar" x="0" y="267.7" width="20" height="132.3" fill="#a371f7"/>
+    <g class="tooltip" transform="translate(-40,238)">
+      <rect class="tooltip-bg" x="0" y="0" width="120" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">VZ+sync Native</tspan>
+        <tspan x="10" y="35">4.410s</tspan>
+      </text>
+    </g>
+
+    <rect class="bar" x="25" y="254.7" width="20" height="145.3" fill="#3fb950"/>
+    <g class="tooltip" transform="translate(-15,225)">
+      <rect class="tooltip-bg" x="0" y="0" width="110" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">No volumes</tspan>
+        <tspan x="10" y="35">4.844s</tspan>
+      </text>
+    </g>
+
+    <rect class="bar" x="50" y="281.5" width="20" height="118.5" fill="#f0883e"/>
+    <g class="tooltip" transform="translate(10,252)">
+      <rect class="tooltip-bg" x="0" y="0" width="120" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">Bind mount + vol</tspan>
+        <tspan x="10" y="35">3.950s</tspan>
+      </text>
+    </g>
+
+    <rect class="bar" x="75" y="285.2" width="20" height="114.8" fill="#f85149"/>
+    <g class="tooltip" transform="translate(35,256)">
+      <rect class="tooltip-bg" x="0" y="0" width="110" height="45"/>
+      <text class="tooltip-text">
+        <tspan x="10" y="20">Bind mount</tspan>
+        <tspan x="10" y="35">3.827s</tspan>
+      </text>
+    </g>
+
+    <text class="platform" x="47.5" y="430" text-anchor="middle">Docker-VZ-sync</text>
+  </g>
+
+  <!-- Legend -->
+  <g transform="translate(100,460)">
+    <rect x="0" y="0" width="15" height="15" fill="#a371f7"/>
+    <text x="20" y="12" class="label">Native</text>
+
+    <rect x="100" y="0" width="15" height="15" fill="#3fb950"/>
+    <text x="120" y="12" class="label">No volumes</text>
+
+    <rect x="200" y="0" width="15" height="15" fill="#f0883e"/>
+    <text x="220" y="12" class="label">Bind mount + volume</text>
+
+    <rect x="350" y="0" width="15" height="15" fill="#f85149"/>
+    <text x="370" y="12" class="label">Bind mount</text>
+  </g>
+</svg>

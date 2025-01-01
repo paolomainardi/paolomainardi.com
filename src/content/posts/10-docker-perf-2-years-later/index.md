@@ -23,7 +23,7 @@ Now, **almost two years later**, how the things are changed? What is the current
 
 ## Linux Virtualization on MacOS
 
-Before diving into some benchmarks, let's take a look at the current technologies that allows things like Docker to run on MacOS, let's deep dive into the **Virtualization Framework** and the **VIRTIO** standard, that are the technologies used by almost any virtualization solution on MacOS, including the ones specifically designed for containers like Docker for Desktop, Colima, Rancher Desktop, Podman Desktop, etc...
+Before diving into some benchmarks, let's take a look at the current technologies that allows things like Docker to run on MacOS, let's deep dive into the **Virtualization Framework** and the **VIRTIO** standard, that are the technologies used by almost any virtualization solution on MacOS, including the ones specifically designed for containers like Docker for Desktop, Lima, Rancher Desktop, Podman Desktop, etc...
 
 ### Virtualization Framework
 
@@ -86,7 +86,115 @@ Even if the project is **still in beta and it is a closed-source project**, **I 
 
 ## Benchmarks
 
-In the previous article I've used
+In the previous article I've used this repository [docker-for-mac-bench](https://github.com/paolomainardi/docker-for-mac-bench) to test the filesystem performance on various scenarios, it is a very simple project which use a sample React application and basically runs on it a `npm install`, it is quite simple but effective, we are going to reuse it now, so we can compare the results with the previous ones.
+
+### Tests
+
+The tests that will be run are:
+
+1. Native: Host machine without Docker.
+2. Docker without volumes: A container without volumes.
+3. Docker volume + mount: bind mount: `./create/react/app:/usr/src/app` and a volume on: `nodemodules:/usr/src/app/node_modules`.
+4. Docker bind mount: bind mount: `./create-react-app:/usr/src/app`
+
+This another **good excuse** to make another excalidraw diagram:
+
+{{< figure src="/images/posts/10-docker/docker-benchmark-diagram.webp" title="Mounting options" >}}
+
+So, it's everything [explained in detail here](https://www.paolomainardi.com/posts/docker-performance-macos/), but the core idea to keep in mind to understand the benchmarks is that bind mounting is always the slowest and costly option, as it **requires HOST to VM file-system sharing**, like **VirtioFS**.
+
+### System information
+
+To run the tests, I'll use the following machines:
+
+#### MacOS
+
+- **OS**: MacOS 15.1.1
+- **Processor**: Apple M4 Pro 12 cores (8 performance and 4 efficiency)
+- **Memory**: 48GB
+- **Storage**: 512GB
+
+#### Linux
+
+- **OS**: Archlinux (provisioned with this [ansible playbook](https://github.com/sparkfabrik/archlinux-ansible-provisioner/))
+- **Processor**: ThreadRipper PRO 5945WX
+- **Memory**: 64GB
+- **Storage**: 1TB NVMe (Samsung 980 PRO) on BTRFS mounted with the following options `noatime,compress=zstd`
+
+### Container runtime platforms
+
+I'll use the following container **runtime platforms**:
+
+#### MacOS
+
+- [Docker for Desktop](https://docs.docker.com/desktop/setup/install/mac-install/): 4.37.1
+  - **Apple Virtualization Framework** + **VirtioFS**
+  - **Docker VMM** + **VirtioFS**
+  - **Apple Virtualization Framework** + **VirtioFS** + **Syncronized file sharing**
+- [Lima](https://www.cncf.io/projects/lima/): 1.0.3
+  - **Apple Virtualization Framework** + **VirtioFS**
+
+[Syncronized file sharing](https://www.docker.com/blog/announcing-synchronized-file-shares/) is a **paid feature** of Docker for Desktop
+that uses [Mutagen](https://github.com/mutagen-io/mutagen), [acquired by Docker in 2023](https://www.docker.com/blog/mutagen-acquisition/),
+to provide a 2-way file synchronization between the host and the guest VM, it should overcome the performance issues of bind mounts.
+
+{{< notice note >}}
+Theoretically, **the same technology** can be used in **other platforms**, like **Lima** using [ddev](https://ddev.readthedocs.io/en/stable/users/install/performance/#mutagen),
+but **it will be not tested in this benchmark** as I want to stick just on what the platforms **offer out of the box**. You can see some benchmarks on the [ddev blog](https://ddev.com/blog/docker-performance-2023//).
+{{< /notice >}}
+
+#### Linux
+
+- **Docker**: 27.3.1
+
+{{< notice info >}}
+
+They are both configured with `8vCPU` and `16GB` of memory, Docker for Desktop is installed with brew and manually configured, as the current CLI does not provide a way to configure the settings, instead `Lima` is installed and configured as follows:
+
+```shell
+limactl create --name=default --vm-type=vz --mount-type=virtiofs --mount-writable --memory=16 --cpus=8 --disk=100 template://docker-desktop`
+docker context create lima-default --docker "host=unix:///Users/paolomainardi/.lima/default/sock/docker.sock"
+docker context use lima-default
+```
+
+The nicest thing here is that we can have both Docker for Desktop and Lima running on the same machine, and just change the docker context we want:
+
+```shell
+
+❯ docker context ls
+NAME             DESCRIPTION                               DOCKER ENDPOINT                                              ERROR
+default          Current DOCKER_HOST based configuration   unix:///var/run/docker.sock
+desktop-linux    Docker Desktop                            unix:///Users/paolomainardi/.docker/run/docker.sock
+lima-default *
+```
+
+{{< /notice >}}
+
+I am especially interested in the performance of [Lima](https://github.com/lima-vm/lima) as it an [CNCF Open Source project](https://www.cncf.io/projects/lima/).
+In [Sparkfabrik](https://www.sparkfabrik.com/) we are still defaulting to **Docker for Desktop**, but we are evaluating the possibility to switch other solutions like **Colima**.
+
+### Results
+
+| OS    | Test                        | Platform                | Time (seconds) |
+| ----- | --------------------------- | ----------------------- | -------------- |
+| MacOS | Native                      | Lima                    | 3.000          |
+| MacOS | Docker: No volumes          | Lima                    | 4.054          |
+| MacOS | Docker: Bind mount + volume | Lima                    | 3.868          |
+| MacOS | Docker: bind mount          | Lima                    | **8.856**      |
+| MacOS | Native                      | Docker - VZ             | 3.000          |
+| MacOS | Docker: No volumes          | Docker - VZ             | 4.859          |
+| MacOS | Docker: Bind mount + volume | Docker - VZ             | 3.701          |
+| MacOS | Docker: bind mount          | Docker - VZ             | **9.632**      |
+| MacOS | Native                      | Docker - VMM            | 3.000          |
+| MacOS | Docker: No volumes          | Docker - VMM            | 3.871          |
+| MacOS | Docker: Bind mount + volume | Docker - VMM            | 3.381          |
+| MacOS | Docker: bind mount          | Docker - VMM            | **8.253**      |
+| MacOS | Native                      | Docker - VZ + file sync | 4.410          |
+| MacOS | Docker: No volumes          | Docker - VZ + file sync | 4.844          |
+| MacOS | Docker: Bind mount + volume | Docker - VZ + file sync | 3.950          |
+| MacOS | Docker: bind mount          | Docker - VZ + file sync | 3.827          |
+
+{{< figure src="/images/posts/10-docker/benchmark-graph.svg" title="Docker Performance Benchmark Graph" >}}
 
 ## References
 
@@ -100,3 +208,8 @@ In the previous article I've used
 8. [Podman 5.2 Enhances macOS VMs with GPU Support](https://linuxiac.com/podman-5-2-enhances-macos-vms-with-gpu-support/)
 9. [Introduction to VirtIO](https://blogs.oracle.com/linux/post/introduction-to-virtio)
 10. [Virgl not functionning under Apple's virtualization.framework](https://github.com/utmapp/UTM/discussions/5482)
+11. [macOS Docker Provider Performance, November 2023](https://ddev.com/blog/docker-performance-2023/)
+
+```
+
+```
