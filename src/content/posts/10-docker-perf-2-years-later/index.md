@@ -175,24 +175,43 @@ In [Sparkfabrik](https://www.sparkfabrik.com/) we are still defaulting to **Dock
 
 ### Results
 
-| OS    | Test                        | Platform                | Time (seconds) |
-| ----- | --------------------------- | ----------------------- | -------------- |
-| MacOS | Native                      | Lima                    | 3.000          |
-| MacOS | Docker: No volumes          | Lima                    | 4.054          |
-| MacOS | Docker: Bind mount + volume | Lima                    | 3.868          |
-| MacOS | Docker: bind mount          | Lima                    | **8.856**      |
-| MacOS | Native                      | Docker - VZ             | 3.000          |
-| MacOS | Docker: No volumes          | Docker - VZ             | 4.859          |
-| MacOS | Docker: Bind mount + volume | Docker - VZ             | 3.701          |
-| MacOS | Docker: bind mount          | Docker - VZ             | **9.632**      |
-| MacOS | Native                      | Docker - VMM            | 3.000          |
-| MacOS | Docker: No volumes          | Docker - VMM            | 3.871          |
-| MacOS | Docker: Bind mount + volume | Docker - VMM            | 3.381          |
-| MacOS | Docker: bind mount          | Docker - VMM            | **8.253**      |
-| MacOS | Native                      | Docker - VZ + file sync | 4.410          |
-| MacOS | Docker: No volumes          | Docker - VZ + file sync | 4.844          |
-| MacOS | Docker: Bind mount + volume | Docker - VZ + file sync | 3.950          |
-| MacOS | Docker: bind mount          | Docker - VZ + file sync | 3.827          |
+| Platform       | Test Type           | Average Time (s) | Range (s)     |
+| -------------- | ------------------- | ---------------- | ------------- |
+| Lima           | Native              | 3.38             | 3.00-3.63     |
+| Lima           | No volumes          | 4.17             | 4.05-4.24     |
+| Lima           | Bind mount + volume | 3.96             | 3.87-4.02     |
+| Lima           | Bind mount          | **8.99** 🏅      | 8.86-9.10     |
+| Docker-VZ      | Native              | 3.37             | 3.00-3.56     |
+| Docker-VZ      | No volumes          | 4.44             | 4.00-4.86     |
+| Docker-VZ      | Bind mount + volume | 3.61             | 3.55-3.70     |
+| Docker-VZ      | Bind mount          | **9.53** 🐢      | **9.44-9.63** |
+| Docker-VMM     | Native              | 3.35             | 3.00-3.53     |
+| Docker-VMM     | No volumes          | 4.05             | 3.87-4.28     |
+| Docker-VMM     | Bind mount + volume | 3.42             | 3.38-3.44     |
+| Docker-VMM     | Bind mount          | 8.47             | 8.25-8.60     |
+| Docker-VZ-sync | Native              | 4.19             | 3.48-4.67     |
+| Docker-VZ-sync | No volumes          | **4.75** 🐢      | **4.69-4.84** |
+| Docker-VZ-sync | Bind mount + volume | 4.06             | 3.94-4.30     |
+| Docker-VZ-sync | Bind mount          | **3.88** 🏅      | 3.83-3.94     |
+
+As we already know bind mounts are **always the slowest options**, it is more less **3x times slower than native** operations, but since the last article the performance of VirtioFS has been improved a lot, last time we saw between 5x and 6x times slower.
+
+The
+
+One of the most notable findings is the considerable impact of bind mounts in traditional setups. Docker-VZ exhibits the highest latency at 9.53 seconds, followed closely by Lima at 8.99 seconds and Docker-VMM at 8.47 seconds. However, Docker-VZ with file synchronization shows a significant improvement, reducing bind mount operation times to just 3.88 seconds—a remarkable 59% boost in performance compared to standard Docker-VZ.
+
+All configurations perform reasonably well for basic operations without volumes, with times ranging from 4.05 to 4.75 seconds. Native operations demonstrate consistent performance across all setups, generally between 3.35 and 3.38 seconds, although Docker-VZ-sync is a slight outlier at 4.19 seconds.
+
+The combination of bind mounts with volumes demonstrates the most stable performance across all configurations, maintaining times between 3.42 and 4.06 seconds. This suggests that it may be a reliable option for development environments where consistent performance is essential.
+
+Errors with file syncronization:
+
+```shell
+Testing: Native installation...
+
+rm: node_modules: Permission denied
+make: *** [test-native] Error 1
+```
 
 {{< figure src="/images/posts/10-docker/benchmark-graph.svg" title="Docker Performance Benchmark Graph" >}}
 
