@@ -1,13 +1,22 @@
 +++
 date = "2024-12-30"
 title = "Docker on MacOS is still slow?"
-slug = "docker-performance-macos-2024"
+slug = "docker-performance-macos-2025"
 tags = ["linux", "docker", "macos"]
 draft = "true"
 toc = "true"
-# featuredImage = "/images/posts/3-docker/docker-dalle-container-macbook.webp"
-# images = ["/images/posts/3-docker/docker-dalle-container-macbook.webp"]
+# featuredImage = "/images/posts/10-docker/og-benchmark-diagram.webp"
+images = ["/images/posts/10-docker/og-benchmark-diagram.webp"]
 +++
+
+## TLDR
+
+[Two years after my first analysis](https://www.paolomainardi.com/posts/docker-performance-macos/) **of Docker performance on MacOS**, things have **improved significantly**. **VirtioFS** is now much faster _(bind mounts are only 3x slower instead of 5-6x)_, and we have new solutions in the ecosystem.
+**[Lima](https://github.com/lima-vm/lima)** (open-source) **performs well and sometimes better than Docker Desktop**, while Docker's new **file synchronization** feature **offers impressive speed improvements** (59% faster) but **requires a paid subscription**. For the most stable performance, the **hybrid approach** (combining bind mounts with volumes) remains the best practice. Choose your setup based on your needs:
+
+- **Fast, stable and Open-source**: Go with Lima.
+- **Maximum speed**: Use Docker Desktop with file synchronization.
+- **Stable performance**: Use the hybrid approach with volumes with any solution.
 
 ## Introduction
 
@@ -119,7 +128,7 @@ To run the tests, I'll use the following machines:
 - **OS**: Archlinux (provisioned with this [ansible playbook](https://github.com/sparkfabrik/archlinux-ansible-provisioner/))
 - **Processor**: ThreadRipper PRO 5945WX
 - **Memory**: 64GB
-- **Storage**: 1TB NVMe (Samsung 980 PRO) on BTRFS mounted with the following options `noatime,compress=zstd`
+- **Storage**: 1TB NVMe (Samsung 980 PRO) on BTRFS mounted with the following options `noatime,compress=zstd:1`
 
 ### Container runtime platforms
 
@@ -175,45 +184,105 @@ In [Sparkfabrik](https://www.sparkfabrik.com/) we are still defaulting to **Dock
 
 ### Results
 
-| Platform       | Test Type           | Average Time (s) | Range (s)     |
-| -------------- | ------------------- | ---------------- | ------------- |
-| Lima           | Native              | 3.38             | 3.00-3.63     |
-| Lima           | No volumes          | 4.17             | 4.05-4.24     |
-| Lima           | Bind mount + volume | 3.96             | 3.87-4.02     |
-| Lima           | Bind mount          | **8.99** 🏅      | 8.86-9.10     |
-| Docker-VZ      | Native              | 3.37             | 3.00-3.56     |
-| Docker-VZ      | No volumes          | 4.44             | 4.00-4.86     |
-| Docker-VZ      | Bind mount + volume | 3.61             | 3.55-3.70     |
-| Docker-VZ      | Bind mount          | **9.53** 🐢      | **9.44-9.63** |
-| Docker-VMM     | Native              | 3.35             | 3.00-3.53     |
-| Docker-VMM     | No volumes          | 4.05             | 3.87-4.28     |
-| Docker-VMM     | Bind mount + volume | 3.42             | 3.38-3.44     |
-| Docker-VMM     | Bind mount          | 8.47             | 8.25-8.60     |
-| Docker-VZ-sync | Native              | 4.19             | 3.48-4.67     |
-| Docker-VZ-sync | No volumes          | **4.75** 🐢      | **4.69-4.84** |
-| Docker-VZ-sync | Bind mount + volume | 4.06             | 3.94-4.30     |
-| Docker-VZ-sync | Bind mount          | **3.88** 🏅      | 3.83-3.94     |
+| Platform           | Test Type           | Average Time (s) | Range (s)     |
+| ------------------ | ------------------- | ---------------- | ------------- |
+| Lima               | Native              | 3.38             | 3.00-3.63     |
+| Lima               | No volumes          | 4.17             | 4.05-4.24     |
+| Lima               | Bind mount + volume | 3.96             | 3.87-4.02     |
+| **Lima**           | **Bind mount**      | **8.99**         | **8.86-9.10** |
+| Docker-VZ          | Native              | 3.37             | 3.00-3.56     |
+| Docker-VZ          | No volumes          | 4.44             | 4.00-4.86     |
+| Docker-VZ          | Bind mount + volume | 3.61             | 3.55-3.70     |
+| **Docker-VZ**      | **Bind mount**      | **9.53**         | **9.44-9.63** |
+| Docker-VMM         | Native              | 3.35             | 3.00-3.53     |
+| Docker-VMM         | No volumes          | 4.05             | 3.87-4.28     |
+| Docker-VMM         | Bind mount + volume | 3.42             | 3.38-3.44     |
+| **Docker-VMM**     | **Bind mount**      | **8.47**         | 8.25-8.60     |
+| Docker-VZ-sync     | Native              | 4.19             | 3.48-4.67     |
+| Docker-VZ-sync     | No volumes          | 4.75             | **4.69-4.84** |
+| Docker-VZ-sync     | Bind mount + volume | 4.06             | 3.94-4.30     |
+| **Docker-VZ-sync** | **Bind mount**      | **3.88**         | **3.83-3.94** |
+|                    |                     |                  |               |
+| Linux              | Native              | 5.32             | 5.29-5.36     |
+| Linux              | No volumes          | 5.29             | 5.22-5.34     |
+| Linux              | Bind mount + volume | 5.22             | 5.20-5.23     |
+| **Linux**          | **Bind mount**      | **5.29**         | **5.23-5.33** |
 
-As we already know bind mounts are **always the slowest options**, it is more less **3x times slower than native** operations, but since the last article the performance of VirtioFS has been improved a lot, last time we saw between 5x and 6x times slower.
+{{< figure src="/images/posts/10-docker/benchmark-graph.svg" >}}
 
-The
+{{< notice tip >}}
 
-One of the most notable findings is the considerable impact of bind mounts in traditional setups. Docker-VZ exhibits the highest latency at 9.53 seconds, followed closely by Lima at 8.99 seconds and Docker-VMM at 8.47 seconds. However, Docker-VZ with file synchronization shows a significant improvement, reducing bind mount operation times to just 3.88 seconds—a remarkable 59% boost in performance compared to standard Docker-VZ.
+Open the [graph in a new tab](/images/posts/10-docker/benchmark-graph.svg) to see it in full resolution and with the data labels.
 
-All configurations perform reasonably well for basic operations without volumes, with times ranging from 4.05 to 4.75 seconds. Native operations demonstrate consistent performance across all setups, generally between 3.35 and 3.38 seconds, although Docker-VZ-sync is a slight outlier at 4.19 seconds.
+{{< /notice >}}
 
-The combination of bind mounts with volumes demonstrates the most stable performance across all configurations, maintaining times between 3.42 and 4.06 seconds. This suggests that it may be a reliable option for development environments where consistent performance is essential.
+Despite being limited to a single test scenario, this benchmark reveals several interesting patterns. Let's analyze the key findings:
 
-Errors with file syncronization:
+1. **Linux Performance Consistency**
+   The most striking observation is the consistency of Docker performance on Linux. Regardless of the configuration (bind mounts, volumes, or native operations), execution times remain stable around 5 seconds, with minimal variations. This consistency is expected since no virtualization layer is involved.
+
+{{< notice info >}}
+The **overall slower execution times on Linux** (5s) compared to MacOS (3s) are likely **specific to my testing environment**, particularly the **filesystem** (btrfs) and the **older generation NVMe SSD**. I plan to run comparative tests on **another Linux machine with** a **Samsung 990 PRO** and **another file-system like EXT4** to better understand the hardware **impact on performance**.
+{{< /notice >}}
+
+1. **Lima vs Docker Desktop Performance**
+   Interestingly, **Lima outperforms standard Docker Desktop with Apple Virtualization Framework** in bind mount operations, **clocking at 8.99 seconds compared to 9.53 seconds**. This difference, while modest, demonstrates Lima's efficiency in handling filesystem operations and that **it is already a viable alternative to Docker Desktop**.
+
+1. **Bind Mounts Performance Impact**
+   [As previously documented](https://www.paolomainardi.com/posts/docker-performance-macos/#volumes-vs-bind-mounts), **bind mounts remain the slowest option**, running approximately **3x slower than native operations**. However, there's notable progress: previous benchmarks showed bind mounts being 5-6x slower, indicating significant **VirtioFS performance improvements** on MacOS.
+
+1. **File Synchronization Benefits**
+   The most dramatic improvement comes from Docker's Apple Virtualization Framework with [file synchronization](https://docs.docker.com/desktop/features/synchronized-file-sharing/) enabled. This configuration reduces bind mount operation times to just 3.88 seconds—a 59% performance improvement over standard Docker-VZ. However, this feature is **only available in Docker for Desktop's paid version**.
+
+{{< notice warning >}}
+While testing Docker's file synchronization, I encountered occasional errors during rapid file operations (copying, deleting, moving):
 
 ```shell
 Testing: Native installation...
-
 rm: node_modules: Permission denied
 make: *** [test-native] Error 1
 ```
 
-{{< figure src="/images/posts/10-docker/benchmark-graph.svg" title="Docker Performance Benchmark Graph" >}}
+These issues likely stem from synchronization delays or file handle management. While this specific benchmark scenario might not reflect typical development workflows, it's worth considering if your work involves intensive file operations.
+{{< /notice >}}
+
+1. **Hybrid Approach Stability**
+   The combination of bind mounts with volumes shows remarkably consistent performance across all configurations, with times ranging from 3.42 to 4.06 seconds. This stability makes it an attractive option for development environments where predictable performance is crucial.
+
+#### Data
+
+## Conclusions
+
+After **two years** from my first analysis, the **Docker ecosystem** on MacOS has significantly evolved. Here are the main takeaways from our benchmarks:
+
+1. **Performance Has Improved**
+   The **VirtioFS** improvements are notable - **bind mount** operations are now only **3x slower** than native operations, compared to **5-6x slower** two years ago. This is a substantial improvement in daily development workflows.
+
+2. **New Solutions Are Emerging**
+   The introduction of **Docker VMM** and the maturity of **Lima** show how the ecosystem is evolving. Lima, being an **open-source CNCF project**, proves to be a viable alternative to **Docker Desktop**, sometimes even outperforming it in bind mount operations.
+
+3. **File Synchronization is Game-Changing**
+   Docker's **file synchronization** feature shows impressive results, reducing bind mount operation times by **59%**. However, being a **paid feature**, developers need to evaluate if the performance boost justifies the cost for their specific needs.
+
+4. **Best Practices Still Matter**
+   The **hybrid approach** (combining bind mounts with volumes) continues to provide the most **consistent performance** across all configurations. This reinforces our previous recommendations about using volumes when possible.
+
+5. **Platform Choice Matters**
+   While Docker on **Linux** shows consistent performance regardless of the configuration, **MacOS** users need to carefully consider their setup based on their specific needs:
+
+- For hobby projects or small applications, any solution works fine
+- For larger projects, either **Docker with file synchronization** or **Lima** could be the best choice
+- For teams, the **hybrid approach** with volumes offers the most predictable performance
+
+Looking forward, we can expect further improvements in the MacOS Docker ecosystem, especially with new projects like **Docker VMM** and the continuous development of **Lima**. The gap between native Linux performance and MacOS virtualized environments continues to narrow, making Docker on MacOS an increasingly viable option for development workflows.
+
+{{< notice tip >}}
+If you're setting up a new development environment on MacOS today, I recommend:
+
+- Using **Lima** if you prefer **open-source** solutions, as it offers comparable performance to Docker Desktop, sometimes even outperforming it. It's a great choice, but it doesn't offer any GUI, it is just a CLI tool, which I prefer, but could be a deal-breaker for some.
+- Using **Docker Desktop** with **file synchronization** if using closed-source and budget isn't a constraint.
+- Implementing the **hybrid approach** with volumes for the most stable performance - see the [previous article](https://www.paolomainardi.com/posts/docker-performance-macos/) with some examples.
+  {{< /notice >}}
 
 ## References
 
@@ -228,7 +297,3 @@ make: *** [test-native] Error 1
 9. [Introduction to VirtIO](https://blogs.oracle.com/linux/post/introduction-to-virtio)
 10. [Virgl not functionning under Apple's virtualization.framework](https://github.com/utmapp/UTM/discussions/5482)
 11. [macOS Docker Provider Performance, November 2023](https://ddev.com/blog/docker-performance-2023/)
-
-```
-
-```
