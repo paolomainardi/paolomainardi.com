@@ -1,5 +1,5 @@
 +++
-date = "2024-12-30"
+date = "2025-01-05"
 title = "Docker on MacOS is still slow?"
 slug = "docker-performance-macos-2025"
 tags = ["linux", "docker", "macos"]
@@ -267,7 +267,7 @@ After **two years** from my first analysis, the **Docker ecosystem** on MacOS ha
 
 - For hobby projects or small applications, any solution works fine
 - For larger projects, either **Docker with file synchronization** or **Lima** could be the best choice
-- For teams, the **hybrid approach** with volumes offers the most predictable performance
+- Still the **hybrid approach** with volumes offers the most predictable performance.
 
 Looking forward, we can expect further improvements in the MacOS Docker ecosystem, especially with new projects like **Docker VMM** and the continuous development of **Lima**. The gap between native Linux performance and MacOS virtualized environments continues to narrow, making Docker on MacOS an increasingly viable option for development workflows.
 
@@ -279,7 +279,11 @@ If you're setting up a new development environment on MacOS today, I recommend:
 - Implementing the **hybrid approach** with volumes for the most stable performance - see the [previous article](https://www.paolomainardi.com/posts/docker-performance-macos/) with some examples.
   {{< /notice >}}
 
+Thanks for reading all of this, and if you find something wrong or want to discuss some topics further, get in touch with me. As always you can leave your comments here: https://github.com/paolomainardi/paolomainardi.com/discussions/38 or reach me on the contacts you can find [here](about).
+
 ## References
+
+Here a list of some very random references I've collected during my research:
 
 1. [What makes Docker VMM better than Apple Virtualization Framework?](https://github.com/docker/for-mac/issues/7464)
 2. [Docker VMM](https://docs.docker.com/desktop/features/vmm/)

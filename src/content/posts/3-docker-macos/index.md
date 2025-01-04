@@ -8,6 +8,10 @@ featuredImage = "/images/posts/3-docker/docker-dalle-container-macbook.webp"
 images = ["/images/posts/3-docker/docker-dalle-container-macbook.webp"]
 +++
 
+{{< notice note >}}
+**05/01/2024**: Hello there, you can find an update version of this [article here](/posts/docker-performance-macos-2025), with the latest findings, improvements and new tools.
+{{< /notice >}}
+
 Thanks to the [**DALL·E 2**](https://openai.com/dall-e-2/), we finally have a very nice graphic representation of
 **the feelings** of a Docker container inside a macOS environment, I will try with this article to make this poor container safe to the coast.
 
