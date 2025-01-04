@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700">
+  <style>
+    .bar { transition: opacity 0.3s; cursor: pointer; }
+    .bar:hover { opacity: 0.7; }
+    .bar:hover + .tooltip { opacity: 1; }
+    .tooltip { opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .tooltip-bg { fill: #2d333b; stroke: #444c56; stroke-width: 1; rx: 4; }
+    .tooltip-text { font-size: 12px; fill: #adbac7; }
+    .label { font-size: 12px; fill: #adbac7; }
+    .platform { font-size: 14px; font-weight: bold; fill: #adbac7; }
+    .os-label { font-size: 16px; font-weight: bold; fill: #adbac7; }
+    .axis { font-size: 12px; fill: #768390; }
+    .title { font-size: 20px; fill: #adbac7; }
+    .legend-text { font-size: 14px; fill: #adbac7; }
+  </style>
+
+  <!-- Background -->
+  <rect width="1000" height="700" fill="#22272e"/>
+
+  <!-- Title -->
+  <text x="500" y="40" class="title" text-anchor="middle">Docker Performance Benchmark - MacOS vs Linux</text>
+  <!-- Grid and axes -->
+  <g transform="translate(80,60)">
+    <!-- Y-axis -->
+    <line x1="60" y1="20" x2="60" y2="520" stroke="#444c56"/>
+    <line x1="60" y1="520" x2="900" y2="520" stroke="#444c56"/>
+
+    <!-- Grid lines -->
+    <g stroke="#2d333b" stroke-dasharray="2,2">
+      <line x1="60" y1="20" x2="900" y2="20"/>
+      <line x1="60" y1="95" x2="900" y2="95"/>
+      <line x1="60" y1="170" x2="900" y2="170"/>
+      <line x1="60" y1="245" x2="900" y2="245"/>
+      <line x1="60" y1="320" x2="900" y2="320"/>
+      <line x1="60" y1="395" x2="900" y2="395"/>
+      <line x1="60" y1="470" x2="900" y2="470"/>
+    </g>
+
+    <!-- Y-axis labels -->
+    <text x="50" y="520" text-anchor="end" class="axis">0s</text>
+    <text x="50" y="445" text-anchor="end" class="axis">1s</text>
+    <text x="50" y="370" text-anchor="end" class="axis">2s</text>
+    <text x="50" y="295" text-anchor="end" class="axis">3s</text>
+    <text x="50" y="220" text-anchor="end" class="axis">4s</text>
+    <text x="50" y="145" text-anchor="end" class="axis">5s</text>
+    <text x="50" y="70" text-anchor="end" class="axis">6s</text>
+
+    <!-- Lima - MacOS -->
+    <g transform="translate(100,0)">
+      <!-- Native -->
+      <rect class="bar" x="0" y="370" width="20" height="150" fill="#a371f7"/>
+      <g class="tooltip" transform="translate(-40,340)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">Lima Native</tspan>
+          <tspan x="10" y="35">Avg: 3.38s</tspan>
+          <tspan x="10" y="50">Range: 3.00-3.63s</tspan>
+        </text>
+      </g>
+
+      <!-- No volumes -->
+      <rect class="bar" x="25" y="310" width="20" height="210" fill="#3fb950"/>
+      <g class="tooltip" transform="translate(-15,280)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">No volumes</tspan>
+          <tspan x="10" y="35">Avg: 4.17s</tspan>
+          <tspan x="10" y="50">Range: 4.05-4.24s</tspan>
+        </text>
+      </g>
+
+      <!-- Bind mount + volume -->
+      <rect class="bar" x="50" y="340" width="20" height="180" fill="#f0883e"/>
+      <g class="tooltip" transform="translate(10,310)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">Bind mount + vol</tspan>
+          <tspan x="10" y="35">Avg: 3.96s</tspan>
+          <tspan x="10" y="50">Range: 3.87-4.02s</tspan>
+        </text>
+      </g>
+
+      <!-- Bind mount -->
+      <rect class="bar" x="75" y="70" width="20" height="450" fill="#f85149"/>
+      <g class="tooltip" transform="translate(35,40)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">Bind mount</tspan>
+          <tspan x="10" y="35">Avg: 8.99s</tspan>
+          <tspan x="10" y="50">Range: 8.86-9.10s</tspan>
+        </text>
+      </g>
+
+      <text class="platform" x="47.5" y="550" text-anchor="middle">Lima</text>
+    </g>
+    <!-- Docker-VZ -->
+    <g transform="translate(250,0)">
+      <!-- Native -->
+      <rect class="bar" x="0" y="370" width="20" height="150" fill="#a371f7"/>
+      <g class="tooltip" transform="translate(-40,340)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">VZ Native</tspan>
+          <tspan x="10" y="35">Avg: 3.37s</tspan>
+          <tspan x="10" y="50">Range: 3.00-3.56s</tspan>
+        </text>
+      </g>
+
+      <!-- No volumes -->
+      <rect class="bar" x="25" y="300" width="20" height="220" fill="#3fb950"/>
+      <g class="tooltip" transform="translate(-15,270)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">No volumes</tspan>
+          <tspan x="10" y="35">Avg: 4.44s</tspan>
+          <tspan x="10" y="50">Range: 4.00-4.86s</tspan>
+        </text>
+      </g>
+
+      <!-- Bind mount + volume -->
+      <rect class="bar" x="50" y="360" width="20" height="160" fill="#f0883e"/>
+      <g class="tooltip" transform="translate(10,330)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">Bind mount + vol</tspan>
+          <tspan x="10" y="35">Avg: 3.61s</tspan>
+          <tspan x="10" y="50">Range: 3.55-3.70s</tspan>
+        </text>
+      </g>
+
+      <!-- Bind mount -->
+      <rect class="bar" x="75" y="50" width="20" height="470" fill="#f85149"/>
+      <g class="tooltip" transform="translate(35,20)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">Bind mount</tspan>
+          <tspan x="10" y="35">Avg: 9.53s</tspan>
+          <tspan x="10" y="50">Range: 9.44-9.63s</tspan>
+        </text>
+      </g>
+
+      <text class="platform" x="47.5" y="550" text-anchor="middle">Docker-VZ</text>
+    </g>
+    <!-- Docker-VMM -->
+    <g transform="translate(400,0)">
+      <!-- Native -->
+      <rect class="bar" x="0" y="370" width="20" height="150" fill="#a371f7"/>
+      <g class="tooltip" transform="translate(-40,340)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">VMM Native</tspan>
+          <tspan x="10" y="35">Avg: 3.35s</tspan>
+          <tspan x="10" y="50">Range: 3.00-3.53s</tspan>
+        </text>
+      </g>
+
+      <!-- No volumes -->
+      <rect class="bar" x="25" y="320" width="20" height="200" fill="#3fb950"/>
+      <g class="tooltip" transform="translate(-15,290)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">No volumes</tspan>
+          <tspan x="10" y="35">Avg: 4.05s</tspan>
+          <tspan x="10" y="50">Range: 3.87-4.28s</tspan>
+        </text>
+      </g>
+
+      <!-- Bind mount + volume -->
+      <rect class="bar" x="50" y="365" width="20" height="155" fill="#f0883e"/>
+      <g class="tooltip" transform="translate(10,335)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">Bind mount + vol</tspan>
+          <tspan x="10" y="35">Avg: 3.42s</tspan>
+          <tspan x="10" y="50">Range: 3.38-3.44s</tspan>
+        </text>
+      </g>
+
+      <!-- Bind mount -->
+      <rect class="bar" x="75" y="90" width="20" height="430" fill="#f85149"/>
+      <g class="tooltip" transform="translate(35,60)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">Bind mount</tspan>
+          <tspan x="10" y="35">Avg: 8.47s</tspan>
+          <tspan x="10" y="50">Range: 8.25-8.60s</tspan>
+        </text>
+      </g>
+
+      <text class="platform" x="47.5" y="550" text-anchor="middle">Docker-VMM</text>
+    </g>
+    <!-- Docker-VZ + file sync -->
+    <g transform="translate(550,0)">
+      <!-- Native -->
+      <rect class="bar" x="0" y="310" width="20" height="210" fill="#a371f7"/>
+      <g class="tooltip" transform="translate(-40,280)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">VZ+sync Native</tspan>
+          <tspan x="10" y="35">Avg: 4.19s</tspan>
+          <tspan x="10" y="50">Range: 3.48-4.67s</tspan>
+        </text>
+      </g>
+
+      <!-- No volumes -->
+      <rect class="bar" x="25" y="280" width="20" height="240" fill="#3fb950"/>
+      <g class="tooltip" transform="translate(-15,250)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">No volumes</tspan>
+          <tspan x="10" y="35">Avg: 4.75s</tspan>
+          <tspan x="10" y="50">Range: 4.69-4.84s</tspan>
+        </text>
+      </g>
+
+      <!-- Bind mount + volume -->
+      <rect class="bar" x="50" y="320" width="20" height="200" fill="#f0883e"/>
+      <g class="tooltip" transform="translate(10,290)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">Bind mount + vol</tspan>
+          <tspan x="10" y="35">Avg: 4.06s</tspan>
+          <tspan x="10" y="50">Range: 3.94-4.30s</tspan>
+        </text>
+      </g>
+
+      <!-- Bind mount -->
+      <rect class="bar" x="75" y="340" width="20" height="180" fill="#f85149"/>
+      <g class="tooltip" transform="translate(35,310)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">Bind mount</tspan>
+          <tspan x="10" y="35">Avg: 3.88s</tspan>
+          <tspan x="10" y="50">Range: 3.83-3.94s</tspan>
+        </text>
+      </g>
+
+      <text class="platform" x="47.5" y="550" text-anchor="middle">Docker-VZ-sync</text>
+    </g>
+    <!-- Docker - Linux -->
+    <g transform="translate(700,0)">
+      <!-- Native -->
+      <rect class="bar" x="0" y="240" width="20" height="280" fill="#a371f7"/>
+      <g class="tooltip" transform="translate(-40,210)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">Linux Native</tspan>
+          <tspan x="10" y="35">Avg: 5.32s</tspan>
+          <tspan x="10" y="50">Range: 5.29-5.36s</tspan>
+        </text>
+      </g>
+
+      <!-- No volumes -->
+      <rect class="bar" x="25" y="240" width="20" height="280" fill="#3fb950"/>
+      <g class="tooltip" transform="translate(-15,210)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">No volumes</tspan>
+          <tspan x="10" y="35">Avg: 5.29s</tspan>
+          <tspan x="10" y="50">Range: 5.22-5.34s</tspan>
+        </text>
+      </g>
+
+      <!-- Bind mount + volume -->
+      <rect class="bar" x="50" y="240" width="20" height="280" fill="#f0883e"/>
+      <g class="tooltip" transform="translate(10,210)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">Bind mount + vol</tspan>
+          <tspan x="10" y="35">Avg: 5.22s</tspan>
+          <tspan x="10" y="50">Range: 5.20-5.23s</tspan>
+        </text>
+      </g>
+      <!-- Bind mount -->
+      <rect class="bar" x="75" y="240" width="20" height="280" fill="#f85149"/>
+      <g class="tooltip" transform="translate(35,210)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">Bind mount</tspan>
+          <tspan x="10" y="35">Avg: 5.29s</tspan>
+          <tspan x="10" y="50">Range: 5.23-5.33s</tspan>
+        </text>
+      </g>
+
+      <text class="platform" x="47.5" y="550" text-anchor="middle">Linux Native</text>
+    </g>
+  </g>
+
+  <!-- Legend -->
+  <g transform="translate(100,650)">
+    <!-- First row -->
+    <g transform="translate(0,0)">
+      <rect x="0" y="0" width="20" height="20" fill="#a371f7"/>
+      <text x="30" y="15" class="legend-text">Native</text>
+    </g>
+
+    <g transform="translate(150,0)">
+      <rect x="0" y="0" width="20" height="20" fill="#3fb950"/>
+      <text x="30" y="15" class="legend-text">No volumes</text>
+    </g>
+
+    <g transform="translate(300,0)">
+      <rect x="0" y="0" width="20" height="20" fill="#f0883e"/>
+      <text x="30" y="15" class="legend-text">Bind mount + volume</text>
+    </g>
+
+    <g transform="translate(500,0)">
+      <rect x="0" y="0" width="20" height="20" fill="#f85149"/>
+      <text x="30" y="15" class="legend-text">Bind mount</text>
+    </g>
+  </g>
+</svg>
