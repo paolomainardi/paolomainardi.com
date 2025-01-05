@@ -45,7 +45,7 @@ The biggest decision Apple made with this framework was adopting the [VirtIO](ht
 
 The architecture looks more or less like this:
 
-{{< figure src="/images/posts/10-docker/macos-VirtIO.webp" title="Linux - MacOS VirtIO architecture" >}}
+{{< figure src="/images/posts/10-docker/macos-virtio.webp" title="Linux - MacOS VirtIO architecture" >}}
 
 As shown in the diagram, the VirtIO architecture comprises the following components:
 
