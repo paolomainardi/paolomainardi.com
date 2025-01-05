@@ -248,8 +248,6 @@ These issues likely stem from synchronization delays or file handle management. 
 1. **Hybrid Approach Stability**
    The combination of bind mounts with volumes shows remarkably consistent performance across all configurations, with times ranging from 3.42 to 4.06 seconds. This stability makes it an attractive option for development environments where predictable performance is crucial.
 
-#### Data
-
 ## Conclusions
 
 After **two years** from my first analysis, the **Docker ecosystem** on MacOS has significantly evolved. Here are the main takeaways from our benchmarks:
