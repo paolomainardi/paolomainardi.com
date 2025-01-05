@@ -281,7 +281,7 @@ If you're setting up a new development environment on MacOS today, I recommend:
 - Implementing the **hybrid approach** with volumes for the most stable performance - see the [previous article](https://www.paolomainardi.com/posts/docker-performance-macos/) with some examples.
   {{< /notice >}}
 
-Thanks for reading all of this, and if you find something wrong or want to discuss some topics further, get in touch with me. As always you can leave your comments here: https://github.com/paolomainardi/paolomainardi.com/discussions/38 or reach me on the contacts you can find [here](about).
+Thanks for reading all of this, and if you find something wrong or want to discuss some topics further, get in touch with me. As always you can leave your comments here: https://github.com/paolomainardi/paolomainardi.com/discussions/38 or reach me on the contacts you can find [here](/about).
 
 ## References
 
