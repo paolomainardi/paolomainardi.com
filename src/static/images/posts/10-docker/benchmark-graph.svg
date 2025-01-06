@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 750">
   <style>
     .bar { transition: opacity 0.3s; cursor: pointer; }
     .bar:hover { opacity: 0.7; }
@@ -16,10 +16,10 @@
   </style>
 
   <!-- Background -->
-  <rect width="1000" height="700" fill="#22272e"/>
+  <rect width="1100" height="750" fill="#22272e"/>
 
   <!-- Title -->
-  <text x="500" y="40" class="title" text-anchor="middle">Docker Performance Benchmark - MacOS vs Linux</text>
+  <text x="570" y="40" class="title" text-anchor="middle">Docker Performance Benchmark - MacOS (Docker for Desktop, Lima and Orbstack) and Linux</text>
   <!-- Grid and axes -->
   <g transform="translate(80,60)">
     <!-- Y-axis -->
@@ -46,7 +46,7 @@
     <text x="50" y="145" text-anchor="end" class="axis">5s</text>
     <text x="50" y="70" text-anchor="end" class="axis">6s</text>
 
-    <!-- Lima - MacOS -->
+    <!-- Lima -->
     <g transform="translate(100,0)">
       <!-- Native -->
       <rect class="bar" x="0" y="370" width="20" height="150" fill="#a371f7"/>
@@ -108,8 +108,8 @@
       </g>
 
       <!-- No volumes -->
-      <rect class="bar" x="25" y="300" width="20" height="220" fill="#3fb950"/>
-      <g class="tooltip" transform="translate(-15,270)">
+      <rect class="bar" x="25" y="270" width="20" height="250" fill="#3fb950"/>
+      <g class="tooltip" transform="translate(-15,240)">
         <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
         <text class="tooltip-text">
           <tspan x="10" y="20">No volumes</tspan>
@@ -204,8 +204,8 @@
       </g>
 
       <!-- No volumes -->
-      <rect class="bar" x="25" y="280" width="20" height="240" fill="#3fb950"/>
-      <g class="tooltip" transform="translate(-15,250)">
+      <rect class="bar" x="25" y="260" width="20" height="260" fill="#3fb950"/>
+      <g class="tooltip" transform="translate(-15,230)">
         <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
         <text class="tooltip-text">
           <tspan x="10" y="20">No volumes</tspan>
@@ -238,8 +238,56 @@
 
       <text class="platform" x="47.5" y="550" text-anchor="middle">Docker-VZ-sync</text>
     </g>
-    <!-- Docker - Linux -->
+    <!-- OrbStack -->
     <g transform="translate(700,0)">
+      <!-- Native -->
+      <rect class="bar" x="0" y="360" width="20" height="160" fill="#a371f7"/>
+      <g class="tooltip" transform="translate(-40,330)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">OrbStack Native</tspan>
+          <tspan x="10" y="35">Avg: 3.61s</tspan>
+          <tspan x="10" y="50">Range: 3.54-3.75s</tspan>
+        </text>
+      </g>
+
+      <!-- No volumes -->
+      <rect class="bar" x="25" y="370" width="20" height="150" fill="#3fb950"/>
+      <g class="tooltip" transform="translate(-15,340)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">No volumes</tspan>
+          <tspan x="10" y="35">Avg: 3.28s</tspan>
+          <tspan x="10" y="50">Range: 3.20-3.39s</tspan>
+        </text>
+      </g>
+
+      <!-- Bind mount + volume -->
+      <rect class="bar" x="50" y="375" width="20" height="145" fill="#f0883e"/>
+      <g class="tooltip" transform="translate(10,345)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">Bind mount + vol</tspan>
+          <tspan x="10" y="35">Avg: 3.19s</tspan>
+          <tspan x="10" y="50">Range: 3.14-3.29s</tspan>
+        </text>
+      </g>
+
+      <!-- Bind mount -->
+      <rect class="bar" x="75" y="320" width="20" height="200" fill="#f85149"/>
+      <g class="tooltip" transform="translate(35,290)">
+        <rect class="tooltip-bg" x="0" y="0" width="120" height="65"/>
+        <text class="tooltip-text">
+          <tspan x="10" y="20">Bind mount</tspan>
+          <tspan x="10" y="35">Avg: 4.22s</tspan>
+          <tspan x="10" y="50">Range: 4.15-4.27s</tspan>
+        </text>
+      </g>
+
+      <text class="platform" x="47.5" y="550" text-anchor="middle">OrbStack</text>
+    </g>
+    <!-- Linux -->
+    <g transform="translate(850,0)">
       <!-- Native -->
       <rect class="bar" x="0" y="240" width="20" height="280" fill="#a371f7"/>
       <g class="tooltip" transform="translate(-40,210)">
@@ -272,6 +320,7 @@
           <tspan x="10" y="50">Range: 5.20-5.23s</tspan>
         </text>
       </g>
+
       <!-- Bind mount -->
       <rect class="bar" x="75" y="240" width="20" height="280" fill="#f85149"/>
       <g class="tooltip" transform="translate(35,210)">
@@ -283,31 +332,30 @@
         </text>
       </g>
 
-      <text class="platform" x="47.5" y="550" text-anchor="middle">Linux Native</text>
+      <text class="platform" x="47.5" y="550" text-anchor="middle">Linux</text>
     </g>
-  </g>
+    <!-- Legend -->
+    <g transform="translate(100,620)">
+      <!-- First row -->
+      <g transform="translate(0,0)">
+        <rect x="0" y="0" width="20" height="20" fill="#a371f7"/>
+        <text x="30" y="15" class="legend-text">Native</text>
+      </g>
 
-  <!-- Legend -->
-  <g transform="translate(100,650)">
-    <!-- First row -->
-    <g transform="translate(0,0)">
-      <rect x="0" y="0" width="20" height="20" fill="#a371f7"/>
-      <text x="30" y="15" class="legend-text">Native</text>
-    </g>
+      <g transform="translate(150,0)">
+        <rect x="0" y="0" width="20" height="20" fill="#3fb950"/>
+        <text x="30" y="15" class="legend-text">No volumes</text>
+      </g>
 
-    <g transform="translate(150,0)">
-      <rect x="0" y="0" width="20" height="20" fill="#3fb950"/>
-      <text x="30" y="15" class="legend-text">No volumes</text>
-    </g>
+      <g transform="translate(300,0)">
+        <rect x="0" y="0" width="20" height="20" fill="#f0883e"/>
+        <text x="30" y="15" class="legend-text">Bind mount + volume</text>
+      </g>
 
-    <g transform="translate(300,0)">
-      <rect x="0" y="0" width="20" height="20" fill="#f0883e"/>
-      <text x="30" y="15" class="legend-text">Bind mount + volume</text>
-    </g>
-
-    <g transform="translate(500,0)">
-      <rect x="0" y="0" width="20" height="20" fill="#f85149"/>
-      <text x="30" y="15" class="legend-text">Bind mount</text>
+      <g transform="translate(500,0)">
+        <rect x="0" y="0" width="20" height="20" fill="#f85149"/>
+        <text x="30" y="15" class="legend-text">Bind mount</text>
+      </g>
     </g>
   </g>
 </svg>
