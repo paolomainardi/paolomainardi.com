@@ -302,6 +302,14 @@ Thanks for reading all of this, and if you find something wrong or want to discu
 
 Here a list of some very random references I've collected during my research:
 
-1. [What makes Docker VMM better than
-
-Apple Virtualization Framework?](https://github.com/docker/for-mac/issues/7464) 2. [Docker VMM](https://docs.docker.com/desktop/features/vmm/) 3. [REDHAT - vfkit - A macOS hypervisor using Apple's virtualization framework](https://crc.dev/blog/Container%20Plumbing%202023%20-%20vfkit%20-%20A%20minimal%20hypervisor%20using%20Apple%27s%20virtualization%20framework.pdf) 4. [vz - Go binding with Apple Virtualization.framework](https://github.com/Code-Hex/vz) 5. [vfkit - Simple command line tool to start VMs through the macOS Virtualization framework](https://github.com/crc-org/vfkit) 6. [What Are the Latest Docker Desktop Enterprise-Grade Performance Optimizations?](https://www.docker.com/blog/what-are-the-latest-docker-desktop-enterprise-grade-performance-optimizations/#boost-performance-Docker-VMM) 7. [Tart is a virtualization toolset to build, run and manage macOS and Linux virtual machines on Apple Silicon](https://tart.run/) 8. [Podman 5.2 Enhances macOS VMs with GPU Support](https://linuxiac.com/podman-5-2-enhances-macos-vms-with-gpu-support/) 9. [Introduction to VirtIO](https://blogs.oracle.com/linux/post/introduction-to-virtio) 10. [Virgl not functionning under Apple's virtualization.framework](https://github.com/utmapp/UTM/discussions/5482) 11. [macOS Docker Provider Performance, November 2023](https://ddev.com/blog/docker-performance-2023/)
+1. [What makes Docker VMM better than Apple Virtualization Framework?](https://github.com/docker/for-mac/issues/7464)
+2. [Docker VMM](https://docs.docker.com/desktop/features/vmm/)
+3. [REDHAT - vfkit - A macOS hypervisor using Apple's virtualization framework](https://crc.dev/blog/Container%20Plumbing%202023%20-%20vfkit%20-%20A%20minimal%20hypervisor%20using%20Apple%27s%20virtualization%20framework.pdf)
+4. [vz - Go binding with Apple Virtualization.framework](https://github.com/Code-Hex/vz)
+5. [vfkit - Simple command line tool to start VMs through the macOS Virtualization framework](https://github.com/crc-org/vfkit)
+6. [What Are the Latest Docker Desktop Enterprise-Grade Performance Optimizations?](https://www.docker.com/blog/what-are-the-latest-docker-desktop-enterprise-grade-performance-optimizations/#boost-performance-Docker-VMM)
+7. [Tart is a virtualization toolset to build, run and manage macOS and Linux virtual machines on Apple Silicon](https://tart.run/)
+8. [Podman 5.2 Enhances macOS VMs with GPU Support](https://linuxiac.com/podman-5-2-enhances-macos-vms-with-gpu-support/)
+9. [Introduction to VirtIO](https://blogs.oracle.com/linux/post/introduction-to-VirtIO)
+10. [Virgl not functionning under Apple's virtualization.framework](https://github.com/utmapp/UTM/discussions/5482)
+11. [macOS Docker Provider Performance, November 2023](https://ddev.com/blog/docker-performance-2023/)
