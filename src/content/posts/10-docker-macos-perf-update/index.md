@@ -203,7 +203,7 @@ I'm especially interested in the performance of [Lima](https://github.com/lima-v
 | MacOS     | Docker-VMM         | Native              | 3.35             | 3.00-3.53     |
 | MacOS     | Docker-VMM         | No volumes          | 4.05             | 3.87-4.28     |
 | MacOS     | Docker-VMM         | Bind mount + volume | 3.42             | 3.38-3.44     |
-| MacOS     | Docker-VMM         | **Bind mount**      | **8.47**         | **8.25-8.60** |
+| **MacOS** | **Docker-VMM**     | **Bind mount**      | **8.47**         | **8.25-8.60** |
 | MacOS     | Docker-VZ-sync     | Native              | 4.19             | 3.48-4.67     |
 | MacOS     | Docker-VZ-sync     | No volumes          | 4.75             | 4.69-4.84     |
 | MacOS     | Docker-VZ-sync     | Bind mount + volume | 4.06             | 3.94-4.30     |
