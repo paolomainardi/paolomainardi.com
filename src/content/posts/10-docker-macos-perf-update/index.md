@@ -10,7 +10,7 @@ images = ["/images/posts/10-docker/og-benchmark-diagram.webp"]
 +++
 
 {{< notice info >}}
-**06/01/2024** Update: Many readers requested the inclusion of [OrbStack](https://orbstack.dev) in the benchmarks. This update introduces OrbStack's performance data, along with updated insights and comparisons.
+**06/01/2025** Update: Many readers requested the inclusion of [OrbStack](https://orbstack.dev) in the benchmarks. This update introduces OrbStack's performance data, along with updated insights and comparisons.
 {{< /notice >}}
 
 ## TLDR
