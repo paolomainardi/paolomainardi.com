@@ -334,6 +334,9 @@
 
       <text class="platform" x="47.5" y="550" text-anchor="middle">Linux</text>
     </g>
+
+    <text x="520" y="590" class="title" text-anchor="middle">(lower is better)</text>
+
     <!-- Legend -->
     <g transform="translate(100,620)">
       <!-- First row -->
