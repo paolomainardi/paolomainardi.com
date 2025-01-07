@@ -1,0 +1,25 @@
+Platform,OS,Test,Time,Time 2,Time 3
+Lima,MacOS,Native,00:00:03:00,00:00:03:63,00:00:03:51
+Lima,MacOS,Docker: No volumes,00:00:04:054,00:00:04:236,00:00:04:233
+Lima,MacOS,Docker: Bind mount + volume,00:00:03:868,00:00:03:997,00:00:04:023
+Lima,MacOS,Docker: bind mount,00:00:08:856,00:00:09:012,00:00:09:102
+Docker - VZ,MacOS,Native,00:00:03:00,00:00:03:54,00:00:03:56
+Docker - VZ,MacOS,Docker: No volumes,00:00:04:859,00:00:04:476,00:00:03:997
+Docker - VZ,MacOS,Docker: Bind mount + volume,00:00:03:701,00:00:03:554,00:00:03:585
+Docker - VZ,MacOS,Docker: bind mount,00:00:09:632,00:00:09:439,00:00:09:520
+Docker - VMM,MacOS,Native,00:00:03:00,00:00:03:52,00:00:03:53
+Docker - VMM,MacOS,Docker: No volumes,00:00:03:871,00:00:04:279,00:00:04:002
+Docker - VMM,MacOS,Docker: Bind mount + volume,00:00:03:381,00:00:03:441,00:00:03:428
+Docker - VMM,MacOS,Docker: bind mount,00:00:08:253,00:00:08:547,00:00:08:598
+Docker - VZ + file sync,MacOS,Native,00:00:04:41,00:00:04:67,00:00:03:48
+Docker - VZ + file sync,MacOS,Docker: No volumes,00:00:04:844,00:00:04:687,00:00:04:718
+Docker - VZ + file sync,MacOS,Docker: Bind mount + volume,00:00:03:950,00:00:04:304,00:00:03:937
+Docker - VZ + file sync,MacOS,Docker: bind mount,00:00:03:827,00:00:03:942,00:00:03:881
+Docker - OrbStack,MacOS,Native,00:00:03:54,00:00:03:75,00:00:03:54
+Docker - OrbStack,MacOS,Docker: No volumes,00:00:03:201,00:00:03:259,00:00:03:393
+Docker - OrbStack,MacOS,Docker: Bind mount + volume,00:00:03:144,00:00:03:290,00:00:03:150
+Docker - OrbStack,MacOS,Docker: bind mount,00:00:04:147,00:00:04:234,00:00:04:269
+Docker - Linux,Linux,Native,00:00:05:36,00:00:05:29,00:00:05:32
+Docker - Linux,Linux,Docker: No volumes,00:00:05:218,00:00:05:340,00:00:05:322
+Docker - Linux,Linux,Docker: Bind mount + volume,00:00:05:230,00:00:05:230,00:00:05:198
+Docker - Linux,Linux,Docker: bind mount,00:00:05:314,00:00:05:231,00:00:05:332

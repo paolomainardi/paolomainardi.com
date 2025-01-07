@@ -298,6 +298,11 @@ If you're setting up a new development environment on MacOS today, I recommend:
 
 Thanks for reading all of this, and if you find something wrong or want to discuss some topics further, get in touch with me. As always you can leave your comments here: https://github.com/paolomainardi/paolomainardi.com/discussions/38 or reach me on the contacts you can find [here](/about).
 
+## Data and diagrams
+
+1. Excalidraw diagrams (read-only link): https://excalidraw.com/#json=FD3dYVkiXvQ9xHeZ2Pgfy,5tVt2hukDYlki3qwzMI15w
+2. Benchmark results: [data.csv](./assets/docker-mac-bench.csv)
+
 ## References
 
 Here a list of some very random references I've collected during my research:
