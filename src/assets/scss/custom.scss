@@ -31,7 +31,7 @@ $code-font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
   font-display: swap;
 }
 
-body {
+.post-content {
   font-family: "Libre Baskerville", $font-family;
   font-size: 1.8rem;
 }
@@ -41,14 +41,5 @@ body {
 }
 
 .list ul li .title {
-  font-family: "Libre Baskerville", $font-family;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: "Libre Baskerville", $font-family;
+  font-size: 20px;
 }
