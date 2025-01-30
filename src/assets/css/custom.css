@@ -48,3 +48,10 @@ figcaption {
     }
   }
 }
+
+@media only screen and (max-width: 768px) {
+    body {
+        font-size: 1.6em;
+        line-height: 1.8em;
+    }
+}
