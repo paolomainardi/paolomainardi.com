@@ -1,4 +1,14 @@
 /* Base Typography */
+
+body {
+  font-size: 1.7em;
+
+  @media only screen and (max-width: 768px) {
+    font-size: 1.5em;
+    line-height: 1.8;
+  }
+}
+
 .content article p {
   text-align: left;
 }
@@ -61,13 +71,6 @@ main .content table {
 
 /* Mobile Styles */
 @media only screen and (max-width: 76.8rem) {
-  .container.post article,
-  .post-content {
-    font-size: 1.6rem !important;
-    line-height: 1.7 !important;
-    text-align: left !important;
-  }
-
   .navigation a,
   .list ul li .title {
     font-size: 1.8rem;
