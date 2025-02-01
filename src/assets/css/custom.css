@@ -50,8 +50,9 @@ figcaption {
 }
 
 @media only screen and (max-width: 768px) {
-    body {
-        font-size: 1.6em;
-        line-height: 1.8em;
-    }
+  .container.post article,
+  .post-content {
+    font-size: 15px !important;
+    line-height: 1.5em !important;
+  }
 }
