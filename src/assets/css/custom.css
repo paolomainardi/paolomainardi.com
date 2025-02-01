@@ -9,6 +9,14 @@ body {
   }
 }
 
+code:not(.highlight code) {
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  display: inline-block;
+}
+
 .content article p {
   text-align: left;
 }
