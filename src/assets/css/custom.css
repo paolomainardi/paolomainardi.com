@@ -1,10 +1,10 @@
 /* Base Typography */
 
 body {
-  font-size: 1.7em;
+  font-size: 1.8em;
 
   @media only screen and (max-width: 768px) {
-    font-size: 1.5em;
+    font-size: 1.6em;
     line-height: 1.8;
   }
 }
