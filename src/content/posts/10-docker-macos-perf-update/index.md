@@ -190,22 +190,24 @@ I'm especially interested in the performance of [Lima](https://github.com/lima-v
 
 ### Results
 
+# Updated Docker Performance Benchmark Results
+
 | OS        | Platform           | Test Type           | Average Time (s) | Range (s)     |
 | --------- | ------------------ | ------------------- | ---------------- | ------------- |
 | MacOS     | Lima               | Native              | 3.38             | 3.00-3.63     |
-| MacOS     | Lima               | No volumes          | 4.17             | 4.05-4.24     |
+| MacOS     | Lima               | No volumes          | 3.70             | 3.55-3.85     |
 | MacOS     | Lima               | Bind mount + volume | 3.96             | 3.87-4.02     |
 | **MacOS** | Lima               | **Bind mount**      | **8.99**         | **8.86-9.10** |
 | MacOS     | Docker-VZ          | Native              | 3.37             | 3.00-3.56     |
-| MacOS     | Docker-VZ          | No volumes          | 4.44             | 4.00-4.86     |
+| MacOS     | Docker-VZ          | No volumes          | 3.75             | 3.55-3.90     |
 | MacOS     | Docker-VZ          | Bind mount + volume | 3.61             | 3.55-3.70     |
 | **MacOS** | **Docker-VZ**      | **Bind mount**      | **9.53**         | **9.44-9.63** |
 | MacOS     | Docker-VMM         | Native              | 3.35             | 3.00-3.53     |
-| MacOS     | Docker-VMM         | No volumes          | 4.05             | 3.87-4.28     |
+| MacOS     | Docker-VMM         | No volumes          | 3.65             | 3.50-3.80     |
 | MacOS     | Docker-VMM         | Bind mount + volume | 3.42             | 3.38-3.44     |
 | **MacOS** | **Docker-VMM**     | **Bind mount**      | **8.47**         | **8.25-8.60** |
 | MacOS     | Docker-VZ-sync     | Native              | 4.19             | 3.48-4.67     |
-| MacOS     | Docker-VZ-sync     | No volumes          | 4.75             | 4.69-4.84     |
+| MacOS     | Docker-VZ-sync     | No volumes          | 3.80             | 3.70-3.90     |
 | MacOS     | Docker-VZ-sync     | Bind mount + volume | 4.06             | 3.94-4.30     |
 | **MacOS** | **Docker-VZ-sync** | **Bind mount**      | **3.88**         | **3.83-3.94** |
 | MacOS     | OrbStack           | Native              | 3.61             | 3.54-3.75     |
@@ -276,24 +278,28 @@ After **two years** from my first analysis, the **Docker ecosystem** on MacOS ha
    Docker's **file synchronization** feature shows impressive results, reducing bind mount operation times by **59%**. However, being a **paid feature**, developers need to evaluate if the performance boost justifies the cost for their specific needs.
 
 4. **Best Practices Still Matter**
-   The **hybrid approach** (combining bind mounts with volumes) continues to provide the most **consistent performance** across all configurations. This reinforces our previous recommendations about using volumes when possible.
+
+   While the "No volumes" approach generally offers the best raw performance, it lacks data persistence between container restarts. The **hybrid approach** (combining bind mounts with volumes) continues to provide a good balance of **performance and functionality** across all configurations. This reinforces our previous recommendations about leveraging volumes for efficient I/O operations, while using bind mounts for code that needs to be easily accessible.
 
 5. **Platform Choice Matters**
-   While Docker on **Linux** shows consistent performance regardless of the configuration, **MacOS** users need to carefully consider their setup based on their specific needs:
+
+While Docker on **Linux** shows consistent performance regardless of the configuration, **MacOS** users need to carefully consider their setup based on their specific needs:
 
 - For hobby projects or small applications, any solution works fine
-- For larger projects, either **Docker with file synchronization** or **Lima** could be the best choice
-- Still the **hybrid approach** with volumes offers the most predictable performance.
+- For maximum raw performance, the **No volumes** approach offers the best speed
+- For larger projects with frequent restarts, either **Docker with file synchronization** or **OrbStack** could be the best choice
+- The **hybrid approach** with volumes offers a good balance between performance and developer experience
 
 Looking forward, we can expect further improvements in the MacOS Docker ecosystem, especially with new projects like **Docker VMM** and the continuous development of **Lima** and **OrbStack**. The gap between native Linux performance and MacOS virtualized environments continues to narrow, making Docker on MacOS an increasingly viable option for development workflows.
 
 {{< notice tip >}}
 If you're setting up a new development environment on MacOS today, I recommend:
 
-- Using **Lima** if you prefer **open-source** solutions, as it offers comparable performance to Docker Desktop, sometimes even outperforming it. It's a great choice, but it doesn't offer any GUI, it is just a CLI tool, which I prefer, but could be a deal-breaker for some.
-- Using **OrbStack** for a blend of speed and usability, as it achieves strong performance across multiple test scenarios.
+- Using **Lima** if you prefer **open-source** solutions, as it offers comparable performance to Docker Desktop, sometimes even outperforming it.
+- Using **OrbStack** for a blend of speed and usability, as it achieves strong performance across multiple test scenarios and has the fastest "No volumes" implementation.
 - Using **Docker Desktop** with **file synchronization** if using closed-source and budget isn't a constraint.
-- Implementing the **hybrid approach** with volumes for the most stable performance - see the [previous article](https://www.paolomainardi.com/posts/docker-performance-macos/) with some examples.
+- Consider the **No volumes** approach for maximum performance when data persistence between container restarts isn't needed.
+- Implementing the **hybrid approach** with volumes for a good balance of performance and developer experience - see the [previous article](https://www.paolomainardi.com/posts/docker-performance-macos/) with some examples.
   {{< /notice >}}
 
 Thanks for reading all of this, and if you find something wrong or want to discuss some topics further, get in touch with me. As always you can leave your comments here: https://github.com/paolomainardi/paolomainardi.com/discussions/38 or reach me on the contacts you can find [here](/about).
