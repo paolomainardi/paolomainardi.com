@@ -1,36 +1,201 @@
-$font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans,
-  Ubuntu, Cantarell, "Helvetica Neue", Helvetica, "游ゴシック", "PingFang SC",
-  STXihei, "华文细黑", "Microsoft YaHei", "微软雅黑", SimSun, "宋体", Heiti,
-  "黑体", sans-serif;
-$code-font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+body {
+  font-size: 1.7em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.7;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 
-@font-face {
-  font-family: "Libre Baskerville";
-  src: url("/fonts/libre-baskerville-v9-latin-ext_latin-700.woff2")
-    format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
+  @media only screen and (max-width: 768px) {
+    font-size: 1.6em;
+    line-height: 1.8;
+  }
 }
 
-@font-face {
-  font-family: "Libre Baskerville";
-  src: url("/fonts/libre-baskerville-v9-latin-ext_latin-italic.woff2")
-    format("woff2");
-  font-weight: normal;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+
+  @media only screen and (max-width: 768px) {
+    line-height: 1.4;
+  }
+}
+
+h1 {
+  font-size: 2.4rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.9rem;
+}
+
+.content article {
+  p {
+    text-align: left;
+    margin-bottom: 1.5rem;
+
+    @media only screen and (max-width: 768px) {
+      line-height: 1.8;
+      margin-bottom: 1.8rem;
+    }
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin-top: 1.2rem;
+    margin-bottom: 0.8rem;
+  }
+}
+
+.post-title {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+code:not(.highlight code) {
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  display: inline-block;
+  font-size: 1.5rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.3rem;
+}
+
+blockquote {
+  line-height: 1.8;
   font-style: italic;
-  font-display: swap;
+  border-left: 3px solid #718ad8;
+  margin-left: 2rem;
+  padding-left: 1rem;
+  color: #c9cacc;
+
+  @media only screen and (max-width: 768px) {
+    line-height: 1.9;
+    margin-left: 1.5rem;
+    margin-bottom: 1.8rem;
+  }
 }
 
-@font-face {
-  font-family: "Libre Baskerville";
-  src: url("/fonts/libre-baskerville-v9-latin-ext_latin-regular.woff2")
-    format("woff2");
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
+body.colorscheme-dark article div.post-content a {
+  text-decoration: none;
+  background-image: linear-gradient(
+    transparent,
+    transparent 0.5rem,
+    #c9cacc 0.5rem,
+    #c9cacc
+  );
+  background-position: bottom;
+  background-size: 100% 0.6rem;
+  background-repeat: repeat-x;
+  transition: background-image 0.3s ease;
+
+  &:hover {
+    background-image: linear-gradient(
+      transparent,
+      transparent 0.5rem,
+      #ff79c6 0.5rem,
+      #ff79c6
+    );
+  }
 }
 
-.post-content {
-  font-family: "Libre Baskerville", $font-family;
+.navigation a,
+.list ul li .title {
+  font-size: 2rem;
+
+  @media only screen and (max-width: 76.8rem) {
+    font-size: 1.8rem;
+  }
+}
+
+.highlight {
+  div,
+  pre {
+    margin: 0.8rem 0;
+    padding: 1rem;
+    border-radius: 0.6rem;
+    overflow-x: auto;
+
+    @media only screen and (max-width: 76.8rem) {
+      padding: 0.8rem;
+      line-height: 1.7;
+    }
+  }
+}
+
+table {
+  width: 100%;
+  margin: 2rem 0;
+  border-collapse: collapse;
+  font-size: 0.95em;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+  display: block;
+}
+
+th {
+  background-color: rgba(113, 138, 216, 0.15);
+  color: #e4e4e4;
+  font-weight: 600;
+  text-align: left;
+  padding: 1rem;
+  border-bottom: 2px solid rgba(113, 138, 216, 0.4);
+}
+
+td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid rgba(100, 100, 100, 0.2);
+}
+
+tr {
+  &:nth-child(even) {
+    background-color: rgba(50, 50, 50, 0.2);
+  }
+
+  &:hover {
+    background-color: rgba(113, 138, 216, 0.1);
+  }
+}
+
+.content table thead {
+  background-color: rgba(113, 138, 216, 0.1);
+}
+
+ul,
+ol {
+  padding-left: 1.8rem;
+  margin-bottom: 1.5rem;
+
+  li {
+    margin-bottom: 0.5rem;
+
+    @media only screen and (max-width: 768px) {
+      line-height: 1.7;
+      margin-bottom: 0.7rem;
+    }
+  }
+}
+
+@media only screen and (max-width: 76.8rem) {
+  .container {
+    padding: 0 1.2rem;
+  }
 }
