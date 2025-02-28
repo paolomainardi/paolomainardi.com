@@ -190,8 +190,6 @@ I'm especially interested in the performance of [Lima](https://github.com/lima-v
 
 ### Results
 
-# Updated Docker Performance Benchmark Results
-
 | OS        | Platform           | Test Type           | Average Time (s) | Range (s)     |
 | --------- | ------------------ | ------------------- | ---------------- | ------------- |
 | MacOS     | Lima               | Native              | 3.38             | 3.00-3.63     |
@@ -269,12 +267,15 @@ These issues likely stem from synchronization delays or file handle management. 
 After **two years** from my first analysis, the **Docker ecosystem** on MacOS has significantly evolved. Here are the main takeaways from our benchmarks:
 
 1. **Performance Has Improved**
+
    The **VirtIOFS** improvements are notable - **bind mount** operations are now only **3x slower** than native operations, compared to **5-6x slower** two years ago. This is a substantial improvement in daily development workflows.
 
 2. **New Solutions Are Emerging**
+
    The introduction of **Docker VMM**, the maturity of **Lima**, and the strong performance of **OrbStack** show how the ecosystem is evolving. Lima and OrbStack prove to be viable alternatives to **Docker Desktop**, each excelling in different areas.
 
 3. **File Synchronization is Game-Changing**
+
    Docker's **file synchronization** feature shows impressive results, reducing bind mount operation times by **59%**. However, being a **paid feature**, developers need to evaluate if the performance boost justifies the cost for their specific needs.
 
 4. **Best Practices Still Matter**
@@ -283,12 +284,12 @@ After **two years** from my first analysis, the **Docker ecosystem** on MacOS ha
 
 5. **Platform Choice Matters**
 
-While Docker on **Linux** shows consistent performance regardless of the configuration, **MacOS** users need to carefully consider their setup based on their specific needs:
+   While Docker on **Linux** shows consistent performance regardless of the configuration, **MacOS** users need to carefully consider their setup based on their specific needs:
 
-- For hobby projects or small applications, any solution works fine
-- For maximum raw performance, the **No volumes** approach offers the best speed
-- For larger projects with frequent restarts, either **Docker with file synchronization** or **OrbStack** could be the best choice
-- The **hybrid approach** with volumes offers a good balance between performance and developer experience
+   - For hobby projects or small applications, any solution works fine
+   - For maximum raw performance, the **No volumes** approach offers the best speed
+   - For larger projects with frequent restarts, either **Docker with file synchronization** or **OrbStack** could be the best choice
+   - The **hybrid approach** with volumes offers a good balance between performance and developer experience
 
 Looking forward, we can expect further improvements in the MacOS Docker ecosystem, especially with new projects like **Docker VMM** and the continuous development of **Lima** and **OrbStack**. The gap between native Linux performance and MacOS virtualized environments continues to narrow, making Docker on MacOS an increasingly viable option for development workflows.
 
