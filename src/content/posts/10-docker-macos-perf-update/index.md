@@ -190,8 +190,6 @@ I'm especially interested in the performance of [Lima](https://github.com/lima-v
 
 ### Results
 
-# Updated Docker Performance Benchmark Results
-
 | OS        | Platform           | Test Type           | Average Time (s) | Range (s)     |
 | --------- | ------------------ | ------------------- | ---------------- | ------------- |
 | MacOS     | Lima               | Native              | 3.38             | 3.00-3.63     |
