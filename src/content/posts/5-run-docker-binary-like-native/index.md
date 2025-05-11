@@ -93,7 +93,7 @@ ${docker_env_vars[@]} \
 
 How it works? Let's break down the code and understand each part of the script:
 
-1. Check if the DOCKER_IMAGE variable is set: The script checks if the required DOCKER_IMAGE variable is set. If not, it prints an error message and exits the script.
+1. Check if the `DOCKER_IMAGE` variable is set: The script checks if the required DOCKER_IMAGE variable is set. If not, it prints an error message and exits the script.
 
 ```shell
 if [ -z "$DOCKER_IMAGE" ]; then
