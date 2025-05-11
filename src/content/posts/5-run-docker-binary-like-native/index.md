@@ -18,26 +18,25 @@ image: gitlab-ci-base-image:latest
 
 phpunit:
   script: |
-          docker run --rm -it \
-          -e CI_COMMIT_REF_SLUG=$CI_COMMIT_REF_SLUG \
-          -e MY_CUSTOM_CONFIG=$MY_CUSTOM_CONFIG \
-          # all the other hardwired variables i know (i can miss something here). \
-          php:8.2 php tests.php
+    docker run --rm -it \
+    -e CI_COMMIT_REF_SLUG=$CI_COMMIT_REF_SLUG \
+    -e MY_CUSTOM_CONFIG=$MY_CUSTOM_CONFIG \
+    # all the other hardwired variables i know (i can miss something here). \
+    php:8.2 php tests.php
 ```
 
 So, assuming that an entire system is not just a filesystem with a bunch of binaries, to let the process behave more like running inside the host, we need, at minimum, the following stuff:
 
-* Hostname
-* User's home and a user with the same `uid:gid`
-* Env vars
-* X11 socket to run gui apps (optional)2
+- Hostname
+- User's home and a user with the same `uid:gid`
+- Env vars
+- X11 socket to run gui apps (optional)2
 
 ## Solution
 
 So i condensated everything in a small script i use regularly:
 
 ```shell
-#!/bin/sh
 #!/bin/sh
 
 if [ -z "$DOCKER_IMAGE" ]; then
@@ -114,14 +113,14 @@ done
 
 Some critical flags used in the docker run command include:
 
-* -`-rm`: Automatically removes the container after it finishes executing.
-* `-it`: Allocates a TTY and keeps STDIN open for interactive use.
-* `${docker_env_vars[@]}`: Passes the dynamically collected environment variables to the * container.
-* `-h "${HOSTNAME}"`: Sets the container's hostname to match the host system.
-* `--net=host`: Uses the host network, so you can access local services from inside the container as a normal process can.
-* `-v /var/run/docker.sock:/var/run/docker.sock:ro`: Mount the docker.sock to use Docker inside * the container.
-* `-v /tmp/.X11-unix:/tmp/.X11-unix`: Mount X11 socket to run GUI apps.
-* Mount system paths: `/var/run, /tmp, /sys` to match the host parity
+- -`-rm`: Automatically removes the container after it finishes executing.
+- `-it`: Allocates a TTY and keeps STDIN open for interactive use.
+- `${docker_env_vars[@]}`: Passes the dynamically collected environment variables to the \* container.
+- `-h "${HOSTNAME}"`: Sets the container's hostname to match the host system.
+- `--net=host`: Uses the host network, so you can access local services from inside the container as a normal process can.
+- `-v /var/run/docker.sock:/var/run/docker.sock:ro`: Mount the docker.sock to use Docker inside \* the container.
+- `-v /tmp/.X11-unix:/tmp/.X11-unix`: Mount X11 socket to run GUI apps.
+- Mount system paths: `/var/run, /tmp, /sys` to match the host parity
 
 I keep it the process inside on `/usr/local/bin/e` and i use it for things like running a specific version of PHP:
 
