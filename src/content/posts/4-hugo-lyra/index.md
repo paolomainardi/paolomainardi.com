@@ -3,7 +3,7 @@ date = "2023-01-15"
 title = "A new search engine for your Hugo website based on Lyra"
 slug = "hugo-search-engine-lyra"
 tags = ["hugo", "lyra"]
-draft = "false"
+draft = "true"
 featuredImage = "images/posts/4-hugo-lyra/dall-e-hugo-lyra-image.webp"
 images = ["images/posts/4-hugo-lyra/dall-e-hugo-lyra-image.webp"]
 +++
@@ -75,7 +75,7 @@ Instead, I want to share **what I learned** building this project:
 1. My feelings on **Typescript** are _not yet clear_; I like the idea a lot but am scared of the pile of layers on top of the bare language; sometimes, debugging types or finding them (if any) is frustrating; maybe it’s also a matter of being used on it, as my daily work does not involve anymore writing a lot of code in TS.
 2. **[Esbuild](https://esbuild.github.io/) is just awesome**, I never had the chance to try it in a real-world project before, and I guess we are finally over the Webpack configuration monstrosity; much respect for it, but DX is all on the Esbuild's side.
 3. [Node-tap](https://node-tap.org/) is the test library to use with Node; **easy**, **straightforward**, with **no frills**, and the **maintainers** are **awesome and responsive**. Another project I didn’t know before starting building.
-4. **ESM - CJS is still a big giant mess**, and the pain of trying to build isomorphic code, while wrestling between CJS, AMD, UMD, ESM, System, and IIFE formats and the combination of stuff to put on package.json. {{< tweet user="MicheleRivaCode" id="1613904206229897223" >}}
+4. **ESM - CJS is still a big giant mess**, and the pain of trying to build isomorphic code, while wrestling between CJS, AMD, UMD, ESM, System, and IIFE formats and the combination of stuff to put on package.json.
 5. [Release-it](https://github.com/release-it/release-it) is a lovely project to release NPM projects and taking in charge of all the tedious tasks involved in the release process, like tagging, Changelog file updates, release on NPM, and release on Github; [here](https://github.com/paolomainardi/hugo-lyra/blob/main/.github/workflows/release.yml) is the GitHub workflow.
 
 ## Conclusions
