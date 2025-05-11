@@ -115,10 +115,10 @@ Some critical flags used in the docker run command include:
 
 - -`-rm`: Automatically removes the container after it finishes executing.
 - `-it`: Allocates a TTY and keeps STDIN open for interactive use.
-- `${docker_env_vars[@]}`: Passes the dynamically collected environment variables to the \* container.
+- `${docker_env_vars[@]}`: Passes the dynamically collected environment variables to the container.
 - `-h "${HOSTNAME}"`: Sets the container's hostname to match the host system.
 - `--net=host`: Uses the host network, so you can access local services from inside the container as a normal process can.
-- `-v /var/run/docker.sock:/var/run/docker.sock:ro`: Mount the docker.sock to use Docker inside \* the container.
+- `-v /var/run/docker.sock:/var/run/docker.sock:ro`: Mount the docker.sock to use Docker inside the container.
 - `-v /tmp/.X11-unix:/tmp/.X11-unix`: Mount X11 socket to run GUI apps.
 - Mount system paths: `/var/run, /tmp, /sys` to match the host parity
 
