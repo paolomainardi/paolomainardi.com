@@ -1,29 +1,43 @@
-all: up
+# Makefile for paolomainardi.com
+#
+# Usage:
+#   make <target>
+#
+# Targets:
 
-build:
+help: ## Show this help message and exit
+	@grep -E '^[a-zA-Z0-9_-]+:.*?##' $(MAKEFILE_LIST) | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-25s\033[0m %s\n", $$1, $$2}'
+
+all: up ## Build and start dev environment (alias for 'up')
+
+build: ## Build Docker images and update submodules
 	git submodule update --init
 	docker-compose build
 
-update-submodules:
+update-submodules: ## Update git submodules to latest
 	git submodule update --remote --merge
 
-up: build hugo-lyra-rebuild-dev
+up: build hugo-lyra-rebuild-dev ## Build and start dev environment
 	docker-compose up -d
 
-cli:
+cli: ## Open bash shell in hugo container
 	docker-compose run --rm --entrypoint bash hugo
 
-hugo-lyra-rebuild-dev:
+hugo-lyra-rebuild-dev: ## Rebuild search index (dev)
+	docker-compose run --rm hugo mkdir -p app/src/static
 	docker-compose run --rm hugo hugo-lyra --content /app/src/content/posts --indexFormat json --indexFilePath /app/src/static/search
 
-hugo-build: build
+hugo-build: build ## Build production site and search index
+	# Cleans output, builds with minify, and generates search index for production
+	docker-compose run --rm hugo mkdir -p app/src/static
 	docker-compose run --rm hugo rm -rf /output/*
 	docker-compose run --rm hugo hugo --minify --theme hugo-coder -d /output --baseUrl=https://www.paolomainardi.com
 	docker-compose run --rm hugo mkdir -p /output/search
 	docker-compose run --rm hugo hugo-lyra --content /app/content/posts --indexFormat json --indexFilePath /output/search
 
-build-loc:
+build-loc: ## Build site for local development
 	docker-compose run --rm hugo hugo --baseUrl=http://paolomainardi.loc
 
-open:
-	xdg-open http://paolomainardi.loc:1313
+open: ## Open local site in browser
+	"$BROWSER" http://paolomainardi.loc:1313
