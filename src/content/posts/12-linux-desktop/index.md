@@ -3,10 +3,12 @@ date = "2025-08-10"
 title = "Linux on Desktop is growing, but there is a big missing for a serious enterprise adoption"
 slug = "linux-desktop"
 tags = ["linux"]
-draft = "false"
+featuredImage = "images/posts/12-linux-desktop/marketshare.webp"
+images = ["images/posts/4-hugo-lyra/dall-e-hugo-lyra-image.webp"]
+draft = "true"
 +++
 
-Linux on Desktop is finally really growing, it has reached the [5% US market share](https://gs.statcounter.com/os-market-share/desktop/united-states-of-america) for the first time this year, this is great for several reasons and it opens the door to more opportunities for companies offering Linux services and it should be a driving force for commercial software (Adobe I am looking at you), to finally offer a Linux countepart for their software.
+**Linux on Desktop** is finally really growing, it has reached the [6% US market share](https://www.zdnet.com/article/linux-has-over-6-of-the-desktop-market-yes-you-read-that-right-heres-how/?utm_source=iterable&utm_medium=email&utm_campaign=techtoday&zdee=%5BContact.email_zdee%5D) for the first time this year, this is great for several reasons and it opens the door to more opportunities for companies offering Linux services and it should be a driving force for commercial software (Adobe I am looking at you), to finally offer a Linux countepart for their software.
 
 ## Gaming
 
@@ -36,9 +38,23 @@ When I started this project ([2021](https://github.com/sparkfabrik/archlinux-ans
 
 ![images/12-linux-desktop](/images/posts/12-linux-desktop/linux-desktop.webp)
 
-It is nothing too fancy in terms of theming or features, but it works perfectly for my needs and it is opens the door to having fun and loosing a lot of time trying to customize things just for the sake of experimenting, sometimes can be a trap, it looks like a never ending game, even pushed the rolling of packages from Archlinux, which are basically constant.
+It is nothing too fancy in terms of theming or features, but it works perfectly for my needs and it is also opens the door to having fun and loosing a lot of time trying to customize things just for the sake of experimenting, that is also rewarding. I am currently using this setup on 2 desktop workstations that are perfectly in sync thanks to [yadm](https://yadm.io/) for the dotfiles and [Atuin](https://atuin.sh/) for the shell history.
 
-## Why I chose MacOS as the main driver for my company
+It's a different story instead for the laptops, where I just use a Macbook Pro M4 PRO, that is the company device where I do most of my daily driver work, and this brings us to why I chose Apple devices, wearing my CTO hat, for Sparkfabrik.
+
+## Apple ecosystem and MacOS
+
+### Secure enclave
+
+### Activation lock
+
+### Apple business manager platform
+
+### MDM
+
+### Accessibility
+
+### Availability and support
 
 ## Pain points
 
