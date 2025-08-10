@@ -15,7 +15,11 @@
   "remoteUser": "node",
   "userEnvProbe": "loginInteractiveShell",
   "features": {
-    "ghcr.io/devcontainers/features/docker-from-docker:1": {}
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      // this is needed until MS pushes >= 0.26.1 to fix this bug: https://github.com/docker/buildx/releases/tag/v0.26.1
+      // packages are here: https://packages.microsoft.com/debian/12/prod/pool/main/m/moby-buildx/
+      "mobyBuildxVersion": "0.25.0"
+    }
   },
   // Configure tool-specific properties.
   "customizations": {
