@@ -40,7 +40,28 @@ When I started this project ([2021](https://github.com/sparkfabrik/archlinux-ans
 
 It is nothing too fancy in terms of theming or features, but it works perfectly for my needs and it is also opens the door to having fun and loosing a lot of time trying to customize things just for the sake of experimenting, that is also rewarding. I am currently using this setup on 2 desktop workstations that are perfectly in sync thanks to [yadm](https://yadm.io/) for the dotfiles and [Atuin](https://atuin.sh/) for the shell history.
 
-It's a different story instead for the laptops, where I just use a Macbook Pro M4 PRO, that is the company device where I do most of my daily driver work, and this brings us to why I chose Apple devices, wearing my CTO hat, for Sparkfabrik.
+It's a different story instead for the laptops, where I just use a Macbook Pro (_M4 Pro_ at the time of writing), that is the company device where I do most of my daily driver work, and this brings us to why I chose Apple devices, wearing my CTO hat, for my company, Sparkfabrik.
+
+There is only one big reason, that is a real and integrated [device management platform](https://developer.apple.com/documentation/devicemanagement), also known as **MDM**, that allows me to manage my entire fleet starting from the **zero-touch provisioning**, which is the real mind blowing feature for me.
+
+This means that I can order a new Apple device from any official reseller, ship it **still boxed**, and let the machine to automatically provision and onboard into our management platform, this is called [Automated device enrollment](https://support.apple.com/en-us/102300).
+
+It works by combining 2 platforms, [Apple Business Manager](https://support.apple.com/guide/apple-business-manager/intro-to-apple-business-manager-axm7909096bf/web) and any [external compatible MDM platform](https://en.wikipedia.org/wiki/List_of_mobile_device_management_software) _(it's not an extensive list, do your research)._
+
+## Apple Business Manager
+
+{{< figure src="/images/posts/12-linux-desktop/apple-business-manager.webp" caption="Apple Business Manager - Dashboard" >}}
+
+[Apple Business Manager](https://support.apple.com/guide/apple-business-manager/intro-to-apple-business-manager-axm7909096bf/web) is the platform that hosts Apple devices information for an organization, such as the **serial number** and other device metadata. Informations here can be added just by Apple or authorized resellers. This platform also is in charge to configure external management platforms, from now MDM, and let them manage the device. Apple does not provide an MDM solution on its own, it just implements the primitive and the framework and let external platform to implement the features.
+
+You can find here [how it works](https://it-training.apple.com/tutorials/deployment/dm005/) in detail.
+
+{{< figure src="/images/posts/12-linux-desktop/mdm-welcome-screen.webp" caption="MDM - Automated Device Enrollment configurable welcome screens" >}}
+
+Making it short, when an apple device boot up and connected to Internet, which is mandatory, it sends its serial number to Apple, if there is a match in Apple Business Manager and there is an MDM configured, it starts the automated provision.
+
+{{< figure src="/images/posts/12-linux-desktop/device-enroll-1.webp" style="background: white" caption="MDM - Device enroll" >}}
+{{< figure src="/images/posts/12-linux-desktop/device-enroll-2.webp" style="background: white" caption="MDM - Profiles" >}}
 
 ## Apple ecosystem and MacOS
 

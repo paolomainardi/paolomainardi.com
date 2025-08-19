@@ -21,9 +21,9 @@ RUN echo node ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/node \
     && chmod 0440 /etc/sudoers.d/node
 
 # Configure locale.
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
 # Install oh-my-bash and configure locale.
 ARG USERNAME=node
@@ -38,7 +38,7 @@ RUN echo "alias dc=docker-compose" >> /etc/bash.bashrc
 RUN echo '[ -f /usr/share/bash-completion/bash_completion ] && . /usr/share/bash-completion/bash_completion' >> /etc/bash.bashrc
 
 # Install global node dependencies.
-ENV HUGO_LYRA_VERSION 0.4.2
+ENV HUGO_LYRA_VERSION=0.4.2
 RUN npm install -g firebase-tools hugo-lyra@${HUGO_LYRA_VERSION}
 
 # Install Hugo.
