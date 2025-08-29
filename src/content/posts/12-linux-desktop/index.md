@@ -40,7 +40,13 @@ When I started this project ([2021](https://github.com/sparkfabrik/archlinux-ans
 
 It is nothing too fancy in terms of theming or features, but it works perfectly for my needs and it is also opens the door to having fun and loosing a lot of time trying to customize things just for the sake of experimenting, that is also rewarding. I am currently using this setup on 2 desktop workstations that are perfectly in sync thanks to [yadm](https://yadm.io/) for the dotfiles and [Atuin](https://atuin.sh/) for the shell history.
 
+## Why I chose Apple devices for my company
+
 It's a different story instead for the laptops, where I just use a Macbook Pro (_M4 Pro_ at the time of writing), that is the company device where I do most of my daily driver work, and this brings us to why I chose Apple devices, wearing my CTO hat, for my company, Sparkfabrik.
+
+It hasn't been always like this, we historically just used Linux Machines, Lenovo or Dell, with Ubuntu or [Archlinux](https://github.com/sparkfabrik/archlinux-ansible-provisioner) as the official supported OSes, through ansible provisioners.
+But we always had a lot of troubles with supplying them exactly as we want it, custom configurations required weeks (even months during pandemic + [Suez canal incident](https://en.wikipedia.org/wiki/2021_Suez_Canal_obstruction)), having them just with Linux from enterprise relellers it's even an option (at least in Italy and from resellers we worked with) and nothing really integrated in terms of automatic provisioning and device management capable to work well with Linux, as we do not support and use Windows at work. I never understood what really are Intel vPRO or AMD Dash, I challenge you to understand what they really are and how they can be used with Linux.
+So at the end of the day, once ordered and received we had to spend many man-hours (mine usually) to prepare the machine, resize Windows (it is always useful to keep it as a backup or to use firmware related software sometimes just available there) and install and configure Linux. It was slowly becoming very tedious and unfeaseable, so I started to consider at the time a complete switch of our entire fleet to MacOS.
 
 There is only one big reason, that is a real and integrated [device management platform](https://developer.apple.com/documentation/devicemanagement), also known as **MDM**, that allows me to manage my entire fleet starting from the **zero-touch provisioning**, which is the real mind blowing feature for me.
 
@@ -48,7 +54,7 @@ This means that I can order a new Apple device from any official reseller, ship 
 
 It works by combining 2 platforms, [Apple Business Manager](https://support.apple.com/guide/apple-business-manager/intro-to-apple-business-manager-axm7909096bf/web) and any [external compatible MDM platform](https://en.wikipedia.org/wiki/List_of_mobile_device_management_software) _(it's not an extensive list, do your research)._
 
-## Apple Business Manager
+### Apple Business Manager and MDM (_Mobile Device Management_)
 
 {{< figure src="/images/posts/12-linux-desktop/apple-business-manager.webp" caption="Apple Business Manager - Dashboard" >}}
 
@@ -58,20 +64,26 @@ You can find here [how it works](https://it-training.apple.com/tutorials/deploym
 
 {{< figure src="/images/posts/12-linux-desktop/mdm-welcome-screen.webp" caption="MDM - Automated Device Enrollment configurable welcome screens" >}}
 
-Making it short, when an apple device boot up and connected to Internet, which is mandatory, it sends its serial number to Apple, if there is a match in Apple Business Manager and there is an MDM configured, it starts the automated provision.
+Making it short, when an apple device boot up and connected to internet, which is mandatory, it sends its serial number to Apple, if there is a match in Apple Business Manager and there is an MDM configured, it starts with the automated provision.
 
-{{< figure src="/images/posts/12-linux-desktop/device-enroll-1.webp" style="background: white" caption="MDM - Device enroll" >}}
-{{< figure src="/images/posts/12-linux-desktop/device-enroll-2.webp" style="background: white" caption="MDM - Profiles" >}}
+{{< figure src="/images/posts/12-linux-desktop/device-enroll-1.webp" caption="MDM - Device enroll" >}}
+{{< figure src="/images/posts/12-linux-desktop/device-enroll-2.webp" caption="MDM - Profiles" >}}
 
-## Apple ecosystem and MacOS
+Another nice feature that ABM allows is the Google Workspace integration, making it possible to control the iCloud accounts on the machines and let the users to log-in on the machine with their Google credentials, automatically, without any other system interventions.
 
-### Secure enclave
+As a last automated step, the machines are provisioned with an Open Source ansible provisioner, called [Sparkdock](https://github.com/sparkfabrik/sparkdock), which is in charge to configure the OS with a set of curated applications and configurations, in a simple and reproducible way.
 
-### Activation lock
+{{< figure src="/images/posts/12-linux-desktop/sparkdock.webp" caption="Sparkdock manager - menubar app indicator" >}}
 
-### Apple business manager platform
+### Secure enclave and Activation Lock
 
-### MDM
+Here we talk about those 2 features.
+
+### Regulations and fleet governance requirements
+
+Here we talk about ISO27001 and NIS2.
+
+### PC and MDM
 
 ### Accessibility
 
