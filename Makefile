@@ -18,15 +18,11 @@ build: ## Build Docker images and update submodules
 update-submodules: ## Update git submodules to latest
 	git submodule update --remote --merge
 
-up: build hugo-lyra-rebuild-dev ## Build and start dev environment
+up: build ## Build and start dev environment
 	docker-compose up -d
 
 cli: ## Open bash shell in hugo container
 	docker-compose run --rm --entrypoint bash hugo
-
-hugo-lyra-rebuild-dev: ## Rebuild search index (dev)
-	docker-compose run --rm hugo mkdir -p app/src/static
-	docker-compose run --rm hugo hugo-lyra --content /app/src/content/posts --indexFormat json --indexFilePath /app/src/static/search
 
 hugo-build: build ## Build production site and search index
 	# Cleans output, builds with minify, and generates search index for production
@@ -34,7 +30,6 @@ hugo-build: build ## Build production site and search index
 	docker-compose run --rm hugo rm -rf /output/*
 	docker-compose run --rm hugo hugo --minify --theme hugo-coder -d /output --baseUrl=https://www.paolomainardi.com
 	docker-compose run --rm hugo mkdir -p /output/search
-	docker-compose run --rm hugo hugo-lyra --content /app/content/posts --indexFormat json --indexFilePath /output/search
 
 build-loc: ## Build site for local development
 	docker-compose run --rm hugo hugo --baseUrl=http://paolomainardi.loc
