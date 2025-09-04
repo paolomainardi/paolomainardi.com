@@ -46,6 +46,10 @@ brew install koekeishiya/formulae/skhd
 skhd --start-service
 ```
 
+{{< notice info >}}
+Here you'll be asked to **grant privacy permissions** to skhd to control your system, and you can do so safely.
+{{< /notice >}}
+
 You need to create a configuration file in one of the following locations (in order of preference):
 
 ```shell
