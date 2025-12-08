@@ -198,8 +198,8 @@ WantedBy=multi-user.targets
 Just place this file in `~/.config/systemd/user/xremap.service` and then run:
 
 ```bash
-systemctl --user enable remap
-systemctl --user start remap
+systemctl --user enable xremap
+systemctl --user start xremap
 ```
 
 ## Conclusions
