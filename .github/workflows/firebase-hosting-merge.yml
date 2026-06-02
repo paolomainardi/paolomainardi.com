@@ -27,9 +27,7 @@ jobs:
       - name: Build
         working-directory: ./src
         run: |
-          mkdir -p output/search
           hugo --minify --theme hugo-coder -d output --baseURL=https://www.paolomainardi.com
-          npx --yes hugo-lyra@latest --content content/posts --indexFormat json --indexFilePath output/search
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:

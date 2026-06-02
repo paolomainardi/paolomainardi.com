@@ -24,12 +24,11 @@ up: build
 cli:
     docker-compose run --rm --entrypoint bash hugo
 
-# Build production site and search index
+# Build production site
 hugo-build: build
     docker-compose run --rm hugo mkdir -p app/src/static
     docker-compose run --rm hugo rm -rf /output/*
     docker-compose run --rm hugo hugo --minify --theme hugo-coder -d /output --baseUrl=https://www.paolomainardi.com
-    docker-compose run --rm hugo mkdir -p /output/search
 
 # Build site for local development
 build-loc:
