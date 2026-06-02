@@ -17,19 +17,19 @@ This is not a guide on how-to install and configure Linux, but a list of the com
 
 ## 2026 Updates
 
-Three years in, the AM5 platform is still going strong, and I took the opportunity to make a more significant upgrade this time: a new CPU, a dedicated GPU, and a new power supply to match the higher power demands.
+AM5 is still going strong, so I stayed on the platform and did a bigger upgrade this time: new CPU, a dedicated GPU, and a new power supply to handle the extra load.
 
-| Component    | Model                                                    | Amazon IT                                                              | Amazon US                                   |
-| ------------ | -------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------- |
-| CPU          | AMD Ryzen 9 9950X                                        | [amazon.it](https://amzn.to/3RWfcSo)                                  | [amazon.com](https://amzn.to/43JN3k4)       |
-| GPU          | ASUS DUAL Radeon RX 7900XTX OC Edition, 24GB GDDR6       | [amazon.it](https://amzn.to/4dV5lng)                                  | [amazon.com](https://amzn.to/4viholx)       |
-| Power Supply | CORSAIR RM850e (2025) 850W Fully Modular                 | [amazon.it](https://www.amazon.it/dp/B0DMTN5WLB)                      | [amazon.com](https://amzn.to/4aq6mmf)       |
+| Component    | Model                                              | Amazon IT                                         | Amazon US                              |
+| ------------ | -------------------------------------------------- | ------------------------------------------------- | -------------------------------------- |
+| CPU          | AMD Ryzen 9 9950X                                  | [amazon.it](https://amzn.to/3RWfcSo)             | [amazon.com](https://amzn.to/43JN3k4) |
+| GPU          | ASUS DUAL Radeon RX 7900XTX OC Edition, 24GB GDDR6 | [amazon.it](https://amzn.to/4dV5lng)             | [amazon.com](https://amzn.to/4viholx) |
+| Power Supply | CORSAIR RM850e (2025) 850W Fully Modular           | [amazon.it](https://www.amazon.it/dp/B0DMTN5WLB) | [amazon.com](https://amzn.to/4aq6mmf) |
 
-The 9950X is a meaningful leap from the 7900X: 16 cores instead of 12, with noticeably better single-thread performance across the board. The real headline, though, is the RX 7900XTX: 24GB of GDDR6 is a lot of VRAM, and the ASUS DUAL cooler keeps it remarkably quiet under load. The CORSAIR RM850e replaces the old EVGA unit to keep up with the higher power envelope of the new components.
+The 9950X jumps from 12 to 16 cores with better single-thread performance. The main addition is the RX 7900XTX: 24GB of GDDR6, big cooler, and very quiet. The Corsair PSU replaces the EVGA to keep up with the higher power draw.
 
-{{< figure src="build-2026.webp" title="The build in 2026 — ASUS Radeon RX 7900XTX and Noctua NH-D15 Chromax" >}}
+{{< figure src="build-2026.webp" title="The build in 2026, featuring the ASUS Radeon RX 7900XTX" >}}
 
-The real reason behind adding a dedicated GPU, though, is local AI. With 24GB of VRAM and ROCm support on Linux, this card is surprisingly capable of running large language models entirely on your own hardware. I have been doing exactly that for a while now, and a dedicated post is coming soon — covering which models I run, how everything is configured on Arch Linux, and what it actually feels like to have a private, offline AI assistant that never sends a single token to the cloud.
+The main reason I added a dedicated GPU is local AI. With 24GB of VRAM and ROCm working well on Linux, I have been running large language models locally for a while now. A dedicated post is coming soon on my full setup: models, configuration on Arch, and why it is worth it.
 
 ## 2024 Updates
 
