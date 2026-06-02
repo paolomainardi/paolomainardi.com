@@ -1,5 +1,6 @@
 +++
 date = "2023-05-14"
+lastmod = "2026-06-02"
 title = "How I Built My Perfect Linux Workstation"
 slug = "linux-workstation-build"
 tags = ["linux", "hardware", "pc", "build", "wood"]
@@ -13,6 +14,22 @@ images = ["/images/posts/6-linux-workstation/featured.webp"]
 ## TL;DR
 
 This is not a guide on how-to install and configure Linux, but a list of the components I used to build my personal Linux workstation, to avoid any compatibility issue and to exploit the best in terms of performance and stability. For who's asking, I am using [Arch Linux](https://archlinux.org/) as my daily driver and it is configured through the [Ansible playbook](https://github.com/paolomainardi/archlinux-ansible-provisioner) i made.
+
+## 2026 Updates
+
+Three years in, the AM5 platform is still going strong, and I took the opportunity to make a more significant upgrade this time: a new CPU, a dedicated GPU, and a new power supply to match the higher power demands.
+
+| Component    | Model                                                    | Amazon IT                                                              | Amazon US                                   |
+| ------------ | -------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------- |
+| CPU          | AMD Ryzen 9 9950X                                        | [amazon.it](https://amzn.to/3RWfcSo)                                  | [amazon.com](https://amzn.to/43JN3k4)       |
+| GPU          | ASUS DUAL Radeon RX 7900XTX OC Edition, 24GB GDDR6       | [amazon.it](https://amzn.to/4dV5lng)                                  | [amazon.com](https://amzn.to/4viholx)       |
+| Power Supply | CORSAIR RM850e (2025) 850W Fully Modular                 | [amazon.it](https://www.amazon.it/dp/B0DMTN5WLB)                      | [amazon.com](https://amzn.to/4aq6mmf)       |
+
+The 9950X is a meaningful leap from the 7900X: 16 cores instead of 12, with noticeably better single-thread performance across the board. The real headline, though, is the RX 7900XTX: 24GB of GDDR6 is a lot of VRAM, and the ASUS DUAL cooler keeps it remarkably quiet under load. The CORSAIR RM850e replaces the old EVGA unit to keep up with the higher power envelope of the new components.
+
+{{< figure src="build-2026.webp" title="The build in 2026 — ASUS Radeon RX 7900XTX and Noctua NH-D15 Chromax" >}}
+
+The real reason behind adding a dedicated GPU, though, is local AI. With 24GB of VRAM and ROCm support on Linux, this card is surprisingly capable of running large language models entirely on your own hardware. I have been doing exactly that for a while now, and a dedicated post is coming soon — covering which models I run, how everything is configured on Arch Linux, and what it actually feels like to have a private, offline AI assistant that never sends a single token to the cloud.
 
 ## 2024 Updates
 
