@@ -12,3 +12,4 @@ src/resources/_gen
 *.tgz
 hugo-lyra-english.json
 .cache
+.playwright-cli/
