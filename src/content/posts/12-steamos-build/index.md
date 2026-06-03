@@ -1,5 +1,5 @@
 +++
-date = "2026-06-04"
+date = "2026-06-03"
 title = "How I Built My Perfect Linux SteamOS Machine"
 slug = "linux-steamos-build"
 tags = ["linux", "hardware", "pc", "build", "gaming", "steamos", "cachyos"]
