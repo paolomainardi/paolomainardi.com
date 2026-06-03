@@ -92,6 +92,8 @@ weight = 3
 url = "/about"
 
 [markup]
+[markup.goldmark.renderer]
+unsafe = true
 [markup.highlight]
 anchorLineNos = false
 codeFences = true
