@@ -23,7 +23,7 @@ I am not really a gamer. I don't play competitively, I don't follow release sche
 
 The idea came from the same place as the [workstation](/posts/linux-workstation-build/): I wanted to build something, not buy something. A pre-built console felt limiting, and a full PC in the living room felt like too much friction. SteamOS sits right in the middle. You grab the controller, the machine boots into Big Picture, and that is it, except the hardware is yours and you can swap any part of it.
 
-So the brief was simple: Mini-ITX under the TV, a GPU I wouldn't have to apologise for, and as little noise as possible.
+So the goal was simple: a small, quiet machine for the living room, but with a proper GPU inside.
 
 ## Gaming on Linux, finally
 
@@ -60,23 +60,23 @@ Those numbers already feel like a different era. It is also why reusing the RAM 
 - **Mini-ITX**: it has to fit in the living room without looking like a PC tower.
 - **Silent**: living room standards, not office standards.
 - **Console UX**: boots into Steam, controller works out of the box, no desktop in the way.
-- **AMD GPU**: open source drivers, ROCm, no surprises on Linux.
+- **AMD GPU**: open source drivers, ROCm, and the same hardware Valve ships in the Steam Deck, which makes it the best-supported choice on Linux.
 - **Reasonable budget**: this is a secondary machine, not the main rig.
 
 ## Hardware
 
-| Component     | Model                                           | Amazon IT                                     | Amazon US                                     |
+| Component     | Model                                           | Amazon US                                     | Amazon IT                                     |
 | ------------- | ----------------------------------------------- | --------------------------------------------- | --------------------------------------------- |
-| Case          | Fractal Design Terra Graphite/Walnut            | [amazon.it](https://amzn.to/4ehUpRZ)         | [amazon.com](https://amzn.to/4xqhhXh)        |
-| Motherboard   | ASUS ROG STRIX B650E-I GAMING WIFI Mini-ITX     | [amazon.it](https://amzn.to/4ucslEt)         | [amazon.com](https://amzn.to/4uWPR9q)        |
-| CPU           | AMD Ryzen 7 7700                                | [amazon.it](https://amzn.to/3RJKBHN)         | [amazon.com](https://amzn.to/49FEMBn)        |
-| Cooler        | Thermalright AXP90-X47 Full Low Profile         | [amazon.it](https://amzn.to/4dVxg6v)         | [amazon.com](https://amzn.to/4o6Tvet)        |
-| Thermal paste | ARCTIC MX-6                                     | [amazon.it](https://amzn.to/4u8SZxM)         | [amazon.com](https://amzn.to/4uOsNK5)        |
-| RAM           | Kingston FURY Beast DDR5 32GB (2x16GB) 6000MT/s | [amazon.it](https://amzn.to/4ffZECK)         | [amazon.com](https://amzn.to/4e7RA4V)        |
-| NVMe          | Samsung 980 Pro 1TB (PCIe 4.0)                  | [amazon.it](https://amzn.to/3PixRn4)         | [amazon.com](https://amzn.to/3PixRn4)        |
-| NVMe          | Samsung 9100 PRO 1TB (PCIe 5.0)                 | [amazon.it](https://amzn.to/4vnPCnY)         | [amazon.com](https://amzn.to/43bwn4R)        |
-| Power Supply  | Corsair SF850 SFX                               | [amazon.it](https://amzn.to/4fkOkp1)         | [amazon.com](https://amzn.to/4uLxCUn)        |
-| GPU           | ASUS Prime Radeon RX 9070 OC                    | [amazon.it](https://amzn.to/4uJzFbw)         | [amazon.com](https://amzn.to/4dGKQvK)        |
+| Case          | Fractal Design Terra Graphite/Walnut            | [amazon.com](https://amzn.to/4xqhhXh)        | [amazon.it](https://amzn.to/4ehUpRZ)         |
+| Motherboard   | ASUS ROG STRIX B650E-I GAMING WIFI Mini-ITX     | [amazon.com](https://amzn.to/4uWPR9q)        | [amazon.it](https://amzn.to/4ucslEt)         |
+| CPU           | AMD Ryzen 7 7700                                | [amazon.com](https://amzn.to/49FEMBn)        | [amazon.it](https://amzn.to/3RJKBHN)         |
+| Cooler        | Thermalright AXP90-X47 Full Low Profile         | [amazon.com](https://amzn.to/4o6Tvet)        | [amazon.it](https://amzn.to/4dVxg6v)         |
+| Thermal paste | ARCTIC MX-6                                     | [amazon.com](https://amzn.to/4uOsNK5)        | [amazon.it](https://amzn.to/4u8SZxM)         |
+| RAM           | Kingston FURY Beast DDR5 32GB (2x16GB) 6000MT/s | [amazon.com](https://amzn.to/4e7RA4V)        | [amazon.it](https://amzn.to/4ffZECK)         |
+| NVMe          | Samsung 980 Pro 1TB (PCIe 4.0)                  | [amazon.com](https://amzn.to/3PixRn4)        | [amazon.it](https://amzn.to/3PixRn4)         |
+| NVMe          | Samsung 9100 PRO 1TB (PCIe 5.0)                 | [amazon.com](https://amzn.to/43bwn4R)        | [amazon.it](https://amzn.to/4vnPCnY)         |
+| Power Supply  | Corsair SF850 SFX                               | [amazon.com](https://amzn.to/4uLxCUn)        | [amazon.it](https://amzn.to/4fkOkp1)         |
+| GPU           | ASUS Prime Radeon RX 9070 OC                    | [amazon.com](https://amzn.to/4dGKQvK)        | [amazon.it](https://amzn.to/4uJzFbw)         |
 
 ### Motherboard
 
