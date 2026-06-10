@@ -162,4 +162,4 @@ I went with CachyOS anyway, because I am an Arch guy (btw). I was already comfy 
 
 The result is what I was after: a small, quiet box under the TV that boots into Steam, talks to a controller, and otherwise leaves me alone. I don't need the fastest hardware in every slot, I want a platform that is open and fun to tinker with, and this little Terra is exactly that.
 
-If you have questions or just want to talk components, you can find me on [Mastodon](https://continuousdelivery.social/@paolomainardi) or through the [about page](/about).
+If you have questions or just want to talk about components, just drop me a message [here](https://github.com/paolomainardi/paolomainardi.com/discussions)
