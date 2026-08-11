@@ -76,6 +76,11 @@ name = "Twitter"
 icon = "fa fa-twitter fa-2x"
 weight = 4
 url = "https://twitter.com/paolomainardi"
+[[params.social]]
+name = "LinkedIn"
+icon = "fa fa-linkedin fa-2x"
+weight = 5
+url = "https://www.linkedin.com/in/paolomainardi/"
 
 
 # Menu links

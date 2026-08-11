@@ -97,11 +97,6 @@ typography:
     fontSize: 22px
     lineHeight: 1.45
     fontWeight: 400
-  drop-cap:
-    fontFamily: Literata
-    fontSize: 66px
-    lineHeight: 0.8
-    fontWeight: 600
   meta:
     fontFamily: Literata
     fontSize: 16px
@@ -242,9 +237,8 @@ components:
     typography: "{typography.apparatus}"
   copy-confirmed:
     textColor: "{colors.leaf}"
-  drop-cap:
-    textColor: "{colors.blush}"
-    typography: "{typography.drop-cap}"
+  frontispiece:
+    rounded: "{rounded.sm}"
 ---
 
 ## Overview

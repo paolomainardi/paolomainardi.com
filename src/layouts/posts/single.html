@@ -30,16 +30,19 @@
                    which matters for the OpenGraph images that are only named in
                    front matter. */ -}}
             {{ range .Params.images }}{{ $_ := partial "book/asset.html" . }}{{ end }}
-            {{ with .Params.featuredImage }}
-            {{ $img := partial "book/asset.html" . }}
-            <img class="frontispiece" src="{{ $img.url | safeURL }}" alt="{{ $.Title }}"
-                {{- if gt $img.width 0 }} width="{{ $img.width }}" height="{{ $img.height }}"{{ end }} />
-            {{ end }}
+            {{- /* Contents before the frontispiece. A featured image is a whole
+                   screen tall, so a contents block underneath it is a scroll
+                   away from a reader who only wants to jump to a section. */ -}}
             {{ if .Params.toc }}
             <div class="toc">
                 <div class="part">On this page</div>
                 {{ .TableOfContents }}
             </div>
+            {{ end }}
+            {{ with .Params.featuredImage }}
+            {{ $img := partial "book/asset.html" . }}
+            <img class="frontispiece" src="{{ $img.url | safeURL }}" alt="{{ $.Title }}"
+                {{- if gt $img.width 0 }} width="{{ $img.width }}" height="{{ $img.height }}"{{ end }} />
             {{ end }}
             <div class="text">
                 {{ .Content }}

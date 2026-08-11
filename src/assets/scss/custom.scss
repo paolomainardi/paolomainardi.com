@@ -123,9 +123,9 @@
 // -----------------------------------------------------------------------------
 // 2. Palette tokens
 //
-// Warm paper and four pastels, each with one job: blush for links and the drop
-// cap, sky for code, leaf for notes, sun for cautions. Ink is darker than in C
-// so the larger type also carries more contrast.
+// Warm paper and four pastels, each with one job: blush for links and marks,
+// sky for code, leaf for notes, sun for cautions. Ink is darker than in C so
+// the larger type also carries more contrast.
 // -----------------------------------------------------------------------------
 
 @mixin palette-day {
@@ -492,9 +492,11 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     // The portrait sits in the apparatus margin, aligned with the wordmark in
     // the header. It is a plate, not a social avatar, so it keeps the same
     // hairline and corner as the figures in a post.
+    // Wider than the apparatus column it sits in, filling the margin and
+    // leaving a 3rem gutter before the text.
     .portrait {
       display: block;
-      width: 9rem;
+      width: 11rem;
       height: auto;
       margin: 0 0 2rem;
       border: 1px solid var(--rule);
@@ -502,9 +504,9 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
 
       @media only screen and (min-width: 1200px) {
         position: absolute;
-        top: 0.8rem;
+        top: 0.6rem;
         left: calc(var(--offset) * -1);
-        width: var(--apparatus);
+        width: 21rem;
         margin: 0;
       }
     }
@@ -877,27 +879,60 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
       margin-left: var(--offset);
     }
 
-    i {
+    // The theme puts a tag icon before the list and a bullet between every item.
+    // Spacing separates them here, so both go.
+    i,
+    .separator {
       display: none;
     }
 
-    .tag {
+    ul {
       display: inline;
+      margin: 0;
       padding: 0;
-      margin-right: 1.4rem;
-      background: none;
-      border-radius: 0;
-      line-height: inherit;
+      list-style: none;
+    }
+  }
 
-      a {
-        color: var(--ink-3);
-        font-weight: 400;
-        text-decoration: none;
+  // The theme paints these as filled chips from a five class selector, which
+  // outranks anything shorter, so the reset has to match its depth. They read as
+  // plain links here, like the topics in the kicker at the top of the post.
+  .content .post .post-meta .tags,
+  .content .post .post-meta .categories,
+  .content .post .post-meta .authors {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
 
-        &:hover,
-        &:focus {
-          color: var(--blush);
-        }
+  .content .post .post-meta .tags .tag,
+  .content .post .post-meta .categories .category,
+  .content .post .post-meta .authors .author {
+    display: inline;
+    margin: 0 1.4rem 0 0;
+    padding: 0;
+    background: none;
+    background-color: transparent;
+    border-radius: 0;
+    line-height: inherit;
+    list-style: none;
+
+    &::marker {
+      content: none;
+    }
+
+    a {
+      color: var(--ink-3);
+      font-weight: 400;
+      text-decoration: underline;
+      text-decoration-color: var(--rule-2);
+      text-underline-offset: 0.2em;
+
+      &:hover,
+      &:focus {
+        color: var(--blush);
+        text-decoration-color: var(--blush);
       }
     }
   }
@@ -926,32 +961,6 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     -webkit-hyphens: none;
     hyphens: none;
     overflow-wrap: break-word;
-  }
-
-  // The drop cap opens the piece and appears nowhere else.
-  // The drop cap opens a piece of writing. An index page has a lead-in, not an
-  // opening paragraph, so it does not get one.
-  .talks .text > p:first-of-type:first-letter,
-  .notfound .text > p:first-of-type:first-letter {
-    float: none;
-    font-size: inherit;
-    line-height: inherit;
-    font-weight: inherit;
-    padding: 0;
-    color: inherit;
-  }
-
-  .text > p:first-of-type:first-letter {
-    float: left;
-    font-size: 6.6rem;
-    line-height: 0.8;
-    font-weight: 600;
-    padding: 0.05em 0.08em 0 0;
-    color: var(--blush);
-
-    @media only screen and (max-width: 560px) {
-      font-size: 5rem;
-    }
   }
 
   .text a {
@@ -1265,20 +1274,22 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
       opacity: 1;
     }
 
+    // Only the wrapper is flattened. Zeroing padding on the pre as well used to
+    // outrank the rule below it and leave the code flush against the rule.
     .highlight {
       margin: 0;
 
-      div,
-      pre {
+      div {
         margin: 0;
         padding: 0;
         border-radius: 0;
       }
     }
 
-    pre {
+    pre,
+    .highlight pre {
       margin: 0;
-      padding: 1.8rem 3.2rem 1.8rem 2rem;
+      padding: 2.2rem 3.2rem 2.2rem 2.6rem;
       overflow-x: auto;
       overscroll-behavior-x: contain;
       scrollbar-width: thin;
@@ -1432,6 +1443,8 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     font-size: inherit;
   }
 
+  // Shown whole, never cropped. The contents block sits above it, so a tall
+  // image no longer pushes the contents below the fold.
   .post-content > .frontispiece {
     display: block;
     width: auto;
