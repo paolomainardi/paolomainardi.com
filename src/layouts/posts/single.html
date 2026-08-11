@@ -2,9 +2,16 @@
 {{ .Title }} · {{ .Site.Title }}
 {{ end }}
 {{ define "content" }}
+{{- $topics := partial "book/topics.html" (dict "page" . "limit" 3) -}}
 <section class="container post">
+    {{ partial "book/rail.html" . }}
+
     <article>
-        <header>
+        <header class="opener">
+            <div class="kicker">
+                {{- with $topics }}{{ . }} · {{ end -}}
+                {{ .ReadingTime }} min · {{ .Date | time.Format (.Site.Params.dateFormat | default "January 2, 2006") }}
+            </div>
             <div class="post-title">
                 <h1 class="title">
                     <a class="title-link" href="{{ .Permalink | safeURL }}">
@@ -12,35 +19,57 @@
                     </a>
                 </h1>
             </div>
-            <div class="post-meta">
-                <div class="date">
-                    <span class="posted-on">
-                        <i class="fa-solid fa-calendar" aria-hidden="true"></i>
-                        <time datetime="{{ .Date.Format " 2006-01-02T15:04:05Z07:00" }}">
-                            {{ .Date | time.Format (.Site.Params.dateFormat | default "January 2, 2006" ) }}
-                        </time>
-                    </span>
-                    <span class="reading-time">
-                        <i class="fa-solid fa-clock" aria-hidden="true"></i>
-                        {{ i18n "reading_time" .ReadingTime }}
-                    </span>
-                </div>
-                {{ with .GetTerms "authors" }}{{ partial "taxonomy/authors.html" . }}{{ end }}
-                {{ with .GetTerms "categories" }}{{ partial "taxonomy/categories.html" . }}{{ end }}
-                {{ with .GetTerms "tags" }}{{ partial "taxonomy/tags.html" . }}{{ end }}
-            </div>
+            {{ with (or .Params.subtitle .Params.description) }}
+            <div class="byline">{{ . }}</div>
+            {{ end }}
+            <div class="opener-rule"></div>
         </header>
 
         <div class="post-content">
-            {{ if .Params.featuredImage }}
-            <img src="{{ .Params.featuredImage | relURL }}" alt="Featured image" />
+            {{- /* Resolving these through the asset partial also publishes them,
+                   which matters for the OpenGraph images that are only named in
+                   front matter. */ -}}
+            {{ range .Params.images }}{{ $_ := partial "book/asset.html" . }}{{ end }}
+            {{ with .Params.featuredImage }}
+            {{ $img := partial "book/asset.html" . }}
+            <img class="frontispiece" src="{{ $img.url | safeURL }}" alt="{{ $.Title }}"
+                {{- if gt $img.width 0 }} width="{{ $img.width }}" height="{{ $img.height }}"{{ end }} />
             {{ end }}
             {{ if .Params.toc }}
-            <h2> Table of contents </h2>
-            {{ .TableOfContents }}
+            <div class="toc">
+                <div class="part">On this page</div>
+                {{ .TableOfContents }}
+            </div>
             {{ end }}
-            {{ .Content }}
+            <div class="text">
+                {{ .Content }}
+            </div>
         </div>
+
+        <div class="post-meta">
+            {{ with .GetTerms "authors" }}{{ partial "taxonomy/authors.html" . }}{{ end }}
+            {{ with .GetTerms "categories" }}{{ partial "taxonomy/categories.html" . }}{{ end }}
+            {{ with .GetTerms "tags" }}{{ partial "taxonomy/tags.html" . }}{{ end }}
+        </div>
+
+        {{ $prev := .PrevInSection }}
+        {{ $next := .NextInSection }}
+        {{ if or $prev $next }}
+        <nav class="post-nav" aria-label="More posts">
+            <div class="post-nav-item post-nav-prev">
+                {{ with $prev }}
+                <span class="post-nav-label">Previously</span>
+                <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+                {{ end }}
+            </div>
+            <div class="post-nav-item post-nav-next">
+                {{ with $next }}
+                <span class="post-nav-label">Next</span>
+                <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+                {{ end }}
+            </div>
+        </nav>
+        {{ end }}
 
         <footer>
             {{ partial "posts/series.html" . }}

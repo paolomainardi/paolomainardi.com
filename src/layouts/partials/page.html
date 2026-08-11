@@ -1,0 +1,23 @@
+<section class="container page">
+  <article>
+    <header class="opener">
+      <div class="post-title">
+        <h1 class="title">
+          <a class="title-link" href="{{ .Permalink | safeURL }}">
+            {{ .Title }}
+          </a>
+        </h1>
+      </div>
+      {{ with (or .Params.subtitle .Params.description) }}
+      <div class="byline">{{ . }}</div>
+      {{ end }}
+      <div class="opener-rule"></div>
+    </header>
+
+    <div class="post-content">
+      <div class="text">
+        {{ .Content }}
+      </div>
+    </div>
+  </article>
+</section>

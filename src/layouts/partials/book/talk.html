@@ -1,0 +1,30 @@
+{{- /*
+  One talk. Takes an entry from data/talks.yaml.
+
+  Title first, because the title is what you scan for. Event, place and language
+  underneath, then the artifacts, then the abstract behind a disclosure.
+*/ -}}
+<article class="talk">
+  <h2 class="talk-title">{{ .title }}</h2>
+
+  <p class="talk-meta">
+    {{- .event -}}
+    {{- with .location }}, {{ . }}{{ end -}}
+    {{- with .language }} <span class="talk-lang">{{ . }}</span>{{ end -}}
+  </p>
+
+  {{ with .links }}
+  <ul class="talk-links">
+    {{ range . }}
+    <li><a href="{{ .url | safeURL }}"{{ if findRE "^(https?:)?//" (lower .url) }} target="_blank" rel="noopener"{{ end }}>{{ .label }}</a></li>
+    {{ end }}
+  </ul>
+  {{ end }}
+
+  {{ with .abstract }}
+  <details class="talk-abstract">
+    <summary>Abstract</summary>
+    <p>{{ . }}</p>
+  </details>
+  {{ end }}
+</article>

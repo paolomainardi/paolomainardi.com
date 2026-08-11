@@ -1,0 +1,7 @@
+{{- /*
+  Margin note.
+
+  Floats into the outer margin above 1220px, sits in the column below that.
+  Usage: {{< marginal >}}Text of the note.{{< /marginal >}}
+*/ -}}
+<div class="marginal">{{ .Inner | .Page.RenderString }}</div>

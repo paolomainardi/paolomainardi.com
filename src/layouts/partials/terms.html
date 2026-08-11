@@ -1,0 +1,34 @@
+{{- /*
+  Taxonomy index.
+
+  Every term, ordered by how much has been written under it rather than
+  alphabetically, so the list shows what this site is actually about. The count
+  is the information, so it is set beside the name rather than as a superscript.
+*/ -}}
+{{- $type := .Type -}}
+<section class="container taxonomy">
+  <div class="measure">
+    <div class="part">{{ i18n (lower .Title) | default .Title | title }}</div>
+
+    {{ .Content }}
+
+    <ul class="term-list">
+      {{ range .Data.Terms.ByCount }}
+      {{ $name := .Name }}
+      {{ $count := .Count }}
+      {{ with $.Site.GetPage (printf "/%s/%s" $type $name) }}
+      <li>
+        <a href="{{ .RelPermalink }}">{{ .Name }}</a>
+        <span class="term-count">{{ $count }}</span>
+      </li>
+      {{ end }}
+      {{ end }}
+    </ul>
+
+    <p class="list-note">
+      {{ len .Data.Terms }} {{ cond (eq (len .Data.Terms) 1) "tag" "tags" }} across
+      {{ len (where .Site.RegularPages "Section" "posts") }} posts.
+      <a href="{{ "posts/" | relLangURL }}">All posts</a>
+    </p>
+  </div>
+</section>

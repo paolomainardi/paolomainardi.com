@@ -1,0 +1,35 @@
+{{- /*
+  Numbered table.
+
+  The table number sits in the apparatus, in the outer margin on wide screens.
+  The table itself scrolls sideways on narrow ones. A caption attribute, when
+  block attributes are enabled, becomes a real caption element.
+*/ -}}
+<div class="tabular">
+  <span class="apparatus"><span class="num"></span></span>
+  <div class="tabular-scroll">
+    <table>
+      <thead>
+        {{- range .THead }}
+        <tr>
+          {{- range . }}
+          <th{{ with .Alignment }} style="text-align: {{ . }}"{{ end }}>{{ .Text }}</th>
+          {{- end }}
+        </tr>
+        {{- end }}
+      </thead>
+      <tbody>
+        {{- range .TBody }}
+        <tr>
+          {{- range . }}
+          <td{{ with .Alignment }} style="text-align: {{ . }}"{{ end }}>{{ .Text }}</td>
+          {{- end }}
+        </tr>
+        {{- end }}
+      </tbody>
+      {{- with .Attributes.caption }}
+      <caption>{{ . }}</caption>
+      {{- end }}
+    </table>
+  </div>
+</div>

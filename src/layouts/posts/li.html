@@ -1,0 +1,5 @@
+<li class="leader">
+  <a class="t" href="{{ .Params.externalLink | default .RelPermalink }}">{{ .Title }}</a>
+  <span class="fill"></span>
+  <span class="n">{{ .Date | time.Format (.Site.Params.contentsDateFormat | default "January 2006") }}</span>
+</li>

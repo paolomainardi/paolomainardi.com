@@ -3,19 +3,18 @@
 {{ end }}
 {{ define "content" }}
 <section class="container list">
-  <h1 class="title">
-    <a class="title-link" href="{{ .Permalink | safeURL }}">
-      {{ title (i18n (lower .Title)) | default .Title }}
-    </a>
-  </h1>
+  <div class="measure">
+    <div class="part">{{ title (i18n (lower .Title)) | default .Title }}</div>
 
-  {{ .Content }}
-  <ul id="results">
-    {{- range .Paginator.Pages -}}
-    {{- .Render "li" -}}
-    {{- end -}}
-  </ul>
+    {{ .Content }}
 
-  {{ partial "pagination.html" . }}
+    <ul id="results" class="contents-list">
+      {{- range .Paginator.Pages -}}
+      {{- .Render "li" -}}
+      {{- end -}}
+    </ul>
+
+    {{ partial "pagination.html" . }}
+  </div>
 </section>
 {{ end }}

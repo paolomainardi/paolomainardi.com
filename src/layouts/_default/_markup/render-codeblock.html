@@ -1,0 +1,27 @@
+{{- /*
+  Numbered listing.
+
+  The listing number, the language and the file name sit in the apparatus, which
+  CSS moves into the outer margin on wide screens so the code block itself
+  carries no label. Fence options pass straight through to the highlight
+  function. Mermaid fences are left alone for the diagram script.
+*/ -}}
+{{- $lang := .Type | default "text" -}}
+{{- if eq (lower $lang) "mermaid" -}}
+  <pre class="mermaid">{{ .Inner | htmlEscape | safeHTML }}</pre>
+{{- else -}}
+  {{- $file := "" -}}
+  {{- with .Options.title }}{{ $file = . }}{{ end -}}
+  {{- with .Attributes.title }}{{ $file = . }}{{ end -}}
+  <div class="listing">
+    <span class="apparatus">
+      <span class="num"></span>
+      <span class="lang">{{ $lang }}</span>
+      {{- with $file }}<span class="file">{{ . }}</span>{{ end }}
+    </span>
+    <div class="listing-body">
+      <button class="copy" type="button" aria-label="Copy the code in this listing">Copy</button>
+      {{ transform.Highlight .Inner $lang .Options }}
+    </div>
+  </div>
+{{- end -}}

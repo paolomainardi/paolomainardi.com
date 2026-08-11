@@ -1,0 +1,23 @@
+{{- /*
+  Topic line for a page: its categories, or its tags, each linked to its term
+  page.
+
+  Takes a dict with "page" and "limit". Returns markup joined with a middot.
+*/ -}}
+{{- $page := .page -}}
+{{- $limit := .limit | default 3 -}}
+{{- $terms := slice -}}
+{{- with $page.GetTerms "categories" -}}
+  {{- range . }}{{ $terms = $terms | append . }}{{ end -}}
+{{- end -}}
+{{- if not $terms -}}
+  {{- with $page.GetTerms "tags" -}}
+    {{- range . }}{{ $terms = $terms | append . }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+{{- if gt (len $terms) $limit }}{{ $terms = first $limit $terms }}{{ end -}}
+{{- $links := slice -}}
+{{- range $terms -}}
+  {{- $links = $links | append (printf `<a href="%s">%s</a>` .RelPermalink (.LinkTitle | title)) -}}
+{{- end -}}
+{{- delimit $links " · " | safeHTML -}}

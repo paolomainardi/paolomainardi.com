@@ -32,6 +32,7 @@ colorScheme = "auto"
 
 customCSS = ["css/custom.css"]
 customSCSS = ["scss/custom.scss"]
+customJS = ["js/copy-code.js", "js/section-rail.js"]
 
 favicon_32 = "/images/favicon-32x32.png"
 favicon_16 = "/images/favicon-16x16.png"
@@ -42,7 +43,7 @@ footercontent = "Writing about Containers, Kubernetes, Linux and cloud-native st
 
 hidecredits = false
 hidecopyright = false
-since = 2020
+since = 2022
 
 rtl = false
 math = true
@@ -94,6 +95,10 @@ url = "/about"
 [markup]
 [markup.goldmark.renderer]
 unsafe = true
+[markup.goldmark.parser]
+# A standalone image is not wrapped in a paragraph, so the image render hook can
+# emit a figure with a plate number.
+wrapStandAloneImageWithinParagraph = false
 [markup.highlight]
 anchorLineNos = false
 codeFences = true
@@ -102,9 +107,9 @@ hl_Lines = ''
 hl_inline = false
 lineAnchors = ''
 lineNoStart = 1
-lineNos = true
-lineNumbersInTable = true
-noClasses = true
+lineNos = false
+lineNumbersInTable = false
+noClasses = false
 noHl = false
 style = 'dracula'
 tabWidth = 4
