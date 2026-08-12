@@ -1,4 +1,4 @@
-// Marks the current section in the rail at the left edge of a post.
+// Reading aids for a post: the section rail, and the contents disclosure.
 //
 // The current section is the last heading that has passed the top fifth of the
 // viewport. Recomputed on scroll and resize, throttled to one animation frame,
@@ -73,4 +73,33 @@
   window.addEventListener("hashchange", schedule);
 
   update();
+})();
+
+// The contents block is open on a wide screen, where it is two columns and
+// compact, and closed on a narrow one, where a single column of section links
+// filled most of the first screen before the reader reached a word of the post.
+//
+// This cannot be done in CSS: open is an attribute, not a style. Without
+// JavaScript the block stays closed everywhere, which is a usable fallback.
+(function () {
+  "use strict";
+
+  var toc = document.querySelector(".toc");
+  if (!toc || toc.tagName !== "DETAILS") {
+    return;
+  }
+
+  var wide = window.matchMedia("(min-width: 900px)");
+
+  function sync(mq) {
+    toc.open = mq.matches;
+  }
+
+  sync(wide);
+
+  if (wide.addEventListener) {
+    wide.addEventListener("change", sync);
+  } else if (wide.addListener) {
+    wide.addListener(sync);
+  }
 })();

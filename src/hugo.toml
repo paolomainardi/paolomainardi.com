@@ -32,7 +32,7 @@ colorScheme = "auto"
 
 customCSS = ["css/custom.css"]
 customSCSS = ["scss/custom.scss"]
-customJS = ["js/copy-code.js", "js/section-rail.js"]
+customJS = ["js/copy-code.js", "js/reading.js"]
 
 favicon_32 = "/images/favicon-32x32.png"
 favicon_16 = "/images/favicon-16x16.png"

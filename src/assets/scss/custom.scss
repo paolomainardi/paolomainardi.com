@@ -275,6 +275,12 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     width: 100%;
     margin: 0 auto;
     padding: 0 2.4rem;
+
+    // A phone has no width to spare. Trimming the gutter buys back about two
+    // characters a line on a column that is already at the short end.
+    @media only screen and (max-width: 560px) {
+      padding: 0 1.8rem;
+    }
     background: none;
     box-shadow: none;
   }
@@ -387,7 +393,7 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
 
       .container {
         gap: 1.6rem;
-        padding: 1.8rem 2rem;
+        padding: 1.8rem 1.8rem;
       }
 
       .navigation-list {
@@ -1656,6 +1662,29 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
       margin-left: var(--offset);
     }
 
+    summary.part {
+      cursor: pointer;
+      list-style: none;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+
+      // The caret only appears where the block can actually be closed.
+      @media only screen and (max-width: 899px) {
+        &:before {
+          content: "\203A";
+          display: inline-block;
+          width: 1.6rem;
+          color: var(--blush);
+        }
+      }
+    }
+
+    &[open] > summary.part:before {
+      content: "\2039";
+    }
+
     .part {
       margin: 0 0 1.4rem;
       padding: 0;
@@ -1724,6 +1753,32 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     nav > ul > li > a {
       color: var(--ink);
       font-weight: 550;
+    }
+  }
+
+  // Reading position on narrow screens, where the section rail cannot exist.
+  // Driven by the scroll timeline, so there is no script and no scroll listener.
+  // Browsers without scroll driven animations simply show nothing.
+  .reading-progress {
+    display: none;
+  }
+
+  @supports (animation-timeline: scroll()) {
+    @media only screen and (max-width: 1199px) {
+      .reading-progress {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 3;
+        width: 100%;
+        height: 2px;
+        background-color: var(--blush);
+        transform: scaleX(0);
+        transform-origin: 0 50%;
+        animation: reading-progress linear;
+        animation-timeline: scroll();
+      }
     }
   }
 
@@ -2319,7 +2374,7 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
 
 @media (prefers-reduced-motion: reduce) {
   body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
-    *,
+    *:not(.reading-progress),
     *:before,
     *:after {
       animation-duration: 0.01ms;
@@ -2327,5 +2382,18 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
       transition-duration: 0.01ms;
       scroll-behavior: auto;
     }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// 21. Keyframes
+// -----------------------------------------------------------------------------
+
+@keyframes reading-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
   }
 }

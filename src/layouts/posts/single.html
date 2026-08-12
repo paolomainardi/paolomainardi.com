@@ -4,6 +4,10 @@
 {{ define "content" }}
 {{- $topics := partial "book/topics.html" (dict "page" . "limit" 3) -}}
 <section class="container post">
+    {{- /* Reading position for narrow screens, where the section rail cannot
+           exist. Pure CSS, driven by the scroll timeline. */ -}}
+    <div class="reading-progress" aria-hidden="true"></div>
+
     {{ partial "book/rail.html" . }}
 
     <article>
@@ -33,11 +37,14 @@
             {{- /* Contents before the frontispiece. A featured image is a whole
                    screen tall, so a contents block underneath it is a scroll
                    away from a reader who only wants to jump to a section. */ -}}
+            {{- /* A disclosure so it can be closed on a phone, where a single
+                   column of section links filled most of the first screen. It
+                   is opened on wide screens by reading.js. */ -}}
             {{ if .Params.toc }}
-            <div class="toc">
-                <div class="part">On this page</div>
+            <details class="toc">
+                <summary class="part">On this page</summary>
                 {{ .TableOfContents }}
-            </div>
+            </details>
             {{ end }}
             {{- /* The frontispiece is above the fold, so it loads eagerly and at
                    high priority. Lazy loading an image the reader is already
