@@ -36,7 +36,7 @@
 
       {{ range $years }}
       {{ $year := . }}
-      <section class="talk-year">
+      <section class="year-group">
         <span class="apparatus"><span class="year">{{ $year }}</span></span>
         {{ range where $dated "year" $year }}
         {{ partial "book/talk.html" . }}
@@ -45,7 +45,7 @@
       {{ end }}
 
       {{ with $undated }}
-      <section class="talk-year">
+      <section class="year-group">
         <span class="apparatus"><span class="year">Undated</span></span>
         {{ range . }}
         {{ partial "book/talk.html" . }}

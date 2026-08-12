@@ -337,7 +337,7 @@ layout retunes from one place:
 - **measure, 820px:** the reading column itself.
 
 Above 1200px the reading column sits at the offset and the apparatus margin
-opens to its left. Plate numbers, listing numbers and captions, table numbers
+opens to its left. Figure numbers, listing numbers and captions, table numbers
 and margin notes all move into that margin. Below 1200px the margin collapses
 and every one of those labels falls back inline, above the block it belongs to.
 
@@ -377,19 +377,18 @@ wash behind a 3px sky rule on its left. A copy button appears over the top right
 on hover or focus, and reports Copied. A long line fades into the block
 background at the right edge rather than being cut off.
 
-**Figure.** The figure number sits in the apparatus margin, the caption under
-the image. Only a figure that carries a caption is numbered: nothing in the prose
-ever refers to a figure number, so on an uncaptioned image the label would sit in
-the margin pointing at nothing.
-
-The label is Figure rather than Plate. A plate is a book term, a full page
-illustration printed separately from the text, and it sat oddly beside Listing
-and Table, which are technical writing terms. All three now speak one dialect.
+**Figure.** The caption is the apparatus. It sits in the outer margin beside the
+image, right aligned against it, and the picture carries nothing underneath.
+There is no figure number: nothing in the prose ever referred to one, so the
+number was occupying the margin while saying nothing, and the caption, which is
+the part that tells you what you are looking at, was in the smallest position on
+the page. Below 1200px the margin collapses and the caption falls back under the
+image.
 
 Images carry intrinsic width and height so the page does not reflow while they
 load, which is why post images live in `assets/` rather than `static/`.
 
-**Table.** Numbered like a figure, with the number in the margin. Small caps
+**Table.** Numbered, with the number in the margin. Small caps
 column headers on `paper-raised`, hairline row rules, zebra striping at thirty
 percent rule, and the first column in semibold. Scrolls sideways inside its own
 container on narrow screens.
@@ -422,9 +421,13 @@ behind a lilac rule below that.
 **Do** keep the body type large. Every other decision is negotiable, that one is
 not.
 
-**Do** put labels in the apparatus margin. Listing numbers, figure numbers,
-table numbers, years on the talks page, and section names on the rail all live
-in the same column, which is what makes the page feel like one system.
+**Do** put the apparatus in the outer margin. Figure captions, listing numbers
+with their language and file name, table numbers, years on the talks page and
+the archive, and section names on the rail all live in the same column, which is
+what makes the page feel like one system.
+
+**Do** put information there, not bookkeeping. A label that nothing refers to is
+decoration occupying a column.
 
 **Do** give each accent one job. If something new needs a colour, ask which of
 the four existing jobs it belongs to before adding a fifth.

@@ -953,7 +953,7 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
 
   .text {
     max-width: var(--measure);
-    counter-reset: listing table figure;
+    counter-reset: listing table;
 
     @media only screen and (min-width: 1200px) {
       margin-left: var(--offset);
@@ -1442,12 +1442,6 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     margin: 3.6rem 0;
     padding: 0;
     text-align: left;
-    // Only a figure that carries a caption is numbered. Nothing in the prose
-    // ever refers to a number, so on an uncaptioned image the label would sit
-    // in the margin pointing at nothing.
-    &.numbered {
-      counter-increment: figure;
-    }
 
     img {
       max-width: 100%;
@@ -1456,17 +1450,31 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
       border-radius: 3px;
     }
 
-    .num:before {
-      content: "Figure " counter(figure);
-    }
   }
 
+  // The caption is the apparatus for a figure. It sits in the outer margin
+  // beside the image, where the figure number used to be, because the caption
+  // carries information and the number carried none: nothing in the prose ever
+  // referred to one. Below 1200px the margin collapses and the caption falls
+  // back under the image.
   .content figcaption {
     font-size: 1.6rem;
     line-height: 1.5;
     color: var(--ink-3);
     margin-top: 1rem;
     text-align: left;
+    text-wrap: pretty;
+
+    @media only screen and (min-width: 1200px) {
+      position: absolute;
+      top: 0.2rem;
+      left: calc(var(--offset) * -1);
+      width: var(--apparatus);
+      margin: 0;
+      font-size: 1.5rem;
+      line-height: 1.45;
+      text-align: right;
+    }
   }
 
   .text figcaption p {
@@ -1862,14 +1870,15 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
   }
 
   // ---------------------------------------------------------------------------
-  // 16c. Talks
+  // 16c. Year groups, talks and the archive
   //
-  // A chronology. The year sits in the apparatus margin beside the talks it
-  // belongs to, the same column that carries figure and listing numbers, so the
-  // page reuses the language of a post rather than inventing a second one.
+  // A chronology. The year sits in the apparatus margin beside the entries it
+  // belongs to, the same column that carries figure and listing numbers, so
+  // these pages reuse the language of a post rather than inventing a second one.
+  // Used by both the talks page and the post archive.
   // ---------------------------------------------------------------------------
 
-  .talk-year {
+  .year-group {
     position: relative;
     max-width: var(--measure);
     margin: 0 0 4.8rem;

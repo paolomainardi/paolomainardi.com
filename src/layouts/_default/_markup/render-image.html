@@ -15,13 +15,9 @@
   {{- $dim = printf ` width="%d" height="%d"` $img.width $img.height | safeHTMLAttr -}}
 {{- end -}}
 {{- if .IsBlock -}}
-  {{- /* Only a captioned figure is numbered. Nothing in the prose refers to a
-         figure number, so on an uncaptioned image the label would sit in the
-         margin pointing at nothing. */ -}}
-  <figure{{ with $caption }} class="numbered"{{ end }}>
-    {{- with $caption }}
-    <span class="apparatus"><span class="num"></span></span>
-    {{- end }}
+  {{- /* The caption is the apparatus. CSS puts it in the outer margin beside
+         the image, so there is no separate label and no number. */ -}}
+  <figure>
     <img src="{{ $img.url | safeURL }}" alt="{{ $alt }}"{{ $dim }} loading="lazy" decoding="async">
     {{- with $caption }}
     <figcaption>{{ . }}</figcaption>
