@@ -239,6 +239,14 @@ components:
     textColor: "{colors.leaf}"
   frontispiece:
     rounded: "{rounded.sm}"
+  link-underline:
+    textColor: "{colors.blush}"
+  pull-quote-rule:
+    backgroundColor: "{colors.rule-strong}"
+    width: 3px
+  selection:
+    backgroundColor: "{colors.blush-wash}"
+    textColor: "{colors.ink}"
 ---
 
 ## Overview
@@ -378,6 +386,12 @@ reflow while they load, which is why post images live in `assets/` rather than
 column headers on `paper-raised`, hairline row rules, zebra striping at thirty
 percent rule, and the first column in semibold. Scrolls sideways inside its own
 container on narrow screens.
+
+**Link.** Underlined in blush at about half strength, full blush on hover, with
+the text itself staying ink. The theme appends an external link glyph to every
+outbound link; it is suppressed, because a post that cites a dozen sources ends
+up with a glyph on every second line and the underline already says "link".
+Outbound links still open in a new tab.
 
 **Note and caution.** The theme notice shortcode, repainted on the accent
 washes. Leaf for a note or tip, sky for info, lilac for question or example, sun

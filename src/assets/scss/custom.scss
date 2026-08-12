@@ -257,6 +257,13 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     white-space: normal;
   }
 
+  // The browser default selection is a saturated blue that belongs to no part of
+  // this palette and looks wrong on warm paper.
+  ::selection {
+    background-color: var(--blush-wash);
+    color: var(--ink);
+  }
+
   .content {
     display: block;
     margin: 0;
@@ -961,20 +968,35 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     -webkit-hyphens: none;
     hyphens: none;
     overflow-wrap: break-word;
+    // Rebalances the last lines so a paragraph does not end on a single word.
+    text-wrap: pretty;
   }
 
+  // The underline already says "link". The theme also appends an external link
+  // glyph to every one of them, and in a post that cites a dozen sources those
+  // glyphs break the line rhythm on every second line, so they go. Links still
+  // open in a new tab.
+  .content article a:where(.external-link):not(:has(img)):after {
+    content: none;
+    padding-left: 0;
+  }
+
+  // Underlines sit at about half strength at rest and come up to full blush on
+  // hover. At full strength every link reads as a stripe through the paragraph.
   .text a {
     color: inherit;
     font-weight: inherit;
     background-image: none;
     text-decoration: underline;
-    text-decoration-thickness: 0.07em;
-    text-decoration-color: var(--blush);
+    text-decoration-thickness: 0.06em;
+    text-decoration-color: color-mix(in srgb, var(--blush) 55%, transparent);
     text-underline-offset: 0.18em;
+    transition: text-decoration-color 0.15s ease, color 0.15s ease;
 
     &:hover,
     &:focus {
       color: var(--blush);
+      text-decoration-color: var(--blush);
       background-image: none;
     }
   }
@@ -995,6 +1017,7 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     margin: 4.8rem 0 1.6rem;
     padding: 0;
     border: 0;
+    text-wrap: balance;
 
     @media only screen and (max-width: 768px) {
       font-size: 2.4rem;
@@ -1011,6 +1034,7 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     color: var(--ink);
     max-width: var(--measure);
     margin: 3.6rem 0 1.2rem;
+    text-wrap: balance;
 
     @media only screen and (max-width: 768px) {
       font-size: 2rem;
@@ -1076,12 +1100,15 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
   // A top level quote is a pull quote. A quote nested in a list is an abstract
   // or a citation, so it stays quiet and left aligned. This is what makes the
   // talks page readable.
+  //
+  // The rule is a hairline colour, not blush. Blush means links and marks, and
+  // a quote full of links was competing with its own frame.
   .text > blockquote {
     max-width: 62rem;
     margin: 3.2rem 0;
     padding: 0 0 0 2.4rem;
     border: 0;
-    border-left: 3px solid var(--blush);
+    border-left: 3px solid var(--rule-strong);
     font-style: normal;
     font-size: 2.2rem;
     line-height: 1.45;

@@ -16,8 +16,13 @@
   {{- end -}}
 {{- end -}}
 {{- if gt (len $terms) $limit }}{{ $terms = first $limit $terms }}{{ end -}}
+{{- /* Terms are printed as they were authored. Title casing them turned "pc"
+       into "Pc", and it disagreed with the tag index, which lists them
+       lowercase. */ -}}
 {{- $links := slice -}}
 {{- range $terms -}}
-  {{- $links = $links | append (printf `<a href="%s">%s</a>` .RelPermalink (.LinkTitle | title)) -}}
+  {{- $label := .LinkTitle -}}
+  {{- with .Data.Term }}{{ $label = . }}{{ end -}}
+  {{- $links = $links | append (printf `<a href="%s">%s</a>` .RelPermalink $label) -}}
 {{- end -}}
 {{- delimit $links " · " | safeHTML -}}
