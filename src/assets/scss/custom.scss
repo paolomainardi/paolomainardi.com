@@ -432,6 +432,17 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     }
   }
 
+  // The wordmark stays on every page, because it anchors the left end of the bar
+  // and is the way back. On the home page the masthead repeats it a few
+  // centimetres below, so there it steps back to a quiet label instead of
+  // reading as a second headline. Browsers without :has() get the same wordmark
+  // everywhere, which is only a difference of weight.
+  &:has(.container.home) .navigation .navigation-title {
+    font-size: 1.7rem;
+    font-weight: 400;
+    color: var(--ink-3);
+  }
+
   // ---------------------------------------------------------------------------
   // 5. Footer
   // ---------------------------------------------------------------------------
@@ -482,9 +493,13 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     // hairline and corner as the figures in a post.
     // Wider than the apparatus column it sits in, filling the margin and
     // leaving a 3rem gutter before the text.
+    // Scales with the viewport rather than sitting at a fixed size, so it is a
+    // photograph on a phone rather than an avatar, and still bounded on a
+    // tablet.
     .portrait {
       display: block;
-      width: 11rem;
+      width: 60%;
+      max-width: 24rem;
       height: auto;
       margin: 0 0 2rem;
       border: 1px solid var(--rule);
