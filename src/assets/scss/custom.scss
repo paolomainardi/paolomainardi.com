@@ -2270,9 +2270,15 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     border-radius: 2px;
   }
 
+  // A button rather than a link, so it needs the button chrome removed.
   .float-container .colorscheme-toggle {
-    color: var(--ink-3);
+    display: block;
+    padding: 0;
+    border: 0;
     background: none;
+    cursor: pointer;
+    color: var(--ink-3);
+    line-height: 0;
 
     &:hover,
     &:focus {
