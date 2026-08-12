@@ -2,7 +2,7 @@
 // Reading design, direction C2, "large print"
 //
 // A book set in large print: warm paper, one big clear reading face, and an
-// outer margin that carries the apparatus (plate, listing and table numbers,
+// outer margin that carries the apparatus (figure, listing and table numbers,
 // margin notes) so the text column stays uncluttered.
 //
 // What changed from C, and why:
@@ -32,7 +32,7 @@
 //   10. Apparatus in the margin
 //   11. Listings
 //   12. Tables
-//   13. Plates
+//   13. Figures
 //   14. Notes and cautions
 //   15. Margin notes
 //   16. Contents block
@@ -497,7 +497,7 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     }
 
     // The portrait sits in the apparatus margin, aligned with the wordmark in
-    // the header. It is a plate, not a social avatar, so it keeps the same
+    // the header. It is a figure, not a social avatar, so it keeps the same
     // hairline and corner as the figures in a post.
     // Wider than the apparatus column it sits in, filling the margin and
     // leaving a 3rem gutter before the text.
@@ -953,7 +953,7 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
 
   .text {
     max-width: var(--measure);
-    counter-reset: listing table plate;
+    counter-reset: listing table figure;
 
     @media only screen and (min-width: 1200px) {
       margin-left: var(--offset);
@@ -1178,7 +1178,7 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
   // ---------------------------------------------------------------------------
   // 10. Apparatus in the margin
   //
-  // Plate, listing and table numbers live in the outer margin on wide screens,
+  // Figure, listing and table numbers live in the outer margin on wide screens,
   // so the reading column carries nothing but the block itself. Below 1200px
   // they sit above the block instead.
   // ---------------------------------------------------------------------------
@@ -1435,14 +1435,19 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
   }
 
   // ---------------------------------------------------------------------------
-  // 13. Plates
+  // 13. Figures
   // ---------------------------------------------------------------------------
 
   .content figure {
     margin: 3.6rem 0;
     padding: 0;
     text-align: left;
-    counter-increment: plate;
+    // Only a figure that carries a caption is numbered. Nothing in the prose
+    // ever refers to a number, so on an uncaptioned image the label would sit
+    // in the margin pointing at nothing.
+    &.numbered {
+      counter-increment: figure;
+    }
 
     img {
       max-width: 100%;
@@ -1452,7 +1457,7 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     }
 
     .num:before {
-      content: "Plate " counter(plate);
+      content: "Figure " counter(figure);
     }
   }
 
@@ -1860,7 +1865,7 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
   // 16c. Talks
   //
   // A chronology. The year sits in the apparatus margin beside the talks it
-  // belongs to, the same column that carries plate and listing numbers, so the
+  // belongs to, the same column that carries figure and listing numbers, so the
   // page reuses the language of a post rather than inventing a second one.
   // ---------------------------------------------------------------------------
 

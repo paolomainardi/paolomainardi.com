@@ -9,8 +9,14 @@
 {{- $img := partial "book/asset.html" (.Get "src") -}}
 {{- $width := .Get "width" | default (cond (gt $img.width 0) (string $img.width) "") -}}
 {{- $height := .Get "height" | default (cond (gt $img.height 0) (string $img.height) "") -}}
-<figure{{ with .Get "class" }} class="{{ . }}"{{ end }}>
+{{- $label := .Get "caption" | default (.Get "title") -}}
+{{- $classes := slice -}}
+{{- with .Get "class" }}{{ $classes = $classes | append . }}{{ end -}}
+{{- with $label }}{{ $classes = $classes | append "numbered" }}{{ end -}}
+<figure{{ with $classes }} class="{{ delimit . " " }}"{{ end }}>
+  {{- with $label }}
   <span class="apparatus"><span class="num"></span></span>
+  {{- end }}
   {{- with .Get "link" }}<a href="{{ . | safeURL }}"{{ with $.Get "target" }} target="{{ . }}"{{ end }}{{ with $.Get "rel" }} rel="{{ . }}"{{ end }}>{{ end -}}
   <img src="{{ $img.url | safeURL }}" alt="{{ $alt }}"
     {{- with $width }} width="{{ . }}"{{ end }}

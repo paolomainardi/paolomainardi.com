@@ -161,7 +161,7 @@ components:
     textColor: "{colors.ink-muted}"
     rounded: "{rounded.md}"
     padding: 20px
-  plate:
+  figure:
     backgroundColor: "{colors.paper}"
     rounded: "{rounded.sm}"
   table-head:
@@ -258,7 +258,7 @@ one hundred percent zoom.
 
 The metaphor is a large print edition. Not a precious letterpress keepsake, but
 the edition you can actually read: warm paper, a single serif set large, real
-headings, and generous space. Where a book would put plate numbers and marginal
+headings, and generous space. Where a book would put figure numbers and marginal
 notes in the outer margin, this site does the same, which keeps the text column
 free of labels and uses the width a wide window otherwise wastes.
 
@@ -377,12 +377,19 @@ wash behind a 3px sky rule on its left. A copy button appears over the top right
 on hover or focus, and reports Copied. A long line fades into the block
 background at the right edge rather than being cut off.
 
-**Plate.** A figure. The plate number sits in the apparatus margin, the caption
-under the image. Images carry intrinsic width and height so the page does not
-reflow while they load, which is why post images live in `assets/` rather than
-`static/`.
+**Figure.** The figure number sits in the apparatus margin, the caption under
+the image. Only a figure that carries a caption is numbered: nothing in the prose
+ever refers to a figure number, so on an uncaptioned image the label would sit in
+the margin pointing at nothing.
 
-**Table.** Numbered like a plate, with the number in the margin. Small caps
+The label is Figure rather than Plate. A plate is a book term, a full page
+illustration printed separately from the text, and it sat oddly beside Listing
+and Table, which are technical writing terms. All three now speak one dialect.
+
+Images carry intrinsic width and height so the page does not reflow while they
+load, which is why post images live in `assets/` rather than `static/`.
+
+**Table.** Numbered like a figure, with the number in the margin. Small caps
 column headers on `paper-raised`, hairline row rules, zebra striping at thirty
 percent rule, and the first column in semibold. Scrolls sideways inside its own
 container on narrow screens.
@@ -415,9 +422,9 @@ behind a lilac rule below that.
 **Do** keep the body type large. Every other decision is negotiable, that one is
 not.
 
-**Do** put labels in the apparatus margin. Listing numbers, plate numbers, table
-numbers, years on the talks page, and section names on the rail all live in the
-same column, which is what makes the page feel like one system.
+**Do** put labels in the apparatus margin. Listing numbers, figure numbers,
+table numbers, years on the talks page, and section names on the rail all live
+in the same column, which is what makes the page feel like one system.
 
 **Do** give each accent one job. If something new needs a colour, ask which of
 the four existing jobs it belongs to before adding a fifth.
