@@ -58,10 +58,10 @@ custom_js = []
 # Keep this and every other [params.*] table below the plain params keys above:
 # a table header ends the [params] table, so any key after it would be nested.
 
-# Sits between the role and the year in the standfirst on the home page.
+# Second segment of the standfirst on the home page. Inline markdown, so the
+# link can sit on whichever words should carry it.
 [params.twin]
-name = "twin"
-url = "https://www.stefanomainardi.com"
+text = "Twin of [Stefano](https://www.stefanomainardi.com)"
 
 # Social links
 [[params.social]]

@@ -1878,6 +1878,10 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
   // Used by both the talks page and the post archive.
   // ---------------------------------------------------------------------------
 
+  // The year is laid out as a grid cell rather than positioned by hand, so its
+  // baseline sits on the first baseline of the group whatever the group starts
+  // with. The talks page opens with a title, the archive opens with a list row,
+  // and an absolute offset tuned for one was wrong for the other.
   .year-group {
     position: relative;
     max-width: var(--measure);
@@ -1886,11 +1890,26 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     border-top: 1px solid var(--rule);
 
     @media only screen and (min-width: 1200px) {
-      margin-left: var(--offset);
-    }
+      display: grid;
+      align-items: baseline;
+      grid-template-columns: var(--apparatus) minmax(0, var(--measure));
+      column-gap: calc(var(--offset) - var(--apparatus));
+      margin-left: 0;
+      max-width: calc(var(--offset) + var(--measure));
 
-    .apparatus {
-      top: 2.4rem;
+      > * {
+        grid-column: 2;
+      }
+
+      > .apparatus {
+        position: static;
+        grid-column: 1;
+        grid-row: 1;
+        top: auto;
+        left: auto;
+        width: auto;
+        text-align: right;
+      }
     }
 
     .year {
