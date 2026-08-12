@@ -606,9 +606,13 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
         text-underline-offset: 0.2em;
       }
 
-      i {
-        font-size: 1.5rem;
+      // No width is set on the marks, so each keeps its own aspect ratio.
+      svg {
+        height: 1.5rem;
+        width: auto;
+        flex: 0 0 auto;
         color: var(--ink-3);
+        transform: translateY(0.15rem);
       }
 
       &:hover,
@@ -619,7 +623,7 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
           text-decoration-color: var(--blush);
         }
 
-        i {
+        svg {
           color: var(--blush);
         }
       }

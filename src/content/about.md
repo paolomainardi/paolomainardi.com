@@ -5,6 +5,13 @@ slug = "about"
 
 Hello, I am Paolo Mainardi, proud **founder** and **CTO** of [Sparkfabrik](https://www.sparkfabrik.com), and Linux Foundation Europe [advisory member](https://linuxfoundation.eu/en/about/advisory-board).
 
+Twin of [Stefano](https://www.stefanomainardi.com). We started with computers at
+around five years old and have been working together ever since, which makes
+this less a career than a habit. Our big brother Sandro runs
+[Sacchetti di Tessuto](https://www.sacchettiditessuto.it/en/), the family
+company, making custom fabric packaging in Italy. He is the one of us who ships
+something you can actually hold.
+
 My role is to drive the company toward innovation, by building **cutting-edge and cloud-native** web applications
 and doing **Kubernetes** consultancy at different levels, from cluster management to custom implementations; we are also [CNCF Silver Member](https://landscape.cncf.io/format=members&selected=spark-fabrik-member) and [Kubernetes Certified Service Provider (KCSP)](https://landscape.cncf.io/selected=spark-fabrik-kcsp).
 

@@ -39,10 +39,14 @@
                 {{ .TableOfContents }}
             </div>
             {{ end }}
+            {{- /* The frontispiece is above the fold, so it loads eagerly and at
+                   high priority. Lazy loading an image the reader is already
+                   looking at only delays the largest paint. */ -}}
             {{ with .Params.featuredImage }}
             {{ $img := partial "book/asset.html" . }}
             <img class="frontispiece" src="{{ $img.url | safeURL }}" alt="{{ $.Title }}"
-                {{- if gt $img.width 0 }} width="{{ $img.width }}" height="{{ $img.height }}"{{ end }} />
+                {{- if gt $img.width 0 }} width="{{ $img.width }}" height="{{ $img.height }}"{{ end }}
+                loading="eager" fetchpriority="high" decoding="async" />
             {{ end }}
             <div class="text">
                 {{ .Content }}

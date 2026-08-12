@@ -1,0 +1,13 @@
+{{- /*
+  Heading with an anchor.
+
+  The theme draws the anchor with a Font Awesome glyph. That single hidden icon
+  is enough to pull down the 155KB fa-solid face on every page, so it is a
+  number sign instead, which is the older and quieter convention anyway.
+*/ -}}
+<h{{ .Level }} id="{{ .Anchor | safeURL }}">
+  {{ .Text | safeHTML }}
+  <a class="heading-link" href="#{{ .Anchor | safeURL }}" aria-label="{{ i18n "link_to_heading" | default "Link to heading" }}">
+    <span aria-hidden="true">#</span>
+  </a>
+</h{{ .Level }}>

@@ -46,7 +46,9 @@ hidecopyright = false
 since = 2022
 
 rtl = false
-math = true
+# KaTeX is loaded from a CDN on every page that has this on. No post uses maths,
+# so it stays off. Turn it on per post with `math = true` in the front matter.
+math = false
 
 # Custom CSS
 custom_css = []
@@ -58,10 +60,11 @@ custom_js = []
 # Keep this and every other [params.*] table below the plain params keys above:
 # a table header ends the [params] table, so any key after it would be nested.
 
-# Second segment of the standfirst on the home page. Inline markdown, so the
-# link can sit on whichever words should carry it.
-[params.twin]
-text = "Twin of [Stefano](https://www.stefanomainardi.com)"
+# Optional second segment of the standfirst on the home page. Inline markdown,
+# so the link can sit on whichever words should carry it. Unset by default: the
+# role is enough.
+# [params.twin]
+# text = "Twin of [Stefano](https://www.stefanomainardi.com)"
 
 # Social links
 [[params.social]]

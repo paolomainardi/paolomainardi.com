@@ -63,12 +63,16 @@
   {{ with .Site.Params.social }}
   <ul class="colophon">
     {{ range sort . "weight" }}
-    {{- /* The theme sizes these icons at fa-2x, which is far too big beside
-           running text, so that class is dropped here. */ -}}
-    {{ $icon := replace (.icon | default "") "fa-2x" "" }}
+    {{- /* The mark is inline SVG, keyed off the icon class already in params,
+           so the page never downloads an icon font for five glyphs. */ -}}
+    {{ $key := "" }}
+    {{ with .icon }}
+      {{ $found := findRE "fa-[a-z0-9]+" (replace . "fa-2x" "") 1 }}
+      {{ with $found }}{{ $key = strings.TrimPrefix "fa-" (index . 0) }}{{ end }}
+    {{ end }}
     <li>
       <a href="{{ .url | safeURL }}"{{ with .rel }} rel="{{ . }}"{{ end }}{{ with .target }} target="{{ . }}"{{ end }}{{ with .type }} type="{{ . }}"{{ end }}>
-        {{- with $icon }}<i class="{{ trim . " " }}" aria-hidden="true"></i>{{ end -}}
+        {{- with $key }}{{ partial "book/icon.html" . }}{{ end -}}
         <span>{{ .name }}</span>
       </a>
     </li>
