@@ -1,0 +1,183 @@
+# Conference talks, newest first.
+#
+# Fields
+#   title      the talk, without the event name or the language tag
+#   event      where it was given
+#   location   city, when the event name does not already carry it
+#   year       used to group the page, newest first
+#   language   EN or IT
+#   abstract   optional, hidden behind a disclosure on the page
+#   links      label and url pairs, rendered in the order given
+
+talks:
+  - title: Building a Trusted and Resilient Software Supply Chain
+    event: Cyberwisecon Europe
+    year: 2024
+    language: EN
+    abstract: >-
+      The current state of the software supply chain, the significant global
+      recent events (SolarWinds, log4shell, codecov), the state of the open source
+      ecosystem, the threats and the mitigations that can be applied using tools
+      like Sigstore, Syft and Grype for digital signatures, SBOM generation and
+      automatic vulnerability scanning, and how to use them to improve integrity
+      and to gain unprecedented levels of knowledge of your digital artifacts and
+      your cloud infrastructures.
+    links:
+      - label: Slides
+        url: /talks/cyberwisecon-2024-supply-chain.pdf
+      - label: Video
+        url: https://www.youtube.com/watch?v=8osHp_h9bYU
+
+  - title: What is the secure software supply chain and the current state of the PHP ecosystem
+    event: PHPDay
+    location: Verona
+    year: 2024
+    language: IT
+    abstract: >-
+      What the software supply chain is, common threats and mitigations, and how
+      they apply to the IaC ecosystem too. Security threats using Terraform and its
+      ecosystem, then OCI images, digital signatures and SBOM using Sigstore and
+      Syft. A live coding session deploying secure OCI images on a Kubernetes
+      cluster with security policies built with Kyverno, including security
+      scanning from the generated SBOM.
+    links:
+      - label: Slides
+        url: /talks/drupalcon-lille-2023-php-supply-chain.pdf
+      - label: Code
+        url: https://github.com/paolomainardi/sigstore-demo/tree/feature/drupal-demo
+
+  - title: Deep dive into the secure software supply chain on IaC
+    event: Codemotion
+    location: Milan
+    year: 2023
+    language: IT
+    abstract: >-
+      What the software supply chain is, common threats and mitigations, and how
+      they apply to the IaC ecosystem too. Security threats using Terraform and its
+      ecosystem, then OCI images, digital signatures and SBOM using Sigstore and
+      Syft. A live coding session deploying secure OCI images on a Kubernetes
+      cluster with security policies built with Kyverno, including security
+      scanning from the generated SBOM.
+    links:
+      - label: Slides
+        url: https://www.slideshare.net/sparkfabrik/codemotion-2023-deep-dive-nella-supply-chain-della-nostra-infrastruttura-cloudpdf
+      - label: Code
+        url: https://github.com/paolomainardi/sigstore-demo
+
+  - title: What is the secure software supply chain and the current state of the PHP ecosystem
+    event: DrupalCon
+    location: Lille
+    year: 2023
+    language: EN
+    abstract: >-
+      The current state of the software supply chain, the big global recent events
+      (SolarWinds, log4shell, codecov, packagist), the state of the PHP and Drupal
+      ecosystem, the threats and the mitigations that can be applied using tools
+      like Sigstore, Syft and Grype for digital signatures, SBOM generation and
+      automatic vulnerability scanning, and how to use them on real projects to
+      gain unprecedented levels of knowledge of your digital artifacts.
+    links:
+      - label: Slides
+        url: /talks/drupalcon-lille-2023-php-supply-chain.pdf
+      - label: Video
+        url: https://youtu.be/DLxlvgLt47A?si=Ms4YH3ySp83iQ6Z4
+
+  - title: What is the secure software supply chain and the current state of the PHP ecosystem
+    event: DrupalDevDays
+    location: Vienna
+    year: 2023
+    language: EN
+    abstract: >-
+      The current state of the software supply chain, the big global recent events
+      (SolarWinds, log4shell, codecov, packagist), the state of the PHP and Drupal
+      ecosystem, the threats and the mitigations that can be applied using tools
+      like Sigstore, Syft and Grype for digital signatures, SBOM generation and
+      automatic vulnerability scanning, and how to use them on real projects to
+      gain unprecedented levels of knowledge of your digital artifacts.
+    links:
+      - label: Video
+        url: https://www.youtube.com/watch?v=yYJggfjysU4
+
+  - title: Deep dive nella security supply chain della nostra infrastruttura cloud
+    event: Incontro DevOps Italia
+    year: 2023
+    language: IT
+    abstract: >-
+      L'infrastruttura come codice e le applicazioni cloud-native consentono di
+      raggiungere livelli senza precedenti di efficienza e governance dei nostri
+      servizi cloud, rendendoci capaci di creare infrastrutture immutabili e
+      ripetibili, di poterci operare come se fossero applicazioni quindi
+      versionando il codice, qa e test automatici e procedure di rilascio
+      automatiche verso gli ambienti di destinazione. Più inseriamo codice nelle
+      nostre infrastrutture, più estendiamo la superficie di attacco. In questo
+      talk esaminerò gli attacchi alla catena di approvvigionamento a diversi
+      livelli, come rilevarli, le tecniche per mitigarli e come scrivere codice IaC
+      più sicuro.
+    links:
+      - label: Slides
+        url: /talks/idi2023-supply-chain-iac.pdf
+      - label: Code
+        url: https://github.com/paolomainardi/idi2023-sigstore-demo
+
+  - title: The path to a serverless-native era with Kubernetes
+    event: Container Day, DevDays Baku, DevOpsDays Madrid
+    year: 2019
+    language: EN
+    links:
+      - label: Slides
+        url: https://www.slideshare.net/sparkfabrik/containerday-2019-the-path-to-a-serverlessnative-era-with-kubernetes-1
+      - label: Video
+        url: https://www.youtube.com/watch?v=q52bEOIQTwk
+
+  - title: Alibaba Cloud Container Service deep dive
+    event: ContainerDay
+    year: 2018
+    language: IT
+    links:
+      - label: Slides
+        url: https://www.slideshare.net/sparkfabrik/containerday-2018-alibaba-cloud-container-service-deep-dive-125716319
+      - label: Video
+        url: https://www.youtube.com/watch?v=xfpXmlr1wiI
+
+  - title: GitLab CI and Kubernetes, build test and deploy your projects like a pro
+    event: ContainerDay
+    year: 2017
+    language: IT
+    links:
+      - label: Slides
+        url: https://www.slideshare.net/sparkfabrik/gitlab-ci-e-kubernetes-build-test-and-deploy-your-projects-like-a-pro
+      - label: Video
+        url: https://www.youtube.com/watch?v=CYcfXhf8gfs
+
+  - title: Docker for Drupal developers
+    event: DrupalDevDays
+    year: 2016
+    language: EN
+    links:
+      - label: Slides
+        url: https://www.slideshare.net/sparkfabrik/docker-for-developers-55982163
+      - label: Video
+        url: https://www.youtube.com/watch?v=8Njyj6_uVjo
+
+  - title: "K8S Retrogaming: a retro game machine built as a Kubernetes controller"
+    event: SparkFabrik tech talk
+    year: 2020
+    language: EN
+    abstract: >-
+      AdditronK8S is a retro game machine built as a Kubernetes custom controller,
+      implemented in JavaScript.
+    links:
+      - label: Slides
+        url: https://www.slideshare.net/sparkfabrik/retro-gaming-machine-made-with-javascript-and-kubernetes-240654394
+      - label: Video
+        url: https://youtu.be/XlhSCWzgQ4k
+      - label: Code
+        url: https://github.com/paolomainardi/additronk8s-retrogames-kubernetes-controller
+
+  - title: "Fortran: deployare una scheda perforata serverless con Cloud Run e GitHub Actions"
+    event: SparkFabrik tech talk
+    year: 2021
+    language: IT
+    links:
+      - label: Video
+        url: https://www.youtube.com/watch?v=bMByfmHWzHk

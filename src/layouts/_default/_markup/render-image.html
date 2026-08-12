@@ -1,0 +1,28 @@
+{{- /*
+  Plate.
+
+  A standalone image becomes a figure whose plate number sits in the apparatus,
+  in the outer margin on wide screens. The caption is the markdown title when
+  present, otherwise the alt text. Width and height come from the file itself so
+  the page does not reflow as plates load. An image inside a run of text stays
+  inline.
+*/ -}}
+{{- $alt := .Text | plainify -}}
+{{- $caption := .Title | default $alt -}}
+{{- $img := partial "book/asset.html" .Destination -}}
+{{- $dim := "" -}}
+{{- if gt $img.width 0 -}}
+  {{- $dim = printf ` width="%d" height="%d"` $img.width $img.height | safeHTMLAttr -}}
+{{- end -}}
+{{- if .IsBlock -}}
+  {{- /* The caption is the apparatus. CSS puts it in the outer margin beside
+         the image, so there is no separate label and no number. */ -}}
+  <figure>
+    <img src="{{ $img.url | safeURL }}" alt="{{ $alt }}"{{ $dim }} loading="lazy" decoding="async">
+    {{- with $caption }}
+    <figcaption>{{ . }}</figcaption>
+    {{- end }}
+  </figure>
+{{- else -}}
+  <img src="{{ $img.url | safeURL }}" alt="{{ $alt }}"{{ with .Title }} title="{{ . }}"{{ end }}{{ $dim }} loading="lazy" decoding="async">
+{{- end -}}

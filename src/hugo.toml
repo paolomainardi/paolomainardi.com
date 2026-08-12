@@ -32,6 +32,7 @@ colorScheme = "auto"
 
 customCSS = ["css/custom.css"]
 customSCSS = ["scss/custom.scss"]
+customJS = ["js/copy-code.js", "js/reading.js"]
 
 favicon_32 = "/images/favicon-32x32.png"
 favicon_16 = "/images/favicon-16x16.png"
@@ -42,10 +43,12 @@ footercontent = "Writing about Containers, Kubernetes, Linux and cloud-native st
 
 hidecredits = false
 hidecopyright = false
-since = 2020
+since = 2022
 
 rtl = false
-math = true
+# KaTeX is loaded from a CDN on every page that has this on. No post uses maths,
+# so it stays off. Turn it on per post with `math = true` in the front matter.
+math = false
 
 # Custom CSS
 custom_css = []
@@ -53,6 +56,15 @@ custom_css = []
 # Custom JS
 custom_js = []
 
+
+# Keep this and every other [params.*] table below the plain params keys above:
+# a table header ends the [params] table, so any key after it would be nested.
+
+# Optional second segment of the standfirst on the home page. Inline markdown,
+# so the link can sit on whichever words should carry it. Unset by default: the
+# role is enough.
+# [params.twin]
+# text = "Twin of [Stefano](https://www.stefanomainardi.com)"
 
 # Social links
 [[params.social]]
@@ -75,6 +87,11 @@ name = "Twitter"
 icon = "fa fa-twitter fa-2x"
 weight = 4
 url = "https://twitter.com/paolomainardi"
+[[params.social]]
+name = "LinkedIn"
+icon = "fa fa-linkedin fa-2x"
+weight = 5
+url = "https://www.linkedin.com/in/paolomainardi/"
 
 
 # Menu links
@@ -94,6 +111,10 @@ url = "/about"
 [markup]
 [markup.goldmark.renderer]
 unsafe = true
+[markup.goldmark.parser]
+# A standalone image is not wrapped in a paragraph, so the image render hook can
+# emit a figure with a plate number.
+wrapStandAloneImageWithinParagraph = false
 [markup.highlight]
 anchorLineNos = false
 codeFences = true
@@ -102,9 +123,9 @@ hl_Lines = ''
 hl_inline = false
 lineAnchors = ''
 lineNoStart = 1
-lineNos = true
-lineNumbersInTable = true
-noClasses = true
+lineNos = false
+lineNumbersInTable = false
+noClasses = false
 noHl = false
 style = 'dracula'
 tabWidth = 4

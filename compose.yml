@@ -9,7 +9,11 @@ services:
     ports:
       - "8080:80"
     working_dir: /app/src
-    command: hugo server --bind 0.0.0.0 --port 80 --theme=hugo-coder --baseURL=paolomainardi.loc --buildFuture --buildDrafts --buildExpired
+    # The base URL needs its scheme, and the internal port must not be appended:
+    # the proxy terminates TLS on 443, so an emitted //paolomainardi.loc:80 asset
+    # URL is fetched as https on port 80 and fails. The livereload socket needs
+    # the public port for the same reason.
+    command: hugo server --bind 0.0.0.0 --port 80 --theme=hugo-coder --baseURL=https://paolomainardi.loc/ --appendPort=false --liveReloadPort=443 --buildFuture --buildDrafts --buildExpired
     volumes:
       - $PWD:$PWD
       - .:/app

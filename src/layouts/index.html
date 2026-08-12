@@ -1,0 +1,83 @@
+{{ define "content" }}
+{{- /*
+  Home.
+
+  A masthead, then the writing as a contents list with dotted leaders and the
+  date where a page number would sit. Optional params: subtitle, blurb, talks.
+  Each falls back to something the site already declares.
+*/ -}}
+{{- $lede := .Site.Params.subtitle | default .Site.Params.footercontent -}}
+{{- $blurb := .Site.Params.blurb | default .Site.Params.description -}}
+{{- $standfirst := .Site.Params.imprint -}}
+{{- if not $standfirst -}}
+  {{- $parts := slice -}}
+  {{- with .Site.Params.info }}{{ $parts = $parts | append ($.RenderString (dict "display" "inline") .) }}{{ end -}}
+  {{- with .Site.Params.twin }}
+    {{- with .text }}{{ $parts = $parts | append ($.RenderString (dict "display" "inline") .) }}{{ end -}}
+  {{- end -}}
+  {{- /* No date here. The role and the twin link are enough, and a year is not
+         what a reader wants at that moment. */ -}}
+  {{- $standfirst = delimit $parts " · " -}}
+{{- end -}}
+{{- $posts := where .Site.RegularPages "Section" "posts" -}}
+
+<section class="container home">
+  <div class="masthead">
+    {{ with .Site.Params.avatarurl }}
+    <img class="portrait" src="{{ . | relURL }}" alt="{{ $.Site.Params.author }}" width="458" height="458" />
+    {{ end }}
+    <h1>{{ .Site.Params.author | default .Site.Title }}</h1>
+    {{ with $blurb }}<p class="lede">{{ . }}</p>{{ end }}
+    {{ with $standfirst }}<p class="standfirst">{{ . | safeHTML }}</p>{{ end }}
+  </div>
+
+  <div class="measure">
+    {{ with $posts }}
+    <div class="part">Writing</div>
+    <ul class="contents-list">
+      {{ range . }}
+      <li class="leader">
+        <a class="t" href="{{ .Params.externalLink | default .RelPermalink }}">{{ .Title }}</a>
+        <span class="fill"></span>
+        <span class="n">{{ .Date | time.Format (.Site.Params.contentsDateFormat | default "January 2006") }}</span>
+      </li>
+      {{ end }}
+    </ul>
+    {{ end }}
+
+    {{ with .Site.Params.talks }}
+    <div class="part">Talks</div>
+    <ul class="contents-list">
+      {{ range . }}
+      <li class="leader">
+        <a class="t" href="{{ .url | safeURL }}">{{ .name }}</a>
+        <span class="fill"></span>
+        <span class="n">{{ .venue }}</span>
+      </li>
+      {{ end }}
+    </ul>
+    {{ end }}
+
+  </div>
+
+  {{ with .Site.Params.social }}
+  <ul class="colophon">
+    {{ range sort . "weight" }}
+    {{- /* The mark is inline SVG, keyed off the icon class already in params,
+           so the page never downloads an icon font for five glyphs. */ -}}
+    {{ $key := "" }}
+    {{ with .icon }}
+      {{ $found := findRE "fa-[a-z0-9]+" (replace . "fa-2x" "") 1 }}
+      {{ with $found }}{{ $key = strings.TrimPrefix "fa-" (index . 0) }}{{ end }}
+    {{ end }}
+    <li>
+      <a href="{{ .url | safeURL }}"{{ with .rel }} rel="{{ . }}"{{ end }}{{ with .target }} target="{{ . }}"{{ end }}{{ with .type }} type="{{ . }}"{{ end }}>
+        {{- with $key }}{{ partial "book/icon.html" . }}{{ end -}}
+        <span>{{ .name }}</span>
+      </a>
+    </li>
+    {{ end }}
+  </ul>
+  {{ end }}
+</section>
+{{ end }}

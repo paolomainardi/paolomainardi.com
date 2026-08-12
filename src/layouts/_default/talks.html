@@ -1,0 +1,58 @@
+{{ define "title" }}
+{{ .Title }} · {{ .Site.Title }}
+{{ end }}
+{{ define "content" }}
+{{- /*
+  Talks.
+
+  A chronology, so the year is the structure: it sits in the apparatus margin
+  beside the talks it belongs to, the same place plate and listing numbers sit
+  in a post. Abstracts are behind a disclosure, because several of these talks
+  share almost the same one and four copies of the same paragraph is what made
+  the old page unreadable.
+
+  Talks with year 0 have no recorded year and are listed last.
+*/ -}}
+{{- $talks := .Site.Data.talks.talks -}}
+{{- $dated := where $talks "year" "gt" 0 -}}
+{{- $undated := where $talks "year" "eq" 0 -}}
+{{- $years := slice -}}
+{{- range $dated }}{{ $years = $years | append .year }}{{ end -}}
+{{- $years = sort (uniq $years) "value" "desc" -}}
+
+<section class="container page talks">
+  <article>
+    <header class="opener">
+      <div class="post-title">
+        <h1 class="title">{{ .Title }}</h1>
+      </div>
+      <div class="opener-rule"></div>
+    </header>
+
+    <div class="post-content">
+      <div class="text">
+        {{ .Content }}
+      </div>
+
+      {{ range $years }}
+      {{ $year := . }}
+      <section class="year-group">
+        <span class="apparatus"><span class="year">{{ $year }}</span></span>
+        {{ range where $dated "year" $year }}
+        {{ partial "book/talk.html" . }}
+        {{ end }}
+      </section>
+      {{ end }}
+
+      {{ with $undated }}
+      <section class="year-group">
+        <span class="apparatus"><span class="year">Undated</span></span>
+        {{ range . }}
+        {{ partial "book/talk.html" . }}
+        {{ end }}
+      </section>
+      {{ end }}
+    </div>
+  </article>
+</section>
+{{ end }}

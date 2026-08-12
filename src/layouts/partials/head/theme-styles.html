@@ -1,0 +1,35 @@
+{{- /*
+  Overrides the theme partial for one reason: what gets preloaded.
+
+  The theme preloads all three Font Awesome faces on every page. On a post the
+  only icons that can render are the colour scheme toggle and, on a phone, the
+  menu button, both of which live in fa-solid. So fa-brands and fa-regular were
+  downloading 141KB per page view to draw nothing. They still load on the home
+  page, where the colophon uses the brand marks, but only when needed.
+
+  Preloaded instead: the roman Literata subset, which sets every word of body
+  text and is therefore the font the first paint waits on.
+*/ -}}
+<link rel="preload" href="/fonts/literata-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
+
+{{ if hugo.IsServer }}
+  {{ $cssOpts := (dict "targetPath" "css/coder.css" "enableSourceMap" true ) }}
+  {{ $styles := resources.Get "scss/coder.scss" | resources.ExecuteAsTemplate "style.coder.css" . | toCSS $cssOpts }}
+  <link rel="stylesheet" href="{{ $styles.RelPermalink }}" media="screen">
+{{ else }}
+  {{ $cssOpts := (dict "targetPath" "css/coder.css" ) }}
+  {{ $styles := resources.Get "scss/coder.scss" | resources.ExecuteAsTemplate "style.coder.css" . | toCSS $cssOpts | minify | fingerprint }}
+  <link rel="stylesheet" href="{{ $styles.RelPermalink }}" integrity="{{ $styles.Data.Integrity }}" crossorigin="anonymous" media="screen" />
+{{ end }}
+
+{{ if .Site.Params.rtl }}
+  {{ if hugo.IsServer }}
+    {{ $cssOpts := (dict "targetPath" "css/coder-rtl.css" "enableSourceMap" true ) }}
+    {{ $styles := resources.Get "scss/coder-rtl.scss" | resources.ExecuteAsTemplate "style.coder-rtl.css" . | toCSS $cssOpts }}
+    <link rel="stylesheet" href="{{ $styles.RelPermalink }}" media="screen">
+  {{ else }}
+    {{ $cssOpts := (dict "targetPath" "css/coder-rtl.css" ) }}
+    {{ $styles := resources.Get "scss/coder-rtl.scss" | resources.ExecuteAsTemplate "style.coder-rtl.css" . | toCSS $cssOpts | minify | fingerprint }}
+    <link rel="stylesheet" href="{{ $styles.RelPermalink }}" integrity="{{ $styles.Data.Integrity }}" crossorigin="anonymous" media="screen" />
+  {{ end }}
+{{ end }}

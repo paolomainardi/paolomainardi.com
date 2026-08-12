@@ -1,0 +1,25 @@
+{{- /*
+  Resolves an image path to its published URL and its real pixel size.
+
+  Post images live in assets/images, so Hugo can measure them at build time and
+  the markup can carry width and height. Without those the page reflows every
+  time a plate finishes loading.
+
+  Takes a path as written in the content, for example
+  /images/posts/12-steamos/cpu.webp. Returns a dict with url, width and height.
+  Width and height are 0 when the file is remote, missing, or not an image, and
+  the caller then omits the attributes.
+*/ -}}
+{{- $src := . -}}
+{{- $out := dict "url" $src "width" 0 "height" 0 -}}
+{{- if not (or (strings.HasPrefix $src "http") (strings.HasPrefix $src "//") (strings.HasPrefix $src "data:")) -}}
+  {{- with resources.Get (strings.TrimPrefix "/" $src) -}}
+    {{- /* SVG is an image resource but carries no pixel dimensions. */ -}}
+    {{- if and (eq .ResourceType "image") (ne .MediaType.SubType "svg") -}}
+      {{- $out = dict "url" .RelPermalink "width" .Width "height" .Height -}}
+    {{- else -}}
+      {{- $out = dict "url" .RelPermalink "width" 0 "height" 0 -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $out -}}

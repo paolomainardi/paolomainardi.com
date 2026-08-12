@@ -1,0 +1,28 @@
+{{- /*
+  Topic line for a page: its categories, or its tags, each linked to its term
+  page.
+
+  Takes a dict with "page" and "limit". Returns markup joined with a middot.
+*/ -}}
+{{- $page := .page -}}
+{{- $limit := .limit | default 3 -}}
+{{- $terms := slice -}}
+{{- with $page.GetTerms "categories" -}}
+  {{- range . }}{{ $terms = $terms | append . }}{{ end -}}
+{{- end -}}
+{{- if not $terms -}}
+  {{- with $page.GetTerms "tags" -}}
+    {{- range . }}{{ $terms = $terms | append . }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+{{- if gt (len $terms) $limit }}{{ $terms = first $limit $terms }}{{ end -}}
+{{- /* Terms are printed as they were authored. Title casing them turned "pc"
+       into "Pc", and it disagreed with the tag index, which lists them
+       lowercase. */ -}}
+{{- $links := slice -}}
+{{- range $terms -}}
+  {{- $label := .LinkTitle -}}
+  {{- with .Data.Term }}{{ $label = . }}{{ end -}}
+  {{- $links = $links | append (printf `<a href="%s">%s</a>` .RelPermalink $label) -}}
+{{- end -}}
+{{- delimit $links " · " | safeHTML -}}

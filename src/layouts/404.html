@@ -1,0 +1,38 @@
+{{ define "title" }}
+Page not found · {{ .Site.Title }}
+{{ end }}
+{{ define "content" }}
+{{- $posts := first 5 (where .Site.RegularPages "Section" "posts") -}}
+<section class="container page notfound">
+  <article>
+    <header class="opener">
+      <div class="post-title">
+        <h1 class="title">This page does not exist</h1>
+      </div>
+      <div class="opener-rule"></div>
+    </header>
+
+    <div class="post-content">
+      <div class="text">
+        <p>The address may be mistyped, or the piece may have moved. Everything
+        published is listed under <a href="{{ "posts/" | relLangURL }}">posts</a>.</p>
+      </div>
+
+      {{ with $posts }}
+      <div class="measure">
+        <div class="part">Recent writing</div>
+        <ul class="contents-list">
+          {{ range . }}
+          <li class="leader">
+            <a class="t" href="{{ .RelPermalink }}">{{ .Title }}</a>
+            <span class="fill"></span>
+            <span class="n">{{ .Date | time.Format (.Site.Params.contentsDateFormat | default "January 2006") }}</span>
+          </li>
+          {{ end }}
+        </ul>
+      </div>
+      {{ end }}
+    </div>
+  </article>
+</section>
+{{ end }}

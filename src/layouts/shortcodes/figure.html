@@ -1,0 +1,28 @@
+{{- /*
+  Plate, from the built in figure shortcode.
+
+  Overrides the Hugo shortcode so figures written as {{< figure >}} carry the
+  same numbered apparatus as figures produced by the image render hook, and the
+  same intrinsic width and height.
+*/ -}}
+{{- $alt := .Get "alt" | default (.Get "title") | default (.Get "caption") | plainify -}}
+{{- $img := partial "book/asset.html" (.Get "src") -}}
+{{- $width := .Get "width" | default (cond (gt $img.width 0) (string $img.width) "") -}}
+{{- $height := .Get "height" | default (cond (gt $img.height 0) (string $img.height) "") -}}
+<figure{{ with .Get "class" }} class="{{ . }}"{{ end }}>
+  {{- with .Get "link" }}<a href="{{ . | safeURL }}"{{ with $.Get "target" }} target="{{ . }}"{{ end }}{{ with $.Get "rel" }} rel="{{ . }}"{{ end }}>{{ end -}}
+  <img src="{{ $img.url | safeURL }}" alt="{{ $alt }}"
+    {{- with $width }} width="{{ . }}"{{ end }}
+    {{- with $height }} height="{{ . }}"{{ end }}
+    loading="{{ .Get "loading" | default "lazy" }}" decoding="async">
+  {{- with .Get "link" }}</a>{{ end -}}
+  {{- $caption := .Get "caption" | default (.Get "title") -}}
+  {{- if or $caption (.Get "attr") }}
+  <figcaption>
+    {{- with $caption }}{{ . | $.Page.RenderString }}{{ end -}}
+    {{- with $.Get "attr" }}
+    <span class="attr">{{ with $.Get "attrlink" }}<a href="{{ . | safeURL }}">{{ end }}{{ $.Get "attr" | $.Page.RenderString }}{{ with $.Get "attrlink" }}</a>{{ end }}</span>
+    {{- end }}
+  </figcaption>
+  {{- end }}
+</figure>

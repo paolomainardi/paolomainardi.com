@@ -1,0 +1,31 @@
+{{- /*
+  Section rail.
+
+  A tick per top level section, pinned to the left edge of the viewport outside
+  the content frame. It answers "where am I" during a long read, while the
+  contents block at the head of the post answers "what is in this piece".
+
+  Fragments.Headings is a tree with a single level zero root, so the sections
+  are its children. Titles can carry inline markup, hence plainify.
+
+  Only rendered for posts that opted into a contents block and that have enough
+  sections for the rail to tell you anything.
+*/ -}}
+{{- $sections := slice -}}
+{{- range .Fragments.Headings -}}
+  {{- range .Headings }}{{ $sections = $sections | append . }}{{ end -}}
+{{- end -}}
+{{- if and .Params.toc (ge (len $sections) 3) -}}
+<nav class="rail" aria-label="Sections in this post">
+  <ol>
+    {{- range $sections }}
+    <li>
+      <a href="#{{ .ID }}" data-section="{{ .ID }}">
+        <span class="tick" aria-hidden="true"></span>
+        <span class="name">{{ .Title | plainify }}</span>
+      </a>
+    </li>
+    {{- end }}
+  </ol>
+</nav>
+{{- end -}}

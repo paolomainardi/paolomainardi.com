@@ -2,20 +2,45 @@
 {{ title (i18n (lower .Title)) | default .Title }} · {{ .Site.Title }}
 {{ end }}
 {{ define "content" }}
+{{- /*
+  The archive.
+
+  The home page answers "what is new" as a flat recency list. This page answers
+  "what is here", grouped by year with the year in the apparatus margin, the same
+  device the talks page uses. Inside a group the row shows only the month, since
+  the year is already in the margin.
+*/ -}}
 <section class="container list">
-  <h1 class="title">
-    <a class="title-link" href="{{ .Permalink | safeURL }}">
-      {{ title (i18n (lower .Title)) | default .Title }}
-    </a>
-  </h1>
+  <article>
+    <header class="opener">
+      <div class="post-title">
+        <h1 class="title">{{ title (i18n (lower .Title)) | default .Title }}</h1>
+      </div>
+      <div class="opener-rule"></div>
+    </header>
 
-  {{ .Content }}
-  <ul id="results">
-    {{- range .Paginator.Pages -}}
-    {{- .Render "li" -}}
-    {{- end -}}
-  </ul>
+    <div class="post-content">
+      {{ with .Content }}
+      <div class="text">{{ . }}</div>
+      {{ end }}
 
-  {{ partial "pagination.html" . }}
+      {{ range .Paginator.Pages.GroupByDate "2006" }}
+      <section class="year-group">
+        <span class="apparatus"><span class="year">{{ .Key }}</span></span>
+        <ul class="contents-list">
+          {{ range .Pages }}
+          <li class="leader">
+            <a class="t" href="{{ .Params.externalLink | default .RelPermalink }}">{{ .Title }}</a>
+            <span class="fill"></span>
+            <span class="n">{{ .Date | time.Format "January" }}</span>
+          </li>
+          {{ end }}
+        </ul>
+      </section>
+      {{ end }}
+
+      {{ partial "pagination.html" . }}
+    </div>
+  </article>
 </section>
 {{ end }}
