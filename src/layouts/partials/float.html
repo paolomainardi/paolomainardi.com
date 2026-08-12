@@ -1,17 +1,21 @@
 {{- /*
   Colour scheme toggle.
 
-  Inline SVG rather than a Font Awesome glyph, so no page has to download an
-  icon font to draw one control. The half filled circle is the same idea as the
-  theme's fa-adjust.
+  A button, not a link. It goes nowhere, and an anchor with href="#" appended a
+  fragment to the address bar on every click, because the theme's click handler
+  does not prevent the default navigation.
+
+  Inline SVG rather than a Font Awesome glyph, so no page downloads an icon font
+  to draw one control. The half filled circle is the same idea as the theme's
+  fa-adjust.
 */ -}}
 {{ if not .Site.Params.hideColorSchemeToggle }}
 <div class="float-container">
-  <a id="dark-mode-toggle" class="colorscheme-toggle" href="#" role="button" aria-label="{{ i18n "toggle_color_scheme" | default "Toggle the colour scheme" }}">
+  <button id="dark-mode-toggle" class="colorscheme-toggle" type="button" aria-label="{{ i18n "toggle_color_scheme" | default "Toggle the colour scheme" }}">
     <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
       <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6" />
       <path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" />
     </svg>
-  </a>
+  </button>
 </div>
 {{ end }}
