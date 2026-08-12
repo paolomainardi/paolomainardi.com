@@ -59,7 +59,15 @@ Run `just` or `just --list` to see all recipes.
   width and height and avoid layout shift. Site chrome (favicons, the portrait)
   stays in `src/static/images/`.
 - **No runtime third party requests for the design layer.** Fonts are self
-  hosted in `src/static/fonts/`, styles and scripts are local.
+  hosted in `src/static/fonts/`, styles and scripts are local. Icons are inline
+  SVG, vendored in `layouts/partials/book/icon.html` with a refresh command in
+  the comment. Umami is the only third party on the site, and that is deliberate.
+- **Vendor before you use a CDN feature.** The theme still ships dormant blocks
+  that load mermaid and KaTeX from jsdelivr: mermaid from `_default/baseof.html`
+  when a post uses the shortcode, KaTeX from `partials/posts/math.html` when
+  `math` is true. Neither fires today. Before using either, download the library
+  into `src/assets/js/` and load it locally, otherwise a single post silently
+  reintroduces a CDN on every page that uses it.
 - **Talks are data.** `src/data/talks.yaml` drives `/talks/`. Add a talk by
   adding an entry, never by editing the template.
 
