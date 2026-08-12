@@ -91,6 +91,30 @@ Run `just` or `just --list` to see all recipes.
 
 There is no linter configured. Verify by building.
 
+### Keep DESIGN.md in step with the CSS
+
+`DESIGN.md` is the design system of record, not a description written once. Any
+change to a value it names must land in the same commit as the CSS change:
+
+- the type scale, any font size or line height
+- palette values, or what an accent is for
+- `--frame`, `--offset`, `--measure`, or a breakpoint
+- corner radii, spacing steps
+- adding, removing or repurposing a component
+
+After editing it, validate:
+
+```bash
+npx @google/design.md lint DESIGN.md
+```
+
+It must report 0 errors. The only warnings expected are the `-night` colour
+tokens reported as unreferenced, which is by design.
+
+If a decision is reversed, say so in the prose rather than deleting the history.
+The drop cap entry in the Typography section is the example: it records that the
+device was tried and why it was removed, so nobody adds it back.
+
 ## Build and Verify
 
 ```bash
@@ -222,7 +246,8 @@ There is no test suite. Verification is the production build plus a visual pass:
 - Never push to `main`. It deploys to production.
 - Never use em dashes or en dashes in any prose.
 - Post images belong in `src/assets/images/`, so Hugo can measure them.
-- Read `DESIGN.md` before changing anything visual, and update it when the
-  design system itself changes.
+- Read `DESIGN.md` before changing anything visual, and update it in the same
+  commit whenever a value it names changes. Type scale, palette, layout
+  numbers, breakpoints, radii, spacing and components all live there.
 - The production build must be clean before committing site changes.
 - Verify library versions on the live registry before adding or upgrading.

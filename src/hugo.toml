@@ -55,6 +55,14 @@ custom_css = []
 custom_js = []
 
 
+# Keep this and every other [params.*] table below the plain params keys above:
+# a table header ends the [params] table, so any key after it would be nested.
+
+# Sits between the role and the year in the standfirst on the home page.
+[params.twin]
+name = "twin"
+url = "https://www.stefanomainardi.com"
+
 # Social links
 [[params.social]]
 name = "RSS Feed"

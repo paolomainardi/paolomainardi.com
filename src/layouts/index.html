@@ -12,7 +12,11 @@
 {{- if not $standfirst -}}
   {{- $parts := slice -}}
   {{- with .Site.Params.info }}{{ $parts = $parts | append ($.RenderString (dict "display" "inline") .) }}{{ end -}}
-  {{- with .Site.Params.since }}{{ $parts = $parts | append (printf "writing here since %v" .) }}{{ end -}}
+  {{- with .Site.Params.twin }}
+    {{- if and .name .url }}{{ $parts = $parts | append (printf `<a href="%s">%s</a>` .url .name) }}{{ end -}}
+  {{- end -}}
+  {{- /* No date here. The role and the twin link are enough, and a year is not
+         what a reader wants at that moment. */ -}}
   {{- $standfirst = delimit $parts " · " -}}
 {{- end -}}
 {{- $posts := where .Site.RegularPages "Section" "posts" -}}

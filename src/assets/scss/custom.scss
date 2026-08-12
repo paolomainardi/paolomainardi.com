@@ -6,8 +6,8 @@
 // margin notes) so the text column stays uncluttered.
 //
 // What changed from C, and why:
-//   Body type went from 19.5px to 21px, because the point of the page is that
-//   you can read it without zooming.
+//   Body type is 20px, rising to 21px above 1280px and 22px above 1700px,
+//   because the point of the page is that you can read it unzoomed.
 //   Text is ragged right instead of justified with hyphens, section heads are
 //   real headings instead of 15px small caps, and paragraphs are spaced instead
 //   of indented. All three trade book texture for legibility.
