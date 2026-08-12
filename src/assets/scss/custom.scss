@@ -385,76 +385,51 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
       color: var(--ink-2);
     }
 
-    // The menu on a phone. The theme drives it with a checkbox and paints the
-    // open panel in its own colours, which do not exist here, so the panel is
-    // repainted as a plain list under a hairline.
+    // Two rows on a phone: the wordmark, then the links. Three short links do
+    // not need a disclosure, and the theme's menu added 260px of header to show
+    // them. There is no menu button any more.
+    //
+    // The theme hides the list off screen on narrow widths for that menu, so
+    // every part of that hiding has to be undone here.
     @media only screen and (max-width: 768px) {
       margin-bottom: 3.2rem;
 
       .container {
-        gap: 1.6rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.2rem;
         padding: 1.8rem 1.8rem;
       }
 
       .navigation-list {
-        display: block;
         position: static;
-        width: 100%;
-        margin: 1.6rem 0 0;
-        padding: 0;
-        max-height: 0;
-        overflow: hidden;
-        visibility: hidden;
-        opacity: 0;
-        background: none;
-        border: 0;
-        border-top: 1px solid var(--rule);
-        transition: opacity 0.2s ease, max-height 0.2s ease;
-      }
-
-      #menu-toggle:checked + label + .navigation-list {
+        display: flex;
         visibility: visible;
         opacity: 1;
-        max-height: 40rem;
+        max-height: none;
+        overflow: visible;
+        width: auto;
+        margin: 0;
+        padding: 0;
+        gap: 2.4rem;
+        background: none;
+        border: 0;
       }
 
       .navigation-item {
         float: none;
         text-align: left;
-        border-bottom: 1px solid var(--rule);
+        border: 0;
       }
 
       .navigation-link {
-        display: block;
+        display: inline;
         margin: 0;
-        padding: 1.3rem 0;
-        font-size: 1.9rem;
-        line-height: 1.3;
-      }
-
-      .menu-button {
-        font-size: 2.2rem;
-
-        i {
-          color: var(--ink-2);
-        }
-      }
-
-      #menu-toggle:checked + label > i {
-        color: var(--blush);
+        padding: 0;
+        font-size: 1.7rem;
+        line-height: 1.4;
       }
     }
-  }
-
-  // The wordmark stays on every page, because it anchors the left end of the
-  // bar and is the way back. On the home page the h1 repeats it a few
-  // centimetres below, so there it steps back to a quiet label instead of
-  // reading as a second headline. Browsers without :has() get the same wordmark
-  // everywhere, which is only a difference of weight.
-  &:has(.container.home) .navigation .navigation-title {
-    font-size: 1.7rem;
-    font-weight: 400;
-    color: var(--ink-3);
   }
 
   // ---------------------------------------------------------------------------
