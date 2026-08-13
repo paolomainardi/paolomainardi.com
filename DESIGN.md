@@ -347,9 +347,9 @@ Breakpoints, and what each one is for:
 | :----- | :---------------------------------------------------------- |
 | 560px  | Contents rows stack, the dotted leader is dropped            |
 | 640px  | Post navigation goes to one column                           |
-| 768px  | Phone type scale, the navigation becomes a menu              |
-| 900px  | The contents block in a post goes to two columns             |
-| 1200px | The apparatus margin opens, the section rail appears         |
+| 768px  | Phone type scale, the header stacks into two rows            |
+| 900px  | The contents block opens, and goes to two columns            |
+| 1200px | The apparatus margin opens, the section rail replaces the bar|
 | 1280px | Body type steps up to 21px                                   |
 | 1560px | The section rail shows the current section name              |
 | 1700px | Body type steps up to 22px                                   |
@@ -408,6 +408,27 @@ accent colour, the body is muted ink at 95 percent size.
 would sit. Aligned on the last baseline so a title that wraps still has its rule
 beside the closing line. Below 560px it stacks and the leader is dropped.
 
+**Contents.** A disclosure. Open above 900px, where it is two columns and
+compact, closed below, where a single column of section links filled most of the
+first screen before the reader reached a word of the post. The open state is set
+from script, because `open` is an attribute rather than a style, so without
+JavaScript it stays closed at every width.
+
+**Reading position.** Below 1200px, where the section rail has no margin to live
+in, a 2px blush line across the top of the viewport, driven by the scroll
+timeline. No script and no scroll listener. Browsers without scroll driven
+animations show nothing.
+
+**Header.** One bar. Wordmark left, menu right. Below 768px it stacks into two
+rows, wordmark then links, with no disclosure: three short links do not need
+one, and a menu cost 260px of header to show them. On the home page the wordmark
+steps back to 17px regular muted, because the masthead repeats it directly
+below.
+
+**Portrait.** Full column width below 1200px, so its edges match the heading and
+the text. In the apparatus margin above it, 210px. It is a plate, not an avatar:
+same hairline and corner as a figure.
+
 **Section rail.** On a post, a tick per top level section pinned to the left
 edge of the viewport, outside the frame. The current tick is filled in blush and
 grows from 10px to 18px, and above 1560px its section name is shown. It is an
@@ -428,6 +449,11 @@ what makes the page feel like one system.
 
 **Do** put information there, not bookkeeping. A label that nothing refers to is
 decoration occupying a column.
+
+**Do** give a narrow screen its own answer, not a fallback. The apparatus margin
+and the section rail cannot exist below 1200px, so the caption goes under the
+image, the labels go above their block, and the rail becomes a line at the top.
+Each is a decision rather than a collapse.
 
 **Do** give each accent one job. If something new needs a colour, ask which of
 the four existing jobs it belongs to before adding a fifth.
