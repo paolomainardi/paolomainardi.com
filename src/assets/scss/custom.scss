@@ -268,6 +268,12 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     display: block;
     margin: 0;
     padding: 0 0 8rem;
+
+    // 8rem is breathing room at the end of a long post on a wide screen. On a
+    // phone it just leaves a hole between the last line and the footer.
+    @media only screen and (max-width: 768px) {
+      padding-bottom: 3.2rem;
+    }
   }
 
   .content > .container {
@@ -493,13 +499,12 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
     // hairline and corner as the figures in a post.
     // Wider than the apparatus column it sits in, filling the margin and
     // leaving a 3rem gutter before the text.
-    // Scales with the viewport rather than sitting at a fixed size, so it is a
-    // photograph on a phone rather than an avatar, and still bounded on a
-    // tablet.
+    // Full column width below 1200px, so its edges line up with the heading, the
+    // lede and every row beneath it. At a fixed width it sat 24px short of the
+    // name and read as a ragged edge.
     .portrait {
       display: block;
-      width: 60%;
-      max-width: 24rem;
+      width: 100%;
       height: auto;
       margin: 0 0 2rem;
       border: 1px solid var(--rule);
@@ -565,7 +570,12 @@ body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto) {
   .colophon {
     display: flex;
     flex-wrap: wrap;
-    gap: 2.4rem;
+    gap: 1.6rem 2.4rem;
+
+    // A phone has no room for a 2.4rem gap between five items.
+    @media only screen and (max-width: 560px) {
+      gap: 1.4rem 1.8rem;
+    }
     max-width: var(--measure);
     margin: 5.6rem 0 0;
     // The left padding has to be zeroed explicitly, otherwise the list keeps

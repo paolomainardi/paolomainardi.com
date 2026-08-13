@@ -68,7 +68,7 @@ custom_js = []
 
 # Social links
 [[params.social]]
-name = "RSS Feed"
+name = "RSS"
 icon = "fa fa-rss fa-2x"
 weight = 1
 url = "https://www.paolomainardi.com/posts/index.xml"
@@ -77,16 +77,6 @@ name = "Github"
 icon = "fa fa-github fa-2x"
 weight = 2
 url = "https://github.com/paolomainardi"
-[[params.social]]
-name = "Gitlab"
-icon = "fa fa-gitlab fa-2x"
-weight = 3
-url = "https://gitlab.com/paolomainardi"
-[[params.social]]
-name = "Twitter"
-icon = "fa fa-twitter fa-2x"
-weight = 4
-url = "https://twitter.com/paolomainardi"
 [[params.social]]
 name = "LinkedIn"
 icon = "fa fa-linkedin fa-2x"
