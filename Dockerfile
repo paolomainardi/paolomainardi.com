@@ -38,8 +38,7 @@ RUN echo "alias dc=docker-compose" >> /etc/bash.bashrc
 RUN echo '[ -f /usr/share/bash-completion/bash_completion ] && . /usr/share/bash-completion/bash_completion' >> /etc/bash.bashrc
 
 # Install global node dependencies.
-ENV HUGO_LYRA_VERSION 0.4.2
-RUN npm install -g firebase-tools hugo-lyra@${HUGO_LYRA_VERSION}
+RUN npm install -g firebase-tools
 
 # Install Hugo.
 ARG BUILDARCH
