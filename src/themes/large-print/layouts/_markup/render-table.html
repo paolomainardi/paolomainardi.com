@@ -27,13 +27,20 @@
   {{- $num = $num | append (and $ok (gt $seen 0)) -}}
 {{- end -}}
 <div class="tabular">
-  <div class="tabular-scroll">
+  <div class="tabular-scroll" tabindex="0" role="region" aria-label="Table {{ add .Ordinal 1 }}, scrolls sideways">
     <table>
       <thead>
         {{- range .THead }}
         <tr>
           {{- range $i, $c := . }}
+          {{- /* An empty header cell, such as the corner of a matrix, is a plain
+                 cell: a header must name something. */}}
+          {{- $tag := cond (eq (strings.TrimSpace (string $c.Text)) "") "td" "th" }}
+          {{- if eq $tag "td" }}
+          <td></td>
+          {{- else }}
           <th{{ with $c.Alignment }} style="text-align: {{ . }}"{{ else }}{{ if and (lt $i (len $num)) (index $num $i) }} class="numeric"{{ end }}{{ end }}>{{ $c.Text }}</th>
+          {{- end }}
           {{- end }}
         </tr>
         {{- end }}

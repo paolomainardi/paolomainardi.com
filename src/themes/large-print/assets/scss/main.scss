@@ -183,6 +183,31 @@ sub {
   }
 }
 
+// Hidden until a keyboard user tabs to it, then shown at the top left.
+.skip-link {
+  position: absolute;
+  top: -10rem;
+  left: 1.6rem;
+  z-index: 10;
+  padding: 0.8rem 1.6rem;
+  background-color: var(--paper);
+  color: var(--ink);
+  border: 2px solid var(--blush);
+
+  &:focus {
+    top: 1.6rem;
+  }
+}
+
+main:focus {
+  outline: none;
+}
+
+.tabular-scroll:focus-visible {
+  outline: 2px solid var(--blush);
+  outline-offset: 2px;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -316,11 +341,11 @@ sub {
   --paper: #fbf7ef;
   --ink: #1e1b17;
   --ink-2: #56504a;
-  --ink-3: #8a8377;
+  --ink-3: #6f685c;
   --rule: #e6ddcc;
   --rule-2: #cec3ad;
 
-  --blush: #b8617a;
+  --blush: #a3526b;
   --blush-wash: #f8ecef;
 
   --code-wash: #f1eee6;

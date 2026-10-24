@@ -13,3 +13,4 @@ src/resources/_gen
 .cache
 .playwright-cli/
 .env
+node_modules

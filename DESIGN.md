@@ -13,10 +13,10 @@ colors:
   paper: "#fbf7ef"
   ink: "#1e1b17"
   ink-muted: "#56504a"
-  ink-faint: "#8a8377"
+  ink-faint: "#6f685c"
   rule: "#e6ddcc"
   rule-strong: "#cec3ad"
-  blush: "#b8617a"
+  blush: "#a3526b"
   blush-wash: "#f8ecef"
   code-wash: "#f1eee6"
   code-ink: "#26221d"
@@ -267,7 +267,9 @@ a linter reporting them as unreferenced is expected rather than a gap.
   card, panel or sheet floating on a different background.
 - **ink (#1e1b17):** body text and headings.
 - **ink-muted (#56504a):** secondary prose, captions, quoted abstracts.
-- **ink-faint (#8a8377):** metadata, labels, apparatus, anything you read second.
+- **ink-faint (#6f685c):** metadata, labels, apparatus, anything you read second.
+  It was #8a8377 until October 2026, which is 3.5:1 on paper and fails WCAG AA
+  for text; #6f685c is 5.2:1 on paper and 4.8:1 on the code wash.
 - **rule (#e6ddcc) and rule-strong (#cec3ad):** hairlines and dotted leaders.
   Structure is drawn with one pixel, never with a box.
 
@@ -275,7 +277,9 @@ a linter reporting them as unreferenced is expected rather than a gap.
 the current section, sidenote numbers, warnings and errors, deleted lines in a
 diff, and the highlighted series in a chart. `blush-wash` is its pale form, used
 for text selection and highlighted code lines. Never put body text on blush at
-full strength.
+full strength. Blush was #b8617a until October 2026; it was darkened to
+#a3526b, 4.9:1 on paper, so that blush text such as a caution label or a
+hovered link passes WCAG AA. The night value already passed.
 
 There used to be four more, each with one job: sky for code, leaf for notes,
 sun for cautions and lilac for margin notes, each with a wash for block
@@ -486,6 +490,10 @@ year a sparkline of links per month on one shared scale, 20px tall, so the
 years compare as small multiples; only the current year ends in a blush dot.
 The home page lists the five newest under Writing, with the host where a date
 would sit. A tag page lists its posts first, then its links.
+
+**Skip link.** The first thing on every page, hidden until a keyboard user tabs
+to it: "Skip to content" in ink on paper with a blush border, at the top left.
+It jumps past the header to the page content.
 
 **Pagination.** Page numbers in one line under a hairline, the current page in
 ink and bold, the others muted links.

@@ -15,7 +15,7 @@
 {{- end -}}
 <section class="container list">
   <div class="measure">
-    <div class="part">{{ $heading }}</div>
+    <h1 class="part">{{ $heading }}</h1>
 
     {{ .Content }}
 
@@ -32,7 +32,7 @@
     </ul>
     {{- end }}
     {{- with $links }}
-    <div class="part">Links <span class="part-note">{{ len . }}</span></div>
+    <h2 class="part">Links <span class="part-note">{{ len . }}</span></h2>
     <ul class="contents-list">
       {{ range $pager.Pages }}{{ template "leader-row" . }}{{ end }}
     </ul>
