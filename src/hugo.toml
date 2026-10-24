@@ -1,7 +1,7 @@
 baseurl = "https://paolomainardi.com"
 title = "Paolo Mainardi"
 theme = "large-print"
-languagecode = "en"
+locale = "en"
 defaultcontentlanguage = "en"
 
 enableRobotsTXT = true

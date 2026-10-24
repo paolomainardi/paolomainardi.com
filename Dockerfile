@@ -42,8 +42,8 @@ RUN npm install -g firebase-tools
 
 # Install Hugo.
 ARG BUILDARCH
-COPY .env /.env
-RUN . /.env && \
+COPY .hugo-version /tmp/.hugo-version
+RUN HUGO_VERSION=$(cat /tmp/.hugo-version) && \
     export HUGO_BINARY=hugo_extended_${HUGO_VERSION}_linux-${BUILDARCH}.tar.gz; \
     curl -Lo /tmp/${HUGO_BINARY} https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/${HUGO_BINARY} \
     && tar xzf /tmp/${HUGO_BINARY} -C /usr/local/bin \

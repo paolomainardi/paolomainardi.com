@@ -19,7 +19,7 @@ The visual system is documented in [DESIGN.md](DESIGN.md), which follows the
 [DESIGN.md specification](https://github.com/google-labs-code/design.md). Read it
 before changing anything that affects the look of the site.
 
-**Tech stack:** Hugo 0.147.2 extended, SCSS compiled by Hugo, vanilla JavaScript
+**Tech stack:** Hugo extended (version in `.hugo-version`, 0.158 or later), SCSS compiled by Hugo, vanilla JavaScript
 with no dependencies, a Hugo module for asciinema playback, Firebase Hosting.
 
 ## Setup
@@ -198,10 +198,11 @@ GitHub Actions, `.github/workflows/firebase-hosting-merge.yml`.
 
 | Trigger        | What happens                                                        |
 | :------------- | :------------------------------------------------------------------ |
-| Push to `main` | Checkout, read `HUGO_VERSION` from `.env`, build with `hugo --minify`, deploy to Firebase Hosting project `cto-space` with firebase-tools pinned to 15.26.0 |
+| Push to `main` | Checkout, read the Hugo version from `.hugo-version`, build with `hugo --minify`, deploy to Firebase Hosting project `cto-space` with firebase-tools pinned to 15.26.0 |
 
-The Hugo version used by CI comes from `.env`, and the Docker image reads the
-same file. Change the version in one place.
+The Hugo version used by CI comes from `.hugo-version`, and the Docker image
+reads the same file. Change the version in one place. `.env` is no longer read
+by anything.
 
 firebase-tools is pinned in the workflow (`firebaseToolsVersion`). Newer
 releases check the Hosting API through Service Usage, which the deploy service

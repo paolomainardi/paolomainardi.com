@@ -13,7 +13,7 @@
 
   Talks with year 0 have no recorded year and are listed last.
 */ -}}
-{{- $talks := .Site.Data.talks.talks -}}
+{{- $talks := hugo.Data.talks.talks -}}
 {{- $dated := where $talks "year" "gt" 0 -}}
 {{- $undated := where $talks "year" "eq" 0 -}}
 {{- $years := slice -}}
