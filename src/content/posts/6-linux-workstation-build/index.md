@@ -50,7 +50,7 @@ They were enjoyable days; Amazon or such wasn’t a thing; to buy components, yo
 What do I remember most of that days as a PC enthusiast? Three things:
 
 1. [Pentium 90 with **MMX extensions**](<https://en.wikipedia.org/wiki/Pentium_(original)#cite_note-4>) - the first ever X86 multimedia extensions baked into a CPU, they could add a considerable amount of FPS. Still, of course, they required new games or substantial patches, [and it was very hard at the beginning to find MMX-supported games](https://archive.nytimes.com/www.nytimes.com/library/cyber/week/012497intel.html) or applications, so it was quite a disappointment.
-2. The first **3Dfx card** with [bilinear filtering in action](https://www.vgamuseum.info/index.php/cpu/item/867-bilinear-filtering) - this kind of technology changed everything; it was like having an arcade at home; everything was so smooth, fast, and sharp as never before; this was the beginning of a new era of gaming and the fast decline of arcades.
+2. The first **3Dfx card** with [bilinear filtering in action](https://web.archive.org/web/20250317150659/https://www.vgamuseum.info/index.php/cpu/item/867-bilinear-filtering) - this kind of technology changed everything; it was like having an arcade at home; everything was so smooth, fast, and sharp as never before; this was the beginning of a new era of gaming and the fast decline of arcades.
 
 {{< youtube mN7wFjfs5OA >}}
 
@@ -202,7 +202,7 @@ There are tons of new features ([here is a very good article from Artstechnica](
 2. DDR5
 3. Up to four 10Gbps USB 3.2 Gen 2
 4. Integrated iGPU based on RDNA2 for the CPUs gen 7000
-5. New socket AM5 [supported till at least 2025](https://www.pcgamer.com/amd-am5-support-thru-2025/) and a new set of [chipset](https://www.amd.com/en/chipsets/am5)
+5. New socket AM5 [supported till at least 2025](https://www.pcgamer.com/amd-am5-support-thru-2025/) and a new set of [chipset](https://web.archive.org/web/20221216220552/https://www.amd.com/en/chipsets/am5)
 
 I have found everything I needed and more to meet my requirements. I considered Intel, but the platform based on [LGA1700](https://en.wikipedia.org/wiki/LGA_1700) is supposedly [reaching its end of life](https://www.pcworld.com/article/1364031/will-intel-use-the-lga-1700-socket-for-meteor-lake-cpus.html). On the other hand, AMD has proven in recent years that it [can support its platform for years.](https://community.amd.com/t5/gaming/let-s-talk-desktop-pcs-is-your-platform-an-investment-or-a/ba-p/560176)
 
@@ -215,7 +215,7 @@ Linux compatibility is superb and is maturing [release after release](https://ww
 
 ### Motherboard
 
-This was the hardest part; as I mentioned before, there are [4 new chipset variants](https://www.amd.com/en/chipsets/am5) for this platform.
+This was the hardest part; as I mentioned before, there are [4 new chipset variants](https://web.archive.org/web/20221216220552/https://www.amd.com/en/chipsets/am5) for this platform.
 
 ![am5 chipsetss](/images/posts/6-linux-workstation/am5-chipsets.webp)
 
@@ -298,4 +298,4 @@ Overall, building a Linux workstation is a fun and rewarding experience that can
 
 That's it and i hope you've enjoed it!
 
-If I am missing something big or you want to discuss it, as always, drop me a message on the contacts you can find [here](/about) or drop me a message on [Mastodon](https://continuousdelivery.social/@paolomainardi).
+If I am missing something big or you want to discuss it, as always, drop me a message on the contacts you can find [here](/about) or open a thread in the [discussions](https://github.com/paolomainardi/paolomainardi.com/discussions).

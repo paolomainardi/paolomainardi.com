@@ -204,7 +204,7 @@ systemctl --user start xremap
 
 ## Conclusions
 
-I am still experimenting with this setup, so I will update this post if I find a better solution, especially for the `Left Alt` remapping that I still find it too invasive and it opens the door for some subtle bugs, such as [this one](https://github.com/xremap/xremap/issues/490).
+I am still experimenting with this setup, so I will update this post if I find a better solution, especially for the `Left Alt` remapping that I still find it too invasive and it opens the door for some subtle bugs, such as [this one](https://web.archive.org/web/20250108095820/https://github.com/xremap/xremap/issues/490).
 
 Anyway, I am quite happy with the result, I can now swap keyboards without having to lose time to reconfigure the layout using some crap software provided by the manufacturer and making the writing experience between Linux and MacOS more similar.
 

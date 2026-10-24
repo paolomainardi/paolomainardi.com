@@ -20,7 +20,7 @@ Thanks to the [**DALL·E 2**](https://openai.com/dall-e-2/), we finally have a v
 At the time of writing, the only viable option to have a _decent performance_
 and a _good DX_ are:
 
-1. **VirtioFS** to share the filesystem ([Docker Desktop](https://www.docker.com/blog/speed-boost-achievement-unlocked-on-docker-desktop-4-6-for-mac/), [Rancher Desktop](https://github.com/rancher-sandbox/rancher-desktop/issues/3488), [Colima](https://github.com/drud/ddev/issues/3750)) - [There are still some issues](https://github.com/docker/roadmap/issues/7#issuecomment-1360243730).
+1. **VirtioFS** to share the filesystem ([Docker Desktop](https://www.docker.com/blog/speed-boost-achievement-unlocked-on-docker-desktop-4-6-for-mac/), [Rancher Desktop](https://github.com/rancher-sandbox/rancher-desktop/issues/3488), [Colima](https://github.com/ddev/ddev/issues/3750)) - [There are still some issues](https://github.com/docker/roadmap/issues/7#issuecomment-1360243730).
 1. Use **named volumes** and if you use VSCode you can rely on things like [DevContainers](https://code.visualstudio.com/docs/devcontainers/containers) to have a good DX - 🚀 **BONUS**: [PoC project](https://github.com/paolomainardi/docker-backstage-devcontainers) with Backstage and DevContainers.
 1. Use [DDEV](https://ddev.com) + [Mutagen](https://ddev.readthedocs.io/en/latest/users/install/performance/) for PHP projects (JS coming soon).
 1. If you are **VI/Emacs** user, all you need is your editor and tools in a container, or if you want a minimal Linux GUI env, [take some inspiration here](https://github.com/mitchellh/nixos-config).
@@ -32,7 +32,7 @@ it is possible to use Rosetta2 instead of QEMU to run x86 containers. You can en
 
 ## How does Docker work on macOS?
 
-{{< figure src="https://collabnix.com/wp-content/uploads/2018/05/Screen-Shot-2018-05-07-at-8.13.29-AM.png" caption="Docker architecture on macOS - Source <https://collabnix.com/how-docker-for-mac-works-under-the-hood>" >}}
+{{< figure src="/images/posts/3-docker/docker-mac-collabnix.webp" caption="Docker architecture on macOS. Source: [collabnix.com](https://collabnix.com/how-docker-for-mac-works-under-the-hood)" >}}
 
 **Docker engine**, on macOS and Windows, needs a **Linux Kernel**; there aren't any exceptions here, you do not see it, but it is there to do all the dirty jobs _(HN:_ [_https://news.ycombinator.com/item?id=11352594_][1]_)_
 
@@ -165,7 +165,7 @@ If you want to deep-dive more into this subject, I cannot recommend more those e
 
 Now that we have a clearer understanding of how Docker manages the filesystem, it is easily understandable **how risky** it can be to use a **container without proper data persistency** layer. This is exactly where docker volumes come in handy.
 
-{{< figure src="https://docs.docker.com/storage/images/types-of-mounts-bind.png" caption="Docker volumes and bind mounts" >}}
+{{< figure src="/images/posts/3-docker/docker-mounts-bind.webp" caption="Docker volumes and bind mounts. Source: the Docker documentation" >}}
 
 ### Bind mounts
 
@@ -438,7 +438,7 @@ To conclude, the overall idea is excellent, and since it is an open standard, it
 
 1. [Gitpod](https://github.com/gitpod-io/gitpod/issues/7721)
 1. [Jetbrains](https://youtrack.jetbrains.com/issue/IDEA-202267)
-1. [nVIM](https://codeberg.org/esensar/nvim)
+1. [nVIM](https://github.com/esensar/nvim-dev-container)
 
 To summarize the key points, i like much:
 
@@ -477,7 +477,7 @@ Thanks for reading all of this, and if you find something wrong or want to discu
 [8]: https://github.com/docker/for-mac/issues/6578
 [9]: https://developer.apple.com/documentation/virtualization
 [10]: https://github.com/docker/HyperKit/
-[11]: https://docker-docs.netlify.app/docker-for-mac/osxfs/
+[11]: https://web.archive.org/web/20221223124110/https://docker-docs.netlify.app/docker-for-mac/osxfs/
 [12]: https://www.google.com/search?q=osxfs+slow&ie=utf-8&oe=utf-8&aq=t
 [13]: https://virtio-fs.gitlab.io/
 [14]: https://www.docker.com/blog/speed-boost-achievement-unlocked-on-docker-desktop-4-6-for-mac/
