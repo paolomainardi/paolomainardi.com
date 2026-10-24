@@ -115,7 +115,16 @@ The first design I got was faster still: a shortcut on my phone that would publi
 
 For simple stuff like this, reading the code is no longer the point. The frontier models now write more solid code than the average developer, me included. What I do is steer, bring the ideas, test the result, and build the harness that keeps the models inside the limits we agreed on.
 
-On this site the harness is a handful of checks that every pull request must pass: the build, the links check, accessibility on every page, a lint for the design system, and now a style check for the posts themselves. At [SparkFabrik](https://www.sparkfabrik.com/) we go further with [sf-agents-harness](https://github.com/sparkfabrik/sf-agents-harness), our open source catalogue of skills, agents and prompts, so every agent follows the same writing style, commit conventions and rules for GitHub and GitLab.
+On this site the harness is a set of checks that every pull request must pass before it can merge:
+
+- **The build**, and for link pull requests a check that they only add link entries.
+- **Accessibility**, axe-core on every page of the site.
+- **Writing style**, on the posts a pull request adds or edits: no dashes as punctuation, no marketing words.
+- **Broken links**, every internal link, image and anchor of the built site, with [lychee](https://github.com/lycheeverse/lychee). External links are checked once a week, because other sites break on their own schedule.
+- **Workflow security**, [actionlint](https://github.com/rhysd/actionlint) and [zizmor](https://github.com/woodruffw/zizmor) on the GitHub workflows, which hold the deploy key.
+- **The design system**, a lint for `DESIGN.md`.
+
+I added the last four after this post was first published: when I want a new rule, I ask an agent for it, and from then on every change has to pass it. At [SparkFabrik](https://www.sparkfabrik.com/) we go further with [sf-agents-harness](https://github.com/sparkfabrik/sf-agents-harness), our open source catalogue of skills, agents and prompts, so every agent follows the same writing style, commit conventions and rules for GitHub and GitLab.
 
 Steering still matters. Models are built to reach a result quickly, and even if their proposals are much safer than in the past, thanks to reinforcement learning on exactly this, they cannot know your context or the security boundaries you want to keep.
 

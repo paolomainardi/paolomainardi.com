@@ -60,10 +60,95 @@ jobs:
         run: hugo --minify -d output --baseURL=http://127.0.0.1:8080/
 
       - name: Install the checker
-        run: npm install --no-save --no-package-lock --ignore-scripts playwright-core@1.64.1 axe-core@4.14.0
+        run: npm ci --ignore-scripts
 
       - name: Check accessibility
         run: |
           python3 -m http.server 8080 --bind 127.0.0.1 --directory src/output >/dev/null 2>&1 &
           sleep 1
           node scripts/a11y-check.cjs http://127.0.0.1:8080
+
+  # Prose rules from the write-post skill, on the posts this pull request adds
+  # or edits. Older posts predate the rules and are not checked.
+  style:
+    if: ${{ !startsWith(github.head_ref, 'links/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check changed posts
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: >
+          git diff -z --name-only --diff-filter=AM "origin/$BASE_REF...HEAD" -- 'src/content/posts/*/index.md'
+          | xargs -0 -r python3 scripts/check-post-style.py
+
+  # Every internal link, image and #anchor of the built site resolves.
+  # External links are checked weekly by links-external.yml instead, because
+  # other sites break on their own schedule.
+  broken-links:
+    if: ${{ !startsWith(github.head_ref, 'links/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
+        with:
+          persist-credentials: false
+
+      - name: Read the Hugo version
+        run: echo "HUGO_VERSION=$(cat .hugo-version)" >> "$GITHUB_ENV"
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@2752ce1d29631191ea3f27c23495fa06139a5b78 # v3
+        with:
+          hugo-version: ${{ env.HUGO_VERSION }}
+          extended: true
+
+      - name: Build
+        working-directory: ./src
+        run: hugo --minify -d output --baseURL=/
+
+      - name: Check internal links
+        run: >
+          docker run --rm -v "$PWD/src/output:/site:ro"
+          lycheeverse/lychee:0.24.2@sha256:e2d19e57cf6ab037026f20b8e449a1f30d9d7f81eef4194763aab2eab20bd28d
+          --no-progress --offline --include-fragments --root-dir /site
+          --index-files index.html '/site/**/*.html'
+
+  # The workflows themselves: actionlint for mistakes, zizmor for security
+  # (injection, permissions, pinning). The deploy job holds the Firebase key.
+  workflows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
+        with:
+          persist-credentials: false
+
+      - name: actionlint
+        run: >
+          docker run --rm -v "$PWD:/repo:ro" -w /repo
+          rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+          .github/workflows/firebase-hosting-merge.yml .github/workflows/pr-check.yml .github/workflows/links-external.yml
+
+      - name: zizmor
+        run: >
+          docker run --rm -v "$PWD:/repo:ro" -w /repo
+          ghcr.io/zizmorcore/zizmor:1.31.1@sha256:42d409dbb851d4c5d35a058cf042b828bea1e3f2884378c526eb0974780e18d9
+          --offline .github/workflows
+
+  # The design system of record stays valid.
+  design:
+    if: ${{ !startsWith(github.head_ref, 'links/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
+        with:
+          persist-credentials: false
+
+      - name: Install the linter
+        run: npm ci --ignore-scripts
+
+      - name: Lint DESIGN.md
+        run: npx --no-install design.md lint DESIGN.md

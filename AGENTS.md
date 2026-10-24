@@ -212,10 +212,12 @@ GitHub Actions, `.github/workflows/firebase-hosting-merge.yml`.
 | Trigger        | What happens                                                        |
 | :------------- | :------------------------------------------------------------------ |
 | Push to `main` | Checkout, read the Hugo version from `.hugo-version`, build with `hugo --minify`, deploy to Firebase Hosting project `cto-space` with firebase-tools pinned to 15.26.0 |
-| Pull request   | `.github/workflows/pr-check.yml` builds the site. On a `links/*` branch it first runs `scripts/check-links-pr.py`, which fails unless the pull request only adds or edits valid link entries. A second job, `a11y`, runs `scripts/a11y-check.cjs`: axe-core on every page in the sitemap, light at 1280 and 375 pixels and dark at 1280, failing on any WCAG 2.2 AA violation or axe best practice. It is skipped on `links/*` branches |
+| Pull request   | `.github/workflows/pr-check.yml` builds the site. On a `links/*` branch it first runs `scripts/check-links-pr.py`, which fails unless the pull request only adds or edits valid link entries. Other jobs, all required and all skipped on `links/*` branches except `workflows`: `a11y` runs `scripts/a11y-check.cjs`, axe-core on every page in the sitemap (light at 1280 and 375 pixels, dark at 1280), failing on any WCAG 2.2 AA violation or axe best practice; `style` runs `scripts/check-post-style.py` on the posts the pull request adds or edits; `broken-links` runs lychee on the built site and fails on any broken internal link, image or anchor; `workflows` runs actionlint and zizmor on the workflows; `design` lints DESIGN.md |
+| Weekly         | `.github/workflows/links-external.yml` checks every external link in the posts with lychee, Mondays 07:17 UTC. A failed run is the signal, by email |
 
 Every action is pinned to a commit, with its tag in a comment, and the
-repository rejects unpinned actions. Workflows run with `contents: read` and
+repository rejects unpinned actions. Tools that run as containers (lychee,
+actionlint, zizmor) are pinned by image digest. Workflows run with `contents: read` and
 check out without persisting the token.
 
 `firebase.json` sends security headers on every response (`nosniff`, a strict
@@ -238,7 +240,10 @@ account is not allowed to do; raising the pin needs
 
 ## Package Management
 
-The repository declares no Node or PHP manifest. Two dependency surfaces exist:
+Three dependency surfaces exist. The site itself has no Node dependency: the
+root `package.json` and its lockfile hold only the tools the pull request checks
+run (`playwright-core`, `axe-core`, `@google/design.md`), installed with
+`npm ci --ignore-scripts`.
 
 ### Hugo modules (Go)
 
