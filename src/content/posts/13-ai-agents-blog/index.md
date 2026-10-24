@@ -1,7 +1,7 @@
 +++
 date = "2026-10-24"
-title = "How I rebuilt this blog with AI agents"
-slug = "rebuilt-this-blog-with-ai-agents"
+title = "The stack is now my agents' job"
+slug = "the-stack-is-now-my-agents-job"
 tags = ["ai", "agents", "hugo", "design", "accessibility", "security"]
 draft = "true"
 toc = true
