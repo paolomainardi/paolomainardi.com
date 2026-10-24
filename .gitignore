@@ -12,3 +12,4 @@ src/resources/_gen
 *.tgz
 .cache
 .playwright-cli/
+.env

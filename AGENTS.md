@@ -210,8 +210,13 @@ GitHub Actions, `.github/workflows/firebase-hosting-merge.yml`.
 | Push to `main` | Checkout, read the Hugo version from `.hugo-version`, build with `hugo --minify`, deploy to Firebase Hosting project `cto-space` with firebase-tools pinned to 15.26.0 |
 | Pull request   | `.github/workflows/pr-check.yml` builds the site. On a `links/*` branch it first runs `scripts/check-links-pr.py`, which fails unless the pull request only adds or edits valid link entries |
 
-Every action is pinned to a commit, with its tag in a comment. Pin new ones the
-same way.
+Every action is pinned to a commit, with its tag in a comment, and the
+repository rejects unpinned actions. Workflows run with `contents: read` and
+check out without persisting the token.
+
+`firebase.json` sends security headers on every response (`nosniff`, a strict
+referrer policy, a closed permissions policy, and no framing). The repository
+has secret scanning with push protection and Dependabot alerts on, and no wiki.
 
 Links arrive through a daily Claude routine that follows
 `.claude/skills/publish-links/SKILL.md`: it reads Paolo's private links channel
@@ -219,8 +224,8 @@ in Slack, writes the entries, and opens a `links/*` pull request that merges
 itself once the check passes.
 
 The Hugo version used by CI comes from `.hugo-version`, and the Docker image
-reads the same file. Change the version in one place. `.env` is no longer read
-by anything.
+reads the same file. Change the version in one place. There is no `.env`, and
+`.gitignore` keeps one from being committed: the repository is public.
 
 firebase-tools is pinned in the workflow (`firebaseToolsVersion`). Newer
 releases check the Hosting API through Service Usage, which the deploy service

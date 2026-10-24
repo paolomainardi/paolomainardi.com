@@ -5,11 +5,15 @@ name: Deploy to Firebase Hosting on main
   push:
     branches:
       - main
+permissions:
+  contents: read
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
 
       - name: Read the Hugo version
