@@ -2,11 +2,12 @@
   Page skeleton.
 
   The colour scheme class on body selects the palette. "auto" follows the system
-  preference until the reader picks one with the toggle. The scripts are one
-  local bundle at the end of the body.
+  preference until the reader picks one with the toggle. A tiny inline script
+  applies a stored choice before the first paint; everything else is one
+  deferred local bundle at the end of the body.
 */ -}}
 <!DOCTYPE html>
-<html lang="{{ site.Language.LanguageCode | default site.Language.Lang }}">
+<html lang="{{ site.Language.Locale | default site.Language.Lang }}">
 
 <head>
     <title>{{ block "title" . }}{{ site.Params.headTitle | default site.Title }}{{ end }}</title>
@@ -15,6 +16,9 @@
 
 {{- $scheme := site.Params.colorScheme | default "auto" }}
 <body class="colorscheme-{{ $scheme }}">
+    {{- with resources.Get "js/scheme-init.js" | minify }}
+    <script>{{ .Content | safeJS }}</script>
+    {{- end }}
     <main class="wrapper">
         {{ partial "header.html" . }}
 

@@ -3,7 +3,9 @@
   optional analytics script.
 
   The roman Literata subset is preloaded because it sets every word of body
-  text, so it is the font the first paint waits on.
+  text, so it is the font the first paint waits on. Posts also preload the
+  italic, which the byline and most opening paragraphs use; otherwise it is
+  only found after the stylesheet is applied, and the paragraph waits for it.
 */ -}}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,6 +19,9 @@
 <link rel="canonical" href="{{ .Params.canonicalUrl | default .Permalink }}">
 
 <link rel="preload" href="{{ "fonts/literata-latin-opsz-normal.woff2" | relURL }}" as="font" type="font/woff2" crossorigin>
+{{- if and .IsPage (eq .Section "posts") }}
+<link rel="preload" href="{{ "fonts/literata-latin-opsz-italic.woff2" | relURL }}" as="font" type="font/woff2" crossorigin>
+{{- end }}
 {{ partialCached "styles.html" . }}
 
 {{ with site.Params.favicon_32 }}<link rel="icon" type="image/png" href="{{ . | relURL }}" sizes="32x32">{{ end }}
