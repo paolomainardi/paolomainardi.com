@@ -1,6 +1,7 @@
 +++
 date = "2026-10-24T21:00:00+02:00"
 title = "DruBOM: next generation supply chain security for Drupal"
+description = "How AI agents rewrote DruBOM, my Drupal SBOM module, with no external binaries, an SPDX 3.0.1 export, vulnerability checks and VEX decisions."
 slug = "drubom-next-gen-drupal-supply-chain-security"
 tags = ["ai", "agents", "drupal", "supply-chain", "security", "sbom"]
 draft = "false"

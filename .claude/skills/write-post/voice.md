@@ -23,7 +23,9 @@ recent voice.
 ## Shape of a post
 
 1. **Front matter in TOML** (`+++`), `toc = true` on long posts, a
-   `featuredImage` when there is one.
+   `featuredImage` when there is one. Always a `description`: one sentence,
+   about twenty words, saying what the reader gets from the post. It shows
+   under the title as the subtitle and is the page's meta description.
 2. **A disclosure notice first**, whenever AI helped, worded for what it did.
    A post he wrote by hand: "I wrote this post by hand. An AI helped me review
    it, tighten the writing and fact-check the technical parts." A post drafted

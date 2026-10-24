@@ -41,6 +41,7 @@ for every sentence.
    for word in a transcript outside the repository, which is public.
 4. **Draft the post** in `src/content/posts/<n>-<slug>/index.md`, `<n>` being
    the next number after the highest existing post. Front matter in TOML, with
+   a one sentence `description` (the subtitle under the title) and
    `draft = "true"` until he approves. Write each section from the facts and
    his answers, in voice.md's voice.
 5. **Add figures and charts.**
