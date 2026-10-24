@@ -33,9 +33,26 @@ title from Slack's link preview, never fetch or summarize the page.
 
 ## Steps
 
-1. Read the channel messages from the last 3 days. Open a thread only when
-   the message has replies, and skip the message if one of them contains
-   `✅ Published`.
+Keep the run short: each step below is one call. Do not explore the
+repository, search for the channel or list tools beyond what a step names.
+
+0. Load the three Slack tools in one call:
+   `select:mcp__Slack__slack_read_channel,mcp__Slack__slack_read_thread,mcp__Slack__slack_send_message`.
+   Then prepare the checkout in one command:
+
+   ```bash
+   git fetch -q origin main && git checkout -q -B links/$(date -u +%F) origin/main \
+     && date -u -d '3 days ago' +%s \
+     && grep -rh '^tags' src/content | sed -E 's/^tags *[:=] *\[//; s/\].*//' \
+        | tr ',' '\n' | tr -d ' "' | sort -u | tr '\n' ' '
+   ```
+
+   It prints two lines: the `oldest` timestamp for step 1, then every tag
+   already used on the site.
+1. Read the channel with `slack_read_channel`, passing the channel ID from
+   the routine prompt and `oldest` from step 0. Never search for the channel.
+   Open a thread only when the message has replies, and skip the message if
+   one of them contains `✅ Published`.
 2. For each remaining message, take the first `https://` URL. Skip messages
    without one.
 3. The note is the rest of the message text, rewritten as the rules above
@@ -51,8 +68,7 @@ title from Slack's link preview, never fetch or summarize the page.
    Drop a trailing site name joined by ` | `, ` - ` or ` · ` ("Is this the
    new cyber normal? | Drew's Dev Blog" becomes "Is this the new cyber
    normal?"). Remove `<`, `>` and `{{`.
-5. Pick one to three tags from the tags the site already uses
-   (`grep -rh "^tags" src/content`). Never invent a tag.
+5. Pick one to three tags from the list step 0 printed. Never invent a tag.
 6. Write `src/content/links/<slug>.md`, the slug in lowercase letters, digits
    and hyphens from the title, unique in the folder. Use exactly this shape,
    with the title's double quotes escaped and the date as the time of
@@ -71,13 +87,15 @@ title from Slack's link preview, never fetch or summarize the page.
 
    Without a note, end the file after the closing `---`. The note must not
    contain `<` or `{{`. Rephrase around them if needed.
-7. Run `python3 scripts/check-links-pr.py origin/main` after committing. Fix
-   any entry it rejects.
-8. Commit on a branch named `links/<YYYY-MM-DD>` with the message
-   `feat(links): add <n> links`, push, and open a pull request titled the
-   same, listing the links. Turn on auto-merge with squash.
+7. Commit on the branch from step 0 with the message
+   `feat(links): add <n> links`, then run
+   `python3 scripts/check-links-pr.py origin/main`. Fix any entry it rejects.
+8. Push, open a pull request titled like the commit and listing the links,
+   and turn on auto-merge with squash. Do not watch or subscribe to the pull
+   request: the check and the merge need nothing from you.
 9. Reply in each published message's thread with the preface line, then
    `✅ Published: <pull request URL>`. When something fails, reply with the
    preface line, then `⚠️ Not published: <what failed, in one sentence>`.
 
-If nothing is new, stop without creating a branch.
+If nothing is new, stop without pushing. End the run as soon as the thread
+replies are posted.
