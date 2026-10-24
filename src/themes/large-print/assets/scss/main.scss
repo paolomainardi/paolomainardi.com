@@ -1733,11 +1733,19 @@ body:has(.container.home) .navigation .navigation-title {
   padding: 0;
   text-align: left;
 
+  // A mat, like a print in a mount: the image sits on the code wash inside a
+  // hairline, so a light screenshot no longer melts into the paper.
   img {
     max-width: 100%;
     height: auto;
+    padding: 1.4rem;
+    background-color: var(--code-wash);
     border: 1px solid var(--rule);
-    border-radius: 3px;
+    border-radius: 4px;
+
+    @media only screen and (max-width: 559px) {
+      padding: 0.8rem;
+    }
   }
 
 }
