@@ -78,7 +78,7 @@ I hope you find this article useful, having a cozy environment is a crucial part
 
 **PS**: The cover image is real working desktop based on AwesomeWM, you can find all the information here: https://www.reddit.com/r/unixporn/comments/q941ym/awesomewm_life_problems
 
-[1]: https://thatnixguy.github.io/posts/ricing/#:~:text=The%20term%20'rice'%20is%20used,system%20becomes%20much%20more%20involved.
+[1]: https://web.archive.org/web/20230127164851/https://thatnixguy.github.io/posts/ricing/
 [2]: https://en.wikipedia.org/wiki/Tiling_window_manager
 [3]: https://www.reddit.com/r/unixporn/
 [4]: https://yadm.io/

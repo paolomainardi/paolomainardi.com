@@ -32,4 +32,4 @@ I'll write about **Kubernetes**, **Linux**, **development, programming languages
 
 [1]: https://www.gohugo.io
 [2]: https://firebase.google.com/products/hosting
-[3]: http://paolomainardi.loc/posts/index.xml
+[3]: https://www.paolomainardi.com/posts/index.xml
