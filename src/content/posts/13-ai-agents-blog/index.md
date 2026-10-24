@@ -115,7 +115,7 @@ The first design I got was faster still: a shortcut on my phone that would publi
 
 For simple stuff like this, reading the code is no longer the point. The frontier models now write more solid code than the average developer, me included. What I do is steer, bring the ideas, test the result, and build the harness that keeps the models inside the limits we agreed on.
 
-On this site the harness is a set of checks that every pull request must pass before it can merge:
+On this site the harness is a set of checks that run on every pull request, and all but the link check must pass before it can merge:
 
 - **The build**, and for link pull requests a check that they only add link entries.
 - **Accessibility**, axe-core on every page of the site.
