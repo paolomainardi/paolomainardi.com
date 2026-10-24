@@ -772,7 +772,6 @@ body:has(.container.home) .navigation .navigation-title {
   list-style: none;
 }
 
-.list ul,
 .list ul:not(.pagination) {
   margin: 0;
   padding: 0;
@@ -917,11 +916,31 @@ body:has(.container.home) .navigation .navigation-title {
   }
 }
 
+// Page numbers in one line: first, previous, the pages around the current
+// one, next, last. The current page is in ink, the others are links.
 .pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.6rem;
   margin: 4.8rem 0 0;
+  padding: 1.6rem 0 0;
+  border-top: 1px solid var(--rule);
+  list-style: none;
   font-size: 1.7rem;
+  font-variant-numeric: lining-nums tabular-nums;
+
+  li {
+    margin: 0;
+    color: var(--ink-3);
+  }
+
+  [aria-current] {
+    font-weight: 600;
+    color: var(--ink);
+  }
 
   a {
+    text-decoration: none;
     color: var(--ink-2);
 
     &:hover,
