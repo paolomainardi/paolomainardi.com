@@ -3,7 +3,7 @@ date = "2026-10-24"
 title = "The stack is now my agents' job"
 slug = "the-stack-is-now-my-agents-job"
 tags = ["ai", "agents", "hugo", "design", "accessibility", "security"]
-draft = "true"
+draft = "false"
 toc = true
 +++
 
