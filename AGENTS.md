@@ -93,7 +93,7 @@ Run `just` or `just --list` to see all recipes.
 | `src/hugo.toml`                   | Site config, params, markup and highlight settings |
 | `src/themes/large-print/`         | The theme: templates, styles, scripts, fonts       |
 | `.../large-print/assets/scss/main.scss` | The whole design system, sectioned and commented |
-| `.../large-print/assets/js/`      | Colour scheme, copy button, section rail           |
+| `.../large-print/assets/js/`      | Colour scheme, copy button, section rail, image overlay |
 | `.../large-print/layouts/_markup/` | Render hooks for code, headings, images, links, tables |
 | `.../large-print/layouts/_partials/book/` | Design specific partials                   |
 | `src/layouts/robots.txt`          | The only site level template                       |

@@ -4,7 +4,8 @@
   A standalone image becomes a figure whose plate number sits in the apparatus,
   in the outer margin on wide screens. The caption is the markdown title when
   present, otherwise the alt text. Width and height come from the file itself so
-  the page does not reflow as plates load. An image inside a run of text stays
+  the page does not reflow as plates load. data-zoom names the larger copy that
+  zoom.js opens in the image overlay. An image inside a run of text stays
   inline.
 */ -}}
 {{- $alt := .Text | plainify -}}
@@ -19,7 +20,8 @@
          the image, so there is no separate label and no number. */ -}}
   <figure>
     <img src="{{ $img.url | safeURL }}" alt="{{ $alt }}"{{ $dim }}
-      {{- with $img.srcset }} srcset="{{ . }}" sizes="(min-width: 868px) 820px, 100vw"{{ end }} loading="lazy" decoding="async">
+      {{- with $img.srcset }} srcset="{{ . }}" sizes="(min-width: 868px) 820px, 100vw"{{ end }}
+      {{- with $img.zoom }} data-zoom="{{ . }}" data-zoom-width="{{ $img.zoomWidth }}"{{ end }} loading="lazy" decoding="async">
     {{- with $caption }}
     <figcaption>{{ . }}</figcaption>
     {{- end }}

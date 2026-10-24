@@ -1596,6 +1596,63 @@ body:has(.container.home) .navigation .navigation-title {
   }
 }
 
+// The image overlay, opened by zoom.js. An image that would show larger on its
+// own gets the zoom cursor. The overlay is a dim field with the image fitted
+// inside the viewport and the caption under it, both in fixed colours so they
+// read the same in either scheme.
+.zoomable {
+  cursor: zoom-in;
+
+  &:focus-visible {
+    outline: 2px solid var(--blush);
+    outline-offset: 3px;
+  }
+}
+
+dialog.zoom {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 3vh 3vw;
+  border: 0;
+  background: transparent;
+  cursor: zoom-out;
+
+  &[open] {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    animation: zoom-open 160ms ease-out;
+  }
+
+  &::backdrop {
+    background: rgba(20, 18, 16, 0.97);
+  }
+
+  img {
+    min-height: 0;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 3px;
+  }
+}
+
+.zoom-caption {
+  flex: none;
+  max-width: var(--measure);
+  margin: 0;
+  font-size: 1.6rem;
+  line-height: 1.5;
+  color: #d9d1c3;
+  text-align: center;
+  text-wrap: pretty;
+}
+
 .avatar img {
   width: 12rem;
   height: auto;
@@ -2686,6 +2743,13 @@ summary:focus-visible {
 // -----------------------------------------------------------------------------
 // 21. Keyframes
 // -----------------------------------------------------------------------------
+
+@keyframes zoom-open {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
 
 @keyframes reading-progress {
   from {
