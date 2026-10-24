@@ -53,6 +53,7 @@
             <img class="frontispiece" src="{{ $img.url | safeURL }}" alt="{{ $.Title }}"
                 {{- if gt $img.width 0 }} width="{{ $img.width }}" height="{{ $img.height }}"{{ end }}
                 {{- with $img.srcset }} srcset="{{ . }}" sizes="(min-width: 868px) 820px, 100vw"{{ end }}
+                {{- with $img.zoom }} data-zoom="{{ . }}" data-zoom-width="{{ $img.zoomWidth }}"{{ end }}
                 loading="eager" fetchpriority="high" decoding="async" />
             {{ end }}
             <div class="text">

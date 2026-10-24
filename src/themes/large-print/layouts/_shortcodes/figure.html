@@ -15,6 +15,7 @@
     {{- with $width }} width="{{ . }}"{{ end }}
     {{- with $height }} height="{{ . }}"{{ end }}
     {{- if not (.Get "width") }}{{ with $img.srcset }} srcset="{{ . }}" sizes="(min-width: 868px) 820px, 100vw"{{ end }}{{ end }}
+    {{- if not (.Get "link") }}{{ with $img.zoom }} data-zoom="{{ . }}" data-zoom-width="{{ $img.zoomWidth }}"{{ end }}{{ end }}
     loading="{{ .Get "loading" | default "lazy" }}" decoding="async">
   {{- with .Get "link" }}</a>{{ end -}}
   {{- $caption := .Get "caption" | default (.Get "title") -}}

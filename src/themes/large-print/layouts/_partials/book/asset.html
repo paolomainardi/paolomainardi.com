@@ -12,28 +12,29 @@
   original is still published at its own path, so Open Graph tags and old links
   keep working.
 
+  zoom is the largest copy worth opening in the image overlay: the 1640px copy
+  when there is one, otherwise the original. zoomWidth is its width.
+
   Takes a path as written in the content, for example
-  /images/posts/12-steamos/cpu.webp. Returns a dict with url, width, height and
-  srcset. Width and height are 0, and srcset empty, when the file is remote,
-  missing, or not a raster image, and the caller then omits the attributes.
+  /images/posts/12-steamos/cpu.webp. Returns a dict with url, width, height,
+  srcset, zoom and zoomWidth. Width and height are 0, and the rest empty, when
+  the file is remote, missing, or not a raster image, and the caller then omits
+  the attributes.
 */ -}}
 {{- $src := . -}}
-{{- $out := dict "url" $src "width" 0 "height" 0 "srcset" "" -}}
+{{- $out := dict "url" $src "width" 0 "height" 0 "srcset" "" "zoom" "" "zoomWidth" 0 -}}
 {{- if not (or (strings.HasPrefix $src "http") (strings.HasPrefix $src "//") (strings.HasPrefix $src "data:")) -}}
   {{- with resources.Get (strings.TrimPrefix "/" $src) -}}
-    {{- $out = dict "url" .RelPermalink "width" 0 "height" 0 "srcset" "" -}}
+    {{- $out = dict "url" .RelPermalink "width" 0 "height" 0 "srcset" "" "zoom" "" "zoomWidth" 0 -}}
     {{- /* SVG carries no pixel size, and resizing would flatten an animated GIF. */ -}}
     {{- if and (eq .ResourceType "image") (not (in (slice "svg" "gif") .MediaType.SubType)) -}}
-      {{- $out = dict "url" .RelPermalink "width" .Width "height" .Height "srcset" "" -}}
+      {{- $out = dict "url" .RelPermalink "width" .Width "height" .Height "srcset" "" "zoom" .RelPermalink "zoomWidth" .Width -}}
       {{- if gt .Width 820 -}}
         {{- $column := .Resize "820x webp q85" -}}
-        {{- $set := slice (printf "%s 820w" $column.RelPermalink) -}}
-        {{- if gt .Width 1640 -}}
-          {{- $set = $set | append (printf "%s 1640w" (.Resize "1640x webp q85").RelPermalink) -}}
-        {{- else -}}
-          {{- $set = $set | append (printf "%s %dw" .RelPermalink .Width) -}}
-        {{- end -}}
-        {{- $out = dict "url" $column.RelPermalink "width" $column.Width "height" $column.Height "srcset" (delimit $set ", ") -}}
+        {{- $large := . -}}
+        {{- if gt .Width 1640 }}{{ $large = .Resize "1640x webp q85" }}{{ end -}}
+        {{- $set := slice (printf "%s 820w" $column.RelPermalink) (printf "%s %dw" $large.RelPermalink $large.Width) -}}
+        {{- $out = dict "url" $column.RelPermalink "width" $column.Width "height" $column.Height "srcset" (delimit $set ", ") "zoom" $large.RelPermalink "zoomWidth" $large.Width -}}
       {{- end -}}
     {{- end -}}
   {{- end -}}

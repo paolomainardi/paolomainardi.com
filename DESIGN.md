@@ -379,6 +379,14 @@ image.
 Images carry intrinsic width and height so the page does not reflow while they
 load, which is why post images live in `assets/` rather than `static/`.
 
+**Image overlay.** An image that would show at least 15% wider on its own gets a
+zoom cursor, and clicking it, or pressing Enter on it, opens it in a modal
+overlay: a near black field with the image fitted to the viewport and the caption
+under it in light ink. It is the one dark surface in the light scheme, because a
+picture reads best against black. The overlay starts from the copy already on the
+page and swaps in the 1640px copy, or the original when smaller, once it loads.
+Images that already show at full size, linked images and charts are left alone.
+
 **Table.** Unnumbered, like listings and figures. Three rules and nothing
 else: one above the head, one under it, one under the last row, with rows
 separated by space. Column heads are small uppercase labels. A column whose
