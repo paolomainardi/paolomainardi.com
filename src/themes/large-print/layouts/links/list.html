@@ -7,7 +7,7 @@
 */ -}}
 <section class="container list links">
   <div class="measure">
-    <div class="part">Links <span class="part-note">{{ len .Pages }} so far, newest first</span></div>
+    <h1 class="part">Links <span class="part-note">{{ len .Pages }} so far, newest first</span></h1>
     {{ with .Content }}<div class="links-intro">{{ . }}</div>{{ end }}
     {{- /* One row per year: a sparkline of links per month, the count, and
            where the year starts, as the pager page holding its newest month

@@ -10,7 +10,13 @@
 {{- $host := strings.TrimPrefix "www." (urls.Parse $url).Host -}}
 <article class="link-entry">
   <div class="link-date"><a href="{{ .RelPermalink }}" title="Permalink">{{ .Date | time.Format "2 Jan" }}</a></div>
+  {{- /* The title is the page heading on the entry's own page, a section
+         heading in a list. */}}
+  {{- if eq page.RelPermalink .RelPermalink }}
+  <h1 class="link-title"><a href="{{ $url | safeURL }}" target="_blank" rel="noopener">{{ .Title }}<span class="sr-only"> (opens in a new tab)</span></a><span class="link-host">{{ $host }}</span></h1>
+  {{- else }}
   <h2 class="link-title"><a href="{{ $url | safeURL }}" target="_blank" rel="noopener">{{ .Title }}<span class="sr-only"> (opens in a new tab)</span></a><span class="link-host">{{ $host }}</span></h2>
+  {{- end }}
   <div class="link-note">
     {{ .Content }}
     {{- with .Params.via }}

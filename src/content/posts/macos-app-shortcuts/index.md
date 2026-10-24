@@ -23,7 +23,7 @@ In order of preference, the things I love about this workflow:
 
 Now, **approaching to the core of this article**, **I use** both **Linux and macOS** daily, and I **share** most of the **dotfiles** between the systems (_i use_ [_yadm_][4]); everything works very well except the desktop workflow and the keyboard shortcuts that i cannot easily share.
 
-### Tiling window managers on macOS ?
+## Tiling window managers on macOS ?
 
 **macOS** **doesn't have a native windows tiling management** (well, there is one, but very limited to full-screen apps). Some open-source projects aim to fix that, like [Amethyst][5] or [Yabai][6]; I am currently using the **first one**, which is quite ok for casual usage but **very limited** for the most advanced scenarios; in that case, consider Yabai, which requires a **most complex installation** to take deeper control of the operating system part in charge of window management.
 
@@ -33,11 +33,11 @@ To do that, you must use a combination of stuff like **Automator** and **keyboar
 
 **It is frustrating** but **easily fixable** using a **small and ingenious** system **daemon** called [skhd][7].
 
-### What is skhd ?
+## What is skhd ?
 
 > **skhd** is a simple hotkey daemon for macOS that focuses on responsiveness and performance. Hotkeys are defined in a text file through a simple DSL. **skhd** is able to hotload its config file, meaning that hotkeys can be edited and updated live while **skhd** is running.
 
-### How to use it?
+## How to use it?
 
 Once installed brew and started the launchd service:
 

@@ -4,7 +4,8 @@
   The colour scheme class on body selects the palette. "auto" follows the system
   preference until the reader picks one with the toggle. A tiny inline script
   applies a stored choice before the first paint; everything else is one
-  deferred local bundle at the end of the body.
+  deferred local bundle at the end of the body. A skip link, hidden until
+  focused, jumps past the header to main, which holds only the page content.
 */ -}}
 <!DOCTYPE html>
 <html lang="{{ site.Language.Locale | default site.Language.Lang }}">
@@ -19,15 +20,16 @@
     {{- with resources.Get "js/scheme-init.js" | minify }}
     <script>{{ .Content | safeJS }}</script>
     {{- end }}
-    <main class="wrapper">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="wrapper">
         {{ partial "header.html" . }}
 
-        <div class="content">
+        <main id="main" class="content" tabindex="-1">
             {{ block "content" . }}{{ end }}
-        </div>
+        </main>
 
         {{ partial "footer.html" . }}
-    </main>
+    </div>
 
     {{ partialCached "scripts.html" . }}
 </body>

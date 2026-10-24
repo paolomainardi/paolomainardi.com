@@ -208,7 +208,7 @@ GitHub Actions, `.github/workflows/firebase-hosting-merge.yml`.
 | Trigger        | What happens                                                        |
 | :------------- | :------------------------------------------------------------------ |
 | Push to `main` | Checkout, read the Hugo version from `.hugo-version`, build with `hugo --minify`, deploy to Firebase Hosting project `cto-space` with firebase-tools pinned to 15.26.0 |
-| Pull request   | `.github/workflows/pr-check.yml` builds the site. On a `links/*` branch it first runs `scripts/check-links-pr.py`, which fails unless the pull request only adds or edits valid link entries |
+| Pull request   | `.github/workflows/pr-check.yml` builds the site. On a `links/*` branch it first runs `scripts/check-links-pr.py`, which fails unless the pull request only adds or edits valid link entries. A second job, `a11y`, runs `scripts/a11y-check.cjs`: axe-core on every page in the sitemap, light at 1280 and 375 pixels and dark at 1280, failing on any WCAG 2.2 AA violation or axe best practice. It is skipped on `links/*` branches |
 
 Every action is pinned to a commit, with its tag in a comment, and the
 repository rejects unpinned actions. Workflows run with `contents: read` and

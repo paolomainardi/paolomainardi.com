@@ -34,3 +34,36 @@ jobs:
       - name: Build
         working-directory: ./src
         run: hugo --minify -d output --baseURL=https://www.paolomainardi.com
+
+  # Every page of the built site through axe-core, in both colour schemes.
+  # Skipped for links/* branches, which only add link entries and are already
+  # held to a fixed format; a skipped job counts as passed.
+  a11y:
+    if: ${{ !startsWith(github.head_ref, 'links/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
+        with:
+          persist-credentials: false
+
+      - name: Read the Hugo version
+        run: echo "HUGO_VERSION=$(cat .hugo-version)" >> "$GITHUB_ENV"
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@2752ce1d29631191ea3f27c23495fa06139a5b78 # v3
+        with:
+          hugo-version: ${{ env.HUGO_VERSION }}
+          extended: true
+
+      - name: Build
+        working-directory: ./src
+        run: hugo --minify -d output --baseURL=http://127.0.0.1:8080/
+
+      - name: Install the checker
+        run: npm install --no-save --no-package-lock --ignore-scripts playwright-core@1.64.1 axe-core@4.14.0
+
+      - name: Check accessibility
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 --directory src/output >/dev/null 2>&1 &
+          sleep 1
+          node scripts/a11y-check.cjs http://127.0.0.1:8080

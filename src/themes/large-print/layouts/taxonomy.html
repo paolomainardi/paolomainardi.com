@@ -12,7 +12,7 @@
 {{- $type := .Type -}}
 <section class="container taxonomy">
   <div class="measure">
-    <div class="part">{{ i18n (lower .Title) | default .Title | title }}</div>
+    <h1 class="part">{{ i18n (lower .Title) | default .Title | title }}</h1>
 
     {{ .Content }}
 
