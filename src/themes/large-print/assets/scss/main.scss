@@ -220,13 +220,6 @@ sub {
   text-align: center;
 }
 
-.float-container {
-  position: fixed;
-  right: 2rem;
-  bottom: 2rem;
-  z-index: 100;
-}
-
 // -----------------------------------------------------------------------------
 // 1. Self hosted faces
 //
@@ -2555,7 +2548,13 @@ summary:focus-visible {
 }
 
 // A button rather than a link, so it needs the button chrome removed.
-.float-container .colorscheme-toggle {
+// The toggle is the last item of the menu, centred on the links' line.
+.navigation-toggle {
+  display: flex;
+  align-items: center;
+}
+
+.colorscheme-toggle {
   display: block;
   padding: 0;
   border: 0;
@@ -2583,7 +2582,7 @@ summary:focus-visible {
 
     .navigation,
     .footer,
-    .float-container,
+    .colorscheme-toggle,
     .listing .copy,
     .rail,
     .toc {

@@ -15,7 +15,6 @@
 
 {{- $scheme := site.Params.colorScheme | default "auto" }}
 <body class="colorscheme-{{ $scheme }}">
-    {{ partial "scheme-toggle.html" . }}
     <main class="wrapper">
         {{ partial "header.html" . }}
 

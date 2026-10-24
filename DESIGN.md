@@ -414,7 +414,7 @@ in, a 2px blush line across the top of the viewport, driven by the scroll
 timeline. No script and no scroll listener. Browsers without scroll driven
 animations show nothing.
 
-**Header.** One bar. Wordmark left, menu right. Below 768px it stacks into two
+**Header.** One bar. Wordmark left, menu right, and the colour scheme toggle as the last item of the menu, so it never floats over the text. Below 768px it stacks into two
 rows, wordmark then links, with no disclosure: three short links do not need
 one, and a menu cost 260px of header to show them. On the home page the wordmark
 steps back to 17px regular muted, because the masthead repeats it directly
