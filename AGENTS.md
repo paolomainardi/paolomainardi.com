@@ -87,6 +87,10 @@ Run `just` or `just --list` to see all recipes.
   of `layouts/_shortcodes/chart.html` and the partials in
   `layouts/_partials/chart/`. A missing file or column fails the build. Never
   paste a chart in as an image when the data exists.
+- **Links are one file each.** `src/content/links/<slug>.md` with `title` (the
+  linked page's title), `link` (its URL), `date`, optional `tags` and `via`,
+  and the note as the body. `hugo new links/<slug>.md` uses the archetype. An
+  entry without `link` fails the build. Notes are plain Markdown, no HTML.
 - **Margin apparatus shortcodes.** `sidenote` (numbered, inline), `marginal`
   (unnumbered block) and `sparkline` (inline numbers, `{{< sparkline "3,5,1" >}}`).
 
@@ -103,6 +107,7 @@ Run `just` or `just --list` to see all recipes.
 | `src/layouts/robots.txt`          | The only site level template                       |
 | `src/data/talks.yaml`             | The talks index                                    |
 | `src/content/posts/<n>-<slug>/`   | One directory per post, `index.md` inside          |
+| `src/content/links/<slug>.md`     | One file per link, the note as the body            |
 | `src/assets/images/posts/`        | Post images, measured at build time                |
 
 ## Code Style

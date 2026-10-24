@@ -476,6 +476,20 @@ The caption is the apparatus, in the margin like a figure caption.
 muted ink, the last value is a blush dot and the highest an ink dot. The home
 page puts posts per year beside the Writing label.
 
+**Link log.** The `links` section: pages worth reading, each with a short note.
+An entry is the linked page's title, underlined like a link in prose because
+it is the one thing to click, the site's host in small muted type, the note in
+body text, and its tags in small type below. The date sits in the outer margin
+above 1200px, like a caption, and links to the entry's own page. Entries are
+grouped by month, twenty to a page. Above them an index of years gives each
+year a sparkline of links per month on one shared scale, 20px tall, so the
+years compare as small multiples; only the current year ends in a blush dot.
+The home page lists the five newest under Writing, with the host where a date
+would sit. A tag page lists its posts first, then its links.
+
+**Pagination.** Page numbers in one line under a hairline, the current page in
+ink and bold, the others muted links.
+
 **Tag index.** Each tag carries its count and a short bar of the same length
 ratio, so the shape of the site reads at a glance.
 
