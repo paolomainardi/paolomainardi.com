@@ -1,6 +1,7 @@
 +++
 date = "2026-10-24T21:00:00+02:00"
 title = "DruBOM: next generation supply chain security for Drupal"
+description = "A Drupal module that lists everything a site is built from, checks it for known vulnerabilities and exports it as an SPDX 3.0.1 SBOM, with nothing to install."
 slug = "drubom-next-gen-drupal-supply-chain-security"
 tags = ["ai", "agents", "drupal", "supply-chain", "security", "sbom"]
 draft = "false"
@@ -8,10 +9,6 @@ toc = true
 featuredImage = "/images/posts/14-drubom/overview.webp"
 images = ["/images/posts/14-drubom/overview.webp"]
 +++
-
-{{< notice note >}}
-This post was drafted with AI from my notes and answers. I reviewed and edited every line, and the opinions are mine. The software it describes was written by AI agents too, which is the point of the post.
-{{< /notice >}}
 
 ## TL;DR
 

@@ -19,8 +19,8 @@ for every sentence.
   wrote in his notes. If a section needs one and there is none, ask.
 - **Facts come with a source.** Numbers, versions, dates and claims link to
   where they come from: a pull request, a benchmark, the project's own page.
-- **Disclose AI.** The post opens with the disclosure notice from voice.md,
-  worded for what AI actually did. Say "AI", never a product name.
+- **No AI disclosure notice.** Posts do not open with a note about how AI
+  helped write them.
 - **English only,** even when he answers in Italian.
 - **Nothing is published without his approval.** The pull request waits for
   him; never turn on auto-merge for a post.
@@ -41,6 +41,7 @@ for every sentence.
    for word in a transcript outside the repository, which is public.
 4. **Draft the post** in `src/content/posts/<n>-<slug>/index.md`, `<n>` being
    the next number after the highest existing post. Front matter in TOML, with
+   a one sentence `description` (the subtitle under the title) and
    `draft = "true"` until he approves. Write each section from the facts and
    his answers, in voice.md's voice.
 5. **Add figures and charts.**

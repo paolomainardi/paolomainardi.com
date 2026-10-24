@@ -9,10 +9,6 @@ featuredImage = "/images/posts/12-steamos/featured.webp"
 images = ["/images/posts/12-steamos/featured.webp"]
 +++
 
-{{< notice note >}}
-I wrote this post by hand. An AI helped me review it, tighten the writing and fact-check the technical parts. The build, the choices and the opinions are all mine.
-{{< /notice >}}
-
 ## TL;DR
 
 I already have a [Linux workstation](/posts/linux-workstation-build/) for work, this is something else: a small, silent **Mini-ITX** machine that lives under the TV, boots straight into **Steam** and behaves like a console. No desktop, no terminal, just a controller and a couch. I started on [Bazzite](https://bazzite.gg/) and ended up on [CachyOS](https://wiki.cachyos.org/installation/installation_handheld/), because I prefer the Arch ecosystem and the extra performance you can squeeze out of it.

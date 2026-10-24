@@ -1,15 +1,12 @@
 +++
 date = "2026-10-24"
 title = "This blog's stack is now my agents' job"
+description = "A journey through a set of new features for this blog, and how I built them."
 slug = "the-stack-is-now-my-agents-job"
 tags = ["ai", "agents", "hugo", "design", "accessibility", "security"]
 draft = "false"
 toc = true
 +++
-
-{{< notice note >}}
-This post was drafted with AI from my notes and answers. I reviewed and edited every line, and the opinions are mine. The work it describes was done with AI agents too, which is the point of the post.
-{{< /notice >}}
 
 ## TL;DR
 
