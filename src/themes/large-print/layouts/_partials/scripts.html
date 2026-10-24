@@ -1,12 +1,12 @@
 {{- /*
   The colour scheme toggle, the copy button and the reading aids, concatenated
-  into one local file. Each script is an IIFE that returns early when the page
-  has nothing for it to do.
+  into one local file and deferred, so they never hold up the first paint. Each
+  script is an IIFE that returns early when the page has nothing for it to do.
 */ -}}
 {{- $js := slice (resources.Get "js/scheme.js") (resources.Get "js/copy-code.js") (resources.Get "js/reading.js") | resources.Concat "js/site.js" -}}
 {{- if hugo.IsProduction }}
 {{- $js = $js | minify | fingerprint }}
-<script src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" crossorigin="anonymous"></script>
+<script defer src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" crossorigin="anonymous"></script>
 {{- else }}
-<script src="{{ $js.RelPermalink }}"></script>
+<script defer src="{{ $js.RelPermalink }}"></script>
 {{- end }}

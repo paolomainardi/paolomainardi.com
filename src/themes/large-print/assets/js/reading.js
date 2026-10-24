@@ -72,7 +72,9 @@
   window.addEventListener("resize", schedule, { passive: true });
   window.addEventListener("hashchange", schedule);
 
-  update();
+  // Measured on the next frame, not during load, so the first paint does not
+  // wait for a layout of the whole post.
+  schedule();
 })();
 
 // The contents block is open on a wide screen, where it is two columns and

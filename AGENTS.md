@@ -109,7 +109,9 @@ Run `just` or `just --list` to see all recipes.
 - **JavaScript**: ES5 syntax in an IIFE, no dependencies. Feature detect
   rather than assume. No browser storage, with one exception: the colour scheme
   toggle remembers the reader's choice in `localStorage`. The scripts are
-  concatenated into one bundle by `layouts/_partials/scripts.html`.
+  concatenated into one deferred bundle by `layouts/_partials/scripts.html`.
+  The one exception is `scheme-init.js`, inlined at the top of the body so a
+  stored colour scheme is applied before the first paint.
 - **Templates**: Hugo templates with a leading comment block explaining what the
   template does and why, when the reason is not obvious.
 - **Prose in content and templates**: never use em dashes or en dashes. Rewrite
