@@ -1,0 +1,25 @@
+platform,test,mean,min,max
+Lima,Native,3.38,3.00,3.63
+Lima,No volumes,3.70,3.55,3.85
+Lima,Bind mount + volume,3.96,3.87,4.02
+Lima,Bind mount,8.99,8.86,9.10
+Docker VZ,Native,3.37,3.00,3.56
+Docker VZ,No volumes,3.75,3.55,3.90
+Docker VZ,Bind mount + volume,3.61,3.55,3.70
+Docker VZ,Bind mount,9.53,9.44,9.63
+Docker VMM,Native,3.35,3.00,3.53
+Docker VMM,No volumes,3.65,3.50,3.80
+Docker VMM,Bind mount + volume,3.42,3.38,3.44
+Docker VMM,Bind mount,8.47,8.25,8.60
+Docker VZ + sync,Native,4.19,3.48,4.67
+Docker VZ + sync,No volumes,3.80,3.70,3.90
+Docker VZ + sync,Bind mount + volume,4.06,3.94,4.30
+Docker VZ + sync,Bind mount,3.88,3.83,3.94
+OrbStack,Native,3.61,3.54,3.75
+OrbStack,No volumes,3.28,3.20,3.39
+OrbStack,Bind mount + volume,3.19,3.14,3.29
+OrbStack,Bind mount,4.22,4.15,4.27
+Linux,Native,5.32,5.29,5.36
+Linux,No volumes,5.29,5.22,5.34
+Linux,Bind mount + volume,5.22,5.20,5.23
+Linux,Bind mount,5.29,5.23,5.33
