@@ -8,10 +8,6 @@ draft = "false"
 toc = true
 +++
 
-{{< notice note >}}
-This post was drafted with AI from my notes and answers. I reviewed and edited every line, and the opinions are mine. The work it describes was done with AI agents too, which is the point of the post.
-{{< /notice >}}
-
 ## TL;DR
 
 In one long session, with AI agents writing the code, this blog got its own theme built on **Edward Tufte's** design principles, charts drawn from data, faster pages, an **accessibility** pass, a **security** review for a public repository, and a new **[Links](/links/)** section that fills itself from Slack. I steered, tested and decided; the agents did the rest. Every change is a public pull request in the [repository](https://github.com/paolomainardi/paolomainardi.com/pulls?q=is%3Apr+is%3Amerged).

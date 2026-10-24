@@ -10,10 +10,6 @@ featuredImage = "/images/posts/14-drubom/overview.webp"
 images = ["/images/posts/14-drubom/overview.webp"]
 +++
 
-{{< notice note >}}
-This post was drafted with AI from my notes and answers. I reviewed and edited every line, and the opinions are mine. The software it describes was written by AI agents too, which is the point of the post.
-{{< /notice >}}
-
 ## TL;DR
 
 **[DruBOM](https://www.drupal.org/project/drubom)**, the Drupal module I created in 2023 to build a **software bill of materials** (SBOM), was almost abandoned. Between a Saturday morning and a Monday afternoon, AI agents rewrote it from scratch: no external binaries, an **SPDX 3.0.1** export, vulnerability checks, **VEX** decisions and a new admin interface. I steered, tested and decided every merge; the agents wrote the code. It is out as [1.0.0-beta2](https://www.drupal.org/project/drubom/releases/1.0.0-beta2).
