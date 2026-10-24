@@ -96,6 +96,8 @@ The repository is public, so I asked for a security review with that in mind. Th
 - **Secret scanning** with push protection, and Dependabot alerts.
 - **Housekeeping.** An old `.env` file left in the repository is gone, and so is the unused wiki.
 
+The last step is a good example of what these models can do now. The deploy signed in to Google Cloud with a service account key created in 2023 and stored as a GitHub secret: a file that, if leaked, would deploy to my site from anywhere. I asked the agent to replace it with [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation) and to check the Firebase docs. It read the documentation of the [authentication action](https://github.com/google-github-actions/auth), noticed its warning that federation does not work with the Firebase Admin SDK, and explained why the deploy was not affected, since it uses the Firebase CLI. Then it proposed the exact commands, created the identity pool once I said yes, limited it to this repository's `main` branch, rewrote the workflow, and kept the old key until the first [keyless deploy](https://github.com/paolomainardi/paolomainardi.com/pull/103) succeeded. Now no key is stored anywhere: every deploy proves who it is with a token that lasts minutes.
+
 ## Links, and publishing more often
 
 I save and share a lot of links in our company's tech channel on Slack. I thought a section for everyone, in my own space, would be useful, and I wanted it to be as simple and automated as possible. We did it: the [Links](/links/) page is a list of things worth reading, each with a short note on why.
