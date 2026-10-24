@@ -1,0 +1,10 @@
+{{ define "title" }}{{ .Title }} · Links · {{ site.Title }}{{ end }}
+{{ define "content" }}
+{{- /* One link on its own page, for sharing. */ -}}
+<section class="container list links">
+  <div class="measure">
+    <div class="part"><a href="{{ "links/" | relLangURL }}">Links</a></div>
+    {{ partial "book/link.html" . }}
+  </div>
+</section>
+{{ end }}

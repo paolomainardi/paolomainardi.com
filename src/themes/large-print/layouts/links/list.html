@@ -1,0 +1,21 @@
+{{ define "title" }}Links · {{ site.Title }}{{ end }}
+{{ define "content" }}
+{{- /*
+  The link log: pages worth reading, newest first, grouped by month, each with
+  a short note. Twenty entries per page.
+*/ -}}
+<section class="container list links">
+  <div class="measure">
+    <div class="part">Links <span class="part-note">{{ len .Pages }} so far, newest first</span></div>
+    {{ with .Content }}<div class="links-intro">{{ . }}</div>{{ end }}
+    {{- $pager := .Paginate (.Pages.GroupByDate "January 2006") 20 }}
+    {{- range $pager.PageGroups }}
+    <h2 class="links-month">{{ .Key }}</h2>
+    {{- range .Pages }}
+    {{ partial "book/link.html" . }}
+    {{- end }}
+    {{- end }}
+    {{ partial "pagination.html" . }}
+  </div>
+</section>
+{{ end }}
