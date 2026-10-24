@@ -1,8 +1,9 @@
 {{- /*
   Site header.
 
-  Wordmark and menu. There is no menu button: three short links do not need a
-  disclosure, so on a phone they sit on a second row, always visible.
+  Wordmark, menu and the colour scheme toggle. There is no menu button: three
+  short links do not need a disclosure, so on a phone they sit on a second row,
+  always visible.
 */ -}}
 <nav class="navigation">
   <section class="container">
@@ -37,6 +38,9 @@
             {{ end }}
           {{ end }}
         {{ end }}
+        {{- with partial "scheme-toggle.html" . }}
+        <li class="navigation-item navigation-toggle">{{ . }}</li>
+        {{- end }}
       </ul>
     {{ end }}
   </section>

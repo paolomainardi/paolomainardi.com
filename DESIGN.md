@@ -326,8 +326,8 @@ layout retunes from one place:
 - **measure, 820px:** the reading column itself.
 
 Above 1200px the reading column sits at the offset and the apparatus margin
-opens to its left. Figure numbers, listing numbers and captions, table numbers
-and margin notes all move into that margin. Below 1200px the margin collapses
+opens to its left. Figure and chart captions, a listing's language and file
+name, note labels, sidenotes and margin notes all move into that margin. Below 1200px the margin collapses
 and every one of those labels falls back inline, above the block it belongs to.
 
 Breakpoints, and what each one is for:
@@ -358,8 +358,10 @@ a rounded rectangle with a hairline, treated as a plate rather than an avatar.
 
 ## Components
 
-**Listing.** A fenced code block. The listing number, the language and the file
-name from the fence title sit in the apparatus margin. The code sits on the code
+**Listing.** A fenced code block. The language, when the fence names one, and
+the file name from the fence title sit in the apparatus margin. Listings used to
+be numbered; the numbers went in October 2026 for the same reason as the figure
+numbers below, since no post ever referred to one. The code sits on the code
 wash, with no rule beside it: the wash and the typeface already set it apart.
 Highlighting is in ink, by weight and slope: keywords semibold, names medium,
 comments italic and faint, strings a shade lighter. A copy button appears over the top right
@@ -377,7 +379,7 @@ image.
 Images carry intrinsic width and height so the page does not reflow while they
 load, which is why post images live in `assets/` rather than `static/`.
 
-**Table.** Numbered, with the number in the margin. Three rules and nothing
+**Table.** Unnumbered, like listings and figures. Three rules and nothing
 else: one above the head, one under it, one under the last row, with rows
 separated by space. Column heads are small uppercase labels. A column whose
 cells are all numbers, ranges or numbers with a short unit is right aligned on
@@ -412,7 +414,7 @@ in, a 2px blush line across the top of the viewport, driven by the scroll
 timeline. No script and no scroll listener. Browsers without scroll driven
 animations show nothing.
 
-**Header.** One bar. Wordmark left, menu right. Below 768px it stacks into two
+**Header.** One bar. Wordmark left, menu right, and the colour scheme toggle as the last item of the menu, so it never floats over the text. Below 768px it stacks into two
 rows, wordmark then links, with no disclosure: three short links do not need
 one, and a menu cost 260px of header to show them. On the home page the wordmark
 steps back to 17px regular muted, because the masthead repeats it directly
@@ -470,8 +472,8 @@ never need maintaining.
 **Do** keep the body type large. Every other decision is negotiable, that one is
 not.
 
-**Do** put the apparatus in the outer margin. Figure captions, listing numbers
-with their language and file name, table numbers, years on the talks page and
+**Do** put the apparatus in the outer margin. Figure captions, a listing's
+language and file name, note labels, sidenotes, years on the talks page and
 the archive, and section names on the rail all live in the same column, which is
 what makes the page feel like one system.
 

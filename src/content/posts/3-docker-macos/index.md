@@ -313,16 +313,9 @@ Let's see them in action:
 
 #### Syntethic results
 
-| Test                             | Operating system | Time (s)     |
-| -------------------------------- | ---------------- | ------------ |
-| Native                           | Linux            | 5,73         |
-| Docker                           | Linux            | 5.64         |
-| Docker - Bind Mount              | Linux            | 6.81         |
-| **Docker - Bind Mount + Volume** | Linux            | 6,18         |
-| Native                           | macOS            | 4.09         |
-| Docker                           | macOS            | 6.80         |
-| Docker - Bind Mount + Volume     | macOS            | 7.65         |
-| **Docker - Bind Mount**          | macOS            | **21.05** 🏆 |
+{{< chart type="dot" data="benchmark.csv" y="test" x="seconds" series="os" highlight="macOS" unit="s" >}}
+Seconds to run `npm install`, Linux against macOS with Docker Desktop and VirtioFS. The macOS bind mount is the outlier.
+{{< /chart >}}
 
 And finally, we can see the performance impact results; macOS is more or less x3.5 times slower ([10x times slower when using gRPC Fuse][38]) when using just the bind mount, and the culprit here is the `node\_modules` directory _\[328M and 37k files just for an empty React app\]._
 
