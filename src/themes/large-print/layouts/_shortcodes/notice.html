@@ -1,0 +1,13 @@
+{{- /*
+  Note, tip, info, question, example, warning or error.
+  Usage: {{< notice warning >}}Text.{{< /notice >}}, with an optional title as
+  the second argument.
+*/ -}}
+{{- $type := .Get 0 | default "note" -}}
+{{- $title := .Get 1 | default $type -}}
+<div class="notice {{ $type }}">
+  <div class="notice-title">{{ i18n $title | default $title | humanize }}</div>
+  <div class="notice-content">
+    {{- .Inner | .Page.RenderString | chomp -}}
+  </div>
+</div>

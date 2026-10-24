@@ -1,0 +1,22 @@
+<footer class="footer">
+  <section class="container">
+    ©
+    {{ if and site.Params.since (lt site.Params.since now.Year) }}
+    {{ site.Params.since }} -
+    {{ end }}
+    {{ now.Year }}
+    {{ with site.Params.author }} {{ . }} {{ end }}
+    ·
+    {{ with site.Params.license }}
+    {{ i18n "licensed_under" | default "Licensed under" }} {{ . | safeHTML }}
+    ·
+    {{ end }}
+    {{ i18n "powered_by" | default "Powered by" }} <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+    {{ with site.Params.umami }}{{ with .shareURL }}
+    -
+    <a href="{{ . }}" target="_blank" rel="noopener">
+      Site analytics
+    </a>
+    {{ end }}{{ end }}
+  </section>
+</footer>

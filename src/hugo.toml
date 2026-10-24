@@ -1,16 +1,12 @@
 baseurl = "https://paolomainardi.com"
 title = "Paolo Mainardi"
-theme = "hugo-coder"
+theme = "large-print"
 languagecode = "en"
 defaultcontentlanguage = "en"
 
 enableRobotsTXT = true
 canonifyurls = true
 
-pygmentsstyle = "bw"
-pygmentscodefences = true
-pygmentscodefencesguesssyntax = true
-disqusShortname = ""
 enableEmoji = true
 
 [pagination]
@@ -30,10 +26,6 @@ headTitle = "Paolo Mainardi | Founder and CTO of Sparkfabrik"
 
 colorScheme = "auto"
 
-customCSS = ["css/custom.css"]
-customSCSS = ["scss/custom.scss"]
-customJS = ["js/copy-code.js", "js/reading.js"]
-
 favicon_32 = "/images/favicon-32x32.png"
 favicon_16 = "/images/favicon-16x16.png"
 touchicon = "/images/apple-touch-icon.png"
@@ -41,20 +33,7 @@ manifest = "/site.webmanifest"
 
 footercontent = "Writing about Containers, Kubernetes, Linux and cloud-native stuff"
 
-hidecredits = false
-hidecopyright = false
 since = 2022
-
-rtl = false
-# KaTeX is loaded from a CDN on every page that has this on. No post uses maths,
-# so it stays off. Turn it on per post with `math = true` in the front matter.
-math = false
-
-# Custom CSS
-custom_css = []
-
-# Custom JS
-custom_js = []
 
 
 # Keep this and every other [params.*] table below the plain params keys above:
@@ -65,6 +44,11 @@ custom_js = []
 # role is enough.
 # [params.twin]
 # text = "Twin of [Stefano](https://www.stefanomainardi.com)"
+
+# Umami is the only third party request on the site.
+[params.umami]
+websiteID = "4930fb12-e01a-46f5-9694-3f6828ac2072"
+shareURL = "https://cloud.umami.is/share/njMJ4mXQ6fd6GV9W/www.paolomainardi.com"
 
 # Social links
 [[params.social]]
@@ -119,9 +103,3 @@ noClasses = false
 noHl = false
 style = 'dracula'
 tabWidth = 4
-
-[privacy]
-[privacy.disqus]
-disable = false
-[privacy.googleAnalytics]
-disable = true

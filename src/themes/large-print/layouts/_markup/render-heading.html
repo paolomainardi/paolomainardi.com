@@ -1,0 +1,12 @@
+{{- /*
+  Heading with an anchor.
+
+  The anchor is a number sign rather than an icon, so no page downloads an icon
+  font for it. It shows when the heading is hovered.
+*/ -}}
+<h{{ .Level }} id="{{ .Anchor | safeURL }}">
+  {{ .Text | safeHTML }}
+  <a class="heading-link" href="#{{ .Anchor | safeURL }}" aria-label="{{ i18n "link_to_heading" | default "Link to heading" }}">
+    <span aria-hidden="true">#</span>
+  </a>
+</h{{ .Level }}>

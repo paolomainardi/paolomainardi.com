@@ -7,14 +7,9 @@ default:
 # Build and start dev environment
 all: up
 
-# Build Docker images and update submodules
+# Build Docker images
 build:
-    git submodule update --init
     docker-compose build
-
-# Update git submodules to latest
-update-submodules:
-    git submodule update --remote --merge
 
 # Build and start dev environment
 up: build
@@ -28,7 +23,7 @@ cli:
 hugo-build: build
     docker-compose run --rm hugo mkdir -p app/src/static
     docker-compose run --rm hugo rm -rf /output/*
-    docker-compose run --rm hugo hugo --minify --theme hugo-coder -d /output --baseUrl=https://www.paolomainardi.com
+    docker-compose run --rm hugo hugo --minify -d /output --baseUrl=https://www.paolomainardi.com
 
 # Build site for local development
 build-loc:

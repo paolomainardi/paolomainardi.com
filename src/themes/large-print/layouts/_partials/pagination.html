@@ -1,0 +1,26 @@
+{{- /*
+  Page links for a paginated list. Only rendered when there is more than one
+  page: first, previous, up to five numbers around the current one, next, last.
+*/ -}}
+{{- $pager := .Paginator -}}
+{{- if gt $pager.TotalPages 1 }}
+<ul class="pagination">
+  {{- if $pager.HasPrev }}
+  <li><a href="{{ $pager.First.URL }}" aria-label="First page">&laquo;</a></li>
+  <li><a href="{{ $pager.Prev.URL }}" aria-label="Previous page">&lsaquo;</a></li>
+  {{- end }}
+  {{- range $pager.Pagers }}
+  {{- if le (math.Abs (sub .PageNumber $pager.PageNumber)) 2 }}
+  {{- if eq .PageNumber $pager.PageNumber }}
+  <li aria-current="page">{{ .PageNumber }}</li>
+  {{- else }}
+  <li><a href="{{ .URL }}">{{ .PageNumber }}</a></li>
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- if $pager.HasNext }}
+  <li><a href="{{ $pager.Next.URL }}" aria-label="Next page">&rsaquo;</a></li>
+  <li><a href="{{ $pager.Last.URL }}" aria-label="Last page">&raquo;</a></li>
+  {{- end }}
+</ul>
+{{- end }}

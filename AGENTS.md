@@ -7,13 +7,13 @@ engineering blog. Long technical posts about containers, Kubernetes, Linux and
 hardware builds, published as a static site.
 
 The site root is `src/`, not the repository root. Hugo runs with `src/` as its
-project directory, so `src/hugo.toml` is the config, `src/content/` holds the
-writing, and `src/layouts/` holds the templates.
+project directory, so `src/hugo.toml` is the config and `src/content/` holds the
+writing.
 
-The theme is [hugo-coder](https://github.com/luizdepra/hugo-coder), pinned as a
-git submodule at `src/themes/hugo-coder`. **Never edit the submodule.** Every
-visual change is an override in `src/layouts/` or `src/assets/scss/custom.scss`,
-which the theme loads last so it wins ties in the cascade.
+The theme is Large Print, the site's own theme, in `src/themes/large-print/`.
+It holds every template, the stylesheet, the scripts and the fonts, and has no
+dependency on another theme. Site specific values (analytics, social links,
+menus) are params in `src/hugo.toml`, not hard coded in the theme.
 
 The visual system is documented in [DESIGN.md](DESIGN.md), which follows the
 [DESIGN.md specification](https://github.com/google-labs-code/design.md). Read it
@@ -27,7 +27,7 @@ with no dependencies, a Hugo module for asciinema playback, Firebase Hosting.
 Everything runs in Docker. No local Hugo, Node or Go required.
 
 ```bash
-just build      # git submodule update --init, then build the image
+just build      # build the image
 just up         # start the dev server
 just logs       # follow the container logs
 ```
@@ -49,25 +49,25 @@ Run `just` or `just --list` to see all recipes.
 
 - **Docker only.** Never install Hugo, Node or Go on the host. Use `just`, or
   `docker compose run --rm --entrypoint "" hugo <command>` for one-off commands.
-- **Never edit `src/themes/hugo-coder`.** Override the file in `src/layouts/`
-  using the same relative path instead.
-- **Never use `!important`.** Theme rules are outranked by scoping component
-  rules under `body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto)`,
-  which adds one class of specificity and wins ties by load order.
+- **Templates use the Hugo 0.146 layout.** Partials live in
+  `layouts/_partials/`, shortcodes in `layouts/_shortcodes/`, render hooks in
+  `layouts/_markup/`. Page templates sit at the top of `layouts/` (`home.html`,
+  `single.html`, `list.html`, `taxonomy.html`), with section overrides such as
+  `layouts/posts/`.
+- **Never use `!important`.** The stylesheet is the only one on the page, so
+  order and scoping are enough.
 - **Post images live in `src/assets/images/`, not `src/static/images/`.** Hugo
   can measure files under `assets/`, which is how the render hooks emit real
   width and height and avoid layout shift. Site chrome (favicons, the portrait)
   stays in `src/static/images/`.
 - **No runtime third party requests for the design layer.** Fonts are self
-  hosted in `src/static/fonts/`, styles and scripts are local. Icons are inline
-  SVG, vendored in `layouts/partials/book/icon.html` with a refresh command in
-  the comment. Umami is the only third party on the site, and that is deliberate.
-- **Vendor before you use a CDN feature.** The theme still ships dormant blocks
-  that load mermaid and KaTeX from jsdelivr: mermaid from `_default/baseof.html`
-  when a post uses the shortcode, KaTeX from `partials/posts/math.html` when
-  `math` is true. Neither fires today. Before using either, download the library
-  into `src/assets/js/` and load it locally, otherwise a single post silently
-  reintroduces a CDN on every page that uses it.
+  hosted in the theme's `static/fonts/`, styles and scripts are local. Icons are
+  inline SVG, vendored in `layouts/_partials/book/icon.html` with a refresh
+  command in the comment. Umami is the only third party on the site, and that is
+  deliberate. Its ids are in `[params.umami]`.
+- **Vendor before you add a library.** There is no mermaid or KaTeX support. If
+  a post needs one, download the library into the theme's `assets/js/` and load
+  it locally, never from a CDN.
 - **Talks are data.** `src/data/talks.yaml` drives `/talks/`. Add a talk by
   adding an entry, never by editing the template.
 
@@ -76,22 +76,25 @@ Run `just` or `just --list` to see all recipes.
 | Path                              | What                                              |
 | :-------------------------------- | :------------------------------------------------ |
 | `src/hugo.toml`                   | Site config, params, markup and highlight settings |
-| `src/assets/scss/custom.scss`     | The whole design system, sectioned and commented   |
-| `src/assets/js/`                  | Copy button, section rail. No dependencies         |
-| `src/layouts/`                    | Theme overrides and custom templates               |
-| `src/layouts/_default/_markup/`   | Render hooks for code blocks, images and tables    |
-| `src/layouts/partials/book/`      | Design specific partials                           |
+| `src/themes/large-print/`         | The theme: templates, styles, scripts, fonts       |
+| `.../large-print/assets/scss/main.scss` | The whole design system, sectioned and commented |
+| `.../large-print/assets/js/`      | Colour scheme, copy button, section rail           |
+| `.../large-print/layouts/_markup/` | Render hooks for code, headings, images, links, tables |
+| `.../large-print/layouts/_partials/book/` | Design specific partials                   |
+| `src/layouts/robots.txt`          | The only site level template                       |
 | `src/data/talks.yaml`             | The talks index                                    |
 | `src/content/posts/<n>-<slug>/`   | One directory per post, `index.md` inside          |
 | `src/assets/images/posts/`        | Post images, measured at build time                |
 
 ## Code Style
 
-- **SCSS**: one file, `src/assets/scss/custom.scss`, kept in numbered sections
+- **SCSS**: one file, `src/themes/large-print/assets/scss/main.scss`, kept in numbered sections
   with a table of contents at the top. Keep it readable; it is maintained by
   hand. Add new rules to the section they belong to rather than the end.
-- **JavaScript**: ES5 syntax in an IIFE, no dependencies, no browser storage
-  APIs. Feature detect rather than assume.
+- **JavaScript**: ES5 syntax in an IIFE, no dependencies. Feature detect
+  rather than assume. No browser storage, with one exception: the colour scheme
+  toggle remembers the reader's choice in `localStorage`. The scripts are
+  concatenated into one bundle by `layouts/_partials/scripts.html`.
 - **Templates**: Hugo templates with a leading comment block explaining what the
   template does and why, when the reason is not obvious.
 - **Prose in content and templates**: never use em dashes or en dashes. Rewrite
@@ -127,7 +130,7 @@ device was tried and why it was removed, so nobody adds it back.
 
 ```bash
 # Production build, must be clean before any commit that touches the site
-docker compose run --rm --entrypoint "" hugo hugo --gc --minify --theme hugo-coder -d /output
+docker compose run --rm --entrypoint "" hugo hugo --gc --minify -d /output
 
 # One off Hugo command inside the container
 docker compose run --rm --entrypoint "" hugo hugo <args>
@@ -178,7 +181,7 @@ GitHub Actions, `.github/workflows/firebase-hosting-merge.yml`.
 
 | Trigger        | What happens                                                        |
 | :------------- | :------------------------------------------------------------------ |
-| Push to `main` | Checkout with submodules, read `HUGO_VERSION` from `.env`, build with `hugo --minify`, deploy to Firebase Hosting project `cto-space` |
+| Push to `main` | Checkout, read `HUGO_VERSION` from `.env`, build with `hugo --minify`, deploy to Firebase Hosting project `cto-space` |
 
 The Hugo version used by CI comes from `.env`, and the Docker image reads the
 same file. Change the version in one place.
@@ -217,7 +220,7 @@ Before adding or upgrading any dependency:
 
 There is no test suite. Verification is the production build plus a visual pass:
 
-1. `docker compose run --rm --entrypoint "" hugo hugo --gc --minify --theme hugo-coder -d /output` must exit clean.
+1. `docker compose run --rm --entrypoint "" hugo hugo --gc --minify -d /output` must exit clean.
 2. Load the affected pages at several widths in both colour schemes.
 3. Check the browser console for errors, and check that
    `document.documentElement.scrollWidth` does not exceed `innerWidth` on any
@@ -237,7 +240,6 @@ There is no test suite. Verification is the production build plus a visual pass:
 
 - `just up`, `just build`, `docker compose up`, `docker compose build`
 - `git push`, `gh pr create`, `gh pr merge`
-- `just update-submodules`, which moves the theme to its latest upstream commit
 - Anything writing to `firebase`
 
 ### Destructive (never run)
@@ -249,8 +251,7 @@ There is no test suite. Verification is the production build plus a visual pass:
 
 ## Important Rules
 
-- Never edit the theme submodule. Override in `src/layouts/` instead.
-- Never use `!important` in SCSS. Scope to the colorscheme classes instead.
+- Never use `!important` in SCSS.
 - Never push to `main`. It deploys to production.
 - Never use em dashes or en dashes in any prose.
 - Post images belong in `src/assets/images/`, so Hugo can measure them.

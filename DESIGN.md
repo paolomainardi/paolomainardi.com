@@ -394,13 +394,11 @@ percent rule, and the first column in semibold. Scrolls sideways inside its own
 container on narrow screens.
 
 **Link.** Underlined in blush at about half strength, full blush on hover, with
-the text itself staying ink. The theme appends an external link glyph to every
-outbound link; it is suppressed, because a post that cites a dozen sources ends
-up with a glyph on every second line and the underline already says "link".
-Outbound links still open in a new tab.
+the text itself staying ink. There is no external link glyph: a post that cites
+a dozen sources would carry one on every second line, and the underline already
+says "link". Outbound links open in a new tab.
 
-**Note and caution.** The theme notice shortcode, repainted on the accent
-washes. Leaf for a note or tip, sky for info, lilac for question or example, sun
+**Note and caution.** The `notice` shortcode, painted on the accent washes. Leaf for a note or tip, sky for info, lilac for question or example, sun
 for a warning, blush for an error. The title is a small uppercase label in the
 accent colour, the body is muted ink at 95 percent size.
 
@@ -470,9 +468,8 @@ the four existing jobs it belongs to before adding a fifth.
 a quiet label on the home page precisely because the masthead below it already
 says the name.
 
-**Don't** use `!important`. Theme rules are outranked by scoping component rules
-under `body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto)`, which
-adds one class of specificity and wins ties by load order.
+**Don't** use `!important`. The theme ships one stylesheet, so order and scoping
+are enough.
 
 **Don't** load anything at runtime from a third party for the design layer.
 Fonts are self hosted, styles and scripts are local.

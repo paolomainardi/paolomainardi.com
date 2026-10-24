@@ -1,0 +1,9 @@
+{{- /* The whole design system, compiled from one SCSS file. */ -}}
+{{- $opts := dict "targetPath" "css/main.css" "enableSourceMap" (not hugo.IsProduction) -}}
+{{- $css := resources.Get "scss/main.scss" | css.Sass $opts -}}
+{{- if hugo.IsProduction }}
+{{- $css = $css | minify | fingerprint }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}" crossorigin="anonymous">
+{{- else }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}">
+{{- end }}

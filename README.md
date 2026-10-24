@@ -8,7 +8,7 @@ Welcome to my blog; I'm releasing the source code publicly, so you can see how i
 
 The articles are released under the [CC-BY-NC-CD](https://creativecommons.org/licenses/by-nc-nd/4.0/) license.
 
-The project is quite simple; it uses [Hugo](https://gohugo.it) and the lovely [
-Hugo coder](https://github.com/luizdepra/hugo-coder) theme.
+The project is quite simple; it uses [Hugo](https://gohugo.io) with its own
+theme, Large Print, in `src/themes/large-print`.
 
 If you want to contact me, drop me a message on the contacts you can find [here](https://www.paolomainardi.com/about/).

@@ -1,0 +1,34 @@
+{{- /*
+  Document head: metadata, social cards, icons, feeds, the stylesheet and the
+  optional analytics script.
+
+  The roman Literata subset is preloaded because it sets every word of body
+  text, so it is the font the first paint waits on.
+*/ -}}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+{{ with site.Params.author }}<meta name="author" content="{{ . }}">{{ end }}
+<meta name="description" content="{{ .Description | default (.Summary | default site.Params.description) | plainify }}">
+<meta name="keywords" content="{{ delimit .Keywords ", " | default site.Params.keywords }}">
+{{ partial "twitter_cards.html" . }}
+{{ partial "opengraph.html" . }}
+
+<link rel="canonical" href="{{ .Params.canonicalUrl | default .Permalink }}">
+
+<link rel="preload" href="{{ "fonts/literata-latin-opsz-normal.woff2" | relURL }}" as="font" type="font/woff2" crossorigin>
+{{ partialCached "styles.html" . }}
+
+{{ with site.Params.favicon_32 }}<link rel="icon" type="image/png" href="{{ . | relURL }}" sizes="32x32">{{ end }}
+{{ with site.Params.favicon_16 }}<link rel="icon" type="image/png" href="{{ . | relURL }}" sizes="16x16">{{ end }}
+{{ with site.Params.touchicon }}<link rel="apple-touch-icon" sizes="180x180" href="{{ . | relURL }}">{{ end }}
+{{ with site.Params.manifest }}<link rel="manifest" href="{{ . | relURL }}">{{ end }}
+
+{{ range .AlternativeOutputFormats -}}
+<link rel="{{ .Rel }}" type="{{ .MediaType.Type }}" href="{{ .RelPermalink }}" title="{{ site.Title }}">
+{{ end -}}
+{{ if .IsHome }}{{ hugo.Generator }}{{ end }}
+
+{{ with site.Params.umami }}{{ with .websiteID }}
+<script defer src="{{ $.Site.Params.umami.src | default "https://cloud.umami.is/script.js" }}" data-website-id="{{ . }}"></script>
+{{ end }}{{ end }}
