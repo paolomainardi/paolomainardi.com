@@ -196,10 +196,15 @@ GitHub Actions, `.github/workflows/firebase-hosting-merge.yml`.
 
 | Trigger        | What happens                                                        |
 | :------------- | :------------------------------------------------------------------ |
-| Push to `main` | Checkout, read `HUGO_VERSION` from `.env`, build with `hugo --minify`, deploy to Firebase Hosting project `cto-space` |
+| Push to `main` | Checkout, read `HUGO_VERSION` from `.env`, build with `hugo --minify`, deploy to Firebase Hosting project `cto-space` with firebase-tools pinned to 15.26.0 |
 
 The Hugo version used by CI comes from `.env`, and the Docker image reads the
 same file. Change the version in one place.
+
+firebase-tools is pinned in the workflow (`firebaseToolsVersion`). Newer
+releases check the Hosting API through Service Usage, which the deploy service
+account is not allowed to do; raising the pin needs
+`roles/serviceusage.serviceUsageConsumer` granted to that account first.
 
 ## Package Management
 

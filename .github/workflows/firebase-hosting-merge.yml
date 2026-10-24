@@ -33,3 +33,5 @@ jobs:
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_CTO_SPACE }}"
           channelId: live
           projectId: cto-space
+          # Pinned firebase-tools version, see AGENTS.md CI/CD.
+          firebaseToolsVersion: "15.26.0"
