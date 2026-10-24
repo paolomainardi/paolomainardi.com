@@ -1,0 +1,39 @@
+name: Check external links
+"on":
+  schedule:
+    # Mondays at 07:17 UTC.
+    - cron: "17 7 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  # Every external link on the site, once a week. A failed run is the signal:
+  # GitHub emails the repository owner.
+  external-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
+        with:
+          persist-credentials: false
+
+      - name: Read the Hugo version
+        run: echo "HUGO_VERSION=$(cat .hugo-version)" >> "$GITHUB_ENV"
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@2752ce1d29631191ea3f27c23495fa06139a5b78 # v3
+        with:
+          hugo-version: ${{ env.HUGO_VERSION }}
+          extended: true
+
+      - name: Build
+        working-directory: ./src
+        run: hugo --minify -d output --baseURL=/
+
+      - name: Check external links
+        run: >
+          docker run --rm -v "$PWD/src/output:/site:ro"
+          lycheeverse/lychee:0.24.2@sha256:e2d19e57cf6ab037026f20b8e449a1f30d9d7f81eef4194763aab2eab20bd28d
+          --no-progress --scheme https --scheme http --max-retries 2 --timeout 20
+          --root-dir /site --index-files index.html
+          --accept 200..=299,403,429 --exclude '^https://amzn\.to/' --exclude-path /site/links
+          '/site/**/*.html'

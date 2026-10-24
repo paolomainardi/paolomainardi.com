@@ -1,0 +1,10 @@
+{
+  "name": "paolomainardi-com-ci",
+  "private": true,
+  "description": "Tools the pull request checks run: the accessibility check and the DESIGN.md lint.",
+  "devDependencies": {
+    "@google/design.md": "0.4.0",
+    "axe-core": "4.14.0",
+    "playwright-core": "1.64.1"
+  }
+}
