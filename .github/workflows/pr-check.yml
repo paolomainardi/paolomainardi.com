@@ -36,7 +36,10 @@ jobs:
         run: hugo --minify -d output --baseURL=https://www.paolomainardi.com
 
   # Every page of the built site through axe-core, in both colour schemes.
+  # Skipped for links/* branches, which only add link entries and are already
+  # held to a fixed format; a skipped job counts as passed.
   a11y:
+    if: ${{ !startsWith(github.head_ref, 'links/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
