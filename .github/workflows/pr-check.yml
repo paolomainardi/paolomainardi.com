@@ -1,0 +1,35 @@
+name: Check pull request
+"on":
+  pull_request:
+    branches:
+      - main
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
+        with:
+          fetch-depth: 0
+
+      # Branches named links/* merge on their own, so they may only add or
+      # edit link entries.
+      - name: Links only
+        if: startsWith(github.head_ref, 'links/')
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: python3 scripts/check-links-pr.py "origin/$BASE_REF"
+
+      - name: Read the Hugo version
+        run: echo "HUGO_VERSION=$(cat .hugo-version)" >> "$GITHUB_ENV"
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@2752ce1d29631191ea3f27c23495fa06139a5b78 # v3
+        with:
+          hugo-version: ${{ env.HUGO_VERSION }}
+          extended: true
+
+      - name: Build
+        working-directory: ./src
+        run: hugo --minify -d output --baseURL=https://www.paolomainardi.com
