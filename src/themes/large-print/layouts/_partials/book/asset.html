@@ -1,24 +1,40 @@
 {{- /*
-  Resolves an image path to its published URL and its real pixel size.
+  Resolves an image path to its published URL, its real pixel size, and a
+  srcset of smaller copies.
 
   Post images live in assets/images, so Hugo can measure them at build time and
   the markup can carry width and height. Without those the page reflows every
   time a plate finishes loading.
 
+  A raster image wider than the reading column also gets WebP copies at the
+  column width (820px) and at twice that for dense screens. url then points at
+  the column copy, and srcset lists the copies so the browser picks one. The
+  original is still published at its own path, so Open Graph tags and old links
+  keep working.
+
   Takes a path as written in the content, for example
-  /images/posts/12-steamos/cpu.webp. Returns a dict with url, width and height.
-  Width and height are 0 when the file is remote, missing, or not an image, and
-  the caller then omits the attributes.
+  /images/posts/12-steamos/cpu.webp. Returns a dict with url, width, height and
+  srcset. Width and height are 0, and srcset empty, when the file is remote,
+  missing, or not a raster image, and the caller then omits the attributes.
 */ -}}
 {{- $src := . -}}
-{{- $out := dict "url" $src "width" 0 "height" 0 -}}
+{{- $out := dict "url" $src "width" 0 "height" 0 "srcset" "" -}}
 {{- if not (or (strings.HasPrefix $src "http") (strings.HasPrefix $src "//") (strings.HasPrefix $src "data:")) -}}
   {{- with resources.Get (strings.TrimPrefix "/" $src) -}}
-    {{- /* SVG is an image resource but carries no pixel dimensions. */ -}}
-    {{- if and (eq .ResourceType "image") (ne .MediaType.SubType "svg") -}}
-      {{- $out = dict "url" .RelPermalink "width" .Width "height" .Height -}}
-    {{- else -}}
-      {{- $out = dict "url" .RelPermalink "width" 0 "height" 0 -}}
+    {{- $out = dict "url" .RelPermalink "width" 0 "height" 0 "srcset" "" -}}
+    {{- /* SVG carries no pixel size, and resizing would flatten an animated GIF. */ -}}
+    {{- if and (eq .ResourceType "image") (not (in (slice "svg" "gif") .MediaType.SubType)) -}}
+      {{- $out = dict "url" .RelPermalink "width" .Width "height" .Height "srcset" "" -}}
+      {{- if gt .Width 820 -}}
+        {{- $column := .Resize "820x webp q85" -}}
+        {{- $set := slice (printf "%s 820w" $column.RelPermalink) -}}
+        {{- if gt .Width 1640 -}}
+          {{- $set = $set | append (printf "%s 1640w" (.Resize "1640x webp q85").RelPermalink) -}}
+        {{- else -}}
+          {{- $set = $set | append (printf "%s %dw" .RelPermalink .Width) -}}
+        {{- end -}}
+        {{- $out = dict "url" $column.RelPermalink "width" $column.Width "height" $column.Height "srcset" (delimit $set ", ") -}}
+      {{- end -}}
     {{- end -}}
   {{- end -}}
 {{- end -}}

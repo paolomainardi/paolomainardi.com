@@ -18,7 +18,8 @@
   {{- /* The caption is the apparatus. CSS puts it in the outer margin beside
          the image, so there is no separate label and no number. */ -}}
   <figure>
-    <img src="{{ $img.url | safeURL }}" alt="{{ $alt }}"{{ $dim }} loading="lazy" decoding="async">
+    <img src="{{ $img.url | safeURL }}" alt="{{ $alt }}"{{ $dim }}
+      {{- with $img.srcset }} srcset="{{ . }}" sizes="(min-width: 868px) 820px, 100vw"{{ end }} loading="lazy" decoding="async">
     {{- with $caption }}
     <figcaption>{{ . }}</figcaption>
     {{- end }}
