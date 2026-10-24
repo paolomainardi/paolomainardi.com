@@ -1048,18 +1048,28 @@ body:has(.container.home) .navigation .navigation-title {
   }
 }
 
-// The year index above the log: each year with its count, in one line.
+// The year index above the log: one row per year, its sparkline of links per
+// month on a scale shared by every year, and its count. The sparklines start
+// at the same x, so the years read as small multiples.
 .links-years {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem 2.4rem;
+  display: grid;
+  grid-template-columns: max-content max-content max-content;
+  align-items: center;
+  gap: 0.2rem 1.2rem;
   margin: 0 0 1.6rem;
   padding: 0;
   list-style: none;
   font-size: 1.6rem;
 
+  li {
+    display: contents;
+  }
+
+  .sparkline {
+    margin: 0;
+  }
+
   span {
-    margin-left: 0.4rem;
     font-size: 1.4rem;
     color: var(--ink-3);
   }
