@@ -1940,6 +1940,12 @@ dialog.zoom {
   }
 }
 
+.slope-title {
+  grid-column: 1 / -1;
+  margin-top: 1.6rem;
+  text-align: center;
+}
+
 .slope-lines {
   width: 100%;
   margin-top: 0.2rem;

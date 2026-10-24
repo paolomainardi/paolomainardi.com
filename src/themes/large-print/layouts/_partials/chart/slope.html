@@ -11,6 +11,7 @@
     series     column with exactly two values, the left and the right end
     highlight  optional category drawn in the accent
     unit       optional unit, written after the values
+    axis       optional title written under the plot, as for the other types
 
   Labels that would overlap are pushed apart, and the lines end at their
   labels. All the labels of one end share a grid cell, so the column is as
@@ -98,4 +99,7 @@
     <span class="slope-label{{ if eq . $p.highlight }} hot{{ end }}" style="{{ printf "margin-top: %.2frem" (mul $height (div $b.at 100)) | safeCSS }}"><b>{{ $b.v }}{{ $unit }}</b> <span class="slope-name">{{ . }}</span></span>
     {{- end }}
   </div>
+  {{- with $p.axis }}
+  <div class="chart-axis-title slope-title">{{ . }}</div>
+  {{- end }}
 </div>
