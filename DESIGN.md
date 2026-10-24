@@ -440,8 +440,8 @@ orientation device, not navigation chrome, and it never appears below 1200px.
 **Margin note.** The `marginal` shortcode. Floats into the outer margin above
 1200px, sits in the column behind a hairline below that.
 
-**Chart.** The `chart` shortcode draws a dot plot or a bar chart from a CSV
-file next to the post, when the site is built. It is HTML, not an image, so the
+**Chart.** The `chart` shortcode draws a dot plot, a bar chart or a slopegraph
+from a CSV file next to the post, when the site is built. It is HTML, not an image, so the
 labels stay at reading size on a phone and the chart follows the colour scheme.
 The rules are Tufte's:
 
@@ -457,6 +457,17 @@ The rules are Tufte's:
   hover title.
 - **Text wears text colours.** Values, labels and the key stay in ink; a
   coloured mark beside them carries the identity.
+- **Explain on the chart, not in a legend.** An axis title under the axis says
+  what the numbers are and which way is better ("Seconds, fewer is faster"). A
+  name that means nothing alone gets a short note under its label, in muted
+  ink and a smaller size.
+- **Small multiples share one scale.** A dot or bar chart split by a column
+  becomes a grid of small panels, as many across as fit, each titled in bold,
+  on the same scale so they compare at a glance, with one key above them.
+- **A slopegraph has no axis.** Each category is a line between two columns
+  of labels, category and value on the left, value on the right, the higher
+  values at the top. Labels that would collide are pushed apart and the lines
+  end at them. Below 560px the category is not repeated on the right.
 
 The caption is the apparatus, in the margin like a figure caption.
 

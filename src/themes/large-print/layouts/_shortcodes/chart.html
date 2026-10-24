@@ -6,27 +6,64 @@
     Caption, in markdown. It sits in the outer margin like any figure caption.
     {{< /chart >}}
 
-  type is "dot" (default) or "bar". data is a CSV with a header row, looked up
-  among the page's resources and then under assets. The other parameters name
-  columns or values and are described in the chart partials. The figure ends
-  with the data as a table, so the numbers are never only in the picture.
+  type is "dot" (default), "bar" or "slope". data is a CSV with a header row,
+  looked up among the page's resources and then under assets. The other
+  parameters name columns or values and are described in the chart partials.
+
+  axis is a short title written under the value axis, for the unit and the
+  direction that is better: "seconds, fewer is faster". notes is a CSV whose
+  first column names a category (or a facet panel) and whose second column is
+  a note printed under that label, for what a name alone does not explain.
+
+  facet names a column to split a dot or bar chart into small multiples: one
+  small panel per value, in order of first appearance, all on the same scale
+  and with one key above them.
+
+  The figure ends with the data as a table, so the numbers are never only in
+  the picture.
 */ -}}
 {{- $p := dict -}}
-{{- range slice "y" "x" "series" "lo" "hi" "highlight" "unit" "from" -}}
+{{- range slice "y" "x" "series" "lo" "hi" "highlight" "unit" "from" "facet" "axis" -}}
   {{- $p = merge $p (dict . ($.Get . | default "")) -}}
 {{- end -}}
+{{- $notes := dict -}}
+{{- with .Get "notes" -}}
+  {{- $n := partial "chart/data.html" (dict "page" $.Page "src" .) -}}
+  {{- $k := index $n.columns 0 -}}
+  {{- $v := index $n.columns 1 -}}
+  {{- range $n.rows }}{{ $notes = merge $notes (dict (index . $k) (index . $v)) }}{{ end -}}
+{{- end -}}
+{{- $p = merge $p (dict "notes" $notes) -}}
 {{- $type := .Get "type" | default "dot" -}}
-{{- if not (in (slice "dot" "bar") $type) }}{{ errorf "chart: unknown type %q in %s" $type .Page.File.Path }}{{ end -}}
+{{- if not (in (slice "dot" "bar" "slope") $type) }}{{ errorf "chart: unknown type %q in %s" $type .Page.File.Path }}{{ end -}}
 {{- $data := partial "chart/data.html" (dict "page" .Page "src" (.Get "data")) -}}
 {{- $rows := $data.rows -}}
 {{- $columns := $data.columns -}}
 {{- if not (and $p.y $p.x) }}{{ errorf "chart: y and x are required in %s" .Page.File.Path }}{{ end -}}
-{{- range slice "y" "x" "series" "lo" "hi" -}}
+{{- if and (eq $type "slope") (not $p.series) }}{{ errorf "chart: a slope needs series in %s" .Page.File.Path }}{{ end -}}
+{{- if and (eq $type "slope") $p.facet }}{{ errorf "chart: facet does not apply to a slope in %s" .Page.File.Path }}{{ end -}}
+{{- range slice "y" "x" "series" "lo" "hi" "facet" -}}
   {{- $col := index $p . -}}
   {{- if and $col (not (in $columns $col)) }}{{ errorf "chart: column %q not in %s" $col ($.Get "data") }}{{ end -}}
 {{- end -}}
-<figure class="chart chart--{{ $type }}">
+<figure class="chart chart--{{ $type }}{{ if $p.facet }} chart--multiples{{ end }}">
+  {{- if $p.facet }}
+  {{- $panels := slice -}}
+  {{- range $rows }}{{ $f := index . $p.facet }}{{ if not (in $panels $f) }}{{ $panels = $panels | append $f }}{{ end }}{{ end }}
+  {{- if eq $type "dot" }}
+  {{ partial "chart/key.html" (dict "shapes" (partial "chart/shapes.html" (dict "rows" $rows "p" $p)) "highlight" $p.highlight) }}
+  {{- end }}
+  <div class="chart-panels">
+    {{- range $panels }}
+    <div class="chart-panel">
+      <p class="chart-panel-title">{{ . }}{{ with index $p.notes . }}<span class="chart-note">{{ . }}</span>{{ end }}</p>
+      {{ partial (printf "chart/%s.html" $type) (dict "rows" (where $rows $p.facet .) "all" $rows "p" $p "key" false) }}
+    </div>
+    {{- end }}
+  </div>
+  {{- else }}
   {{ partial (printf "chart/%s.html" $type) (dict "rows" $rows "p" $p) }}
+  {{- end }}
   {{- with .Inner | strings.TrimSpace }}
   <figcaption>{{ $.Page.RenderString . }}</figcaption>
   {{- end }}

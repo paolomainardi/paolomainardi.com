@@ -1722,6 +1722,10 @@ dialog.zoom {
   padding: 0.5rem 0;
   text-align: right;
   color: var(--ink-2);
+
+  @media only screen and (max-width: 559px) {
+    max-width: 12rem;
+  }
 }
 
 // The right margin leaves room for a value label at the far end of the scale.
@@ -1830,6 +1834,21 @@ dialog.zoom {
   }
 }
 
+// A note under a row label or a panel title, and the axis title: muted and
+// small, written where the reader needs it instead of in a legend.
+.chart-note {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--ink-3);
+}
+
+.chart-axis-title {
+  font-size: 1.3rem;
+  color: var(--ink-3);
+}
+
 .chart-data {
   margin: 1.6rem 0 0;
 
@@ -1864,6 +1883,93 @@ dialog.zoom {
     margin-top: 1rem;
     font-size: 1.5rem;
   }
+}
+
+// Slopegraph. Two columns of labels with the lines between them. The labels of
+// one end are stacked in one grid cell and moved down by their value, so each
+// column is as wide as its longest label. Below 560px the category is not
+// repeated on the right, to leave room for the lines.
+.chart-slope {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(4rem, 1fr) max-content;
+  column-gap: 1.2rem;
+}
+
+.slope-end {
+  margin-bottom: 1.6rem;
+  font-size: 1.3rem;
+  color: var(--ink-3);
+
+  &.left {
+    text-align: right;
+  }
+}
+
+.slope-side {
+  display: grid;
+  align-items: start;
+  margin-top: 0.2rem;
+
+  &.left {
+    justify-items: end;
+    text-align: right;
+  }
+}
+
+.slope-label {
+  grid-area: 1 / 1;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  color: var(--ink-2);
+
+  b {
+    font-weight: 400;
+    color: var(--ink);
+  }
+
+  &.hot,
+  &.hot b {
+    font-weight: 600;
+    color: var(--ink);
+  }
+}
+
+.slope-name {
+  @media only screen and (max-width: 559px) {
+    display: none;
+  }
+}
+
+.slope-lines {
+  width: 100%;
+  margin-top: 0.2rem;
+  overflow: visible;
+
+  line {
+    stroke: var(--ink-3);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  line.hot {
+    stroke: var(--blush);
+    stroke-width: 2;
+  }
+}
+
+// Small multiples. One panel per value of the facet column, on a shared
+// scale, as many across as fit.
+.chart-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(30rem, 1fr));
+  gap: 2.8rem 3.2rem;
+}
+
+.chart-panel-title {
+  margin: 0 0 0.6rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--ink);
 }
 
 // Word sized line chart, set inline with text. The last value is the accent,
