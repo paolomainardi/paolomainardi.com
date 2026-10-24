@@ -8,7 +8,7 @@ description: Publish links saved in Paolo's private Slack channel to the links s
 Each message in the links channel is a URL, optionally followed by Paolo's
 draft note on why it is worth reading. Turn every new one into a link entry
 and open one pull request for the run. Keep the run cheap: read only the page
-title, never the page, and never summarize it.
+title from Slack's link preview, never fetch or summarize the page.
 
 ## Rules
 
@@ -35,17 +35,16 @@ title, never the page, and never summarize it.
 3. The note is the rest of the message text, rewritten as the rules above
    say. A message with only a URL gets no note: publish it with its title
    alone.
-4. Fetch the page title, and nothing else from the page:
+4. Find the title without fetching anything: the routine has no internet
+   access beyond Slack and GitHub. Take the first of these that gives one:
+   1. The title of the link preview Slack shows under the message.
+   2. The last part of the URL path in words, with the first letter capital:
+      `/blog/is-this-the-new-cyber-normal/` gives `Is this the new cyber normal`.
+   3. The host name.
 
-   ```bash
-   curl -sL --max-time 10 --max-filesize 2000000 "$URL" | python3 -I -c '
-   import html, re, sys
-   s = sys.stdin.read()
-   m = re.search(r"<meta[^>]+property=.og:title.[^>]+content=\"([^\"]+)", s) or re.search(r"<title[^>]*>(.*?)</title>", s, re.S)
-   print(html.unescape(m.group(1)).strip() if m else "")'
-   ```
-
-   If it comes back empty, use the host name. Remove `<`, `>` and `{{` from it.
+   Drop a trailing site name joined by ` | `, ` - ` or ` · ` ("Is this the
+   new cyber normal? | Drew's Dev Blog" becomes "Is this the new cyber
+   normal?"). Remove `<`, `>` and `{{`.
 5. Pick one to three tags from the tags the site already uses
    (`grep -rh "^tags" src/content`). Never invent a tag.
 6. Write `src/content/links/<slug>.md`, the slug in lowercase letters, digits
