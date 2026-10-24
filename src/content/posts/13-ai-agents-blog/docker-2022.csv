@@ -1,0 +1,9 @@
+test,os,seconds
+Native,Linux,5.73
+Native,macOS,4.09
+Docker,Linux,5.64
+Docker,macOS,6.80
+Docker bind mount + volume,Linux,6.18
+Docker bind mount + volume,macOS,7.65
+Docker bind mount,Linux,6.81
+Docker bind mount,macOS,21.05
