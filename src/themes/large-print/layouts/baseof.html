@@ -1,0 +1,32 @@
+{{- /*
+  Page skeleton.
+
+  The colour scheme class on body selects the palette. "auto" follows the system
+  preference until the reader picks one with the toggle. The scripts are one
+  local bundle at the end of the body.
+*/ -}}
+<!DOCTYPE html>
+<html lang="{{ site.Language.LanguageCode | default site.Language.Lang }}">
+
+<head>
+    <title>{{ block "title" . }}{{ site.Params.headTitle | default site.Title }}{{ end }}</title>
+    {{ partial "head.html" . }}
+</head>
+
+{{- $scheme := site.Params.colorScheme | default "auto" }}
+<body class="colorscheme-{{ $scheme }}">
+    {{ partial "scheme-toggle.html" . }}
+    <main class="wrapper">
+        {{ partial "header.html" . }}
+
+        <div class="content">
+            {{ block "content" . }}{{ end }}
+        </div>
+
+        {{ partial "footer.html" . }}
+    </main>
+
+    {{ partialCached "scripts.html" . }}
+</body>
+
+</html>

@@ -1,0 +1,34 @@
+{{- /*
+  A chart drawn from a CSV file at build time.
+
+    {{< chart type="dot" data="assets/benchmark.csv" y="platform" x="mean"
+        series="test" lo="min" hi="max" highlight="Bind mount" unit="s" >}}
+    Caption, in markdown. It sits in the outer margin like any figure caption.
+    {{< /chart >}}
+
+  type is "dot" (default) or "bar". data is a CSV with a header row, looked up
+  among the page's resources and then under assets. The other parameters name
+  columns or values and are described in the chart partials. The figure ends
+  with the data as a table, so the numbers are never only in the picture.
+*/ -}}
+{{- $p := dict -}}
+{{- range slice "y" "x" "series" "lo" "hi" "highlight" "unit" "from" -}}
+  {{- $p = merge $p (dict . ($.Get . | default "")) -}}
+{{- end -}}
+{{- $type := .Get "type" | default "dot" -}}
+{{- if not (in (slice "dot" "bar") $type) }}{{ errorf "chart: unknown type %q in %s" $type .Page.File.Path }}{{ end -}}
+{{- $data := partial "chart/data.html" (dict "page" .Page "src" (.Get "data")) -}}
+{{- $rows := $data.rows -}}
+{{- $columns := $data.columns -}}
+{{- if not (and $p.y $p.x) }}{{ errorf "chart: y and x are required in %s" .Page.File.Path }}{{ end -}}
+{{- range slice "y" "x" "series" "lo" "hi" -}}
+  {{- $col := index $p . -}}
+  {{- if and $col (not (in $columns $col)) }}{{ errorf "chart: column %q not in %s" $col ($.Get "data") }}{{ end -}}
+{{- end -}}
+<figure class="chart chart--{{ $type }}">
+  {{ partial (printf "chart/%s.html" $type) (dict "rows" $rows "p" $p) }}
+  {{- with .Inner | strings.TrimSpace }}
+  <figcaption>{{ $.Page.RenderString . }}</figcaption>
+  {{- end }}
+  {{ partial "chart/table.html" (dict "rows" $rows "columns" $columns) }}
+</figure>

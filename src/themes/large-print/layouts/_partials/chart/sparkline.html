@@ -1,0 +1,28 @@
+{{- /*
+  Sparkline: a word sized line chart, after Tufte, set inline with the text.
+  Takes a dict with "values", a slice of numbers, an optional "labels" slice
+  of the same length for the hover title, and an optional "width" in pixels
+  (default 6 per value, at least 40). The last value is marked in the accent,
+  the highest in ink.
+*/ -}}
+{{- $vals := .values -}}
+{{- $n := len $vals -}}
+{{- $w := .width | default (math.Max 40 (mul 6 $n)) -}}
+{{- $h := 14 -}}
+{{- $max := 0.0 -}}
+{{- $at := 0 -}}
+{{- range $i, $v := $vals }}{{ if gt (float $v) $max }}{{ $max = float $v }}{{ $at = $i }}{{ end }}{{ end -}}
+{{- if eq $max 0.0 }}{{ $max = 1.0 }}{{ end -}}
+{{- $pts := slice -}}
+{{- range $i, $v := $vals -}}
+  {{- $x := add 1.5 (mul (div (float $i) (float (math.Max 1 (sub $n 1)))) (sub (float $w) 3)) -}}
+  {{- $y := sub (float (sub $h 1.5)) (mul (div (float $v) $max) (float (sub $h 3))) -}}
+  {{- $pts = $pts | append (dict "x" $x "y" $y) -}}
+{{- end -}}
+{{- $line := slice -}}
+{{- range $pts }}{{ $line = $line | append (printf "%.1f,%.1f" .x .y) }}{{ end -}}
+{{- $desc := slice -}}
+{{- range $i, $v := $vals }}{{ $desc = $desc | append (cond (gt (len ($.labels | default slice)) $i) (printf "%v: %v" (index $.labels $i) $v) (printf "%v" $v)) }}{{ end -}}
+{{- $lastPt := index $pts (sub $n 1) -}}
+{{- $maxPt := index $pts $at -}}
+<svg class="sparkline" width="{{ $w }}" height="{{ $h }}" viewBox="0 0 {{ $w }} {{ $h }}" role="img" aria-label="{{ delimit $desc ", " }}"><title>{{ delimit $desc ", " }}</title><polyline points="{{ delimit $line " " }}"/>{{ if ne $at (sub $n 1) }}<circle class="max" cx="{{ printf "%.1f" $maxPt.x }}" cy="{{ printf "%.1f" $maxPt.y }}" r="1.6"/>{{ end }}<circle class="last" cx="{{ printf "%.1f" $lastPt.x }}" cy="{{ printf "%.1f" $lastPt.y }}" r="1.8"/></svg>

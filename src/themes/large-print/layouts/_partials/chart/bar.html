@@ -1,0 +1,32 @@
+{{- /*
+  Bar chart, horizontal. One bar per row, always from zero, with its value
+  written at the end of the bar.
+
+  Takes a dict with "rows" (from chart/data.html) and "p", the chart params:
+    y          column naming the bar
+    x          column holding the value
+    highlight  optional bar name drawn in the accent
+    unit       optional unit for the last tick and the hover titles
+*/ -}}
+{{- $p := .p -}}
+{{- $rows := .rows -}}
+{{- $unit := cond (ne $p.unit "") (printf " %s" $p.unit) "" -}}
+{{- $hi := 0.0 -}}
+{{- range $rows }}{{ $v := float (index . $p.x) }}{{ if gt $v $hi }}{{ $hi = $v }}{{ end }}{{ end -}}
+{{- $scale := partial "chart/ticks.html" (dict "lo" 0 "hi" $hi) -}}
+{{- $span := sub $scale.max $scale.min }}
+<div class="chart-plot" aria-hidden="true">
+  {{- range $rows }}
+  {{- $name := index . $p.y }}
+  {{- $v := index . $p.x }}
+  {{- $w := mul (div (float $v) $span) 100 }}
+  <div class="chart-row">
+    <div class="chart-label">{{ $name }}</div>
+    <div class="chart-track">
+      <span class="chart-bar{{ if eq $name $p.highlight }} hot{{ end }}" style="{{ printf "width: %.2f%%" $w | safeCSS }}" title="{{ $name }}: {{ $v }}{{ $unit }}"></span>
+      <span class="chart-value{{ if gt $w 85.0 }} before{{ end }}" style="{{ printf "left: %.2f%%" $w | safeCSS }}">{{ $v }}</span>
+    </div>
+  </div>
+  {{- end }}
+  {{- partial "chart/axis.html" (dict "scale" $scale "unit" $p.unit) }}
+</div>

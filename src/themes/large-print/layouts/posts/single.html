@@ -1,0 +1,89 @@
+{{ define "title" }}
+{{ .Title }} · {{ .Site.Title }}
+{{ end }}
+{{ define "content" }}
+{{- $topics := partial "book/topics.html" (dict "page" . "limit" 3) -}}
+<section class="container post">
+    {{- /* Reading position for narrow screens, where the section rail cannot
+           exist. Pure CSS, driven by the scroll timeline. */ -}}
+    <div class="reading-progress" aria-hidden="true"></div>
+
+    {{ partial "book/rail.html" . }}
+
+    <article>
+        <header class="opener">
+            <div class="kicker">
+                {{- with $topics }}{{ . }} · {{ end -}}
+                {{ .ReadingTime }} min · {{ .Date | time.Format (site.Params.dateFormat | default "January 2, 2006") }}
+            </div>
+            <div class="post-title">
+                <h1 class="title">
+                    <a class="title-link" href="{{ .Permalink | safeURL }}">
+                        {{ .Title }}
+                    </a>
+                </h1>
+            </div>
+            {{ with (or .Params.subtitle .Params.description) }}
+            <div class="byline">{{ . }}</div>
+            {{ end }}
+        </header>
+
+        <div class="post-content">
+            {{- /* Resolving these through the asset partial also publishes them,
+                   which matters for the OpenGraph images that are only named in
+                   front matter. */ -}}
+            {{ range .Params.images }}{{ $_ := partial "book/asset.html" . }}{{ end }}
+            {{- /* Contents before the frontispiece. A featured image is a whole
+                   screen tall, so a contents block underneath it is a scroll
+                   away from a reader who only wants to jump to a section. */ -}}
+            {{- /* A disclosure so it can be closed on a phone, where a single
+                   column of section links filled most of the first screen. It
+                   is opened on wide screens by reading.js. */ -}}
+            {{ if .Params.toc }}
+            <details class="toc">
+                <summary class="part">On this page</summary>
+                {{ .TableOfContents }}
+            </details>
+            {{ end }}
+            {{- /* The frontispiece is above the fold, so it loads eagerly and at
+                   high priority. Lazy loading an image the reader is already
+                   looking at only delays the largest paint. */ -}}
+            {{ with .Params.featuredImage }}
+            {{ $img := partial "book/asset.html" . }}
+            <img class="frontispiece" src="{{ $img.url | safeURL }}" alt="{{ $.Title }}"
+                {{- if gt $img.width 0 }} width="{{ $img.width }}" height="{{ $img.height }}"{{ end }}
+                loading="eager" fetchpriority="high" decoding="async" />
+            {{ end }}
+            <div class="text">
+                {{ .Content }}
+            </div>
+        </div>
+
+        <div class="post-meta">
+            {{ with .GetTerms "categories" }}{{ partial "terms-line.html" (dict "terms" . "class" "category") }}{{ end }}
+            {{ with .GetTerms "tags" }}{{ partial "terms-line.html" (dict "terms" . "class" "tag") }}{{ end }}
+        </div>
+
+        {{ $prev := .PrevInSection }}
+        {{ $next := .NextInSection }}
+        {{ if or $prev $next }}
+        <nav class="post-nav" aria-label="More posts">
+            <div class="post-nav-item post-nav-prev">
+                {{ with $prev }}
+                <span class="post-nav-label">Previously</span>
+                <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+                {{ end }}
+            </div>
+            <div class="post-nav-item post-nav-next">
+                {{ with $next }}
+                <span class="post-nav-label">Next</span>
+                <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+                {{ end }}
+            </div>
+        </nav>
+        {{ end }}
+
+    </article>
+
+</section>
+{{ end }}

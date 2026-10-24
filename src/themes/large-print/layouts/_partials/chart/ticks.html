@@ -1,0 +1,22 @@
+{{- /*
+  A linear scale with round ticks. Takes a dict with "lo" and "hi", the data
+  extent, and an optional "count" of intervals to aim for (default 5). Returns
+  a dict with "min", "max", "step" and "ticks", where min and max are the
+  extent widened to whole steps of 1, 2 or 5 times a power of ten.
+*/ -}}
+{{- $lo := float .lo -}}
+{{- $hi := float .hi -}}
+{{- if eq $lo $hi }}{{ $hi = add $lo 1.0 }}{{ end -}}
+{{- $raw := div (sub $hi $lo) (float (.count | default 5)) -}}
+{{- $mag := math.Pow 10 (math.Floor (div (math.Log $raw) (math.Log 10))) -}}
+{{- $norm := div $raw $mag -}}
+{{- $nice := 10.0 -}}
+{{- if lt $norm 1.5 }}{{ $nice = 1.0 }}{{ else if lt $norm 3 }}{{ $nice = 2.0 }}{{ else if lt $norm 7 }}{{ $nice = 5.0 }}{{ end -}}
+{{- $step := mul $nice $mag -}}
+{{- $min := mul (math.Floor (div $lo $step)) $step -}}
+{{- $max := mul (math.Ceil (div $hi $step)) $step -}}
+{{- $ticks := slice -}}
+{{- range seq 0 (int (math.Round (div (sub $max $min) $step))) -}}
+  {{- $ticks = $ticks | append (div (math.Round (mul (add $min (mul . $step)) 1000000)) 1000000) -}}
+{{- end -}}
+{{- return (dict "min" $min "max" $max "step" $step "ticks" $ticks) -}}

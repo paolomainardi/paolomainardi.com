@@ -1,0 +1,9 @@
+{{- /*
+  The terms of one taxonomy at the foot of a post, as plain links. Takes a dict
+  with "terms", the page's terms, and "class", the taxonomy's singular name.
+*/ -}}
+<div class="{{ .class }}s">
+  {{- range .terms }}
+  <span class="{{ $.class }}"><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></span>
+  {{- end }}
+</div>

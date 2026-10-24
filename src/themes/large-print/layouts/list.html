@@ -1,0 +1,43 @@
+{{ define "title" }}
+  {{- if eq .Kind "term" -}}
+    {{- i18n .Data.Plural 1 | title -}}
+    {{- print ": " -}}
+  {{- end -}}
+  {{- i18n (lower .Title) | default .Title | title }} · {{ site.Title -}}
+{{ end }}
+{{ define "content" }}
+{{- $heading := "" -}}
+{{- $isTerm := eq .Kind "term" -}}
+{{- if $isTerm -}}
+  {{- $heading = printf "%s: %s" (i18n .Data.Plural 1 | title) (i18n (lower .Title) | default .Title | title) -}}
+{{- else -}}
+  {{- $heading = i18n (lower .Title) | default .Title | title -}}
+{{- end -}}
+<section class="container list">
+  <div class="measure">
+    <div class="part">{{ $heading }}</div>
+
+    {{ .Content }}
+
+    <ul class="contents-list">
+      {{ range .Paginator.Pages }}
+      <li class="leader">
+        <a class="t" href="{{ .Params.externalLink | default .RelPermalink }}">{{ .Title }}</a>
+        <span class="fill"></span>
+        <span class="n">{{ .Date | time.Format (.Site.Params.contentsDateFormat | default "January 2006") }}</span>
+      </li>
+      {{ end }}
+    </ul>
+
+    {{ partial "pagination.html" . }}
+
+    {{ if $isTerm }}
+    <p class="list-note">
+      {{ len .Pages }} {{ cond (eq (len .Pages) 1) "post" "posts" }} tagged
+      {{ i18n (lower .Title) | default .Title | title }}.
+      <a href="{{ "posts/" | relLangURL }}">All posts</a>
+    </p>
+    {{ end }}
+  </div>
+</section>
+{{ end }}

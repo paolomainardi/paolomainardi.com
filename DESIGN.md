@@ -11,7 +11,6 @@ colors:
   tertiary: "{colors.blush}"
   neutral: "{colors.paper}"
   paper: "#fbf7ef"
-  paper-raised: "#f3ecdf"
   ink: "#1e1b17"
   ink-muted: "#56504a"
   ink-faint: "#8a8377"
@@ -19,28 +18,15 @@ colors:
   rule-strong: "#cec3ad"
   blush: "#b8617a"
   blush-wash: "#f8ecef"
-  sky: "#5e83b6"
-  sky-wash: "#e9eff6"
-  leaf: "#6f9878"
-  leaf-wash: "#e8f0e9"
-  sun: "#c07f3f"
-  sun-wash: "#faeee1"
-  lilac: "#8b7cae"
-  lilac-wash: "#efecf6"
   code-wash: "#f1eee6"
   code-ink: "#26221d"
   paper-night: "#1a1917"
-  paper-raised-night: "#232120"
   ink-night: "#f0e9dc"
   ink-muted-night: "#bcb3a6"
   ink-faint-night: "#8d8578"
   rule-night: "#302c27"
   rule-strong-night: "#453f37"
   blush-night: "#e5a3b2"
-  sky-night: "#a4bbdb"
-  leaf-night: "#a8c8ad"
-  sun-night: "#e0b184"
-  lilac-night: "#bdaeda"
   code-wash-night: "#201e1c"
   code-ink-night: "#ece5d8"
 typography:
@@ -152,27 +138,25 @@ components:
     rounded: "{rounded.md}"
     padding: 4px
   note:
-    backgroundColor: "{colors.leaf-wash}"
     textColor: "{colors.ink-muted}"
-    rounded: "{rounded.md}"
     padding: 20px
-  caution:
-    backgroundColor: "{colors.sun-wash}"
-    textColor: "{colors.ink-muted}"
-    rounded: "{rounded.md}"
-    padding: 20px
+  note-rule:
+    backgroundColor: "{colors.rule-strong}"
+    width: 1px
+  caution-rule:
+    backgroundColor: "{colors.blush}"
+    width: 2px
   figure:
     backgroundColor: "{colors.paper}"
     rounded: "{rounded.sm}"
   table-head:
-    backgroundColor: "{colors.paper-raised}"
     textColor: "{colors.ink-muted}"
     typography: "{typography.label}"
+  table-rule:
+    backgroundColor: "{colors.ink-faint}"
+    height: 1px
   term:
-    backgroundColor: "{colors.paper-raised}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.md}"
-    padding: 5px
   rail-tick:
     backgroundColor: "{colors.rule-strong}"
     width: 10px
@@ -202,41 +186,22 @@ components:
   hairline-strong:
     backgroundColor: "{colors.rule-strong}"
     height: 1px
-  info:
-    backgroundColor: "{colors.sky-wash}"
-    textColor: "{colors.ink-muted}"
-    rounded: "{rounded.md}"
-    padding: 20px
-  example:
-    backgroundColor: "{colors.lilac-wash}"
-    textColor: "{colors.ink-muted}"
-    rounded: "{rounded.md}"
-    padding: 20px
-  error:
-    backgroundColor: "{colors.blush-wash}"
-    textColor: "{colors.ink-muted}"
-    rounded: "{rounded.md}"
-    padding: 20px
   note-title:
-    textColor: "{colors.leaf}"
+    textColor: "{colors.ink-faint}"
     typography: "{typography.label}"
   caution-title:
-    textColor: "{colors.sun}"
+    textColor: "{colors.blush}"
     typography: "{typography.label}"
-  info-title:
-    textColor: "{colors.sky}"
-    typography: "{typography.label}"
-  example-title:
-    textColor: "{colors.lilac}"
-    typography: "{typography.label}"
-  listing-rule:
-    backgroundColor: "{colors.sky}"
-    width: 3px
   margin-note:
     textColor: "{colors.ink-muted}"
     typography: "{typography.apparatus}"
+  sidenote:
+    textColor: "{colors.ink-muted}"
+    typography: "{typography.apparatus}"
+  sidenote-mark:
+    textColor: "{colors.blush}"
   copy-confirmed:
-    textColor: "{colors.leaf}"
+    textColor: "{colors.ink}"
   frontispiece:
     rounded: "{rounded.sm}"
   link-underline:
@@ -247,6 +212,26 @@ components:
   selection:
     backgroundColor: "{colors.blush-wash}"
     textColor: "{colors.ink}"
+  chart-mark:
+    backgroundColor: "{colors.ink-faint}"
+    width: 8px
+    height: 8px
+  chart-mark-highlight:
+    backgroundColor: "{colors.blush}"
+    width: 11px
+    height: 11px
+  chart-label:
+    textColor: "{colors.ink-muted}"
+    typography: "{typography.apparatus}"
+  chart-value:
+    textColor: "{colors.ink}"
+    typography: "{typography.apparatus}"
+  chart-axis:
+    backgroundColor: "{colors.ink-faint}"
+    height: 1px
+  sparkline:
+    textColor: "{colors.ink-muted}"
+    height: 14px
 ---
 
 ## Overview
@@ -263,8 +248,10 @@ notes in the outer margin, this site does the same, which keeps the text column
 free of labels and uses the width a wide window otherwise wastes.
 
 Restraint is the rule. One typeface for everything the reader reads, one
-monospace for machine text, four pastel accents each with a single job, and no
-decoration that does not carry information.
+monospace for machine text, one accent, and no decoration that does not carry
+information. That last rule is Edward Tufte's: every drop of ink on the page
+should say something about the content, so structure is drawn with space and
+hairlines, and colour is kept for the one thing the reader should look at.
 
 ## Colors
 
@@ -284,19 +271,18 @@ a linter reporting them as unreferenced is expected rather than a gap.
 - **rule (#e6ddcc) and rule-strong (#cec3ad):** hairlines and dotted leaders.
   Structure is drawn with one pixel, never with a box.
 
-The four accents each have exactly one job, and they never swap roles:
+**blush** is the only accent. It marks what the reader should look at: links,
+the current section, sidenote numbers, warnings and errors, deleted lines in a
+diff, and the highlighted series in a chart. `blush-wash` is its pale form, used
+for text selection and highlighted code lines. Never put body text on blush at
+full strength.
 
-- **blush:** links, list markers, the drop cap, the current section mark.
-- **sky:** code. The rule down the left of a listing, and function names in
-  syntax highlighting.
-- **leaf:** notes, and the confirmation state of the copy button.
-- **sun:** cautions and warnings.
-
-**lilac** is the fifth, used only for margin notes and numeric literals in code.
-
-Accents are used at full strength for marks and hairlines, and as a wash
-(the `-wash` tokens) for block backgrounds. Never put body text directly on an
-accent at full strength.
+There used to be four more, each with one job: sky for code, leaf for notes,
+sun for cautions and lilac for margin notes, each with a wash for block
+backgrounds. They were removed in October 2026. Five colours on a page meant
+five things competing for attention, and none of them carried information that
+a label or a hairline did not already carry. Code is told apart by its wash and
+its typeface, notes by their label and rule, syntax by weight and slope.
 
 ## Typography
 
@@ -322,6 +308,9 @@ legibility:
   people read technical writing.
 - **Section heads are real headings at 29px**, not small caps at 15px. A heading
   that reads as a caption is not doing its job.
+- **Old style figures in running text**, so numbers sit in a line of prose the
+  way lower case letters do. Tables, code, headings and charts keep lining
+  figures, and table columns are tabular so digits line up.
 
 The drop cap opens the first paragraph of a post and appears nowhere else. Index
 pages have a lead-in, not an opening paragraph, so they do not get one.
@@ -359,21 +348,21 @@ The page has one header. There is no second running head inside the page.
 ## Elevation & Depth
 
 There is none, deliberately. No shadows, no cards, no raised surfaces. Depth is
-expressed by colour weight and by hairlines. The only filled surfaces are the
-code wash, the accent washes on notes, and `paper-raised` behind table headers
-and tag chips, and none of them cast a shadow.
+expressed by colour weight and by hairlines. The only filled surface is the code
+wash behind listings and inline code, and it casts no shadow.
 
 ## Shapes
 
-Corners are nearly square: 3px on images and notes, 4px on code blocks and
-chips. Nothing is a pill, nothing is a circle. The portrait on the home page is
+Corners are nearly square: 3px on images and inline code, 4px on code blocks. Nothing is a pill, nothing is a circle. The portrait on the home page is
 a rounded rectangle with a hairline, treated as a plate rather than an avatar.
 
 ## Components
 
 **Listing.** A fenced code block. The listing number, the language and the file
 name from the fence title sit in the apparatus margin. The code sits on the code
-wash behind a 3px sky rule on its left. A copy button appears over the top right
+wash, with no rule beside it: the wash and the typeface already set it apart.
+Highlighting is in ink, by weight and slope: keywords semibold, names medium,
+comments italic and faint, strings a shade lighter. A copy button appears over the top right
 on hover or focus, and reports Copied. A long line fades into the block
 background at the right edge rather than being cut off.
 
@@ -388,21 +377,25 @@ image.
 Images carry intrinsic width and height so the page does not reflow while they
 load, which is why post images live in `assets/` rather than `static/`.
 
-**Table.** Numbered, with the number in the margin. Small caps
-column headers on `paper-raised`, hairline row rules, zebra striping at thirty
-percent rule, and the first column in semibold. Scrolls sideways inside its own
-container on narrow screens.
+**Table.** Numbered, with the number in the margin. Three rules and nothing
+else: one above the head, one under it, one under the last row, with rows
+separated by space. Column heads are small uppercase labels. A column whose
+cells are all numbers, ranges or numbers with a short unit is right aligned on
+tabular figures; the render hook detects it, and an alignment written in the
+markdown wins. Scrolls sideways inside its own container on narrow screens.
+Zebra striping, a filled header and a semibold first column were removed with
+the extra accents, for the same reason.
 
 **Link.** Underlined in blush at about half strength, full blush on hover, with
-the text itself staying ink. The theme appends an external link glyph to every
-outbound link; it is suppressed, because a post that cites a dozen sources ends
-up with a glyph on every second line and the underline already says "link".
-Outbound links still open in a new tab.
+the text itself staying ink. There is no external link glyph: a post that cites
+a dozen sources would carry one on every second line, and the underline already
+says "link". Outbound links open in a new tab.
 
-**Note and caution.** The theme notice shortcode, repainted on the accent
-washes. Leaf for a note or tip, sky for info, lilac for question or example, sun
-for a warning, blush for an error. The title is a small uppercase label in the
-accent colour, the body is muted ink at 95 percent size.
+**Note and caution.** The `notice` shortcode. The label (note, tip, info,
+question, example, warning, error) is apparatus: in the margin above 1200px,
+above the note below that. A hairline runs down the left of the body, which is
+muted ink at 95 percent size. Warnings and errors take the accent, on the label
+and on a 2px rule; every other kind stays in ink.
 
 **Contents leader.** A title, a dotted leader, and the date where a page number
 would sit. Aligned on the last baseline so a title that wraps still has its rule
@@ -434,8 +427,43 @@ edge of the viewport, outside the frame. The current tick is filled in blush and
 grows from 10px to 18px, and above 1560px its section name is shown. It is an
 orientation device, not navigation chrome, and it never appears below 1200px.
 
-**Margin note.** Floats into the outer margin above 1200px, sits in the column
-behind a lilac rule below that.
+**Margin note.** The `marginal` shortcode. Floats into the outer margin above
+1200px, sits in the column behind a hairline below that.
+
+**Chart.** The `chart` shortcode draws a dot plot or a bar chart from a CSV
+file next to the post, when the site is built. It is HTML, not an image, so the
+labels stay at reading size on a phone and the chart follows the colour scheme.
+The rules are Tufte's:
+
+- **One accent.** Context is ink, the highlighted series is blush with its
+  values written beside it. Other series are told apart by shape (circle,
+  square, diamond, triangle), so identity never depends on colour.
+- **No grid, no frame.** The value axis is one hairline with round ticks, and
+  the unit appears once, after the last tick.
+- **Bars start at zero.** A dot plot does too unless the shortcode asks for
+  `from="auto"`.
+- **The numbers are never only in the picture.** Every chart ends with its
+  data as a table behind a disclosure, and every mark has its exact value as a
+  hover title.
+- **Text wears text colours.** Values, labels and the key stay in ink; a
+  coloured mark beside them carries the identity.
+
+The caption is the apparatus, in the margin like a figure caption.
+
+**Sparkline.** A word sized line chart, 14px tall, set inline with text: the
+`sparkline` shortcode in a post, or the partial in a template. The line is
+muted ink, the last value is a blush dot and the highest an ink dot. The home
+page puts posts per year beside the Writing label.
+
+**Tag index.** Each tag carries its count and a short bar of the same length
+ratio, so the shape of the site reads at a glance.
+
+**Sidenote.** The `sidenote` shortcode, written inline where the reference mark
+belongs. A blush number marks the text, and the note, numbered to match, sits
+in the outer margin level with its line above 1200px, floated so that two notes
+on one line stack rather than overlap. Below that it follows the
+sentence as a short indented block. Numbers come from a CSS counter, so they
+never need maintaining.
 
 ## Do's and Don'ts
 
@@ -455,8 +483,8 @@ and the section rail cannot exist below 1200px, so the caption goes under the
 image, the labels go above their block, and the rail becomes a line at the top.
 Each is a decision rather than a collapse.
 
-**Do** give each accent one job. If something new needs a colour, ask which of
-the four existing jobs it belongs to before adding a fifth.
+**Do** keep to one accent. If something new seems to need a colour, ask whether
+a label, a weight or a hairline would say the same thing first.
 
 **Do** draw structure with hairlines and space.
 
@@ -470,9 +498,8 @@ the four existing jobs it belongs to before adding a fifth.
 a quiet label on the home page precisely because the masthead below it already
 says the name.
 
-**Don't** use `!important`. Theme rules are outranked by scoping component rules
-under `body:is(.colorscheme-light, .colorscheme-dark, .colorscheme-auto)`, which
-adds one class of specificity and wins ties by load order.
+**Don't** use `!important`. The theme ships one stylesheet, so order and scoping
+are enough.
 
 **Don't** load anything at runtime from a third party for the design layer.
 Fonts are self hosted, styles and scripts are local.

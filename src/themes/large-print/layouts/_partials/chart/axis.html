@@ -1,0 +1,16 @@
+{{- /*
+  The value axis under a chart: a hairline the width of the scale and a label
+  at each tick. Takes a dict with "scale" (from chart/ticks.html) and "unit",
+  which is written after the last label only.
+*/ -}}
+{{- $s := .scale -}}
+{{- $span := sub $s.max $s.min -}}
+{{- $last := sub (len $s.ticks) 1 }}
+<div class="chart-row chart-axis">
+  <div class="chart-label"></div>
+  <div class="chart-track">
+    {{- range $i, $t := $s.ticks }}
+    <span class="chart-tick" style="{{ printf "left: %.2f%%" (mul (div (sub $t $s.min) $span) 100) | safeCSS }}">{{ printf "%g" $t }}{{ if and (eq $i $last) $.unit }} {{ $.unit }}{{ end }}</span>
+    {{- end }}
+  </div>
+</div>

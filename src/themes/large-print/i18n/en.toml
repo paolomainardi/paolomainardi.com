@@ -1,0 +1,37 @@
+[categories]
+one = "category"
+other = "categories"
+
+[tags]
+one = "tag"
+other = "tags"
+
+[posts]
+other = "posts"
+
+[note]
+other = "note"
+
+[tip]
+other = "tip"
+
+[example]
+other = "example"
+
+[question]
+other = "question"
+
+[info]
+other = "info"
+
+[warning]
+other = "warning"
+
+[error]
+other = "error"
+
+[link_to_heading]
+other = "Link to heading"
+
+[toggle_color_scheme]
+other = "Toggle the colour scheme"

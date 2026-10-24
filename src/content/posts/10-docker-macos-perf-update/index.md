@@ -218,13 +218,9 @@ I'm especially interested in the performance of [Lima](https://github.com/lima-v
 | Linux     | Docker-Linux       | Bind mount + volume | 5.22             | 5.20-5.23     |
 | **Linux** | **Docker-Linux**   | **Bind mount**      | **5.29**         | **5.23-5.33** |
 
-{{< figure src="/images/posts/10-docker/benchmark-graph.svg" >}}
-
-{{< notice tip >}}
-
-Open the [graph in a new tab](/images/posts/10-docker/benchmark-graph.svg) to see it in full resolution and with the data labels.
-
-{{< /notice >}}
+{{< chart type="dot" data="assets/benchmark.csv" y="platform" x="mean" series="test" lo="min" hi="max" highlight="Bind mount" unit="s" >}}
+Seconds to run `npm install`, the mean of three runs. The whisker spans the fastest and the slowest run. Bind mounts are the highlighted series.
+{{< /chart >}}
 
 Despite being limited to a single test scenario, this benchmark reveals several interesting patterns. Let's analyze the key findings:
 
