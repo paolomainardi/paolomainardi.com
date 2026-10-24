@@ -1,8 +1,7 @@
 {{- /*
-  Numbered table.
+  Table.
 
-  The table number sits in the apparatus, in the outer margin on wide screens.
-  The table itself scrolls sideways on narrow ones. A caption attribute, when
+  The table scrolls sideways inside its own container on narrow screens. A caption attribute, when
   block attributes are enabled, becomes a real caption element.
 
   A column whose body cells are all numbers, optionally a range or with a short
@@ -28,7 +27,6 @@
   {{- $num = $num | append (and $ok (gt $seen 0)) -}}
 {{- end -}}
 <div class="tabular">
-  <span class="apparatus"><span class="num"></span></span>
   <div class="tabular-scroll">
     <table>
       <thead>

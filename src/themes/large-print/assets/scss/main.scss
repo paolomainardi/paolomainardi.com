@@ -1054,7 +1054,7 @@ body:has(.container.home) .navigation .navigation-title {
 
 .text {
   max-width: var(--measure);
-  counter-reset: listing table sidenote;
+  counter-reset: sidenote;
 
   @media only screen and (min-width: 1200px) {
     margin-left: var(--offset);
@@ -1275,9 +1275,9 @@ body:has(.container.home) .navigation .navigation-title {
 // -----------------------------------------------------------------------------
 // 10. Apparatus in the margin
 //
-// Figure, listing and table numbers live in the outer margin on wide screens,
-// so the reading column carries nothing but the block itself. Below 1200px
-// they sit above the block instead.
+// Captions, a listing's language and file name, and note labels live in the
+// outer margin on wide screens, so the reading column carries nothing but the
+// block itself. Below 1200px they sit above the block instead.
 // -----------------------------------------------------------------------------
 
 .listing,
@@ -1293,14 +1293,6 @@ body:has(.container.home) .navigation .navigation-title {
   line-height: 1.45;
   color: var(--ink-3);
   margin-bottom: 0.8rem;
-
-  .num {
-    display: block;
-    font-weight: 600;
-    color: var(--ink-2);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
 
   .lang,
   .file {
@@ -1335,11 +1327,6 @@ body:has(.container.home) .navigation .navigation-title {
 
 .listing {
   margin: 3.2rem 0;
-  counter-increment: listing;
-
-  .num:before {
-    content: "Listing " counter(listing);
-  }
 
   .listing-body {
     position: relative;
@@ -1466,11 +1453,6 @@ body:has(.container.home) .navigation .navigation-title {
 
 .tabular {
   margin: 3.2rem 0;
-  counter-increment: table;
-
-  .num:before {
-    content: "Table " counter(table);
-  }
 
   .tabular-scroll {
     overflow-x: auto;
