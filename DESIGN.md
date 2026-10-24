@@ -147,8 +147,9 @@ components:
     backgroundColor: "{colors.blush}"
     width: 2px
   figure:
-    backgroundColor: "{colors.paper}"
-    rounded: "{rounded.sm}"
+    backgroundColor: "{colors.code-wash}"
+    rounded: "{rounded.md}"
+    padding: 14px
   table-head:
     textColor: "{colors.ink-muted}"
     typography: "{typography.label}"
@@ -379,6 +380,10 @@ number was occupying the margin while saying nothing, and the caption, which is
 the part that tells you what you are looking at, was in the smallest position on
 the page. Below 1200px the margin collapses and the caption falls back under the
 image.
+
+Every figure image sits on a mat: 14px of the code wash inside a hairline,
+8px below 560px, like a print in a mount. A light screenshot used to melt into
+the paper; the mat separates it without a shadow or any other effect.
 
 Images carry intrinsic width and height so the page does not reflow while they
 load, which is why post images live in `assets/` rather than `static/`.
