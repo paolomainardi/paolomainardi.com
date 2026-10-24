@@ -35,17 +35,28 @@ title, never the page, and never summarize it.
 3. The note is the rest of the message text, rewritten as the rules above
    say. A message with only a URL gets no note: publish it with its title
    alone.
-4. Fetch the page title, and nothing else from the page:
+4. Find the title, reading nothing else from the page. Take the first of
+   these that gives one:
+   1. The link preview Slack shows under the message, if the message has one.
+   2. The page itself, fetched with a browser user agent:
 
-   ```bash
-   curl -sL --max-time 10 --max-filesize 2000000 "$URL" | python3 -I -c '
-   import html, re, sys
-   s = sys.stdin.read()
-   m = re.search(r"<meta[^>]+property=.og:title.[^>]+content=\"([^\"]+)", s) or re.search(r"<title[^>]*>(.*?)</title>", s, re.S)
-   print(html.unescape(m.group(1)).strip() if m else "")'
-   ```
+      ```bash
+      curl -sL --max-time 10 --max-filesize 2000000 \
+        -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36" \
+        "$URL" | python3 -I -c '
+      import html, re, sys
+      s = sys.stdin.read()
+      m = re.search(r"<meta[^>]+property=.og:title.[^>]+content=\"([^\"]+)", s) or re.search(r"<title[^>]*>(.*?)</title>", s, re.S)
+      print(html.unescape(m.group(1)).strip() if m else "")'
+      ```
 
-   If it comes back empty, use the host name. Remove `<`, `>` and `{{` from it.
+   3. The last part of the URL path in words, with the first letter capital:
+      `/blog/is-this-the-new-cyber-normal/` gives `Is this the new cyber normal`.
+   4. The host name.
+
+   Drop a trailing site name joined by ` | `, ` - ` or ` · ` ("Is this the
+   new cyber normal? | Drew's Dev Blog" becomes "Is this the new cyber
+   normal?"). Remove `<`, `>` and `{{`.
 5. Pick one to three tags from the tags the site already uses
    (`grep -rh "^tags" src/content`). Never invent a tag.
 6. Write `src/content/links/<slug>.md`, the slug in lowercase letters, digits
