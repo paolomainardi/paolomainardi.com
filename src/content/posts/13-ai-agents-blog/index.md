@@ -1,7 +1,7 @@
 +++
 date = "2026-10-24"
 title = "This blog's stack is now my agents' job"
-description = "What running a blog looks like today: I keep the writing and the ideas, and AI agents do the engineering."
+description = "A journey through a set of new features for this blog, and how I built them."
 slug = "the-stack-is-now-my-agents-job"
 tags = ["ai", "agents", "hugo", "design", "accessibility", "security"]
 draft = "false"
