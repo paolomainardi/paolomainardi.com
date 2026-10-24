@@ -96,8 +96,6 @@ The repository is public, so I asked for a security review with that in mind. Th
 - **Secret scanning** with push protection, and Dependabot alerts.
 - **Housekeeping.** An old `.env` file left in the repository is gone, and so is the unused wiki.
 
-Two things are still open: the analytics script loads without an integrity check, and the deploy uses a long-lived service account key instead of [keyless federation](https://cloud.google.com/iam/docs/workload-identity-federation).
-
 ## Links, and publishing more often
 
 I save and share a lot of links in our company's tech channel on Slack. I thought a section for everyone, in my own space, would be useful, and I wanted it to be as simple and automated as possible. We did it: the [Links](/links/) page is a list of things worth reading, each with a short note on why.
