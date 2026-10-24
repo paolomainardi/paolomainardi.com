@@ -212,6 +212,26 @@ components:
   selection:
     backgroundColor: "{colors.blush-wash}"
     textColor: "{colors.ink}"
+  chart-mark:
+    backgroundColor: "{colors.ink-faint}"
+    width: 8px
+    height: 8px
+  chart-mark-highlight:
+    backgroundColor: "{colors.blush}"
+    width: 11px
+    height: 11px
+  chart-label:
+    textColor: "{colors.ink-muted}"
+    typography: "{typography.apparatus}"
+  chart-value:
+    textColor: "{colors.ink}"
+    typography: "{typography.apparatus}"
+  chart-axis:
+    backgroundColor: "{colors.ink-faint}"
+    height: 1px
+  sparkline:
+    textColor: "{colors.ink-muted}"
+    height: 14px
 ---
 
 ## Overview
@@ -410,9 +430,38 @@ orientation device, not navigation chrome, and it never appears below 1200px.
 **Margin note.** The `marginal` shortcode. Floats into the outer margin above
 1200px, sits in the column behind a hairline below that.
 
+**Chart.** The `chart` shortcode draws a dot plot or a bar chart from a CSV
+file next to the post, when the site is built. It is HTML, not an image, so the
+labels stay at reading size on a phone and the chart follows the colour scheme.
+The rules are Tufte's:
+
+- **One accent.** Context is ink, the highlighted series is blush with its
+  values written beside it. Other series are told apart by shape (circle,
+  square, diamond, triangle), so identity never depends on colour.
+- **No grid, no frame.** The value axis is one hairline with round ticks, and
+  the unit appears once, after the last tick.
+- **Bars start at zero.** A dot plot does too unless the shortcode asks for
+  `from="auto"`.
+- **The numbers are never only in the picture.** Every chart ends with its
+  data as a table behind a disclosure, and every mark has its exact value as a
+  hover title.
+- **Text wears text colours.** Values, labels and the key stay in ink; a
+  coloured mark beside them carries the identity.
+
+The caption is the apparatus, in the margin like a figure caption.
+
+**Sparkline.** A word sized line chart, 14px tall, set inline with text: the
+`sparkline` shortcode in a post, or the partial in a template. The line is
+muted ink, the last value is a blush dot and the highest an ink dot. The home
+page puts posts per year beside the Writing label.
+
+**Tag index.** Each tag carries its count and a short bar of the same length
+ratio, so the shape of the site reads at a glance.
+
 **Sidenote.** The `sidenote` shortcode, written inline where the reference mark
 belongs. A blush number marks the text, and the note, numbered to match, sits
-in the outer margin level with its line above 1200px. Below that it follows the
+in the outer margin level with its line above 1200px, floated so that two notes
+on one line stack rather than overlap. Below that it follows the
 sentence as a short indented block. Numbers come from a CSS counter, so they
 never need maintaining.
 

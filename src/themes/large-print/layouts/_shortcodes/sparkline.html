@@ -1,0 +1,8 @@
+{{- /*
+  Inline sparkline from a list of numbers:
+  "eleven posts since 2022 {{< sparkline "3,5,1,2" >}}".
+*/ -}}
+{{- $vals := split (.Get 0 | default (.Get "values")) "," -}}
+{{- $nums := slice -}}
+{{- range $vals }}{{ $nums = $nums | append (float (strings.TrimSpace .)) }}{{ end -}}
+{{- partial "chart/sparkline.html" (dict "values" $nums) -}}

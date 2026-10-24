@@ -16,6 +16,8 @@
 
     {{ .Content }}
 
+    {{- $most := 1 }}
+    {{- with .Data.Terms.ByCount }}{{ $most = (index . 0).Count }}{{ end }}
     <ul class="term-list">
       {{ range .Data.Terms.ByCount }}
       {{ $name := .Name }}
@@ -24,6 +26,7 @@
       <li>
         <a href="{{ .RelPermalink }}">{{ .Name }}</a>
         <span class="term-count">{{ $count }}</span>
+        <span class="term-bar" style="{{ printf "width: %.1frem" (mul 4.0 (div (float $count) $most)) | safeCSS }}" aria-hidden="true"></span>
       </li>
       {{ end }}
       {{ end }}

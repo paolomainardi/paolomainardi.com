@@ -70,6 +70,21 @@ Run `just` or `just --list` to see all recipes.
   it locally, never from a CDN.
 - **Talks are data.** `src/data/talks.yaml` drives `/talks/`. Add a talk by
   adding an entry, never by editing the template.
+- **Charts are data too.** Put a tidy CSV (one row per observation, a header
+  row) next to the post's `index.md` and draw it with the `chart` shortcode:
+
+  ```text
+  {{< chart type="dot" data="assets/benchmark.csv" y="platform" x="mean"
+      series="test" lo="min" hi="max" highlight="Bind mount" unit="s" >}}
+  Caption in markdown.
+  {{< /chart >}}
+  ```
+
+  `type` is `dot` or `bar`. The parameters are documented at the top of
+  `layouts/_partials/chart/dot.html` and `bar.html`. A missing file or column
+  fails the build. Never paste a chart in as an image when the data exists.
+- **Margin apparatus shortcodes.** `sidenote` (numbered, inline), `marginal`
+  (unnumbered block) and `sparkline` (inline numbers, `{{< sparkline "3,5,1" >}}`).
 
 ### Where things live
 

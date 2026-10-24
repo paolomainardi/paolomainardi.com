@@ -32,6 +32,7 @@
 //   11. Listings
 //   12. Tables
 //   13. Figures
+//   13b. Charts
 //   14. Notes and cautions
 //   15. Margin notes
 //   16. Contents block
@@ -763,6 +764,14 @@ body:has(.container.home) .navigation .navigation-title {
   }
 }
 
+// A quiet aside inside a part label, in sentence case.
+.part-note {
+  margin-left: 0.8rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .contents-list {
   margin: 0;
   padding: 0;
@@ -881,6 +890,16 @@ body:has(.container.home) .navigation .navigation-title {
   font-size: 1.4rem;
   font-variant-numeric: tabular-nums;
   color: var(--ink-3);
+}
+
+// The count is also drawn as a short bar, so the shape of the site reads at a
+// glance.
+.term-bar {
+  display: inline-block;
+  height: 0.5rem;
+  margin-left: 0.2rem;
+  background-color: var(--rule-2);
+  vertical-align: 0.15em;
 }
 
 .list-note {
@@ -1598,6 +1617,238 @@ body:has(.container.home) .navigation .navigation-title {
 }
 
 // -----------------------------------------------------------------------------
+// 13b. Charts
+//
+// Drawn from data at build time by the chart shortcode, in HTML rather than
+// SVG, so labels stay at reading size at any width. Marks are positioned in
+// percent of their track. Ink for context, the accent for the highlighted
+// series, no grid, and an axis that is a single hairline. Text never takes the
+// series colour: values and labels stay in ink.
+// -----------------------------------------------------------------------------
+
+.chart {
+  font-size: 1.5rem;
+  line-height: 1.3;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.chart-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 2rem;
+  margin: 0 0 1.6rem;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-2);
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0;
+  }
+
+  li.hot {
+    color: var(--ink);
+  }
+
+  .chart-mark {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    flex: 0 0 auto;
+  }
+
+  .chart-mark.diamond {
+    transform: rotate(45deg);
+  }
+}
+
+.chart-plot {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  column-gap: 1.6rem;
+}
+
+.chart-row {
+  display: contents;
+}
+
+.chart-label {
+  max-width: 16rem;
+  padding: 0.5rem 0;
+  text-align: right;
+  color: var(--ink-2);
+}
+
+// The right margin leaves room for a value label at the far end of the scale.
+.chart-track {
+  position: relative;
+  min-height: 2.8rem;
+  margin-right: 4rem;
+}
+
+.chart-span,
+.chart-whisker,
+.chart-mark,
+.chart-bar,
+.chart-value {
+  position: absolute;
+  top: 50%;
+}
+
+.chart-span {
+  height: 1px;
+  background-color: var(--rule-2);
+}
+
+.chart-whisker {
+  height: 1px;
+  background-color: var(--ink-3);
+}
+
+.chart-mark {
+  width: 0.8rem;
+  height: 0.8rem;
+  transform: translate(-50%, -50%);
+  background-color: var(--ink-3);
+
+  &.circle {
+    border-radius: 50%;
+  }
+
+  &.diamond {
+    width: 0.7rem;
+    height: 0.7rem;
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  &.triangle {
+    width: 1rem;
+    height: 0.9rem;
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  }
+
+  &.hot {
+    z-index: 1;
+    width: 1.1rem;
+    height: 1.1rem;
+    background-color: var(--blush);
+    box-shadow: 0 0 0 2px var(--paper);
+  }
+}
+
+.chart-bar {
+  left: 0;
+  height: 1.2rem;
+  transform: translateY(-50%);
+  background-color: var(--ink-3);
+
+  &.hot {
+    background-color: var(--blush);
+  }
+}
+
+.chart-value {
+  transform: translate(1rem, -50%);
+  white-space: nowrap;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--ink);
+
+  &.before {
+    transform: translate(calc(-100% - 1rem), -50%);
+  }
+}
+
+.chart-axis {
+  .chart-track {
+    min-height: 2.6rem;
+    margin-top: 0.6rem;
+    border-top: 1px solid var(--ink-3);
+  }
+}
+
+.chart-tick {
+  position: absolute;
+  top: 0.6rem;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 1.3rem;
+  color: var(--ink-3);
+
+  &:before {
+    content: "";
+    position: absolute;
+    top: -1rem;
+    left: 50%;
+    height: 0.4rem;
+    border-left: 1px solid var(--ink-3);
+  }
+}
+
+.chart-data {
+  margin: 1.6rem 0 0;
+
+  summary {
+    display: inline-block;
+    cursor: pointer;
+    color: var(--ink-3);
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &:before {
+      content: "\203A";
+      display: inline-block;
+      width: 1.4rem;
+      color: var(--ink-3);
+    }
+
+    &:hover,
+    &:focus-visible {
+      color: var(--blush);
+    }
+  }
+
+  &[open] summary:before {
+    content: "\2039";
+  }
+
+  table {
+    margin-top: 1rem;
+    font-size: 1.5rem;
+  }
+}
+
+// Word sized line chart, set inline with text. The last value is the accent,
+// the highest a darker dot.
+.sparkline {
+  display: inline-block;
+  margin: 0 0.3em;
+  vertical-align: -0.05em;
+  overflow: visible;
+
+  polyline {
+    fill: none;
+    stroke: var(--ink-2);
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+
+  .max {
+    fill: var(--ink-2);
+  }
+
+  .last {
+    fill: var(--blush);
+  }
+}
+
+// -----------------------------------------------------------------------------
 // 14. Notes and cautions
 // -----------------------------------------------------------------------------
 
@@ -1690,10 +1941,6 @@ body:has(.container.home) .navigation .navigation-title {
 
 // Numbered sidenote, from the sidenote shortcode. The reference mark and the
 // note share a counter, so the numbers always agree.
-.text :is(p, li) {
-  position: relative;
-}
-
 .sidenote-ref:after {
   counter-increment: sidenote;
   content: counter(sidenote);
@@ -1717,11 +1964,14 @@ body:has(.container.home) .navigation .navigation-title {
     color: var(--blush);
   }
 
+  // A float rather than an absolute box, so notes that start on the same line
+  // stack instead of overlapping. The negative margin is wider than the note,
+  // so the float takes no room from the text beside it.
   @media only screen and (min-width: 1200px) {
-    position: absolute;
-    left: calc(var(--offset) * -1);
+    float: left;
+    clear: left;
     width: var(--apparatus);
-    margin: 0.4rem 0 0;
+    margin: 0.4rem 0 0.8rem calc(var(--offset) * -1);
     font-size: 1.4rem;
     line-height: 1.45;
     text-align: right;

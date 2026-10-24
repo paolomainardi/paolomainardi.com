@@ -1,0 +1,18 @@
+{{- /*
+  Loads a CSV file for a chart. Returns a dict with "columns", the header row in
+  file order, and "rows", one map per line keyed by those columns. Takes a dict with "page" and "src": the file is looked up among the
+  page's resources first, then under assets. Fails the build when the file is
+  missing, so a typo never publishes an empty chart.
+*/ -}}
+{{- $res := .page.Resources.Get .src | default (resources.Get .src) -}}
+{{- if not $res }}{{ errorf "chart: %q not found for %s" .src .page.File.Path }}{{ end -}}
+{{- $grid := $res | transform.Unmarshal (dict "delimiter" ",") -}}
+{{- $head := slice -}}
+{{- range index $grid 0 }}{{ $head = $head | append (strings.TrimSpace .) }}{{ end -}}
+{{- $rows := slice -}}
+{{- range $r := after 1 $grid -}}
+  {{- $row := dict -}}
+  {{- range $i, $k := $head }}{{ $row = merge $row (dict $k (strings.TrimSpace (index $r $i))) }}{{ end -}}
+  {{- $rows = $rows | append $row -}}
+{{- end -}}
+{{- return (dict "columns" $head "rows" $rows) -}}

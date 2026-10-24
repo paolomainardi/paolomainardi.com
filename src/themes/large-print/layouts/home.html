@@ -33,7 +33,15 @@
 
   <div class="measure">
     {{ with $posts }}
-    <div class="part">Writing</div>
+    {{- /* Posts per year since the first one, as a sparkline beside the label. */}}
+    {{- $first := (index $posts.ByDate 0).Date.Year }}
+    {{- $counts := slice }}
+    {{- $years := slice }}
+    {{- range $y := seq $first now.Year }}
+      {{- $counts = $counts | append (len (where $posts "Date.Year" $y)) }}
+      {{- $years = $years | append $y }}
+    {{- end }}
+    <div class="part">Writing <span class="part-note">{{ len $posts }} posts since {{ $first }}{{ partial "chart/sparkline.html" (dict "values" $counts "labels" $years) }}</span></div>
     <ul class="contents-list">
       {{ range . }}
       <li class="leader">
