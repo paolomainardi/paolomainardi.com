@@ -1,0 +1,8 @@
+{
+  "name": "paolomainardi-com-deploy",
+  "private": true,
+  "description": "The Firebase CLI the deploy workflow runs, pinned with a lockfile.",
+  "devDependencies": {
+    "firebase-tools": "15.26.0"
+  }
+}
