@@ -9,14 +9,14 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
 
       - name: Read the Hugo version
         run: echo "HUGO_VERSION=$(cat .hugo-version)" >> "$GITHUB_ENV"
 
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v3
+        uses: peaceiris/actions-hugo@2752ce1d29631191ea3f27c23495fa06139a5b78 # v3
         with:
           hugo-version: ${{ env.HUGO_VERSION }}
           extended: true
@@ -26,7 +26,7 @@ jobs:
         run: |
           hugo --minify -d output --baseURL=https://www.paolomainardi.com
 
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a # v0
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_CTO_SPACE }}"
