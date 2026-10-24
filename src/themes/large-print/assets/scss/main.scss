@@ -1314,6 +1314,16 @@ body:has(.container.home) .navigation .navigation-title {
   }
 }
 
+// Long posts carry dozens of listings and tables. The browser skips laying out
+// the ones far off screen until the reader scrolls near them, and remembers
+// each block's real height once drawn. Only the inner body is skipped: it
+// clips its painting, and the labels in the margin sit outside it.
+.listing-body,
+.tabular-scroll {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 30rem;
+}
+
 // -----------------------------------------------------------------------------
 // 11. Listings
 // -----------------------------------------------------------------------------
