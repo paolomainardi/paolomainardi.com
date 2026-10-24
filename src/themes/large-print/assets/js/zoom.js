@@ -4,7 +4,9 @@
 // dialog when clicked, or on Enter or Space when focused. The overlay loads
 // the larger copy named in data-zoom and shows the clicked image until it
 // arrives. Esc, a click anywhere, or the back gesture closes it. Images that
-// already show at full size are left alone.
+// already show at full size are left alone. On a touch screen any image with a
+// larger copy opens on tap, even when the overlay is no wider, because that is
+// where a reader expects to tap and then pinch into the detail.
 (function () {
   "use strict";
 
@@ -16,6 +18,7 @@
   // Worth opening only when the overlay shows the image at least this much
   // wider than the page does.
   var GAIN = 1.15;
+  var touch = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
   var dialog, big, caption, pending;
 
   // Width the overlay would show the image at: its own width, capped by the
@@ -31,7 +34,9 @@
     var gains = [];
     var i;
     for (i = 0; i < images.length; i++) {
-      gains.push(images[i].clientWidth > 0 && overlayWidth(images[i]) > images[i].clientWidth * GAIN);
+      var shown = images[i].clientWidth;
+      var larger = Number(images[i].getAttribute("data-zoom-width")) > shown;
+      gains.push(shown > 0 && (touch ? larger : overlayWidth(images[i]) > shown * GAIN));
     }
     for (i = 0; i < images.length; i++) {
       var img = images[i];

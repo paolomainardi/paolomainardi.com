@@ -395,6 +395,9 @@ under it in light ink. It is the one dark surface in the light scheme, because a
 picture reads best against black. The overlay starts from the copy already on the
 page and swaps in the 1640px copy, or the original when smaller, once it loads.
 Images that already show at full size, linked images and charts are left alone.
+On a touch screen the rule is looser: any image with a larger copy opens on
+tap, even when the overlay is no wider than the page, because tapping and then
+pinching into the detail is how a phone reader looks at a screenshot.
 
 **Table.** Unnumbered, like listings and figures. Three rules and nothing
 else: one above the head, one under it, one under the last row, with rows
