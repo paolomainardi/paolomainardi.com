@@ -20,6 +20,7 @@
 {{- $data := partial "chart/data.html" (dict "page" .Page "src" (.Get "data")) -}}
 {{- $rows := $data.rows -}}
 {{- $columns := $data.columns -}}
+{{- if not (and $p.y $p.x) }}{{ errorf "chart: y and x are required in %s" .Page.File.Path }}{{ end -}}
 {{- range slice "y" "x" "series" "lo" "hi" -}}
   {{- $col := index $p . -}}
   {{- if and $col (not (in $columns $col)) }}{{ errorf "chart: column %q not in %s" $col ($.Get "data") }}{{ end -}}

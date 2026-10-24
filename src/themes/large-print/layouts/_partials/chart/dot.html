@@ -84,15 +84,16 @@
       {{- if gt (len $mine) 1 }}
       <span class="chart-span" style="{{ printf "left: %.2f%%; width: %.2f%%" (mul (div (sub $rlo $min) $span) 100) (mul (div (sub $rhi $rlo) $span) 100) | safeCSS }}"></span>
       {{- end }}
-      {{- range $mine }}
-      {{- $v := index . $p.x }}
+      {{- range $r := $mine }}
+      {{- $v := index $r $p.x }}
       {{- $x := mul (div (sub (float $v) $min) $span) 100 }}
-      {{- $name := cond (ne $p.series "") (index . (or $p.series $p.y)) "" }}
+      {{- $name := "" }}
+      {{- with $p.series }}{{ $name = index $r . }}{{ end }}
       {{- $title := printf "%s: %s%s" $cat $v $unit }}
       {{- with $name }}{{ $title = printf "%s, %s: %s%s" $cat . $v $unit }}{{ end }}
       {{- if and $p.lo $p.hi }}
-      {{- $a := index . $p.lo }}
-      {{- $b := index . $p.hi }}
+      {{- $a := index $r $p.lo }}
+      {{- $b := index $r $p.hi }}
       {{- $title = printf "%s (%s to %s)" $title $a $b }}
       <span class="chart-whisker" style="{{ printf "left: %.2f%%; width: %.2f%%" (mul (div (sub (float $a) $min) $span) 100) (mul (div (sub (float $b) (float $a)) $span) 100) | safeCSS }}"></span>
       {{- end }}
