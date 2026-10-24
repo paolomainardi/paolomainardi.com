@@ -1,0 +1,7 @@
+platform,note
+Lima,"Open source, Apple VZ + VirtioFS"
+Docker VZ,"Docker Desktop, Apple VZ + VirtioFS"
+Docker VMM,"Docker Desktop, Docker VMM + VirtioFS"
+Docker VZ + sync,"Docker Desktop, paid file sync"
+OrbStack,"Closed source"
+Linux,"Native Docker, no VM"

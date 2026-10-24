@@ -1,7 +1,8 @@
 {{- /*
   The value axis under a chart: a hairline the width of the scale and a label
-  at each tick. Takes a dict with "scale" (from chart/ticks.html) and "unit",
-  which is written after the last label only.
+  at each tick. Takes a dict with "scale" (from chart/ticks.html), "unit",
+  which is written after the last label only, and an optional "title" written
+  under the labels.
 */ -}}
 {{- $s := .scale -}}
 {{- $span := sub $s.max $s.min -}}
@@ -14,3 +15,9 @@
     {{- end }}
   </div>
 </div>
+{{- with .title }}
+<div class="chart-row">
+  <div class="chart-label"></div>
+  <div class="chart-axis-title">{{ . }}</div>
+</div>
+{{- end }}

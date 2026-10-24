@@ -1,0 +1,28 @@
+{{- /*
+  Series of a dot plot and the mark each one takes. Takes a dict with "rows"
+  and "p", the chart params. Returns a dict with "series", the series names in
+  order of first appearance, and "shapeOf", a map from name to mark classes.
+
+  The highlighted series is a circle in the accent; the others take a shape
+  each, in ink, so they stay distinguishable without colour.
+*/ -}}
+{{- $p := .p -}}
+{{- $series := slice -}}
+{{- if $p.series -}}
+  {{- range .rows -}}
+    {{- $s := index . $p.series -}}
+    {{- if not (in $series $s) }}{{ $series = $series | append $s }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+{{- $shapes := slice "circle" "square" "diamond" "triangle" -}}
+{{- $shapeOf := dict -}}
+{{- $n := 0 -}}
+{{- range $series -}}
+  {{- if eq . $p.highlight -}}
+    {{- $shapeOf = merge $shapeOf (dict . "circle hot") -}}
+  {{- else -}}
+    {{- $shapeOf = merge $shapeOf (dict . (index $shapes (mod $n (len $shapes)))) -}}
+    {{- $n = add $n 1 -}}
+  {{- end -}}
+{{- end -}}
+{{- return (dict "series" $series "shapeOf" $shapeOf) -}}

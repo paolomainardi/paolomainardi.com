@@ -1,0 +1,13 @@
+{{- /*
+  The key of a dot plot: one entry per series, with its mark. Takes a dict with
+  "shapes" (from chart/shapes.html) and "highlight". Drawn only when there is
+  more than one series.
+*/ -}}
+{{- $shapeOf := .shapes.shapeOf -}}
+{{- if gt (len .shapes.series) 1 }}
+<ul class="chart-key">
+  {{- range .shapes.series }}
+  <li{{ if eq . $.highlight }} class="hot"{{ end }}><span class="chart-mark {{ index $shapeOf . }}" aria-hidden="true"></span>{{ . }}</li>
+  {{- end }}
+</ul>
+{{- end }}

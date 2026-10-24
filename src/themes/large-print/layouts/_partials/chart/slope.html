@@ -1,0 +1,105 @@
+{{- /*
+  Slopegraph. Each category is a line from its value in the first series, on
+  the left, to its value in the second, on the right, on one shared scale with
+  the higher values at the top. Labels replace the axis: the category and its
+  value on the left, the value on the right, with the category repeated there
+  on wide screens.
+
+  Takes a dict with "rows" (from chart/data.html) and "p", the chart params:
+    y          column naming the category, one line each
+    x          column holding the value
+    series     column with exactly two values, the left and the right end
+    highlight  optional category drawn in the accent
+    unit       optional unit, written after the values
+    axis       optional title written under the plot, as for the other types
+
+  Labels that would overlap are pushed apart, and the lines end at their
+  labels. All the labels of one end share a grid cell, so the column is as
+  wide as the longest of them, and each is moved down by its position. The plot grows with the number of lines, so labels keep a gap of at
+  least one line of text.
+*/ -}}
+{{- $p := .p -}}
+{{- $rows := .rows -}}
+{{- $unit := cond (ne $p.unit "") (printf " %s" $p.unit) "" -}}
+
+{{- $ends := slice -}}
+{{- $cats := slice -}}
+{{- range $rows -}}
+  {{- $s := index . $p.series -}}
+  {{- if not (in $ends $s) }}{{ $ends = $ends | append $s }}{{ end -}}
+  {{- $c := index . $p.y -}}
+  {{- if not (in $cats $c) }}{{ $cats = $cats | append $c }}{{ end -}}
+{{- end -}}
+{{- if ne (len $ends) 2 }}{{ errorf "chart: a slope needs exactly two values in %q, found %d" $p.series (len $ends) }}{{ end -}}
+
+{{- $lo := 0.0 -}}
+{{- $hi := 0.0 -}}
+{{- range $i, $r := $rows -}}
+  {{- $v := float (index $r $p.x) -}}
+  {{- if or (eq $i 0) (lt $v $lo) }}{{ $lo = $v }}{{ end -}}
+  {{- if or (eq $i 0) (gt $v $hi) }}{{ $hi = $v }}{{ end -}}
+{{- end -}}
+{{- if eq $lo $hi }}{{ $hi = add $lo 1.0 }}{{ end -}}
+
+{{- /* Height in rem, and the smallest gap between two labels as a percentage
+       of it. */ -}}
+{{- $height := math.Max 18 (mul 2.8 (len $cats)) -}}
+{{- $gap := div 2.2 $height | mul 100 -}}
+
+{{- /* For each end: the labels sorted top down, pushed down to clear the one
+       above, then pushed back up from the bottom if the last one overflows. */ -}}
+{{- $at := dict -}}
+{{- range $side, $end := $ends -}}
+  {{- $items := slice -}}
+  {{- range $c := $cats -}}
+    {{- $match := where (where $rows $p.y $c) $p.series $end -}}
+    {{- if not $match }}{{ errorf "chart: %q has no %q value" $c $end }}{{ end -}}
+    {{- $row := index $match 0 -}}
+    {{- $v := float (index $row $p.x) -}}
+    {{- $items = $items | append (dict "cat" $c "v" (index $row $p.x) "y" (mul (div (sub $hi $v) (sub $hi $lo)) 100)) -}}
+  {{- end -}}
+  {{- $items = sort $items "y" -}}
+  {{- $pos := slice -}}
+  {{- $prev := -100.0 -}}
+  {{- range $items -}}
+    {{- $y := math.Max .y (add $prev $gap) -}}
+    {{- $pos = $pos | append $y -}}
+    {{- $prev = $y -}}
+  {{- end -}}
+  {{- $next := add 100.0 $gap -}}
+  {{- $placed := slice -}}
+  {{- range $j := seq (sub (len $items) 1) -1 0 -}}
+    {{- $y := math.Min (index $pos $j) (sub $next $gap) -}}
+    {{- $placed = $placed | append (merge (index $items $j) (dict "at" $y)) -}}
+    {{- $next = $y -}}
+  {{- end -}}
+  {{- range $placed }}{{ $at = merge $at (dict (printf "%d|%s" $side .cat) .) }}{{ end -}}
+{{- end -}}
+
+<div class="chart-slope">
+  <div class="slope-end left">{{ index $ends 0 }}</div>
+  <div></div>
+  <div class="slope-end">{{ index $ends 1 }}</div>
+  <div class="slope-side left" style="{{ printf "height: %.1frem" $height | safeCSS }}" aria-hidden="true">
+    {{- range $cats }}
+    {{- $a := index $at (printf "0|%s" .) }}
+    <span class="slope-label{{ if eq . $p.highlight }} hot{{ end }}" style="{{ printf "margin-top: %.2frem" (mul $height (div $a.at 100)) | safeCSS }}">{{ . }} <b>{{ $a.v }}</b></span>
+    {{- end }}
+  </div>
+  <svg class="slope-lines" style="{{ printf "height: %.1frem" $height | safeCSS }}" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+    {{- range $cats }}
+    {{- $a := index $at (printf "0|%s" .) }}
+    {{- $b := index $at (printf "1|%s" .) }}
+    <line{{ if eq . $p.highlight }} class="hot"{{ end }} x1="0" y1="{{ printf "%.2f" $a.at }}" x2="100" y2="{{ printf "%.2f" $b.at }}"><title>{{ . }}: {{ $a.v }}{{ $unit }} to {{ $b.v }}{{ $unit }}</title></line>
+    {{- end }}
+  </svg>
+  <div class="slope-side" style="{{ printf "height: %.1frem" $height | safeCSS }}" aria-hidden="true">
+    {{- range $cats }}
+    {{- $b := index $at (printf "1|%s" .) }}
+    <span class="slope-label{{ if eq . $p.highlight }} hot{{ end }}" style="{{ printf "margin-top: %.2frem" (mul $height (div $b.at 100)) | safeCSS }}"><b>{{ $b.v }}{{ $unit }}</b> <span class="slope-name">{{ . }}</span></span>
+    {{- end }}
+  </div>
+  {{- with $p.axis }}
+  <div class="chart-axis-title slope-title">{{ . }}</div>
+  {{- end }}
+</div>

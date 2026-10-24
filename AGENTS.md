@@ -80,9 +80,13 @@ Run `just` or `just --list` to see all recipes.
   {{< /chart >}}
   ```
 
-  `type` is `dot` or `bar`. The parameters are documented at the top of
-  `layouts/_partials/chart/dot.html` and `bar.html`. A missing file or column
-  fails the build. Never paste a chart in as an image when the data exists.
+  `type` is `dot`, `bar` or `slope`. `facet="<column>"` splits a dot or bar
+  chart into small multiples, `axis` writes a title under the axis (the unit
+  and which way is better), and `notes` points at a two column CSV of label
+  and note, printed under each label. The parameters are documented at the top
+  of `layouts/_shortcodes/chart.html` and the partials in
+  `layouts/_partials/chart/`. A missing file or column fails the build. Never
+  paste a chart in as an image when the data exists.
 - **Margin apparatus shortcodes.** `sidenote` (numbered, inline), `marginal`
   (unnumbered block) and `sparkline` (inline numbers, `{{< sparkline "3,5,1" >}}`).
 

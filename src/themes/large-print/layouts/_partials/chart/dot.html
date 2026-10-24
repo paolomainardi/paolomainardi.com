@@ -1,13 +1,17 @@
 {{- /*
   Dot plot. One row per category, one mark per series on a shared scale.
 
-  Takes a dict with "rows" (from chart/data.html) and "p", the chart params:
+  Takes a dict with "rows" (from chart/data.html) and "p", the chart params.
+  In small multiples it also takes "all", every row of the chart, which sets
+  the scale and the series so the panels match, and "key" false, because the
+  key is drawn once above the panels. The params:
     y          column naming the row category
     x          column holding the value
     series     optional column naming the series; each gets its own shape
     lo, hi     optional columns with the low and high of each value, drawn as
                a whisker through the mark
-    highlight  optional series drawn in the accent, with its values labelled
+    highlight  optional series drawn in the accent, with its values labelled;
+               without series, the row category drawn that way
     unit       optional unit for the last tick and the hover titles
     from       "0" (default) starts the scale at zero, "auto" at the data
 
@@ -18,18 +22,17 @@
 {{- $rows := .rows -}}
 {{- $unit := cond (ne $p.unit "") (printf " %s" $p.unit) "" -}}
 
-{{- /* Categories and series in order of first appearance, and the extent. */ -}}
+{{- $all := .all | default $rows -}}
+
+{{- /* Categories in order of first appearance, and the extent. */ -}}
 {{- $cats := slice -}}
-{{- $series := slice -}}
+{{- range $rows -}}
+  {{- $c := index . $p.y -}}
+  {{- if not (in $cats $c) }}{{ $cats = $cats | append $c }}{{ end -}}
+{{- end -}}
 {{- $lo := 0.0 -}}
 {{- $hi := 0.0 -}}
-{{- range $i, $r := $rows -}}
-  {{- $c := index $r $p.y -}}
-  {{- if not (in $cats $c) }}{{ $cats = $cats | append $c }}{{ end -}}
-  {{- if $p.series -}}
-    {{- $s := index $r $p.series -}}
-    {{- if not (in $series $s) }}{{ $series = $series | append $s }}{{ end -}}
-  {{- end -}}
+{{- range $i, $r := $all -}}
   {{- $a := float (index $r (or $p.lo $p.x)) -}}
   {{- $b := float (index $r (or $p.hi $p.x)) -}}
   {{- if or (eq $i 0) (lt $a $lo) }}{{ $lo = $a }}{{ end -}}
@@ -40,26 +43,10 @@
 {{- $min := $scale.min -}}
 {{- $span := sub $scale.max $scale.min -}}
 
-{{- /* The highlighted series is a circle in the accent; the others take a
-       shape each, in ink, so they stay distinguishable without colour. */ -}}
-{{- $shapes := slice "circle" "square" "diamond" "triangle" -}}
-{{- $shapeOf := dict -}}
-{{- $n := 0 -}}
-{{- range $series -}}
-  {{- if eq . $p.highlight -}}
-    {{- $shapeOf = merge $shapeOf (dict . "circle hot") -}}
-  {{- else -}}
-    {{- $shapeOf = merge $shapeOf (dict . (index $shapes (mod $n (len $shapes)))) -}}
-    {{- $n = add $n 1 -}}
-  {{- end -}}
-{{- end -}}
-
-{{- if gt (len $series) 1 }}
-<ul class="chart-key">
-  {{- range $series }}
-  <li{{ if eq . $p.highlight }} class="hot"{{ end }}><span class="chart-mark {{ index $shapeOf . }}" aria-hidden="true"></span>{{ . }}</li>
-  {{- end }}
-</ul>
+{{- $shapes := partial "chart/shapes.html" (dict "rows" $all "p" $p) -}}
+{{- $shapeOf := $shapes.shapeOf -}}
+{{- if ne .key false }}
+{{- partial "chart/key.html" (dict "shapes" $shapes "highlight" $p.highlight) }}
 {{- end }}
 <div class="chart-plot" aria-hidden="true">
   {{- range $cats }}
@@ -79,7 +66,7 @@
   {{- end }}
   {{- $labelAt := mul (div (sub $rend $min) $span) 100 }}
   <div class="chart-row">
-    <div class="chart-label">{{ $cat }}</div>
+    <div class="chart-label">{{ $cat }}{{ with index $p.notes $cat }}<span class="chart-note">{{ . }}</span>{{ end }}</div>
     <div class="chart-track">
       {{- if gt (len $mine) 1 }}
       <span class="chart-span" style="{{ printf "left: %.2f%%; width: %.2f%%" (mul (div (sub $rlo $min) $span) 100) (mul (div (sub $rhi $rlo) $span) 100) | safeCSS }}"></span>
@@ -97,13 +84,14 @@
       {{- $title = printf "%s (%s to %s)" $title $a $b }}
       <span class="chart-whisker" style="{{ printf "left: %.2f%%; width: %.2f%%" (mul (div (sub (float $a) $min) $span) 100) (mul (div (sub (float $b) (float $a)) $span) 100) | safeCSS }}"></span>
       {{- end }}
-      <span class="chart-mark {{ index $shapeOf $name | default "circle" }}" style="{{ printf "left: %.2f%%" $x | safeCSS }}" title="{{ $title }}"></span>
-      {{- if and $name (eq $name $p.highlight) }}
+      {{- $hot := or (and $name (eq $name $p.highlight)) (and (not $p.series) (eq $cat $p.highlight)) }}
+      <span class="chart-mark {{ cond $hot "circle hot" (index $shapeOf $name | default "circle") }}" style="{{ printf "left: %.2f%%" $x | safeCSS }}" title="{{ $title }}"></span>
+      {{- if $hot }}
       <span class="chart-value" style="{{ printf "left: %.2f%%" $labelAt | safeCSS }}">{{ $v }}</span>
       {{- end }}
       {{- end }}
     </div>
   </div>
   {{- end }}
-  {{- partial "chart/axis.html" (dict "scale" $scale "unit" $p.unit) }}
+  {{- partial "chart/axis.html" (dict "scale" $scale "unit" $p.unit "title" $p.axis) }}
 </div>
