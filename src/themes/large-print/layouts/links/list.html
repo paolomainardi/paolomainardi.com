@@ -2,15 +2,37 @@
 {{ define "content" }}
 {{- /*
   The link log: pages worth reading, newest first, grouped by month, each with
-  a short note. Twenty entries per page.
+  a short note. Twenty entries per page, with an index of years above them
+  once there is more than one.
 */ -}}
 <section class="container list links">
   <div class="measure">
     <div class="part">Links <span class="part-note">{{ len .Pages }} so far, newest first</span></div>
     {{ with .Content }}<div class="links-intro">{{ . }}</div>{{ end }}
-    {{- $pager := .Paginate (.Pages.GroupByDate "January 2006") 20 }}
+    {{- /* One entry per year: how many links, and where the year starts,
+           as the pager page holding its newest month plus that month's anchor. */}}
+    {{- $size := 20 }}
+    {{- $years := slice }}
+    {{- $seen := dict }}
+    {{- range $i, $p := .Pages.ByDate.Reverse }}
+      {{- $y := string $p.Date.Year }}
+      {{- if not (index $seen $y) }}
+        {{- $n := add (div $i $size) 1 }}
+        {{- $at := cond (eq $n 1) $.RelPermalink (printf "%spage/%d/" $.RelPermalink $n) }}
+        {{- $years = $years | append (dict "year" $y "url" (printf "%s#m-%s" $at ($p.Date.Format "2006-01")) "count" (len (where $.Pages "Date.Year" $p.Date.Year))) }}
+        {{- $seen = merge $seen (dict $y true) }}
+      {{- end }}
+    {{- end }}
+    {{- if gt (len $years) 1 }}
+    <ul class="links-years">
+      {{- range $years }}
+      <li><a href="{{ .url }}">{{ .year }}</a> <span>{{ .count }}</span></li>
+      {{- end }}
+    </ul>
+    {{- end }}
+    {{- $pager := .Paginate (.Pages.ByDate.Reverse.GroupByDate "January 2006") $size }}
     {{- range $pager.PageGroups }}
-    <h2 class="links-month">{{ .Key }}</h2>
+    <h2 class="links-month" id="m-{{ (index .Pages 0).Date.Format "2006-01" }}">{{ .Key }}</h2>
     {{- range .Pages }}
     {{ partial "book/link.html" . }}
     {{- end }}

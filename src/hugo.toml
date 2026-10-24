@@ -12,6 +12,9 @@ enableEmoji = true
 [pagination]
 pagerSize = 20
 
+[services.rss]
+limit = 50
+
 [module]
 [[module.imports]]
 path = "cj.rs/gohugo-asciinema"

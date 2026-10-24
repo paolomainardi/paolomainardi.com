@@ -1,6 +1,7 @@
 {{- /*
   One entry of the link log: the linked page's title, which goes to the page
-  itself, its host in small type, and the note on why it is worth reading. The
+  itself, its host in small type, the note on why it is worth reading, and its
+  tags, which it shares with the posts. The
   date sits in the outer margin on wide screens and links to the entry's own
   page, so an entry can be shared. Takes the link page.
 */ -}}
@@ -14,6 +15,11 @@
     {{ .Content }}
     {{- with .Params.via }}
     <p class="link-via">Via {{ . | $.RenderString (dict "display" "inline") }}</p>
+    {{- end }}
+    {{- with .GetTerms "tags" }}
+    <p class="link-tags">
+      {{- range $i, $t := . }}{{ if $i }} · {{ end }}<a href="{{ $t.RelPermalink }}">{{ $t.LinkTitle }}</a>{{ end -}}
+    </p>
     {{- end }}
   </div>
 </article>

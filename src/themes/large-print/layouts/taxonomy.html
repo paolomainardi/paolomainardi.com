@@ -34,7 +34,8 @@
 
     <p class="list-note">
       {{ len .Data.Terms }} {{ cond (eq (len .Data.Terms) 1) "tag" "tags" }} across
-      {{ len (where .Site.RegularPages "Section" "posts") }} posts.
+      {{ len (where .Site.RegularPages "Section" "posts") }} posts
+      {{- with where .Site.RegularPages "Section" "links" }} and {{ len . }} links{{ end }}.
       <a href="{{ "posts/" | relLangURL }}">All posts</a>
     </p>
   </div>

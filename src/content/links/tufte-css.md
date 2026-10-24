@@ -1,6 +1,7 @@
 ---
 title: "Tufte CSS"
 link: "https://github.com/edwardtufte/tufte-css"
+tags: ["design"]
 date: 2026-10-15T21:00:00+02:00
 ---
 

@@ -1,6 +1,7 @@
 ---
 title: "Lima: Linux virtual machines on macOS"
 link: "https://lima-vm.io/"
+tags: ["linux", "docker", "macos"]
 date: 2026-10-22T09:30:00+02:00
 ---
 

@@ -1,6 +1,7 @@
 ---
 title: "Mutagen: fast file synchronization for remote development"
 link: "https://mutagen.io/"
+tags: ["docker", "macos"]
 date: 2026-09-30T12:00:00+02:00
 via: "[the 2025 Docker benchmarks](/posts/docker-performance-macos-2025/)"
 ---
