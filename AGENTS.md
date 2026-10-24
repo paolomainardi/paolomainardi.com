@@ -91,6 +91,10 @@ Run `just` or `just --list` to see all recipes.
   linked page's title), `link` (its URL), `date`, optional `tags` and `via`,
   and the note as the body. `hugo new links/<slug>.md` uses the archetype. An
   entry without `link` fails the build. Notes are plain Markdown, no HTML.
+- **Posts are written with the `write-post` skill.** `.claude/skills/write-post/`
+  holds the procedure and `voice.md`, Paolo's voice. Drafts must pass
+  `python3 scripts/check-post-style.py <index.md>`: no dashes as punctuation,
+  no marketing words. Opinions in a post come from Paolo, never from the model.
 - **Margin apparatus shortcodes.** `sidenote` (numbered, inline), `marginal`
   (unnumbered block) and `sparkline` (inline numbers, `{{< sparkline "3,5,1" >}}`).
 
