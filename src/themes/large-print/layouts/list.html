@@ -19,25 +19,52 @@
 
     {{ .Content }}
 
+    {{- if $isTerm }}
+    {{- /* A tag page lists its posts first, all of them, on the first page
+           only, then its links, paginated, so a long run of links never
+           buries the posts. */}}
+    {{- $posts := where .Pages "Section" "posts" }}
+    {{- $links := where .Pages "Section" "links" }}
+    {{- $pager := .Paginate $links }}
+    {{- if eq $pager.PageNumber 1 }}
     <ul class="contents-list">
-      {{ range .Paginator.Pages }}
-      <li class="leader">
-        <a class="t" href="{{ .Params.externalLink | default .RelPermalink }}">{{ .Title }}</a>
-        <span class="fill"></span>
-        <span class="n">{{ .Date | time.Format (.Site.Params.contentsDateFormat | default "January 2006") }}</span>
-      </li>
-      {{ end }}
+      {{ range $posts }}{{ template "leader-row" . }}{{ end }}
     </ul>
+    {{- end }}
+    {{- with $links }}
+    <div class="part">Links <span class="part-note">{{ len . }}</span></div>
+    <ul class="contents-list">
+      {{ range $pager.Pages }}{{ template "leader-row" . }}{{ end }}
+    </ul>
+    {{- end }}
+    {{- else }}
+    <ul class="contents-list">
+      {{ range .Paginator.Pages }}{{ template "leader-row" . }}{{ end }}
+    </ul>
+    {{- end }}
 
     {{ partial "pagination.html" . }}
 
     {{ if $isTerm }}
+    {{- $nPosts := len (where .Pages "Section" "posts") }}
+    {{- $nLinks := len (where .Pages "Section" "links") }}
     <p class="list-note">
-      {{ len .Pages }} {{ cond (eq (len .Pages) 1) "post" "posts" }} tagged
+      {{ $nPosts }} {{ cond (eq $nPosts 1) "post" "posts" }}
+      {{- if $nLinks }} and {{ $nLinks }} {{ cond (eq $nLinks 1) "link" "links" }}{{ end }} tagged
       {{ i18n (lower .Title) | default .Title | title }}.
       <a href="{{ "posts/" | relLangURL }}">All posts</a>
     </p>
     {{ end }}
   </div>
 </section>
+{{ end }}
+
+{{- /* One row of a contents list: title, dotted leader, month. A link shows
+       its host after the title. */ -}}
+{{ define "leader-row" }}
+      <li class="leader">
+        <a class="t" href="{{ .Params.externalLink | default .RelPermalink }}">{{ .Title }}{{ if eq .Section "links" }}<span class="link-host">{{ strings.TrimPrefix "www." (urls.Parse .Params.link).Host }}</span>{{ end }}</a>
+        <span class="fill"></span>
+        <span class="n">{{ .Date | time.Format (site.Params.contentsDateFormat | default "January 2006") }}</span>
+      </li>
 {{ end }}

@@ -1,0 +1,25 @@
+{{- /*
+  One entry of the link log: the linked page's title, which goes to the page
+  itself, its host in small type, the note on why it is worth reading, and its
+  tags, which it shares with the posts. The
+  date sits in the outer margin on wide screens and links to the entry's own
+  page, so an entry can be shared. Takes the link page.
+*/ -}}
+{{- $url := .Params.link | default "" -}}
+{{- if not $url }}{{ errorf "links: %s has no link in its front matter" .File.Path }}{{ end -}}
+{{- $host := strings.TrimPrefix "www." (urls.Parse $url).Host -}}
+<article class="link-entry">
+  <div class="link-date"><a href="{{ .RelPermalink }}" title="Permalink">{{ .Date | time.Format "2 Jan" }}</a></div>
+  <h2 class="link-title"><a href="{{ $url | safeURL }}">{{ .Title }}</a><span class="link-host">{{ $host }}</span></h2>
+  <div class="link-note">
+    {{ .Content }}
+    {{- with .Params.via }}
+    <p class="link-via">Via {{ . | $.RenderString (dict "display" "inline") }}</p>
+    {{- end }}
+    {{- with .GetTerms "tags" }}
+    <p class="link-tags">
+      {{- range $i, $t := . }}{{ if $i }} · {{ end }}<a href="{{ $t.RelPermalink }}">{{ $t.LinkTitle }}</a>{{ end -}}
+    </p>
+    {{- end }}
+  </div>
+</article>

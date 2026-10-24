@@ -1,0 +1,62 @@
+{{ define "title" }}Links · {{ site.Title }}{{ end }}
+{{ define "content" }}
+{{- /*
+  The link log: pages worth reading, newest first, grouped by month, each with
+  a short note. Twenty entries per page, under an index of years, each with a
+  sparkline of links per month.
+*/ -}}
+<section class="container list links">
+  <div class="measure">
+    <div class="part">Links <span class="part-note">{{ len .Pages }} so far, newest first</span></div>
+    {{ with .Content }}<div class="links-intro">{{ . }}</div>{{ end }}
+    {{- /* One row per year: a sparkline of links per month, the count, and
+           where the year starts, as the pager page holding its newest month
+           plus that month's anchor. The sparklines share one scale, so the
+           years compare as small multiples. */}}
+    {{- $size := 20 }}
+    {{- $years := slice }}
+    {{- $seen := dict }}
+    {{- $perMonth := dict }}
+    {{- range $i, $p := .Pages.ByDate.Reverse }}
+      {{- $y := string $p.Date.Year }}
+      {{- $k := $p.Date.Format "2006-01" }}
+      {{- $perMonth = merge $perMonth (dict $k (add (index $perMonth $k | default 0) 1)) }}
+      {{- if not (index $seen $y) }}
+        {{- $n := add (div $i $size) 1 }}
+        {{- $at := cond (eq $n 1) $.RelPermalink (printf "%spage/%d/" $.RelPermalink $n) }}
+        {{- $years = $years | append (dict "year" $y "url" (printf "%s#m-%s" $at ($p.Date.Format "2006-01")) "count" (len (where $.Pages "Date.Year" $p.Date.Year))) }}
+        {{- $seen = merge $seen (dict $y true) }}
+      {{- end }}
+    {{- end }}
+    {{- $most := 1 }}
+    {{- range $perMonth }}{{ if gt . $most }}{{ $most = . }}{{ end }}{{ end }}
+    {{- with $years }}
+    <ul class="links-years">
+      {{- range . }}
+      {{- $y := int .year }}
+      {{- $last := cond (eq $y now.Year) (int now.Month) 12 }}
+      {{- $values := slice }}
+      {{- $labels := slice }}
+      {{- range $m := seq 1 $last }}
+        {{- $values = $values | append (index $perMonth (printf "%d-%02d" $y $m) | default 0) }}
+        {{- $labels = $labels | append (time.Format "Jan" (printf "%d-%02d-01" $y $m)) }}
+      {{- end }}
+      <li>
+        <a href="{{ .url }}">{{ .year }}</a>
+        {{- partial "chart/sparkline.html" (dict "values" $values "labels" $labels "width" (mul 9 $last) "height" 20 "max" $most "last" (eq $y now.Year)) }}
+        <span>{{ .count }}</span>
+      </li>
+      {{- end }}
+    </ul>
+    {{- end }}
+    {{- $pager := .Paginate (.Pages.ByDate.Reverse.GroupByDate "January 2006") $size }}
+    {{- range $pager.PageGroups }}
+    <h2 class="links-month" id="m-{{ (index .Pages 0).Date.Format "2006-01" }}">{{ .Key }}</h2>
+    {{- range .Pages }}
+    {{ partial "book/link.html" . }}
+    {{- end }}
+    {{- end }}
+    {{ partial "pagination.html" . }}
+  </div>
+</section>
+{{ end }}

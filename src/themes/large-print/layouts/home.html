@@ -20,6 +20,7 @@
   {{- $standfirst = delimit $parts " · " -}}
 {{- end -}}
 {{- $posts := where .Site.RegularPages "Section" "posts" -}}
+{{- $links := where .Site.RegularPages "Section" "links" -}}
 
 <section class="container home">
   <div class="masthead">
@@ -48,6 +49,21 @@
         <a class="t" href="{{ .Params.externalLink | default .RelPermalink }}">{{ .Title }}</a>
         <span class="fill"></span>
         <span class="n">{{ .Date | time.Format (.Site.Params.contentsDateFormat | default "January 2006") }}</span>
+      </li>
+      {{ end }}
+    </ul>
+    {{ end }}
+
+    {{- /* The five newest links, with the host where a date would sit. The
+           title goes to the linked page; the note is one click away. */}}
+    {{ with $links }}
+    <div class="part">Links <span class="part-note"><a href="{{ "links/" | relLangURL }}">all {{ len $links }}, with notes</a></span></div>
+    <ul class="contents-list">
+      {{ range first 5 . }}
+      <li class="leader">
+        <a class="t" href="{{ .RelPermalink }}">{{ .Title }}</a>
+        <span class="fill"></span>
+        <span class="n">{{ strings.TrimPrefix "www." (urls.Parse .Params.link).Host }}</span>
       </li>
       {{ end }}
     </ul>

@@ -12,6 +12,9 @@ enableEmoji = true
 [pagination]
 pagerSize = 20
 
+[services.rss]
+limit = 50
+
 [module]
 [[module.imports]]
 path = "cj.rs/gohugo-asciinema"
@@ -74,12 +77,16 @@ name = "Posts"
 weight = 1
 url = "posts/"
 [[menu.main]]
-name = "Talks"
+name = "Links"
 weight = 2
+url = "links/"
+[[menu.main]]
+name = "Talks"
+weight = 3
 url = "/talks"
 [[menu.main]]
 name = "About"
-weight = 3
+weight = 4
 url = "/about"
 
 [markup]

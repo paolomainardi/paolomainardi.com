@@ -26,6 +26,7 @@
 //   5.  Footer
 //   6.  Home
 //   7.  Index with leaders
+//   7b. Links
 //   8.  Post opener
 //   9.  Reading type
 //   10. Apparatus in the margin
@@ -771,7 +772,6 @@ body:has(.container.home) .navigation .navigation-title {
   list-style: none;
 }
 
-.list ul,
 .list ul:not(.pagination) {
   margin: 0;
   padding: 0;
@@ -916,11 +916,31 @@ body:has(.container.home) .navigation .navigation-title {
   }
 }
 
+// Page numbers in one line: first, previous, the pages around the current
+// one, next, last. The current page is in ink, the others are links.
 .pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.6rem;
   margin: 4.8rem 0 0;
+  padding: 1.6rem 0 0;
+  border-top: 1px solid var(--rule);
+  list-style: none;
   font-size: 1.7rem;
+  font-variant-numeric: lining-nums tabular-nums;
+
+  li {
+    margin: 0;
+    color: var(--ink-3);
+  }
+
+  [aria-current] {
+    font-weight: 600;
+    color: var(--ink);
+  }
 
   a {
+    text-decoration: none;
     color: var(--ink-2);
 
     &:hover,
@@ -928,6 +948,155 @@ body:has(.container.home) .navigation .navigation-title {
       color: var(--blush);
     }
   }
+}
+
+// -----------------------------------------------------------------------------
+// 7b. Links
+//
+// The link log. Each entry is the linked page's title in the reading face, its
+// host in small type, and a short note in body text. The date goes in the
+// outer margin like any apparatus, and links to the entry's own page.
+// -----------------------------------------------------------------------------
+
+.links-intro p {
+  margin: 0 0 2.4rem;
+  color: var(--ink-2);
+}
+
+.links-month {
+  margin: 4rem 0 0;
+  font-size: 1.5rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ink-3);
+}
+
+.link-entry {
+  position: relative;
+  padding: 1.6rem 0 2rem;
+  border-bottom: 1px solid var(--rule);
+
+  &:last-of-type {
+    border-bottom: 0;
+  }
+}
+
+.link-date {
+  margin-bottom: 0.4rem;
+  font-size: 1.4rem;
+  color: var(--ink-3);
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--blush);
+    }
+  }
+
+  @media only screen and (min-width: 1200px) {
+    position: absolute;
+    top: 2.3rem;
+    left: calc(var(--offset) * -1);
+    width: var(--apparatus);
+    margin: 0;
+    text-align: right;
+  }
+}
+
+.link-title {
+  margin: 0 0 0.8rem;
+  font-size: 2.2rem;
+  line-height: 1.3;
+  font-weight: 600;
+
+  // The same accent underline as a link in prose: half strength at rest,
+  // full blush on hover. The title is the one thing to click.
+  a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-thickness: 0.06em;
+    text-decoration-color: color-mix(in srgb, var(--blush) 55%, transparent);
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color 0.15s ease, color 0.15s ease;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--blush);
+      text-decoration-color: var(--blush);
+    }
+  }
+}
+
+.link-host {
+  margin-left: 0.8rem;
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.link-note {
+  p {
+    margin: 0 0 0.8rem;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.link-via,
+.link-tags {
+  font-size: 1.5rem;
+  color: var(--ink-3);
+}
+
+.link-tags a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--rule-2);
+  text-underline-offset: 0.2em;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--blush);
+    text-decoration-color: var(--blush);
+  }
+}
+
+// The year index above the log: one row per year, its sparkline of links per
+// month on a scale shared by every year, and its count. The sparklines start
+// at the same x, so the years read as small multiples.
+.links-years {
+  display: grid;
+  grid-template-columns: max-content max-content max-content;
+  align-items: center;
+  gap: 0.2rem 1.2rem;
+  margin: 0 0 1.6rem;
+  padding: 0;
+  list-style: none;
+  font-size: 1.6rem;
+
+  li {
+    display: contents;
+  }
+
+  .sparkline {
+    margin: 0;
+  }
+
+  span {
+    font-size: 1.4rem;
+    color: var(--ink-3);
+  }
+}
+
+// In a tag listing, a link shows its host after the title.
+.leader .t .link-host {
+  font-size: 1.4rem;
 }
 
 // -----------------------------------------------------------------------------
