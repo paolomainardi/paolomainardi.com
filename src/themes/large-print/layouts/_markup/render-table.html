@@ -4,7 +4,29 @@
   The table number sits in the apparatus, in the outer margin on wide screens.
   The table itself scrolls sideways on narrow ones. A caption attribute, when
   block attributes are enabled, becomes a real caption element.
+
+  A column whose body cells are all numbers, optionally a range or with a short
+  unit ("3.38", "5.20-5.23", "16 GB", "742%"), gets the numeric class so its digits
+  align on the right. An alignment written in the markdown always wins.
 */ -}}
+{{- $numeric := `^[~≈<>±+−-]?\s*\d[\d.,]*(\s*[-–]\s*\d[\d.,]*)?\s*(%|[a-zA-Zµ]{1,4})?$` -}}
+{{- $cols := 0 -}}
+{{- range .THead }}{{ if gt (len .) $cols }}{{ $cols = len . }}{{ end }}{{ end -}}
+{{- $num := slice -}}
+{{- range $i := cond (gt $cols 0) (seq 0 (sub $cols 1)) slice -}}
+  {{- $seen := 0 -}}
+  {{- $ok := true -}}
+  {{- range $.TBody -}}
+    {{- if lt $i (len .) -}}
+      {{- $t := (index . $i).Text | plainify | htmlUnescape | strings.TrimSpace -}}
+      {{- if $t -}}
+        {{- $seen = add $seen 1 -}}
+        {{- if not (findRE $numeric $t 1) }}{{ $ok = false }}{{ end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $num = $num | append (and $ok (gt $seen 0)) -}}
+{{- end -}}
 <div class="tabular">
   <span class="apparatus"><span class="num"></span></span>
   <div class="tabular-scroll">
@@ -12,8 +34,8 @@
       <thead>
         {{- range .THead }}
         <tr>
-          {{- range . }}
-          <th{{ with .Alignment }} style="text-align: {{ . }}"{{ end }}>{{ .Text }}</th>
+          {{- range $i, $c := . }}
+          <th{{ with $c.Alignment }} style="text-align: {{ . }}"{{ else }}{{ if and (lt $i (len $num)) (index $num $i) }} class="numeric"{{ end }}{{ end }}>{{ $c.Text }}</th>
           {{- end }}
         </tr>
         {{- end }}
@@ -21,8 +43,8 @@
       <tbody>
         {{- range .TBody }}
         <tr>
-          {{- range . }}
-          <td{{ with .Alignment }} style="text-align: {{ . }}"{{ end }}>{{ .Text }}</td>
+          {{- range $i, $c := . }}
+          <td{{ with $c.Alignment }} style="text-align: {{ . }}"{{ else }}{{ if and (lt $i (len $num)) (index $num $i) }} class="numeric"{{ end }}{{ end }}>{{ $c.Text }}</td>
           {{- end }}
         </tr>
         {{- end }}

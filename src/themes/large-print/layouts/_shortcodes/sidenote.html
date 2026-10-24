@@ -1,0 +1,10 @@
+{{- /*
+  Numbered sidenote.
+
+  Written inline, where the reference mark belongs:
+  "the bind mount{{< sidenote >}}A directory shared with the host.{{< /sidenote >}} is slow."
+  The number is a CSS counter, so notes renumber themselves. Above 1200px the
+  note sits in the outer margin level with its line; below that it follows the
+  sentence as a short indented block.
+*/ -}}
+<span class="sidenote-ref" aria-hidden="true"></span><span class="sidenote" role="note">{{ .Inner | .Page.RenderString (dict "display" "inline") }}</span>
