@@ -1,5 +1,5 @@
 +++
-date = "2026-10-24"
+date = "2026-10-24T21:00:00+02:00"
 title = "DruBOM: next generation supply chain security for Drupal"
 slug = "drubom-next-gen-drupal-supply-chain-security"
 tags = ["ai", "agents", "drupal", "supply-chain", "security", "sbom"]
