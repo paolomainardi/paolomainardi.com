@@ -12,6 +12,8 @@
                a whisker through the mark
     highlight  optional series drawn in the accent, with its values labelled;
                without series, the row category drawn that way
+    label      optional comma separated series (or row categories) whose
+               values are labelled too, without the accent
     unit       optional unit for the last tick and the hover titles
     from       "0" (default) starts the scale at zero, "auto" at the data
 
@@ -86,7 +88,8 @@
       {{- end }}
       {{- $hot := or (and $name (eq $name $p.highlight)) (and (not $p.series) (eq $cat $p.highlight)) }}
       <span class="chart-mark {{ cond $hot "circle hot" (index $shapeOf $name | default "circle") }}" style="{{ printf "left: %.2f%%" $x | safeCSS }}" title="{{ $title }}"></span>
-      {{- if $hot }}
+      {{- $labelled := in (split $p.label ",") (cond (ne $name "") $name $cat) }}
+      {{- if or $hot $labelled }}
       <span class="chart-value" style="{{ printf "left: %.2f%%" $labelAt | safeCSS }}">{{ $v }}</span>
       {{- end }}
       {{- end }}

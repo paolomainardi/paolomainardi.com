@@ -23,7 +23,7 @@
   the picture.
 */ -}}
 {{- $p := dict -}}
-{{- range slice "y" "x" "series" "lo" "hi" "highlight" "unit" "from" "facet" "axis" -}}
+{{- range slice "y" "x" "series" "lo" "hi" "highlight" "label" "unit" "from" "facet" "axis" -}}
   {{- $p = merge $p (dict . ($.Get . | default "")) -}}
 {{- end -}}
 {{- $notes := dict -}}

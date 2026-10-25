@@ -81,7 +81,8 @@ Run `just` or `just --list` to see all recipes.
   ```
 
   `type` is `dot`, `bar` or `slope`. `facet="<column>"` splits a dot or bar
-  chart into small multiples, `axis` writes a title under the axis (the unit
+  chart into small multiples, `label` prints the values of more series or
+  rows next to the highlighted one, `axis` writes a title under the axis (the unit
   and which way is better), and `notes` points at a two column CSV of label
   and note, printed under each label. The parameters are documented at the top
   of `layouts/_shortcodes/chart.html` and the partials in

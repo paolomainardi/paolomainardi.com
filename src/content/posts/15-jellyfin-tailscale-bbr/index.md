@@ -134,7 +134,7 @@ Rolling back is one command: `sysctl -w net.ipv4.tcp_congestion_control=cubic` i
 
 Every number below comes from `ss -tni` on the same socket, sampled every few seconds while the movie played: twice with CUBIC, four times with BBR. They are samples from one evening on one path, not a benchmark.
 
-{{< chart type="dot" data="throughput.csv" y="measure" x="median" lo="min" hi="max" highlight="BBR" unit=" Mbps" axis="Megabits per second, more is faster" notes="throughput-notes.csv" >}}
+{{< chart type="dot" data="throughput.csv" y="measure" x="median" lo="min" hi="max" highlight="BBR" label="CUBIC" unit="Mbps" axis="Megabits per second, more is faster" notes="throughput-notes.csv" >}}
 Delivery rate of the connection to the Apple TV. CUBIC stayed under the bitrate of the file; BBR was about ten times faster at the median, on the same path.
 {{< /chart >}}
 
