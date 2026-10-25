@@ -95,7 +95,7 @@ That also explains the confusion. Tailscale looked guilty because the slow conne
 
 LXC containers share the host kernel, but each container has its **own network namespace**, and the congestion control setting is per namespace. That means BBR can be turned on for the proxy, the container that sends the video, and nowhere else.
 
-Before saying yes, I asked one question: could this cut me off from the NAS? Losing the remote connection was the only risk I cared about, with a KVM as the last resort. The answer was no: loading the module only makes BBR **available**. The host default stays CUBIC, so SSH and the Tailscale container are untouched.
+Loading the module only makes BBR **available**. The host default stays CUBIC, so SSH and the Tailscale container are untouched.
 
 An unprivileged container cannot load kernel modules, so the module goes on the host first:
 
