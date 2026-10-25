@@ -115,6 +115,10 @@ done'
 
 `ss -tni` prints what the kernel knows about each TCP connection: the algorithm, the round trip, the congestion window, the bytes retransmitted and the **delivery rate**, the speed the receiver is actually acknowledging. The `bytes_sent` filter keeps only the connection carrying megabytes, the video, and skips the small API calls next to it. Sampling every few seconds turns it into a cheap time series. The same loop, after the switch to BBR, gave the numbers further down.
 
+{{< notice info "Stop and look at this" >}}
+Read those two commands again. Pick the right ciphers so the CPU is not the bottleneck, use incompressible data so nothing cheats, find the one socket that matters inside a container, and read the kernel's own congestion state from it while the movie plays. This is deep Linux networking knowledge, the work of a network engineer, and the model reached for it on its own in a few minutes, from a phone. Honestly, this is absurd.
+{{< /notice >}}
+
 ## Why CUBIC was stuck
 
 The path to the remote location loses packets. Later, with BBR, about **3%** of the data had to be retransmitted. CUBIC never pushes the path that hard. Each loss cuts the window, the window never grows past a few dozen packets, and the connection settles at a fraction of what the path can carry.
