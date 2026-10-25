@@ -1797,11 +1797,13 @@ body:has(.container.home) .navigation .navigation-title {
   font-size: inherit;
 }
 
-// Shown whole, never cropped. The contents block sits above it, so a tall
-// image no longer pushes the contents below the fold.
+// Shown whole, never cropped, and always as wide as the column: with srcset on
+// a dense phone screen, width auto drew it at a third of the column. The
+// contents block sits above it, so a tall image no longer pushes the contents
+// below the fold.
 .post-content > .frontispiece {
   display: block;
-  width: auto;
+  width: 100%;
   max-width: 100%;
   height: auto;
   margin: 0 0 4rem;
