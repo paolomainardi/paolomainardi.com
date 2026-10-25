@@ -143,14 +143,18 @@ pct exec 102 -- sysctl -w net.ipv4.tcp_congestion_control=bbr
 
 No restart is needed. The setting applies to **new** connections, and Infuse opens new ones all the time, so stopping and starting the movie was enough. BBR also ran fine on the existing `fq_codel` queue.
 
-Then the same socket again:
+Then the same `ss -tni` loop again, on the same kind of socket. Side by side, before and after:
 
-```text
-bbr ... rtt:35.397 cwnd:3256 bytes_retrans:5273032 bytes_acked:168143702
-        pacing_rate 337155528bps
-```
+| `ss -tni` field | CUBIC | BBR |
+| :-- | --: | --: |
+| `rtt` | 30.8 ms | 35.4 ms |
+| `cwnd` (packets) | 68 | 3,256 |
+| `bytes_acked` | 20.1 MB | 168.1 MB |
+| `bytes_retrans` | 8.6 kB (0.04%) | 5.3 MB (3.1%) |
+| `delivery_rate` | 22.1 Mbps | 112.9 Mbps |
+| `pacing_rate` | not set | 337.2 Mbps |
 
-A window of over **3,000 packets**, about 168 MB delivered in 25 seconds, and smooth playback.
+A window almost **50 times larger**, about 168 MB delivered in 25 seconds, and smooth playback. The round trip barely moved: the path was the same, only the sender's behaviour changed. The delivery rate in a single sample swings a lot with BBR, between 88 and 343 Mbps across the four samples, which is why the chart below uses the median.
 
 To make it survive a reboot, two files:
 
