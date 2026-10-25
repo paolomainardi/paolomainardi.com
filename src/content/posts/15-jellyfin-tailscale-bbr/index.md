@@ -1,6 +1,6 @@
 +++
 date = "2026-10-25"
-title = "How to improve (a lot) TCP streaming for Jellyfin on a Tailscale network"
+title = "How to make Jellyfin streaming over Tailscale ten times faster"
 description = "Why a 4K stream stalled at 20 Mbps over Tailscale, and how switching one container from CUBIC to BBR took it past 100 Mbps."
 slug = "improve-tcp-streaming-jellyfin-tailscale-bbr"
 tags = ["linux", "networking", "tcp", "tailscale", "proxmox", "homelab", "ai", "agents"]
