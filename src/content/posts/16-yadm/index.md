@@ -1,5 +1,5 @@
 +++
-date = "2026-10-25T23:55:00+01:00"
+date = "2026-10-26T00:01:00+01:00"
 title = "How I manage my dotfiles with yadm"
 description = "Six years and more than a thousand commits of dotfiles in one git repository, kept with yadm, a tool that is just git with your home directory as the work tree."
 slug = "manage-dotfiles-with-yadm"
