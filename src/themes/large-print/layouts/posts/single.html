@@ -3,6 +3,7 @@
 {{ end }}
 {{ define "content" }}
 {{- $topics := partial "book/topics.html" (dict "page" . "limit" 3) -}}
+{{- $series := partial "book/series.html" . -}}
 <section class="container post">
     {{- /* Reading position for narrow screens, where the section rail cannot
            exist. Pure CSS, driven by the scroll timeline. */ -}}
@@ -25,6 +26,9 @@
             </div>
             {{ with (or .Params.subtitle .Params.description) }}
             <div class="byline">{{ . }}</div>
+            {{ end }}
+            {{ with $series }}
+            <p class="series-line">Part {{ .part }} of {{ .total }} · <a href="#series">{{ .title }}</a></p>
             {{ end }}
         </header>
 
@@ -66,19 +70,53 @@
             {{ with .GetTerms "tags" }}{{ partial "terms-line.html" (dict "terms" . "class" "tag") }}{{ end }}
         </div>
 
+        {{- /* The parts published so far, the current one marked and not a
+               link. Same leader rows as the archive, with the part number in
+               front and the date where a page number would sit. */ -}}
+        {{ with $series }}
+        <nav class="series" id="series" aria-labelledby="series-title">
+            <p class="part">Series</p>
+            <p class="series-title" id="series-title">{{ .title }} <span class="series-count">{{ len .parts }} of {{ .total }} published</span></p>
+            {{ with .description }}<p class="series-note">{{ . }}</p>{{ end }}
+            <ol class="contents-list series-parts">
+                {{ range .parts }}
+                <li class="leader">
+                    <span class="series-n">{{ .n }}</span>
+                    {{ if eq .page $ }}
+                    <span class="t" aria-current="page">{{ .page.Title }}</span>
+                    {{ else }}
+                    <a class="t" href="{{ .page.RelPermalink }}">{{ .page.Title }}</a>
+                    {{ end }}
+                    <span class="fill"></span>
+                    <span class="n">{{ .page.Date | time.Format "January 2" }}</span>
+                </li>
+                {{ end }}
+            </ol>
+        </nav>
+        {{ end }}
+
+        {{- /* In a series the neighbours are the adjacent published parts.
+               Where there is none, the slot falls back to the neighbour in
+               the section, under its usual label. */ -}}
         {{ $prev := .PrevInSection }}
         {{ $next := .NextInSection }}
+        {{ $prevLabel := "Previously" }}
+        {{ $nextLabel := "Next" }}
+        {{ with $series }}
+        {{ with .prev }}{{ $prev = .page }}{{ $prevLabel = printf "Part %d" .n }}{{ end }}
+        {{ with .next }}{{ $next = .page }}{{ $nextLabel = printf "Part %d" .n }}{{ end }}
+        {{ end }}
         {{ if or $prev $next }}
         <nav class="post-nav" aria-label="More posts">
             <div class="post-nav-item post-nav-prev">
                 {{ with $prev }}
-                <span class="post-nav-label">Previously</span>
+                <span class="post-nav-label">{{ $prevLabel }}</span>
                 <a href="{{ .RelPermalink }}">{{ .Title }}</a>
                 {{ end }}
             </div>
             <div class="post-nav-item post-nav-next">
                 {{ with $next }}
-                <span class="post-nav-label">Next</span>
+                <span class="post-nav-label">{{ $nextLabel }}</span>
                 <a href="{{ .RelPermalink }}">{{ .Title }}</a>
                 {{ end }}
             </div>

@@ -1,0 +1,14 @@
+# Series of posts, keyed by the value a post sets in `series`.
+#
+# Fields
+#   title        the series name, shown on every part
+#   parts        how many parts are planned, for "Part 3 of 16"
+#   description  optional, one line under the series name at the end of a part
+#
+# A post joins a series with `series = "<key>"` and `series_part = <n>` in its
+# front matter. An unknown key, a missing or out of range part number, or two
+# posts with the same part number fail the build.
+
+workstation:
+  title: My Linux Workstation, Versioned
+  parts: 16
