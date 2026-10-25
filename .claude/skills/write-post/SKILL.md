@@ -42,8 +42,11 @@ for every sentence.
 4. **Draft the post** in `src/content/posts/<n>-<slug>/index.md`, `<n>` being
    the next number after the highest existing post. Front matter in TOML, with
    a one sentence `description` (the subtitle under the title) and
-   `draft = "true"` until he approves. Write each section from the facts and
-   his answers, in voice.md's voice.
+   `draft = "true"` until he approves. A part of a series also sets
+   `series = "<key>"` and `series_part = <n>`, the key being an entry in
+   `src/data/series.yaml` (`title`, planned `parts`, optional `description`);
+   add the entry first if the series is new. Write each section from the facts
+   and his answers, in voice.md's voice.
 5. **Add figures and charts.**
    - **A cover**, when the post needs one, comes from the `generate-image`
      skill.

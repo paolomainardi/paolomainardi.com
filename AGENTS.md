@@ -98,6 +98,12 @@ Run `just` or `just --list` to see all recipes.
 - **Images are generated with the `generate-image` skill.**
   `.claude/skills/generate-image/` holds the palette, the illustration style
   and the steps: ask Paolo first, generate with Codex, convert to WebP.
+- **Series are data.** A post joins a series with `series = "<key>"` and
+  `series_part = <n>` in its front matter. The key names an entry in
+  `src/data/series.yaml` with `title`, `parts` (the planned total, for "Part 3
+  of 16") and an optional one line `description`. An unknown key, a missing or
+  out of range part, or two posts with the same part fail the build. Only non
+  draft parts are listed and linked.
 - **Margin apparatus shortcodes.** `sidenote` (numbered, inline), `marginal`
   (unnumbered block) and `sparkline` (inline numbers, `{{< sparkline "3,5,1" >}}`).
 
@@ -113,6 +119,7 @@ Run `just` or `just --list` to see all recipes.
 | `.../large-print/layouts/_partials/book/` | Design specific partials                   |
 | `src/layouts/robots.txt`          | The only site level template                       |
 | `src/data/talks.yaml`             | The talks index                                    |
+| `src/data/series.yaml`            | Series titles and planned part counts              |
 | `src/content/posts/<n>-<slug>/`   | One directory per post, `index.md` inside          |
 | `src/content/links/<slug>.md`     | One file per link, the note as the body            |
 | `src/assets/images/posts/`        | Post images, measured at build time                |

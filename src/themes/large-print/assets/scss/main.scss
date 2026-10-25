@@ -37,6 +37,7 @@
 //   14. Notes and cautions
 //   15. Margin notes
 //   16. Contents block
+//   16d. Series
 //   17. Footnotes
 //   18. Syntax palette
 //   19. Print
@@ -1153,11 +1154,13 @@ body:has(.container.home) .navigation .navigation-title {
     margin-left: var(--offset);
   }
 
-  .kicker {
+  // The series line under the title reads like the kicker above it.
+  .kicker,
+  .series-line {
     font-size: 1.6rem;
     line-height: 1.5;
     color: var(--ink-3);
-    margin-bottom: 1.2rem;
+    margin: 0 0 1.2rem;
 
     a {
       color: var(--ink-3);
@@ -1205,6 +1208,10 @@ body:has(.container.home) .navigation .navigation-title {
     font-style: italic;
     color: var(--ink-2);
     margin-top: 1.2rem;
+  }
+
+  .series-line {
+    margin: 1.6rem 0 0;
   }
 }
 
@@ -2817,6 +2824,96 @@ dialog.zoom {
     line-height: 1.55;
     color: var(--ink-2);
   }
+}
+
+// -----------------------------------------------------------------------------
+// 16d. Series
+//
+// The parts of a series published so far, at the end of a part. A hairline
+// above, the label in the apparatus margin like the contents block, and the
+// parts as leader rows, numbered. The current part is ink and semibold rather
+// than a link, so it is marked by weight, not by colour.
+// -----------------------------------------------------------------------------
+
+.series {
+  position: relative;
+  max-width: var(--measure);
+  margin: 4.8rem 0 0;
+  padding-top: 2.4rem;
+  border-top: 1px solid var(--rule);
+
+  @media only screen and (min-width: 1200px) {
+    margin-left: var(--offset);
+  }
+
+  > .part {
+    margin: 0 0 1.4rem;
+    padding: 0;
+    border: 0;
+
+    @media only screen and (min-width: 1200px) {
+      position: absolute;
+      top: 2.6rem;
+      left: calc(var(--offset) * -1);
+      width: var(--apparatus);
+      margin: 0;
+      text-align: right;
+    }
+  }
+
+  .leader .t[aria-current] {
+    font-weight: 600;
+  }
+
+  // Where leader rows stack, the number hangs in the indent so a wrapped
+  // title and its date line up under the first word.
+  @media only screen and (max-width: 560px) {
+    .leader {
+      position: relative;
+      padding-left: 2.4rem;
+    }
+
+    .series-n {
+      position: absolute;
+      left: 0;
+    }
+  }
+}
+
+.series-title {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+// On its own line, so a narrow screen never breaks it after the number.
+.series-count {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
+.series-note {
+  margin: 0.4rem 0 0;
+  font-size: 1.7rem;
+  line-height: 1.45;
+  font-style: italic;
+  color: var(--ink-2);
+}
+
+.series-parts {
+  margin-top: 1.2rem;
+}
+
+.series-n {
+  flex: 0 0 2.4rem;
+  font-size: 1.6rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
 }
 
 // -----------------------------------------------------------------------------

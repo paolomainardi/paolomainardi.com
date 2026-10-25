@@ -1,0 +1,46 @@
+{{- /*
+  Series context for a post.
+
+  Returns an empty dict for a post outside a series, so `with` skips it.
+  Otherwise returns the series title, description and planned part count from
+  data/series.yaml, this post's part number, the published parts sorted by
+  number, and the previous and next published parts.
+
+  A part is published when its page exists and is not a draft. The current page
+  is always included, so a draft previewed on the dev server still finds itself.
+  Validation lives here because every series post passes through it: an
+  unknown key, a missing or out of range part, or a duplicate part fails the
+  build.
+*/ -}}
+{{- $ctx := dict -}}
+{{- with .Params.series -}}
+  {{- $key := . -}}
+  {{- $s := index hugo.Data.series $key -}}
+  {{- $total := 0 -}}
+  {{- $part := 0 -}}
+  {{- if not $s }}{{ errorf "series: unknown series %q in %s, add it to data/series.yaml" $key $.File.Path -}}
+  {{- else if not (and $s.title $s.parts) }}{{ errorf "series: %q in data/series.yaml needs title and parts" $key -}}
+  {{- else if not $.Params.series_part }}{{ errorf "series: %s is in series %q but sets no series_part" $.File.Path $key -}}
+  {{- else -}}
+    {{- $total = int $s.parts -}}
+    {{- $part = int $.Params.series_part -}}
+    {{- if or (lt $part 1) (gt $part $total) }}{{ errorf "series: series_part %d in %s is outside 1 to %d" $part $.File.Path $total }}{{ end -}}
+  {{- end -}}
+  {{- $parts := slice -}}
+  {{- range where site.RegularPages "Params.series" $key -}}
+    {{- $n := int .Params.series_part -}}
+    {{- if and (eq $n $part) (ne . $) }}{{ errorf "series: %s and %s are both part %d of %q" $.File.Path .File.Path $n $key }}{{ end -}}
+    {{- if or (not .Draft) (eq . $) }}{{ $parts = $parts | append (dict "n" $n "page" .) }}{{ end -}}
+  {{- end -}}
+  {{- $parts = sort $parts "n" -}}
+  {{- $prev := false -}}
+  {{- $next := false -}}
+  {{- range $parts -}}
+    {{- if lt .n $part }}{{ $prev = . }}{{ end -}}
+    {{- if and (gt .n $part) (not $next) }}{{ $next = . }}{{ end -}}
+  {{- end -}}
+  {{- $ctx = dict "title" $s.title "description" ($s.description | default "") "total" $total "part" $part "parts" $parts "prev" $prev "next" $next -}}
+{{- else -}}
+  {{- with .Params.series_part }}{{ errorf "series: %s sets series_part but no series" $.File.Path }}{{ end -}}
+{{- end -}}
+{{- return $ctx -}}

@@ -271,6 +271,18 @@ components:
   sparkline:
     textColor: "{colors.ink-muted}"
     height: 14px
+  series-line:
+    textColor: "{colors.ink-faint}"
+    typography: "{typography.meta}"
+  series-title:
+    textColor: "{colors.ink}"
+    typography: "{typography.h4}"
+  series-count:
+    textColor: "{colors.ink-faint}"
+    typography: "{typography.meta}"
+  series-number:
+    textColor: "{colors.ink-faint}"
+    typography: "{typography.meta}"
 ---
 
 ## Overview
@@ -471,6 +483,22 @@ errors were coloured, in blush, and every other kind stayed in ink.
 **Contents leader.** A title, a dotted leader, and the date where a page number
 would sit. Aligned on the last baseline so a title that wraps still has its rule
 beside the closing line. Below 560px it stacks and the leader is dropped.
+
+**Series.** A post that belongs to a series says so twice, quietly. Under the
+title and byline, a line in the meta style: "Part 3 of 16 · My Linux
+Workstation, Versioned", the series name linking down to the list at the end.
+After the tags, under a hairline, the series name in semibold, how many parts
+are out ("3 of 16 published") in faint ink below it, and the published parts
+as contents leader rows, each with its part number in front and its date where
+a page number would sit. The label "Series" sits in the apparatus margin above
+1200px, like the contents label. The current part is semibold ink and not a
+link, so it is marked by weight rather than colour. Below 560px the rows stack
+like any leader and the number hangs in the indent. The post navigation under
+it then points at the previous and next published parts, labelled "Part 2" and
+"Part 4"; where there is no such part, that side falls back to the neighbouring
+post under its usual label. The planned total comes from `data/series.yaml`, so
+"of 16" is right before the parts exist. A post outside a series renders
+exactly as before.
 
 **Contents.** A disclosure. Open above 900px, where it is two columns and
 compact, closed below, where a single column of section links filled most of the
