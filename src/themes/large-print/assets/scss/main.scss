@@ -2007,6 +2007,7 @@ dialog.zoom {
 
   &.before {
     transform: translate(calc(-100% - 1rem), -50%);
+    color: var(--paper);
   }
 }
 
