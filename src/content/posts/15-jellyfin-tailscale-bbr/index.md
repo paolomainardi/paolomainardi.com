@@ -18,7 +18,7 @@ My **Jellyfin** server streams to an Apple TV in another city over **Tailscale**
 
 It was a Sunday evening. I was on the couch, with my phone, and my Apple TV was stuttering on a 4K movie streamed from my NAS, which sits in another city.
 
-I did not have a theory. I opened a [Claude Code Remote Control](https://code.claude.com/docs/en/remote-control) session on my workstation from the phone and told the agent to investigate: first the Proxmox host, then the container where Jellyfin runs. About fifteen minutes later the stream was smooth, the fix was persistent and committed to the repository that holds the NAS configuration.
+My theory was the CPU: a small Intel N5095 that could not keep up transcoding some big 4K files. I opened a [Claude Code Remote Control](https://code.claude.com/docs/en/remote-control) session on my workstation from the phone and told the agent to investigate: first the Proxmox host, then the container where Jellyfin runs. About fifteen minutes later the stream was smooth, the fix was persistent and committed to the repository that holds the NAS configuration.
 
 This post is about what it found, because the answer is not where I expected it, and it applies to anyone serving video, backups or large files over a VPN with some packet loss on the way.
 
@@ -64,7 +64,7 @@ BBR only needs to change on the **sender**. The receiver, my Apple TV, does not 
 
 The agent started from the server and moved outwards, ruling things out one at a time:
 
-- **Not transcoding.** Infuse was using **direct play**: Jellyfin was sending the file as it is, a 22.5 GB HEVC Main10 file with Dolby Vision, about **25 Mbps** on average and well above that in the 4K peaks.
+- **Not the CPU.** My theory was wrong from the first check. Infuse was using **direct play**, so nothing was transcoded: Jellyfin was sending the file as it is, a 22.5 GB HEVC Main10 file with Dolby Vision, about **25 Mbps** on average and well above that in the 4K peaks.
 - **Not the NAS.** CPU and disks were idle, and the NAS uplink measures about 900 Mbps. Jellyfin had data **queued in the socket**, waiting to go out: the server was faster than the network.
 - **Not a relay.** This was my first suspect. Tailscale tries to connect devices [directly, punching through NAT](https://tailscale.com/blog/how-nat-traversal-works/), and when that fails it falls back to a **DERP relay**, which [adds latency and caps throughput](https://tailscale.com/kb/1638/poor-performance-tailnet) to stay fair to everyone. `tailscale ping` shows which one you get:
 
