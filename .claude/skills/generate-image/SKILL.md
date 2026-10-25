@@ -37,6 +37,9 @@ in the post as WebP. Paolo approves every image before it is merged.
   tree. A joke that does not map to the concept is not enough.
 - **Each post gets its own scene.** Reuse the style and the palette, never a
   previous cover's composition. Containers can recur for container posts.
+- **A figure that stands for Paolo is never a woman.** Draw the author as a
+  neutral adult or a man, seen from behind or in profile, never a portrait.
+  Say so in the prompt: image models default the writer at a desk to a woman.
 - **No text** in the image: no letters, numbers, logos or watermarks.
 - **No private data**: no real people, customer names, hostnames, addresses,
   or anything from Paolo's network.
