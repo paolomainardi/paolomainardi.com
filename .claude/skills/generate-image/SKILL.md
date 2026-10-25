@@ -20,6 +20,13 @@ in the post as WebP. Paolo approves every image before it is merged.
 - **The style is calm and editorial.** Loose ink line and light watercolour
   wash on lots of white paper, like a botanical sketch or an architect's
   watercolour study. Simple, few elements, generous empty space, bright.
+- **The reference look is a soft Japanese watercolour.** Warm wood, stone and
+  paper tones, clean ink outlines, gentle washes, objects drawn with care, the
+  calm of a picture book background. Architectural cross-sections and still
+  scenes suit it well. The published covers of "docker run --init" (a gardener
+  in a container) and "Docker on MacOS is slow" (a container at sea on a
+  laptop) are in this style: look at them before writing a prompt. This is a
+  painting style for scenes and objects, never anime characters.
 - **Do not pick another style or mood yourself.** No anime, manga, chibi,
   comic, cartoon faces, big eyes, 3D render, photorealism, glossy highlights,
   or a dark and eerie mood. Paolo rejected each of these. Leave the default
