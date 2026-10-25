@@ -85,6 +85,36 @@ cubic ... rtt:30.765/1.382 mss:1228 cwnd:68 ssthresh:46 bytes_retrans:8596
 
 A congestion window of **68 packets** at a 30 millisecond round trip: about **22 Mbps**, below the average bitrate of the file. The player drains its buffer faster than the network fills it, and the movie stops.
 
+### How the agent measured it
+
+No benchmark tool was installed on the NAS, and the agent did not install one. It used what was already there, in two ways.
+
+**The tunnel, with SSH and random bytes.** To know whether Tailscale itself was slow, it pulled 300 MB of random data from the NAS to my workstation over the tailnet, and timed it:
+
+```bash
+s=$(date +%s.%N)
+ssh -c aes128-gcm@openssh.com nas 'head -c 300000000 /dev/urandom' | wc -c
+e=$(date +%s.%N)
+python3 -c "print(f'{300e6*8/($e-$s)/1e6:.0f} Mbps')"
+# 567 Mbps
+# 672 Mbps
+```
+
+Random data cannot be compressed on the way, and AES-GCM is cheap on modern CPUs, so the number is close to what one TCP connection through the tunnel can carry. Two runs, 567 and 672 Mbps: the tunnel was not the problem.
+
+**The real stream, from the kernel.** A synthetic test says what the path can do, not what the player gets. So the agent read the live socket instead, from inside the proxy container, while the movie was playing:
+
+```bash
+pct exec 102 -- sh -c 'for i in 1 2 3 4; do
+  ss -tni state established "( sport = :443 )" \
+    | grep -E "bytes_sent:[0-9]{7,}" \
+    | grep -o -E "rtt:[^ ]+|cwnd:[0-9]+|bytes_retrans:[0-9]+|delivery_rate [^ ]+"
+  sleep 3
+done'
+```
+
+`ss -tni` prints what the kernel knows about each TCP connection: the algorithm, the round trip, the congestion window, the bytes retransmitted and the **delivery rate**, the speed the receiver is actually acknowledging. The `bytes_sent` filter keeps only the connection carrying megabytes, the video, and skips the small API calls next to it. Sampling every few seconds turns it into a cheap time series. The same loop, after the switch to BBR, gave the numbers further down.
+
 ## Why CUBIC was stuck
 
 The path to the remote location loses packets. Later, with BBR, about **3%** of the data had to be retransmitted. CUBIC never pushes the path that hard. Each loss cuts the window, the window never grows past a few dozen packets, and the connection settles at a fraction of what the path can carry.
