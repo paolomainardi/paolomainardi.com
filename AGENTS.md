@@ -95,6 +95,9 @@ Run `just` or `just --list` to see all recipes.
   holds the procedure and `voice.md`, Paolo's voice. Drafts must pass
   `python3 scripts/check-post-style.py <index.md>`: no dashes as punctuation,
   no marketing words. Opinions in a post come from Paolo, never from the model.
+- **Images are generated with the `generate-image` skill.**
+  `.claude/skills/generate-image/` holds the palette, the illustration style
+  and the steps: ask Paolo first, generate with Codex, convert to WebP.
 - **Margin apparatus shortcodes.** `sidenote` (numbered, inline), `marginal`
   (unnumbered block) and `sparkline` (inline numbers, `{{< sparkline "3,5,1" >}}`).
 

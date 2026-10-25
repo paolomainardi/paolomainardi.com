@@ -45,6 +45,8 @@ for every sentence.
    `draft = "true"` until he approves. Write each section from the facts and
    his answers, in voice.md's voice.
 5. **Add figures and charts.**
+   - **A cover**, when the post needs one, comes from the `generate-image`
+     skill.
    - **Images** go in `src/assets/images/posts/<n>-<slug>/` as WebP and are
      referenced as `/images/posts/<n>-<slug>/<file>.webp`, with the `figure`
      shortcode and a caption that says something. Screenshots are taken with
