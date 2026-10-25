@@ -348,6 +348,14 @@ main:focus {
   --blush: #a3526b;
   --blush-wash: #f8ecef;
 
+  --notice-note: #6a4c9c;
+  --notice-tip: #2a7066;
+  --notice-example: #7a5a48;
+  --notice-question: #46702a;
+  --notice-info: #36607e;
+  --notice-warning: #8a5a00;
+  --notice-error: #a33a36;
+
   --code-wash: #f1eee6;
   --code-ink: #26221d;
 }
@@ -367,6 +375,14 @@ main:focus {
 
   --blush: #e5a3b2;
   --blush-wash: #2b2226;
+
+  --notice-note: #c3b0e6;
+  --notice-tip: #8fd1c4;
+  --notice-example: #d6b8a6;
+  --notice-question: #b5d98f;
+  --notice-info: #8ab4d4;
+  --notice-warning: #e8bf6a;
+  --notice-error: #f0a09a;
 
   --code-wash: #201e1c;
   --code-ink: #ece5d8;
@@ -2210,13 +2226,14 @@ dialog.zoom {
 // -----------------------------------------------------------------------------
 
 // The label is apparatus: in the outer margin above 1200px, above the note
-// below that. A hairline down the left marks the extent of the note. Warnings
-// and errors take the accent, everything else stays in ink.
+// below that. Each kind has its own colour, on the label and on a 2px rule
+// down the left; no box and no wash, the colour is the only difference.
 .notice {
+  --notice: var(--notice-note);
   position: relative;
   margin: 3.2rem 0;
   padding: 0 0 0 2rem;
-  border-left: 1px solid var(--rule-2);
+  border-left: 2px solid var(--notice);
 
   .notice-title {
     margin: 0 0 0.4rem;
@@ -2225,7 +2242,7 @@ dialog.zoom {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--ink-3);
+    color: var(--notice);
 
     @media only screen and (min-width: 1200px) {
       position: absolute;
@@ -2262,13 +2279,28 @@ dialog.zoom {
   color: var(--ink-2);
 }
 
-.notice.warning,
-.notice.error {
-  border-left: 2px solid var(--blush);
+.notice.tip {
+  --notice: var(--notice-tip);
+}
 
-  .notice-title {
-    color: var(--blush);
-  }
+.notice.example {
+  --notice: var(--notice-example);
+}
+
+.notice.question {
+  --notice: var(--notice-question);
+}
+
+.notice.info {
+  --notice: var(--notice-info);
+}
+
+.notice.warning {
+  --notice: var(--notice-warning);
+}
+
+.notice.error {
+  --notice: var(--notice-error);
 }
 
 // -----------------------------------------------------------------------------
