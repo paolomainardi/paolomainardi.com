@@ -20,6 +20,13 @@ colors:
   blush-wash: "#f8ecef"
   code-wash: "#f1eee6"
   code-ink: "#26221d"
+  notice-note: "#6a4c9c"
+  notice-tip: "#2a7066"
+  notice-example: "#7a5a48"
+  notice-question: "#46702a"
+  notice-info: "#36607e"
+  notice-warning: "#8a5a00"
+  notice-error: "#a33a36"
   paper-night: "#1a1917"
   ink-night: "#f0e9dc"
   ink-muted-night: "#bcb3a6"
@@ -29,6 +36,13 @@ colors:
   blush-night: "#e5a3b2"
   code-wash-night: "#201e1c"
   code-ink-night: "#ece5d8"
+  notice-note-night: "#c3b0e6"
+  notice-tip-night: "#8fd1c4"
+  notice-example-night: "#d6b8a6"
+  notice-question-night: "#b5d98f"
+  notice-info-night: "#8ab4d4"
+  notice-warning-night: "#e8bf6a"
+  notice-error-night: "#f0a09a"
 typography:
   body:
     fontFamily: Literata
@@ -221,6 +235,27 @@ components:
     backgroundColor: "{colors.blush}"
     width: 11px
     height: 11px
+  notice-note:
+    textColor: "{colors.notice-note}"
+    typography: "{typography.apparatus}"
+  notice-tip:
+    textColor: "{colors.notice-tip}"
+    typography: "{typography.apparatus}"
+  notice-example:
+    textColor: "{colors.notice-example}"
+    typography: "{typography.apparatus}"
+  notice-question:
+    textColor: "{colors.notice-question}"
+    typography: "{typography.apparatus}"
+  notice-info:
+    textColor: "{colors.notice-info}"
+    typography: "{typography.apparatus}"
+  notice-warning:
+    textColor: "{colors.notice-warning}"
+    typography: "{typography.apparatus}"
+  notice-error:
+    textColor: "{colors.notice-error}"
+    typography: "{typography.apparatus}"
   chart-label:
     textColor: "{colors.ink-muted}"
     typography: "{typography.apparatus}"
@@ -291,6 +326,16 @@ backgrounds. They were removed in October 2026. Five colours on a page meant
 five things competing for attention, and none of them carried information that
 a label or a hairline did not already carry. Code is told apart by its wash and
 its typeface, notes by their label and rule, syntax by weight and slope.
+
+Notices got colour back in October 2026, and only notices. Each kind has its own
+hue, the way the Hugo Coder theme did it: note purple, tip teal, example brown,
+question green, info blue, warning amber, error red. Following Tufte's smallest
+effective difference, the colour sits only on the label and on the 2px rule:
+no box, no wash behind the text. A reader scanning a long post can tell a
+caveat from an aside before reading the label. The hues are
+muted to sit on paper, every one is at least 4.7:1 on paper by day and 8:1 on
+the night paper, and they never leave the notice: links, charts and the rest of
+the page keep blush as the one accent.
 
 ## Typography
 
@@ -418,9 +463,10 @@ says "link". Outbound links open in a new tab.
 
 **Note and caution.** The `notice` shortcode. The label (note, tip, info,
 question, example, warning, error) is apparatus: in the margin above 1200px,
-above the note below that. A hairline runs down the left of the body, which is
-muted ink at 95 percent size. Warnings and errors take the accent, on the label
-and on a 2px rule; every other kind stays in ink.
+above the note below that. The body is muted ink at 95 percent size. Each kind
+takes its own `notice-*` colour on the label and on a 2px rule down the left,
+with nothing behind the text. Until October 2026 only warnings and
+errors were coloured, in blush, and every other kind stayed in ink.
 
 **Contents leader.** A title, a dotted leader, and the date where a page number
 would sit. Aligned on the last baseline so a title that wraps still has its rule
