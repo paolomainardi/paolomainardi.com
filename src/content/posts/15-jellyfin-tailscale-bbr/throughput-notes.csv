@@ -1,0 +1,5 @@
+measure,note
+CUBIC,"Proxy to Apple TV, 2 samples"
+BBR,"Same socket, 4 samples"
+File bitrate,"Average of the 4K file, peaks are higher"
+"Tunnel, one stream","NAS to my workstation over Tailscale, SSH"
