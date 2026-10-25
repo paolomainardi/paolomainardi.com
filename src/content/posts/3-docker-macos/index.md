@@ -4,16 +4,15 @@ title = "Docker on MacOS is slow and how to fix it"
 slug = "docker-performance-macos"
 tags = ["linux", "docker", "macos"]
 draft = "false"
-featuredImage = "/images/posts/3-docker/docker-dalle-container-macbook.webp"
-images = ["/images/posts/3-docker/docker-dalle-container-macbook.webp"]
+featuredImage = "/images/posts/3-docker/docker-macos-sea.webp"
+images = ["/images/posts/3-docker/docker-macos-sea.webp"]
 +++
 
 {{< notice note >}}
-**05/01/2024**: Hello there, you can find an update version of this [article here](/posts/docker-performance-macos-2025), with the latest findings, improvements and new tools.
+**05/01/2025**: Hello there, you can find an update version of this [article here](/posts/docker-performance-macos-2025), with the latest findings, improvements and new tools.
 {{< /notice >}}
 
-Thanks to the [**DALL·E 2**](https://openai.com/dall-e-2/), we finally have a very nice graphic representation of
-**the feelings** of a Docker container inside a macOS environment, I will try with this article to make this poor container safe to the coast.
+This is how a Docker container **feels** inside a macOS environment: lost at sea, far from the coast. With this article I will try to bring this poor container safely to the coast.
 
 ## TL;DR
 
