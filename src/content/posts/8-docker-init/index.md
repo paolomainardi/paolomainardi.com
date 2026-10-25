@@ -4,8 +4,8 @@ title = "docker run --init: to the rescue of zombie processes"
 slug = "docker-run-init"
 tags = ["docker", "short"]
 draft = "false"
-featuredImage = "/images/posts/8-docker-run/docker-run-init.webp"
-images = ["/images/posts/8-docker-run/docker-run-init.webp"]
+featuredImage = "/images/posts/8-docker-run/docker-run-init-reaper.webp"
+images = ["/images/posts/8-docker-run/docker-run-init-reaper.webp"]
 +++
 
 This is a short post to remind myself that is always time to learn something new or to refresh memories that sit there in the back of your head, maybe wrong, maybe right. In this case, they were very wrong.
