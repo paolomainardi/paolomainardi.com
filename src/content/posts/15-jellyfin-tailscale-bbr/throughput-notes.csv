@@ -1,5 +1,5 @@
 measure,note
-CUBIC,"Proxy to Apple TV, 2 samples"
-BBR,"Same socket, 4 samples"
+CUBIC,"Proxy to Apple TV, 2 samples, 17.5 to 22.1"
+BBR,"Same socket, 4 samples, 87.9 to 342.8"
 File bitrate,"Average of the 4K file, peaks are higher"
-"Tunnel, one stream","NAS to my workstation over Tailscale, SSH"
+"Tunnel, one stream","NAS to my workstation over Tailscale, 567 to 672"
