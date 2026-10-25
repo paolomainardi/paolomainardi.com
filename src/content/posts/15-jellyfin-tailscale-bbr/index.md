@@ -30,7 +30,7 @@ The NAS is a small **[Proxmox VE](https://www.proxmox.com/en/proxmox-virtual-env
 - **Nginx Proxy Manager**: the reverse proxy, which terminates TLS and forwards each request to the right service. This is the container that sends the video to the client.
 - **Jellyfin**: a Docker container inside an LXC container, with Intel Quick Sync for transcoding and the media on a ZFS pool of hard disks.
 
-The client is **Infuse** on an Apple TV in Milano, with the Tailscale app installed on the Apple TV itself.
+The client is **Infuse** on an Apple TV in a remote location, with the Tailscale app installed on the Apple TV itself.
 
 {{< figure src="/images/posts/15-jellyfin-tailscale-bbr/network.webp" caption="The path of one video request. The TCP connection that matters runs from the reverse proxy to the Apple TV, inside the WireGuard tunnel. Its sender, the proxy, is the only place where congestion control can be changed." >}}
 
@@ -87,7 +87,7 @@ A congestion window of **68 packets** at a 30 millisecond round trip: about **22
 
 ## Why CUBIC was stuck
 
-The path to Milano loses packets. Later, with BBR, about **3%** of the data had to be retransmitted. CUBIC never pushes the path that hard. Each loss cuts the window, the window never grows past a few dozen packets, and the connection settles at a fraction of what the path can carry.
+The path to the remote location loses packets. Later, with BBR, about **3%** of the data had to be retransmitted. CUBIC never pushes the path that hard. Each loss cuts the window, the window never grows past a few dozen packets, and the connection settles at a fraction of what the path can carry.
 
 That also explains the confusion. Tailscale looked guilty because the slow connection was the one inside the tunnel, but the tunnel was carrying everything it was asked to. The problem was how the sender reacted to a lossy path.
 

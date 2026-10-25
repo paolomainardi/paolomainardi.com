@@ -227,6 +227,9 @@ components:
   chart-value:
     textColor: "{colors.ink}"
     typography: "{typography.apparatus}"
+  chart-value-inside:
+    textColor: "{colors.paper}"
+    typography: "{typography.apparatus}"
   chart-axis:
     backgroundColor: "{colors.ink-faint}"
     height: 1px
