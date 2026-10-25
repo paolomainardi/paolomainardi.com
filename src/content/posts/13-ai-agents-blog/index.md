@@ -6,6 +6,8 @@ slug = "the-stack-is-now-my-agents-job"
 tags = ["ai", "agents", "hugo", "design", "accessibility", "security"]
 draft = "false"
 toc = true
+featuredImage = "/images/posts/13-ai-agents/agents-print-workshop.webp"
+images = ["/images/posts/13-ai-agents/agents-print-workshop.webp"]
 +++
 
 ## TL;DR
