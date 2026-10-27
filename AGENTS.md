@@ -104,6 +104,13 @@ Run `just` or `just --list` to see all recipes.
   of 16") and an optional one line `description`. An unknown key, a missing or
   out of range part, or two posts with the same part fail the build. Only non
   draft parts are listed and linked.
+- **Search metadata is generated.** `_partials/schema.html` writes JSON-LD:
+  `WebSite` with the author on the home page, `BlogPosting` on posts, the
+  author's profiles taken from `[[params.social]]`. `description` in
+  `src/hugo.toml` is the search snippet for the home page, `blurb` the lede it
+  shows. Tag and category pages carry `noindex, follow` and are left out of the
+  sitemap; `robots.txt` names the sitemap. Related posts at the end of a post
+  come from shared tags, configured under `[related]`.
 - **Margin apparatus shortcodes.** `sidenote` (numbered, inline), `marginal`
   (unnumbered block) and `sparkline` (inline numbers, `{{< sparkline "3,5,1" >}}`).
 
@@ -222,7 +229,7 @@ GitHub Actions, `.github/workflows/firebase-hosting-merge.yml`.
 | Trigger        | What happens                                                        |
 | :------------- | :------------------------------------------------------------------ |
 | Push to `main` | Checkout, read the Hugo version from `.hugo-version`, build with `hugo --minify`, then deploy to Firebase Hosting project `cto-space` with the Firebase CLI from `deploy/package.json` (firebase-tools 15.26.0). The job authenticates with Workload Identity Federation: no key is stored |
-| Pull request   | `.github/workflows/pr-check.yml` builds the site. On a `links/*` branch it first runs `scripts/check-links-pr.py`, which fails unless the pull request only adds or edits valid link entries. Other jobs, all skipped on `links/*` branches except `workflows`, and all required except `broken-links`, which reports without blocking: `a11y` runs `scripts/a11y-check.cjs`, axe-core on every page in the sitemap (light at 1280 and 375 pixels, dark at 1280), failing on any WCAG 2.2 AA violation or axe best practice; `style` runs `scripts/check-post-style.py` on the posts the pull request adds or edits, from post 13 on (older posts predate the rules); `broken-links` runs lychee on the built site and fails on any broken internal link, image or anchor; `workflows` runs actionlint and zizmor on the workflows; `design` lints DESIGN.md |
+| Pull request   | `.github/workflows/pr-check.yml` builds the site. On a `links/*` branch it first runs `scripts/check-links-pr.py`, which fails unless the pull request only adds or edits valid link entries. Other jobs, all skipped on `links/*` branches except `workflows`, and all required except `broken-links`, which reports without blocking: `a11y` runs `scripts/a11y-check.cjs`, axe-core on every page in the sitemap plus the tag index and one tag page (light at 1280 and 375 pixels, dark at 1280), failing on any WCAG 2.2 AA violation or axe best practice; `style` runs `scripts/check-post-style.py` on the posts the pull request adds or edits, from post 13 on (older posts predate the rules); `broken-links` runs lychee on the built site and fails on any broken internal link, image or anchor; `workflows` runs actionlint and zizmor on the workflows; `design` lints DESIGN.md |
 | Weekly         | `.github/workflows/links-external.yml` checks every external link in the posts with lychee, Mondays 07:17 UTC. A failed run is the signal, by email |
 
 Every action is pinned to a commit, with its tag in a comment, and the

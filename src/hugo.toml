@@ -22,8 +22,10 @@ path = "cj.rs/gohugo-asciinema"
 [params]
 author = "Paolo Mainardi"
 info = "Founder and CTO of [@Sparkfabrik](https://www.sparkfabrik.com)"
-description = "Welcome to my personal blog. I'm Paolo Mainardi, Founder and CTO of Sparkfabrik. I write about Containers, Kubernetes, Linux and cloud-native stuff."
-keywords = "blog,developer,personal"
+description = "Paolo Mainardi, founder and CTO of SparkFabrik, writes about containers, Kubernetes, Linux, open source and working with AI coding agents."
+# The home page lede; the description above is for search results.
+blurb = "Welcome to my personal blog. I'm Paolo Mainardi, Founder and CTO of Sparkfabrik. I write about Containers, Kubernetes, Linux and cloud-native stuff."
+jobTitle = "Founder and CTO of SparkFabrik"
 avatarurl = "images/me.jpg"
 headTitle = "Paolo Mainardi | Founder and CTO of Sparkfabrik"
 
@@ -110,3 +112,23 @@ noClasses = false
 noHl = false
 style = 'dracula'
 tabWidth = 4
+
+# Tag and category pages only list posts, so they stay out of the sitemap.
+[[cascade]]
+[cascade.sitemap]
+disable = true
+[cascade.target]
+kind = "{taxonomy,term}"
+
+# Related posts at the end of each post: shared tags decide, the date only
+# breaks ties, and newer posts count too.
+[related]
+includeNewer = true
+threshold = 80
+toLower = true
+[[related.indices]]
+name = "tags"
+weight = 100
+[[related.indices]]
+name = "date"
+weight = 10

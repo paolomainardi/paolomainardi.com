@@ -95,6 +95,28 @@
         </nav>
         {{ end }}
 
+        {{- /* Up to three posts that share tags with this one, leaving out the
+               parts of its series and the neighbours linked below. */ -}}
+        {{ $skip := slice }}
+        {{ with .PrevInSection }}{{ $skip = $skip | append . }}{{ end }}
+        {{ with .NextInSection }}{{ $skip = $skip | append . }}{{ end }}
+        {{ with $series }}{{ range .parts }}{{ $skip = $skip | append .page }}{{ end }}{{ end }}
+        {{ $related := complement $skip (where (site.RegularPages.Related .) "Section" "posts") | first 3 }}
+        {{ with $related }}
+        <nav class="series related" aria-labelledby="related-title">
+            <p class="part" id="related-title">Related</p>
+            <ol class="contents-list">
+                {{ range . }}
+                <li class="leader">
+                    <a class="t" href="{{ .RelPermalink }}">{{ .Title }}</a>
+                    <span class="fill"></span>
+                    <span class="n">{{ .Date | time.Format "January 2006" }}</span>
+                </li>
+                {{ end }}
+            </ol>
+        </nav>
+        {{ end }}
+
         {{- /* In a series the neighbours are the adjacent published parts.
                Where there is none, the slot falls back to the neighbour in
                the section, under its usual label. */ -}}

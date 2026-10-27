@@ -1,6 +1,6 @@
 {{- /*
-  Document head: metadata, social cards, icons, feeds, the stylesheet and the
-  optional analytics script.
+  Document head: metadata, social cards, structured data, icons, feeds, the
+  stylesheet and the optional analytics script.
 
   The roman Literata subset is preloaded because it sets every word of body
   text, so it is the font the first paint waits on. Posts also preload the
@@ -12,11 +12,14 @@
 <meta name="color-scheme" content="light dark">
 {{ with site.Params.author }}<meta name="author" content="{{ . }}">{{ end }}
 <meta name="description" content="{{ .Description | default (.Summary | default site.Params.description) | plainify }}">
-<meta name="keywords" content="{{ delimit .Keywords ", " | default site.Params.keywords }}">
 {{ partial "twitter_cards.html" . }}
 {{ partial "opengraph.html" . }}
 
 <link rel="canonical" href="{{ .Params.canonicalUrl | default .Permalink }}">
+{{- /* Tag and category pages only list posts, so they stay out of the index
+       while their links are still followed. */}}
+{{ if in (slice "taxonomy" "term") .Kind }}<meta name="robots" content="noindex, follow">{{ end }}
+{{ partial "schema.html" . }}
 
 <link rel="preload" href="{{ "fonts/literata-latin-opsz-normal.woff2" | relURL }}" as="font" type="font/woff2" crossorigin>
 {{- if and .IsPage (eq .Section "posts") }}

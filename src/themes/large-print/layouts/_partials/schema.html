@@ -1,0 +1,40 @@
+{{- /*
+  Structured data for search engines, as JSON-LD.
+
+  The home page describes the site and its author; a post describes itself as
+  a BlogPosting by that author. The author's profiles come from the social
+  links, minus the feed.
+*/ -}}
+{{- $sameAs := slice -}}
+{{- range site.Params.social }}{{ if ne .name "RSS" }}{{ $sameAs = $sameAs | append .url }}{{ end }}{{ end -}}
+{{- $person := dict "@type" "Person" "name" site.Params.author "url" ("" | absURL) "sameAs" $sameAs -}}
+{{- with site.Params.jobTitle }}{{ $person = merge $person (dict "jobTitle" .) }}{{ end -}}
+{{- with site.Params.avatarurl }}{{ $person = merge $person (dict "image" (. | absURL)) }}{{ end -}}
+{{- $data := dict -}}
+{{- if .IsHome -}}
+  {{- $data = dict
+    "@context" "https://schema.org"
+    "@type" "WebSite"
+    "name" site.Title
+    "url" ("" | absURL)
+    "description" site.Params.description
+    "inLanguage" site.Language.Locale
+    "author" $person -}}
+{{- else if and .IsPage (eq .Section "posts") -}}
+  {{- $data = dict
+    "@context" "https://schema.org"
+    "@type" "BlogPosting"
+    "headline" .Title
+    "description" (.Description | default .Summary | plainify)
+    "url" .Permalink
+    "mainEntityOfPage" .Permalink
+    "datePublished" (.Date.Format "2006-01-02T15:04:05Z07:00")
+    "dateModified" (.Lastmod.Format "2006-01-02T15:04:05Z07:00")
+    "inLanguage" site.Language.Locale
+    "author" $person -}}
+  {{- with .Params.images }}{{ $data = merge $data (dict "image" (index . 0 | absURL)) }}{{ end -}}
+  {{- with .Params.tags }}{{ $data = merge $data (dict "keywords" .) }}{{ end -}}
+{{- end -}}
+{{- with $data }}
+<script type="application/ld+json">{{ jsonify . | safeJS }}</script>
+{{- end }}

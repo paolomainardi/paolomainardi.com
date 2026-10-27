@@ -500,6 +500,13 @@ post under its usual label. The planned total comes from `data/series.yaml`, so
 "of 16" is right before the parts exist. A post outside a series renders
 exactly as before.
 
+**Related.** Under the series list, or under the tags when there is none, up
+to three posts that share tags with this one, as leader rows with the month
+where a page number would sit. It reuses the series block: the hairline above,
+the label "Related" in the apparatus margin. Parts of the post's own series and
+the posts already linked in the post navigation are left out, so no title
+appears twice at the end of a post. A post with no related posts shows nothing.
+
 **Contents.** A disclosure. Open above 900px, where it is two columns and
 compact, closed below, where a single column of section links filled most of the
 first screen before the reader reached a word of the post. The open state is set
