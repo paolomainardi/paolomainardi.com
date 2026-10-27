@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Accessibility check: runs axe-core on every page in the sitemap of a served
-// build, in the light scheme at 1280 and 375 pixels and in the dark scheme at
-// 1280, and fails on any WCAG 2.2 A or AA violation or axe best practice.
+// build, plus the tag index and one tag page, in the light scheme at 1280 and
+// 375 pixels and in the dark scheme at 1280, and fails on any WCAG 2.2 A or
+// AA violation or axe best practice.
 //
 // Usage: node scripts/a11y-check.cjs <base URL>
 // Needs playwright-core and axe-core installed, and Chrome at CHROME_PATH
@@ -22,6 +23,8 @@ const tags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-prac
 (async () => {
   const sitemap = await (await fetch(base + '/sitemap.xml')).text();
   const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname);
+  // Tag pages are left out of the sitemap, so check the index and one tag.
+  paths.push('/tags/', '/tags/linux/');
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome' });
   let failures = 0;
   for (const run of runs) {
