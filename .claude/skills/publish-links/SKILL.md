@@ -52,7 +52,7 @@ repository, search for the channel or list tools beyond what a step names.
 1. Read the channel with `slack_read_channel`, passing the channel ID from
    the routine prompt and `oldest` from step 0. Never search for the channel.
    Open a thread only when the message has replies, and skip the message if
-   one of them contains `✅ Published`.
+   one of them contains `✅ Published` or `⚠️ Not published: no title`.
 2. For each remaining message, take the first `https://` URL. Skip messages
    without one.
 3. The note is the rest of the message text, rewritten as the rules above
@@ -63,7 +63,11 @@ repository, search for the channel or list tools beyond what a step names.
    1. The title of the link preview Slack shows under the message.
    2. The last part of the URL path in words, with the first letter capital:
       `/blog/is-this-the-new-cyber-normal/` gives `Is this the new cyber normal`.
-   3. The host name.
+
+   When neither gives one, because there is no preview and the last part of
+   the path is a number, a hash or an ID rather than words (`/records/23682548`),
+   do not publish the link. Reply in its thread with the preface line, then
+   `⚠️ Not published: no title. Post the link again with its title.`
 
    Drop a trailing site name joined by ` | `, ` - ` or ` · ` ("Is this the
    new cyber normal? | Drew's Dev Blog" becomes "Is this the new cyber
