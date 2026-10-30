@@ -32,7 +32,7 @@ in the post as WebP. Paolo approves every image before it is merged.
   or a dark and eerie mood. Paolo rejected each of these. Leave the default
   style only when Paolo asks for it and the article calls for it.
 - **The image explains the idea.** Find a visual metaphor for the post's
-  technical concept, ideally from its own vocabulary: init *reaps* its child
+  technical concept, ideally from its own vocabulary: init _reaps_ its child
   processes, so the cover is a gardener raking dead leaves from a process
   tree. A joke that does not map to the concept is not enough.
 - **Each post gets its own scene.** Reuse the style and the palette, never a
@@ -56,16 +56,30 @@ in the post as WebP. Paolo approves every image before it is merged.
      only the motions in the table below, for example "the sea swells, the
      container bobs, the lighthouses sweep their beams, the clouds drift".
      Pick what would move in the real scene and carries the idea; leave the
-     rest still. A motion the table does not have is a change to the player
-     and the map builder: say so, and add it only if he agrees.
+     rest still. The motion is ambient only: light, wind, water, a swing, a
+     light along a thread. A scene whose idea needs a story to move (a train
+     passing, a lever thrown, a signal changing) stays still; do not add a
+     motion to the table for it. Prefer a still cover to a new motion.
 
    Generate only after he answers. Use his words for the tone; a lighter or
    funnier image stays in the default style unless he asks for another one.
+
 3. **Write the prompt** in a scratch directory outside the repository, with
    four parts: the subject (the post title and the idea in plain words), the
    scene (the metaphor, what is in the frame), the style (the rules above,
    including the styles to avoid) and the palette (the hex values). Ask for
    landscape 3:2, 1536x1024, saved as a PNG in the current directory.
+
+   When the cover will move, draw each moving thing the way the map builder
+   reads it, so the mask is enough and no spec or code is needed:
+
+   - a light along a thread: the threads drawn in rose, clearly and
+     continuously, meeting at one point, touching nothing else rose;
+   - a swinging lamp: hanging on a visible cord;
+   - a glowing light: drawn lit;
+   - plants: sparse and airy, so Codex traces them instead of redrawing them;
+   - water: in desaturated blue.
+
 4. **Generate with Codex**, which has an image generation tool:
 
    ```bash
@@ -76,6 +90,7 @@ in the post as WebP. Paolo approves every image before it is merged.
    To restyle or recolour an existing image, pass it after the prompt:
    `codex exec ... "$PROMPT" -i reference.png`. The prompt must come first,
    because `-i` takes several values and swallows a prompt placed after it.
+
 5. **Look at the result** before showing it. Regenerate when it breaks a
    rule: wrong palette, cartoon faces, text, a dark mood, or a scene that
    repeats another cover.
@@ -89,6 +104,7 @@ in the post as WebP. Paolo approves every image before it is merged.
    Use a new file name when replacing a cover, so caches do not serve the old
    one, and delete the old file. Point `featuredImage` and `images` in the
    post's front matter at `/images/posts/<n>-<slug>/<name>.webp`.
+
 7. **Make the night version** once Paolo approves the cover. Run Codex again
    with the approved PNG and a prompt asking for the same scene, unchanged,
    redrawn for the dark scheme: paper `#1a1917` (never pure black), cream ink
@@ -125,8 +141,10 @@ in the post as WebP. Paolo approves every image before it is merged.
    > on pure black (#000000). No shading, no outlines, no texture, no text.
    > Paint only these, each filled solid with its colour, following the
    > object's real silhouette:
+   >
    > - <the thing, as it appears in the picture>: <colour name> <hex>
    >   (for a light or a lighthouse, a small dot on the lantern only)
+   >
    > Everything else stays black. Save the result as mask.png in the current
    > directory.
 
@@ -135,13 +153,16 @@ in the post as WebP. Paolo approves every image before it is merged.
    the overlay, then delete it. Where Codex painted something that must not
    move, add an `exclude` box to `<name>-motion-spec.json`; where it missed or
    redrew a part (it tends to redraw a dense tree instead of tracing it), add
-   that part to the spec instead, with the spec-only motions of the brief. The
-   keys are in the script's docstring. The script fails when the mask is more
-   than 3px off the cover: generate the mask again, or describe the parts in
-   the spec. Then watch the motion on the preview before sending it: a brief
-   item that does not move, or something moving that is not in the brief, is
-   a mistake to fix first. Commit the mask, the spec and the two outputs. On a
+   that part to the spec instead, with the spec-only motions of the brief. On
+   a pale cover the lights barely show: set `glow_strength` (about 2) and a
+   `glow_radius` that fits the lamps. The keys are in the script's docstring.
+   The script fails when the mask is more than 3px off the cover: generate the
+   mask again, or describe the parts in the spec. Then watch the motion on the
+   preview before sending it, in both schemes: a brief item that does not
+   move, or moves too little to notice, or something moving that is not in
+   the brief, is a mistake to fix first. Commit the mask, the spec and the two outputs. On a
    cover with nothing that would move naturally, skip this step.
+
 9. **Check it on the page.** Build, serve the preview on the Tailscale
    address, and send Paolo both images and the preview link. The cover fills
    the text column at every width; check a phone width and the dark scheme

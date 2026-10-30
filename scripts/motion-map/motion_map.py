@@ -45,6 +45,8 @@ The spec, all keys optional, coordinates in cover pixels, boxes [x0, y0, x1, y1]
   beam      [{at, length}] a lighthouse lantern whose beam sweeps round;
             length is how far the beam reaches when it points sideways
   glow_radius  the radius of Codex's lights, 110 by default
+  glow_strength  how bright Codex's lights glow, 1 by default; raise it on a
+            pale cover, where a light at 1 barely shows
 
 --overlay writes the cover with the regions painted over it, for review.
 """
@@ -235,7 +237,8 @@ def main():
     for comp, (sy, sx) in parts(region["white"], 4):
         cy, cx = (sy.start + sy.stop) // 2, (sx.start + sx.stop) // 2
         on = [i for i, lp in enumerate(lamps) if lp[cy, cx]]
-        glows.append({"at": [cx, cy], "radius": spec.get("glow_radius", 110), "strength": 1.0,
+        glows.append({"at": [cx, cy], "radius": spec.get("glow_radius", 110),
+                      "strength": spec.get("glow_strength", 1.0),
                       "swing": on[0] if on else -1})
     for gl in spec.get("glow", []):
         glows.append({"at": gl["at"], "radius": gl.get("radius", 110),
