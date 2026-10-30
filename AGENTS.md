@@ -103,7 +103,9 @@ Run `just` or `just --list` to see all recipes.
   no marketing words. Opinions in a post come from Paolo, never from the model.
 - **Images are generated with the `generate-image` skill.**
   `.claude/skills/generate-image/` holds the palette, the illustration style
-  and the steps: ask Paolo first, generate with Codex, convert to WebP.
+  and the steps: ask Paolo first, generate with Codex, convert to WebP. A
+  generated cover also gets a night version, `<name>-night.webp` next to it,
+  shown in the dark scheme; other images are dimmed there instead.
 - **Series are data.** A post joins a series with `series = "<key>"` and
   `series_part = <n>` in its front matter. The key names an entry in
   `src/data/series.yaml` with `title`, `parts` (the planned total, for "Part 3

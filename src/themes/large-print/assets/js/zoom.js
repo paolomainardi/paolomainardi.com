@@ -87,7 +87,8 @@
         big.src = full.src;
       }
     };
-    full.src = img.getAttribute("data-zoom");
+    var night = img.getAttribute("data-zoom-night");
+    full.src = night && /-night/.test(big.src) ? night : img.getAttribute("data-zoom");
     dialog.showModal();
   }
 

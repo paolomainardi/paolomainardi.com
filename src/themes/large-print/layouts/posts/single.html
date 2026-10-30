@@ -55,13 +55,22 @@
             {{- /* The frontispiece is above the fold, so it loads eagerly and at
                    high priority. Lazy loading an image the reader is already
                    looking at only delays the largest paint. */ -}}
+            {{- /* A cover with a sibling named <name>-night.webp is drawn for the
+                   dark scheme too. The source follows the system setting, and
+                   scheme.js points it at the reader's own choice. */ -}}
             {{ with .Params.featuredImage }}
             {{ $img := partial "book/asset.html" . }}
-            <img class="frontispiece" src="{{ $img.url | safeURL }}" alt="{{ $.Title }}"
-                {{- if gt $img.width 0 }} width="{{ $img.width }}" height="{{ $img.height }}"{{ end }}
-                {{- with $img.srcset }} srcset="{{ . }}" sizes="(min-width: 868px) 820px, 100vw"{{ end }}
-                {{- with $img.zoom }} data-zoom="{{ . }}" data-zoom-width="{{ $img.zoomWidth }}"{{ end }}
-                loading="eager" fetchpriority="high" decoding="async" />
+            {{ $nightPath := replaceRE `\.webp$` "-night.webp" . }}
+            {{ $night := cond (and (ne $nightPath .) (resources.Get (strings.TrimPrefix "/" $nightPath))) (partial "book/asset.html" $nightPath) dict }}
+            <picture class="frontispiece-picture">
+                {{ with $night }}<source class="night" media="(prefers-color-scheme: dark)" srcset="{{ or .srcset .url }}"{{ if .srcset }} sizes="(min-width: 868px) 820px, 100vw"{{ end }} />{{ end }}
+                <img class="frontispiece" src="{{ $img.url | safeURL }}" alt="{{ $.Title }}"
+                    {{- if gt $img.width 0 }} width="{{ $img.width }}" height="{{ $img.height }}"{{ end }}
+                    {{- with $img.srcset }} srcset="{{ . }}" sizes="(min-width: 868px) 820px, 100vw"{{ end }}
+                    {{- with $img.zoom }} data-zoom="{{ . }}" data-zoom-width="{{ $img.zoomWidth }}"{{ end }}
+                    {{- with $night.zoom }} data-zoom-night="{{ . }}"{{ end }}
+                    loading="eager" fetchpriority="high" decoding="async" />
+            </picture>
             {{ end }}
             <div class="text">
                 {{ .Content }}

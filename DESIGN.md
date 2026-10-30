@@ -448,6 +448,13 @@ the paper; the mat separates it without a shadow or any other effect.
 Images carry intrinsic width and height so the page does not reflow while they
 load, which is why post images live in `assets/` rather than `static/`.
 
+In the dark scheme, images are toned down to 82% brightness: a cover or a
+screenshot drawn on light paper glared as a bright block on the night page. A
+generated cover gets its own night version instead, the same scene redrawn on
+dark paper and saved next to it as `<name>-night.webp`. The page shows it
+whenever the dark scheme is on, by system setting or by the toggle, and does
+not dim it.
+
 **Image overlay.** An image that would show at least 15% wider on its own gets a
 zoom cursor, and clicking it, or pressing Enter on it, opens it in a modal
 overlay: a near black field with the image fitted to the viewport and the caption
