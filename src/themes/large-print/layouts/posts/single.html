@@ -4,6 +4,7 @@
 {{ define "content" }}
 {{- $topics := partial "book/topics.html" (dict "page" . "limit" 3) -}}
 {{- $series := partial "book/series.html" . -}}
+{{- $toc := partial "book/toc-on.html" . -}}
 <section class="container post">
     {{- /* Reading position for narrow screens, where the section rail cannot
            exist. Pure CSS, driven by the scroll timeline. */ -}}
@@ -16,6 +17,8 @@
             <div class="kicker">
                 {{- with $topics }}{{ . }} · {{ end -}}
                 {{ .ReadingTime }} min · {{ .Date | time.Format (site.Params.dateFormat | default "January 2, 2006") }}
+                {{- /* Opens the Markdown version; reading.js copies it instead. */ -}}
+                {{- with .OutputFormats.Get "markdown" }}<span class="copy-md-item"> · <a class="copy-md" href="{{ .RelPermalink }}">Copy as Markdown</a></span>{{ end }}
             </div>
             <div class="post-title">
                 <h1 class="title">
@@ -43,7 +46,7 @@
             {{- /* A disclosure so it can be closed on a phone, where a single
                    column of section links filled most of the first screen. It
                    is opened on wide screens by reading.js. */ -}}
-            {{ if .Params.toc }}
+            {{ if $toc }}
             <details class="toc">
                 <summary class="part">On this page</summary>
                 {{ .TableOfContents }}
@@ -146,6 +149,9 @@
         {{ end }}
 
     </article>
+
+    {{- /* Shown by reading.js once the reader is a screen into the post. */}}
+    <a class="to-top" href="#top" hidden>Top</a>
 
 </section>
 {{ end }}

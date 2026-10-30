@@ -1,0 +1,10 @@
+{{- /*
+  Whether a post shows its contents block and section rail. A post with four or
+  more top level sections gets them, unless its front matter sets toc; toc wins
+  either way. Front matter may hold toc as a boolean or as the string "true".
+*/ -}}
+{{- $n := 0 -}}
+{{- range .Fragments.Headings }}{{ $n = add $n (len .Headings) }}{{ end -}}
+{{- $on := ge $n 4 -}}
+{{- if isset .Params "toc" }}{{ $on = eq (string .Params.toc) "true" }}{{ end -}}
+{{- return $on -}}

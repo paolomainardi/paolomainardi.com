@@ -513,6 +513,20 @@ first screen before the reader reached a word of the post. The open state is set
 from script, because `open` is an attribute rather than a style, so without
 JavaScript it stays closed at every width.
 
+A post with four or more top level sections gets the contents block and the
+section rail without asking; until October 2026 both were opt in, and long
+posts without them were hard to find your way around. `toc` in front matter
+still forces either answer.
+
+**Back to top.** A label in the bottom right corner, "Top" with an arrow, in
+the label type on paper with a hairline border, so it stays legible over the
+text on a phone. Hidden until the reader is a screen into the post.
+
+**Copy as Markdown.** The last item of the kicker on a post. It copies the
+post's Markdown version, published next to the page as `index.md`, so a reader
+can hand the whole post to an LLM. Where the browser cannot copy, it opens that
+file.
+
 **Reading position.** Below 1200px, where the section rail has no margin to live
 in, a 2px blush line across the top of the viewport, driven by the scroll
 timeline. No script and no scroll listener. Browsers without scroll driven

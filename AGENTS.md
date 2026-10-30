@@ -87,6 +87,12 @@ Run `just` or `just --list` to see all recipes.
   of `layouts/_shortcodes/chart.html` and the partials in
   `layouts/_partials/chart/`. A missing file or column fails the build. Never
   paste a chart in as an image when the data exists.
+- **Posts are also Markdown.** Each post is published twice: the page and
+  `index.md`, its source with a short header, from
+  `layouts/posts/single.markdown.md`. The "Copy as Markdown" link in the post
+  header copies it. A post with four or more `##` sections shows a contents
+  block and the section rail; `toc = false` or `toc = true` in front matter
+  overrides that.
 - **Links are one file each.** `src/content/links/<slug>.md` with `title` (the
   linked page's title), `link` (its URL), `date`, optional `tags` and `via`,
   and the note as the body. `hugo new links/<slug>.md` uses the archetype. An

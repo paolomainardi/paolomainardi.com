@@ -8,14 +8,14 @@
   Fragments.Headings is a tree with a single level zero root, so the sections
   are its children. Titles can carry inline markup, hence plainify.
 
-  Only rendered for posts that opted into a contents block and that have enough
-  sections for the rail to tell you anything.
+  Only rendered for posts that show a contents block, see toc-on.html, and that
+  have enough sections for the rail to tell you anything.
 */ -}}
 {{- $sections := slice -}}
 {{- range .Fragments.Headings -}}
   {{- range .Headings }}{{ $sections = $sections | append . }}{{ end -}}
 {{- end -}}
-{{- if and .Params.toc (ge (len $sections) 3) -}}
+{{- if and (partial "book/toc-on.html" .) (ge (len $sections) 3) -}}
 <nav class="rail" aria-label="Sections in this post">
   <ol>
     {{- range $sections }}
