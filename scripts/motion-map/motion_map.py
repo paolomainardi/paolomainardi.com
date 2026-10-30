@@ -9,7 +9,9 @@ and, when it exists:
   <name>-night.webp        the night version, checked for alignment
 
 Writes, next to the cover:
-  <name>-motion.webp       R: distance along a pulse thread, G: wind, B: swing
+  <name>-motion.webp       twice the cover's height. Top half R: distance
+                           along a pulse thread, G: wind, B: swing. Bottom
+                           half R: water, G: floating, B: drift
   <name>-motion.json       anchors, lights, falling leaves and lit windows
 
 The Codex mask says what moves and roughly where. The exact pixels come from
@@ -19,7 +21,8 @@ version that does not line up with the cover fails the build.
 The Codex mask colour code: green #00FF00 plants rooted at the bottom, cyan
 #00FFFF things hanging from above (ivy, papers on a line), blue #0000FF pendant
 lamps with their cord, yellow #FFFF00 wheels (ignored), red #FF0000 threads a
-light runs along, white #FFFFFF a dot on each light. Everything else black.
+light runs along, white #FFFFFF a dot on each light, orange #FF8000 water,
+magenta #FF00FF things floating on it. Everything else black.
 
 The spec, all keys optional, coordinates in cover pixels, boxes [x0, y0, x1, y1]:
   exclude   boxes removed from every Codex region (a robot painted with the
@@ -33,6 +36,12 @@ The spec, all keys optional, coordinates in cover pixels, boxes [x0, y0, x1, y1]
   fall      [{sprite, from, floor, drift}] a leaf copied from the sprite box
             falls from `from` to the y of `floor`
   twinkle   [{box}] where to look for lit windows in the night version
+  water     [{box, select: water | all, exclude}] water that ripples; water
+            picks the blue and the foam on it
+  float     [{box, amp, exclude}] a thing floating on the water, the largest
+            shape in the box that is neither paper nor water; it bobs and rocks
+            about its middle
+  drift     [{box, exclude}] sky whose clouds slide slowly sideways
   glow_radius  the radius of Codex's lights, 110 by default
 
 --overlay writes the cover with the regions painted over it, for review.
@@ -53,8 +62,10 @@ CODES = {
     "yellow": (255, 255, 0),    # wheels: ignored, a turning wheel needs its own layer
     "red": (255, 0, 0),         # threads a light pulse runs along
     "white": (255, 255, 255),   # lights that glow
+    "orange": (255, 128, 0),    # water: ripples
+    "magenta": (255, 0, 255),   # floating things: bob and rock
 }
-MAX = {"swing": 4, "glow": 6, "fall": 4, "twinkle": 12}
+MAX = {"swing": 4, "glow": 6, "fall": 4, "twinkle": 12, "float": 3}
 
 
 def fail(msg):
@@ -130,8 +141,12 @@ def main():
             painted |= region[k]
         if painted.sum() < 200:
             fail("the Codex mask paints nothing")
+        # Compared only around what the mask paints: on a small mask the rest
+        # of the cover would drown it.
         outline = (painted ^ nd.binary_erosion(painted, iterations=2)).astype(float)
-        corr, dx, dy = best_shift(nd.gaussian_filter(edges(im), 1.5), nd.gaussian_filter(outline, 1.5), 6)
+        ys, xs = np.where(painted)
+        win = (slice(max(ys.min() - 24, 0), ys.max() + 25), slice(max(xs.min() - 24, 0), xs.max() + 25))
+        corr, dx, dy = best_shift(nd.gaussian_filter(edges(im), 1.5)[win], nd.gaussian_filter(outline, 1.5)[win], 6)
         print(f"codex mask: best fit {dx:+d},{dy:+d} px (r={corr:.2f})")
         if abs(dx) > 2 or abs(dy) > 2:
             fail(f"the Codex mask is {dx:+d},{dy:+d} px off the cover; generate it again, or describe the parts in the spec")
@@ -270,24 +285,75 @@ def main():
                     twinkle.append([(sx.start + sx.stop) / 2, (sy.start + sy.stop) / 2,
                                     max(h, w) / 2 + 2, round((len(twinkle) * 0.618) % 1, 3)])
 
-    for k, v in (("swing", swings), ("glow", glows), ("fall", spec.get("fall", [])), ("twinkle", twinkle)):
+    # Water ripples, with the blue and the foam riding on it.
+    water = soft(nd.binary_dilation(region["orange"], iterations=2), 2, 3)
+    blue_water = (b - r > 6) & (lum < 235)
+    foam = (lum > 200) & nd.binary_dilation(blue_water, iterations=6)
+    for w in spec.get("water", []):
+        m = box(w["box"]) & (True if w.get("select") == "all" else (blue_water | foam))
+        for e in w.get("exclude", []):
+            m = m & ~box(e)
+        # Closed and filled, so foam crests inside the water move with it.
+        m = nd.binary_fill_holes(nd.binary_closing(m, iterations=6)) & box(w["box"])
+        for e in w.get("exclude", []):
+            m = m & ~box(e)
+        np.maximum(water, soft(m, 2, 3), out=water)
+
+    # Floating things bob and rock about their middle.
+    floating, floats = np.zeros((H, W)), []
+
+    def add_float(m, amp):
+        ys, xs = np.where(m)
+        floats.append({"center": [int(xs.mean()), int(ys.mean())],
+                       "box": [int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1],
+                       "amp": amp})
+        np.maximum(floating, soft(m, 5, 2), out=floating)
+
+    for comp, _ in parts(region["magenta"], 150):
+        add_float(comp, 1.0)
+    for fl in spec.get("float", []):
+        reg = box(fl["box"])
+        bg = np.percentile(lum[reg], 85)
+        m = reg & ~blue_water & ~foam & (lum < bg - 10)
+        for e in fl.get("exclude", []):
+            m = m & ~box(e)
+        m = nd.binary_fill_holes(nd.binary_closing(m, iterations=3))
+        lab, n = nd.label(m)
+        if n == 0:
+            fail(f"nothing floating in box {fl['box']}")
+        add_float(lab == 1 + np.argmax(nd.sum(m, lab, range(1, n + 1))), fl.get("amp", 1.0))
+
+    # Drift: the sky slides slowly, feathered so its edges do not tear.
+    drift = np.zeros((H, W))
+    for d_ in spec.get("drift", []):
+        m = box(d_["box"])
+        for e in d_.get("exclude", []):
+            m = m & ~box(e)
+        np.maximum(drift, nd.gaussian_filter(nd.binary_erosion(m, iterations=12).astype(float), 6), out=drift)
+
+    for k, v in (("swing", swings), ("glow", glows), ("fall", spec.get("fall", [])), ("twinkle", twinkle), ("float", floats)):
         if len(v) > MAX[k]:
             fail(f"{len(v)} {k} entries, the player takes {MAX[k]}")
 
     if wind.max() > 0:
         wind /= wind.max()
-    rgb = np.clip(np.stack([along, wind, rigid], -1), 0, 1)
+    rgb = np.clip(np.concatenate([np.stack([along, wind, rigid], -1),
+                                  np.stack([water, floating, drift], -1)], 0), 0, 1)
     Image.fromarray((rgb * 255).round().astype(np.uint8), "RGB").save(stem + "-motion.webp", lossless=True, quality=100, method=6)
-    json.dump({"size": [W, H], "swing": swings, "glow": glows, "fall": spec.get("fall", []), "twinkle": twinkle},
+    json.dump({"size": [W, H], "swing": swings, "glow": glows, "fall": spec.get("fall", []), "twinkle": twinkle,
+               "float": floats},
               open(stem + "-motion.json", "w"), separators=(",", ":"))
     print(f"{len(swings)} swing, {len(glows)} glow, {len(spec.get('fall', []))} fall, {len(twinkle)} twinkle,"
-          f" wind {int((wind > 0.05).sum())} px, pulse {int((along > 0).sum())} px")
+          f" {len(floats)} float, wind {int((wind > 0.05).sum())} px, pulse {int((along > 0).sum())} px,"
+          f" water {int((water > 0.05).sum())} px, drift {int((drift > 0.05).sum())} px")
 
     if overlay:
         show = np.zeros((H, W, 3))
         show[..., 0] = (along > 0) * 255
         show[..., 1] = wind * 255
-        show[..., 2] = rigid * 255
+        show[..., 2] = np.maximum(rigid, floating) * 255
+        show[..., 0] = np.maximum(show[..., 0], water * 255)
+        show[..., 1] = np.maximum(show[..., 1], water * 128 + drift * 90)
         for gl in glows:
             x, y = gl["at"]
             show[max(y - 4, 0):y + 5, max(x - 4, 0):x + 5] = 255

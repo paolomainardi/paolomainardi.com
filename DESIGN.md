@@ -457,7 +457,8 @@ not dim it.
 
 **Animated cover.** A cover can move a little: plants sway, pendant lamps swing
 on their cords and their light breathes, a light runs along a thread, a leaf
-falls, and at night the lit windows outside go dark and come back. The painted
+falls, water ripples, a floating thing bobs, clouds drift, and at night the lit
+windows outside go dark and come back. The painted
 pixels themselves are moved, by a WebGL canvas laid over the image inside its
 border, so the watercolour stays exactly as drawn. What moves, and how, comes
 from a motion map next to the cover, `<name>-motion.webp` and

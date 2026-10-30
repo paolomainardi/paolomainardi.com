@@ -1,11 +1,13 @@
 // Animated covers. A cover with a motion map is redrawn on a WebGL canvas laid
 // over the image: plants sway, lamps swing and glow, a light runs along
-// threads, leaves fall, and at night the windows outside go dark and come back.
+// threads, leaves fall, water ripples, floating things bob, clouds drift, and
+// at night the windows outside go dark and come back.
 // The image underneath stays the page's image, so nothing changes when the
 // reader asks for reduced motion, WebGL is missing, or the script fails.
 //
-// The map is built by scripts/motion-map from the cover: G is wind, B the parts
-// that swing, R the distance along a thread. data-motion holds the rest.
+// The map is built by scripts/motion-map from the cover, twice its height. Top
+// half: R the distance along a thread, G wind, B the parts that swing. Bottom
+// half: R water, G floating things, B drift. data-motion holds the rest.
 (function () {
   "use strict";
 
@@ -18,7 +20,7 @@
   if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return state("reduced motion");
   if (!window.WebGLRenderingContext) return state("no WebGL");
 
-  var MAX = { swing: 4, glow: 6, fall: 4, twinkle: 12 };
+  var MAX = { swing: 4, glow: 6, fall: 4, twinkle: 12, float: 3 };
 
   var VS =
     "attribute vec2 p; varying vec2 uv;" +
@@ -35,7 +37,9 @@
     "uniform sampler2D img, map;",
     "uniform float t, night;",
     "uniform vec2 size;",
-    "uniform int nSwing, nGlow, nFall, nTwinkle;",
+    "uniform int nSwing, nGlow, nFall, nTwinkle, nFloat;",
+    "uniform vec4 floatA[" + MAX.float + "];",
+    "uniform vec4 floatBox[" + MAX.float + "];",
     // Packed four to a slot: some phones allow few uniform slots.
     "uniform vec4 swingA[" + MAX.swing + "];",
     "uniform vec4 swingBox[" + MAX.swing + "];",
@@ -52,8 +56,24 @@
     "}",
     "void main(){",
     "  vec2 px = uv * size;",
-    "  vec3 m = texture2D(map, uv).rgb;",
+    "  vec3 m = texture2D(map, vec2(uv.x, uv.y * 0.5)).rgb;",
+    "  vec3 n = texture2D(map, vec2(uv.x, 0.5 + uv.y * 0.5)).rgb;",
     "  vec2 src = px;",
+    // Water: a slow travelling ripple, mostly up and down.
+    "  src += n.r * vec2(0.9 * sin(t * 1.2 + px.y * 0.09 + px.x * 0.012), 1.8 * sin(t * 0.95 + px.x * 0.03 - px.y * 0.015));",
+    // Drift: the sky slides a few pixels one way, then back, over a minute and a half.
+    "  src.x -= n.b * 7.0 * sin(t * 0.07);",
+    // Floating things bob and rock about their middle.
+    "  for (int i = 0; i < " + MAX.float + "; i++) {",
+    "    if (i >= nFloat) break;",
+    "    vec4 b = floatBox[i];",
+    "    vec2 c = floatA[i].xy;",
+    "    float f = float(i);",
+    "    float inside = step(b.x - 16.0, px.x) * step(px.x, b.z + 16.0) * step(b.y - 16.0, px.y) * step(px.y, b.w + 16.0);",
+    "    float bob = floatA[i].z * 3.0 * sin(t * 0.8 + f * 1.9);",
+    "    float rock = floatA[i].z * 0.025 * sin(t * 0.6 + f);",
+    "    src = mix(src, c + rot(px - vec2(0.0, bob) - c, -rock), n.g * inside);",
+    "  }",
     // Wind: sideways, in two slow waves under a gust.
     "  float gust = 0.6 + 0.4 * sin(t * 0.35);",
     "  src.x -= m.g * gust * (2.4 * sin(t * 1.4 + px.y * 0.025) + 0.8 * sin(t * 3.1 + px.y * 0.07 + px.x * 0.03));",
@@ -187,6 +207,11 @@
     ["4fv", "fallPath", flat(fall, function (f) { return [f.from[0], f.from[1], f.floor, f.drift || 20]; })]
   ]);
   set("Twinkle", twinkle.length, [["4fv", "twinkle", flat(twinkle, function (w) { return w; })]]);
+  var floating = data.float || [];
+  set("Float", floating.length, [
+    ["4fv", "floatA", flat(floating, function (f) { return [f.center[0], f.center[1], f.amp, 0]; })],
+    ["4fv", "floatBox", flat(floating, function (f) { return f.box; })]
+  ]);
   gl.uniform1i(u("img"), 0);
   gl.uniform1i(u("map"), 1);
 
