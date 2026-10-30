@@ -10,8 +10,13 @@
   "use strict";
 
   var img = document.querySelector("img[data-motion-map]");
-  if (!img || !window.WebGLRenderingContext) return;
-  if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (!img) return;
+  // Why the cover is still, for whoever is looking at the page's markup.
+  function state(s) {
+    img.setAttribute("data-motion-state", s);
+  }
+  if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return state("reduced motion");
+  if (!window.WebGLRenderingContext) return state("no WebGL");
 
   var MAX = { swing: 4, glow: 6, fall: 4, twinkle: 12 };
 
@@ -20,24 +25,28 @@
     "void main(){ uv = vec2(p.x * 0.5 + 0.5, 0.5 - p.y * 0.5); gl_Position = vec4(p, 0.0, 1.0); }";
 
   var FS = [
+    // Phone GPUs run mediump at half precision, too coarse for pixel positions.
+    "#ifdef GL_FRAGMENT_PRECISION_HIGH",
+    "precision highp float;",
+    "#else",
     "precision mediump float;",
+    "#endif",
     "varying vec2 uv;",
     "uniform sampler2D img, map;",
     "uniform float t, night;",
     "uniform vec2 size;",
     "uniform int nSwing, nGlow, nFall, nTwinkle;",
-    "uniform vec2 swingAnchor[" + MAX.swing + "];",
+    // Packed four to a slot: some phones allow few uniform slots.
+    "uniform vec4 swingA[" + MAX.swing + "];",
     "uniform vec4 swingBox[" + MAX.swing + "];",
-    "uniform float swingAmp[" + MAX.swing + "];",
     "uniform vec4 glowA[" + MAX.glow + "];",
-    "uniform float glowSwing[" + MAX.glow + "];",
     "uniform vec4 fallSprite[" + MAX.fall + "];",
     "uniform vec4 fallPath[" + MAX.fall + "];",
     "uniform vec4 twinkle[" + MAX.twinkle + "];",
     "vec2 rot(vec2 v, float a){ float c = cos(a), s = sin(a); return vec2(c * v.x - s * v.y, s * v.x + c * v.y); }",
     "float swing(int i){",
     "  float a = 0.0;",
-    "  for (int j = 0; j < " + MAX.swing + "; j++) { if (j == i) a = swingAmp[j]; }",
+    "  for (int j = 0; j < " + MAX.swing + "; j++) { if (j == i) a = swingA[j].z; }",
     "  float f = float(i);",
     "  return a * 0.055 * sin(t * (1.1 + 0.15 * f) + f * 2.1) * (0.7 + 0.3 * sin(t * 0.23 + f));",
     "}",
@@ -53,7 +62,7 @@
     "    if (i >= nSwing) break;",
     "    vec4 b = swingBox[i];",
     "    float inside = step(b.x - 12.0, px.x) * step(px.x, b.z + 12.0) * step(b.y - 4.0, px.y) * step(px.y, b.w + 12.0);",
-    "    src = mix(src, swingAnchor[i] + rot(px - swingAnchor[i], -swing(i)), m.b * inside);",
+    "    src = mix(src, swingA[i].xy + rot(px - swingA[i].xy, -swing(i)), m.b * inside);",
     "  }",
     "  vec3 col = texture2D(img, src / size).rgb;",
     // A light runs along the threads towards the point where they meet.
@@ -64,13 +73,15 @@
     "  for (int i = 0; i < " + MAX.glow + "; i++) {",
     "    if (i >= nGlow) break;",
     "    vec2 at = glowA[i].xy;",
+    // w holds the lamp the light hangs from, plus one, times ten, plus the strength.
+    "    float lamp = floor(glowA[i].w / 10.0) - 1.0;",
     "    for (int j = 0; j < " + MAX.swing + "; j++) {",
-    "      if (float(j) == glowSwing[i]) at = swingAnchor[j] + rot(at - swingAnchor[j], swing(j));",
+    "      if (float(j) == lamp) at = swingA[j].xy + rot(at - swingA[j].xy, swing(j));",
     "    }",
     "    vec2 d = px - at;",
     "    float r = length(d * vec2(1.0, 0.8));",
     "    float glow = exp(-r * r / (glowA[i].z * glowA[i].z)) * smoothstep(-0.25, 0.2, d.y / glowA[i].z);",
-    "    float k = glowA[i].w * (0.7 + 0.2 * sin(t * 0.9 + float(i) * 1.3) + 0.03 * sin(t * 11.0 + float(i) * 7.0));",
+    "    float k = mod(glowA[i].w, 10.0) * (0.7 + 0.2 * sin(t * 0.9 + float(i) * 1.3) + 0.03 * sin(t * 11.0 + float(i) * 7.0));",
     "    float spot = exp(-dot(d, d) / 60.0);",
     "    vec3 day = mix(col, col * vec3(1.08, 0.96, 0.74) + vec3(0.07, 0.045, 0.0), glow * k * 0.7) + spot * k * vec3(0.2, 0.16, 0.07);",
     "    vec3 dark = col + (glow * 0.14 + spot * 0.3) * k * vec3(1.0, 0.72, 0.35);",
@@ -114,7 +125,7 @@
 
   var canvas = document.createElement("canvas");
   var gl = canvas.getContext("webgl", { alpha: false, antialias: false, premultipliedAlpha: false });
-  if (!gl) return;
+  if (!gl) return state("no WebGL context");
   canvas.className = "motion";
   canvas.setAttribute("aria-hidden", "true");
 
@@ -122,7 +133,9 @@
     var s = gl.createShader(type);
     gl.shaderSource(s, src);
     gl.compileShader(s);
-    return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null;
+    if (gl.getShaderParameter(s, gl.COMPILE_STATUS)) return s;
+    state("shader: " + gl.getShaderInfoLog(s));
+    return null;
   }
   var vs = shader(gl.VERTEX_SHADER, VS);
   var fs = shader(gl.FRAGMENT_SHADER, FS);
@@ -131,7 +144,7 @@
   gl.attachShader(prog, vs);
   gl.attachShader(prog, fs);
   gl.linkProgram(prog);
-  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return state("link: " + gl.getProgramInfoLog(prog));
   gl.useProgram(prog);
 
   gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
@@ -161,13 +174,13 @@
   var swing = data.swing || [], glow = data.glow || [], fall = data.fall || [], twinkle = data.twinkle || [];
   gl.uniform2f(u("size"), data.size[0], data.size[1]);
   set("Swing", swing.length, [
-    ["2fv", "swingAnchor", flat(swing, function (s) { return s.anchor; })],
-    ["4fv", "swingBox", flat(swing, function (s) { return s.box; })],
-    ["1fv", "swingAmp", flat(swing, function (s) { return [s.amp]; })]
+    ["4fv", "swingA", flat(swing, function (s) { return [s.anchor[0], s.anchor[1], s.amp, 0]; })],
+    ["4fv", "swingBox", flat(swing, function (s) { return s.box; })]
   ]);
   set("Glow", glow.length, [
-    ["4fv", "glowA", flat(glow, function (g) { return [g.at[0], g.at[1], g.radius, g.strength]; })],
-    ["1fv", "glowSwing", flat(glow, function (g) { return [g.swing]; })]
+    ["4fv", "glowA", flat(glow, function (g) {
+      return [g.at[0], g.at[1], g.radius, 10 * (g.swing + 1) + Math.min(g.strength, 9.99)];
+    })]
   ]);
   set("Fall", fall.length, [
     ["4fv", "fallSprite", flat(fall, function (f) { return f.sprite; })],
@@ -232,6 +245,7 @@
     if (!shown) {
       shown = true;
       canvas.classList.add("on");
+      state("running");
     }
   }
   function start() {
