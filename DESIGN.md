@@ -457,13 +457,14 @@ not dim it.
 
 **Animated cover.** A cover can move a little: plants sway, pendant lamps swing
 on their cords and their light breathes, a light runs along a thread, a leaf
-falls, water ripples, a floating thing bobs, clouds drift, and at night the lit
-windows outside go dark and come back. The painted
+falls, water ripples, a floating thing bobs, clouds drift, a lighthouse sweeps
+its beam, and at night the lit windows outside go dark and come back. The painted
 pixels themselves are moved, by a WebGL canvas laid over the image inside its
 border, so the watercolour stays exactly as drawn. What moves, and how, comes
 from a motion map next to the cover, `<name>-motion.webp` and
 `<name>-motion.json`, built by `just motion-map` from a mask Codex paints and a
-short spec written on review. One map serves the day and the night version,
+short spec written on review. What moves is decided with the cover, in a one
+line motion brief Paolo approves, never guessed by the pipeline. One map serves the day and the night version,
 which must line up within a pixel. The motion is slow and small, about 3px at
 most, and stays below the title in attention: a cover that pulls the eye from
 the first paragraph has too much. The image stays underneath and takes the

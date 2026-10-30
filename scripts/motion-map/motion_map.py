@@ -20,7 +20,7 @@ version that does not line up with the cover fails the build.
 
 The Codex mask colour code: green #00FF00 plants rooted at the bottom, cyan
 #00FFFF things hanging from above (ivy, papers on a line), blue #0000FF pendant
-lamps with their cord, yellow #FFFF00 wheels (ignored), red #FF0000 threads a
+lamps with their cord, yellow #FFFF00 a lighthouse lantern, red #FF0000 threads a
 light runs along, white #FFFFFF a dot on each light, orange #FF8000 water,
 magenta #FF00FF things floating on it. Everything else black.
 
@@ -61,7 +61,7 @@ CODES = {
     "green": (0, 255, 0),       # rooted plants: sway, more at the top
     "cyan": (0, 255, 255),      # hanging things: sway, more at the bottom
     "blue": (0, 0, 255),        # pendant lamps: swing about the top of the cord
-    "yellow": (255, 255, 0),    # wheels: ignored, a turning wheel needs its own layer
+    "yellow": (255, 255, 0),    # lighthouse lanterns: the beam sweeps round
     "red": (255, 0, 0),         # threads a light pulse runs along
     "white": (255, 255, 255),   # lights that glow
     "orange": (255, 128, 0),    # water: ripples
@@ -334,8 +334,14 @@ def main():
             m = m & ~box(e)
         np.maximum(drift, nd.gaussian_filter(nd.binary_erosion(m, iterations=30).astype(float), 18), out=drift)
 
-    beams = [[b_["at"][0], b_["at"][1], b_.get("length", 300), round((i * 0.37) % 1, 3)]
-             for i, b_ in enumerate(spec.get("beam", []))]
+    # Lighthouse beams: Codex's yellow lanterns, plus any the spec adds. A beam
+    # reaches about thirty lanterns' height, so a distant lighthouse sweeps short.
+    beams = []
+    for comp, (sy, sx) in parts(region["yellow"], 4):
+        reach = int(min(max(30 * (sy.stop - sy.start), 150), 360))
+        beams.append([(sx.start + sx.stop) // 2, (sy.start + sy.stop) // 2, reach, round((len(beams) * 0.37) % 1, 3)])
+    for b_ in spec.get("beam", []):
+        beams.append([b_["at"][0], b_["at"][1], b_.get("length", 300), round((len(beams) * 0.37) % 1, 3)])
     for k, v in (("swing", swings), ("glow", glows), ("fall", spec.get("fall", [])), ("twinkle", twinkle),
                  ("float", floats), ("beam", beams)):
         if len(v) > MAX[k]:

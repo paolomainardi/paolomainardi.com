@@ -51,7 +51,13 @@ in the post as WebP. Paolo approves every image before it is merged.
    Ask Paolo, in one short message:
    - the metaphor you propose, in one line, and whether he has another idea;
    - the tone: calm and serious (the default) or lighter;
-   - anything that must or must not be in the picture.
+   - anything that must or must not be in the picture;
+   - the motion brief: in one line, what in the scene moves and how, using
+     only the motions in the table below, for example "the sea swells, the
+     container bobs, the lighthouses sweep their beams, the clouds drift".
+     Pick what would move in the real scene and carries the idea; leave the
+     rest still. A motion the table does not have is a change to the player
+     and the map builder: say so, and add it only if he agrees.
 
    Generate only after he answers. Use his words for the tone; a lighter or
    funnier image stays in the default style unless he asks for another one.
@@ -91,37 +97,51 @@ in the post as WebP. Paolo approves every image before it is merged.
    text. Pass the cover with `-i` after the prompt. Convert it like the cover,
    to `<name>-night.webp` in the same folder: the post picks it up by that
    name, with no front matter.
-8. **Make the motion map** once both versions are approved. Run Codex with the
-   approved PNG and this prompt, the cover passed with `-i` after it:
+8. **Make the motion map** once both versions are approved. The brief from
+   step 2 decides what moves; each motion has a colour in Codex's mask, or
+   lives only in the spec:
+
+   | Motion                                   | Mask colour       | Spec key  |
+   | :--------------------------------------- | :---------------- | :-------- |
+   | Plants and flowers sway, rooted below    | green `#00FF00`   | `wind`    |
+   | Hanging things sway (ivy, pegged papers) | cyan `#00FFFF`    | `wind`    |
+   | Pendant lamps swing on their cord        | blue `#0000FF`    | `swing`   |
+   | A light runs along a cable or thread     | red `#FF0000`     |           |
+   | A light glows and breathes               | white `#FFFFFF`   | `glow`    |
+   | Water ripples                            | orange `#FF8000`  | `water`   |
+   | Something floating bobs and rocks        | magenta `#FF00FF` | `float`   |
+   | A lighthouse sweeps its beam             | yellow `#FFFF00`  | `beam`    |
+   | Clouds drift                             |                   | `drift`   |
+   | Leaves fall                              |                   | `fall`    |
+   | Lit windows go dark at night             |                   | `twinkle` |
+
+   Run Codex with the approved PNG and this prompt, with one line per brief
+   item that has a colour, the cover passed with `-i` after it:
 
    > The attached image is an illustrated blog cover, 1536x1024 pixels.
    > Generate ONE new image: a motion mask for this cover. Same size and the
    > exact same composition, every object in the exact same position, so the
    > mask can be laid over the cover pixel for pixel. The mask is flat colours
    > on pure black (#000000). No shading, no outlines, no texture, no text.
-   > Paint only the things that should move, each filled solid with its code
-   > colour, following the object's real silhouette:
-   > green #00FF00 plants and flowers rooted at the bottom, which sway in the
-   > wind; cyan #00FFFF things hanging from above that sway, such as trailing
-   > ivy or papers pegged on a line; blue #0000FF pendant lamps hanging from a
-   > cord, cord included, which swing; yellow #FFFF00 wheels that can spin;
-   > red #FF0000 cables or threads along which a light pulse can travel;
-   > white #FFFFFF a small dot on each light bulb that is lit or could glow;
-   > orange #FF8000 water that can ripple; magenta #FF00FF things floating on
-   > the water, which bob.
-   > Everything else stays black. Do not paint people, robots, furniture,
-   > walls or windows. Save the result as mask.png in the current directory.
+   > Paint only these, each filled solid with its colour, following the
+   > object's real silhouette:
+   > - <the thing, as it appears in the picture>: <colour name> <hex>
+   >   (for a light or a lighthouse, a small dot on the lantern only)
+   > Everything else stays black. Save the result as mask.png in the current
+   > directory.
 
    Save it as `<name>-motion-codex.png` next to the cover and run
    `just motion-map <cover.webp> --overlay /site/.motion-review.png`. Look at
    the overlay, then delete it. Where Codex painted something that must not
    move, add an `exclude` box to `<name>-motion-spec.json`; where it missed or
    redrew a part (it tends to redraw a dense tree instead of tracing it), add
-   that part to the spec instead. Clouds that drift exist only in the spec. The keys are in the script's docstring. The
-   script fails when the mask is more than 3px off the cover: generate the
-   mask again, or describe the parts in the spec. Commit the mask, the spec
-   and the two outputs. Keep the motion slow and small; on a cover with
-   nothing that would move naturally, skip this step.
+   that part to the spec instead, with the spec-only motions of the brief. The
+   keys are in the script's docstring. The script fails when the mask is more
+   than 3px off the cover: generate the mask again, or describe the parts in
+   the spec. Then watch the motion on the preview before sending it: a brief
+   item that does not move, or something moving that is not in the brief, is
+   a mistake to fix first. Commit the mask, the spec and the two outputs. On a
+   cover with nothing that would move naturally, skip this step.
 9. **Check it on the page.** Build, serve the preview on the Tailscale
    address, and send Paolo both images and the preview link. The cover fills
    the text column at every width; check a phone width and the dark scheme
