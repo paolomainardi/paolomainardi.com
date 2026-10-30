@@ -132,3 +132,16 @@ weight = 100
 [[related.indices]]
 name = "date"
 weight = 10
+
+# Each post is also published as Markdown, for readers who hand it to an LLM.
+[outputFormats.markdown]
+mediaType = "text/markdown"
+baseName = "index"
+isPlainText = true
+rel = "alternate"
+
+[[cascade]]
+outputs = ["html", "markdown"]
+[cascade.target]
+path = "/posts/**"
+kind = "page"

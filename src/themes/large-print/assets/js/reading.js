@@ -105,3 +105,85 @@
     wide.addListener(sync);
   }
 })();
+
+// The back to top link, shown once the reader is a screen into the post.
+(function () {
+  "use strict";
+
+  var link = document.querySelector(".to-top");
+  if (!link) {
+    return;
+  }
+
+  var queued = false;
+
+  function update() {
+    queued = false;
+    link.hidden = window.scrollY < window.innerHeight;
+  }
+
+  function schedule() {
+    if (!queued) {
+      queued = true;
+      window.requestAnimationFrame(update);
+    }
+  }
+
+  window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("resize", schedule, { passive: true });
+  schedule();
+})();
+
+// Copy as Markdown: copies the post's Markdown version, so a reader can paste
+// the whole post into an LLM. The link opens that version instead when the
+// browser cannot copy. ClipboardItem takes a promise, which keeps the write
+// inside the click for Safari while the file is still being fetched.
+(function () {
+  "use strict";
+
+  var link = document.querySelector(".copy-md");
+  if (!link || !navigator.clipboard) {
+    return;
+  }
+
+  var label = link.textContent;
+
+  function text() {
+    return window.fetch(link.href).then(function (response) {
+      if (!response.ok) {
+        throw new Error(response.status);
+      }
+      return response.text();
+    });
+  }
+
+  function write() {
+    if (window.ClipboardItem && navigator.clipboard.write) {
+      return navigator.clipboard.write([
+        new window.ClipboardItem({
+          "text/plain": text().then(function (t) {
+            return new Blob([t], { type: "text/plain" });
+          }),
+        }),
+      ]);
+    }
+    return text().then(function (t) {
+      return navigator.clipboard.writeText(t);
+    });
+  }
+
+  link.addEventListener("click", function (event) {
+    event.preventDefault();
+    write().then(
+      function () {
+        link.textContent = "Copied";
+        window.setTimeout(function () {
+          link.textContent = label;
+        }, 2000);
+      },
+      function () {
+        window.location.href = link.href;
+      }
+    );
+  });
+})();

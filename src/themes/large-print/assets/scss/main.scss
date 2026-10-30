@@ -2619,6 +2619,44 @@ dialog.zoom {
   }
 }
 
+// Back to the top of a long post, in the corner the text never reaches on a
+// wide screen. Dressed like a label, on paper so it stays legible over text.
+.to-top {
+  position: fixed;
+  right: 2.4rem;
+  bottom: 2.4rem;
+  z-index: 3;
+  padding: 0.6rem 1.2rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  text-decoration: none;
+  background-color: var(--paper);
+  border: 1px solid var(--rule-2);
+  border-radius: 3px;
+
+  &:before {
+    content: "\2191\00a0";
+  }
+
+  &:hover,
+  &:focus-visible {
+    color: var(--blush);
+    border-color: var(--blush);
+  }
+
+  &[hidden] {
+    display: none;
+  }
+
+  @media only screen and (max-width: 640px) {
+    right: 1.6rem;
+    bottom: 1.6rem;
+  }
+}
+
 // A post should not end in a dead end.
 .post-nav {
   display: grid;
@@ -3097,6 +3135,8 @@ summary:focus-visible {
     .footer,
     .colorscheme-toggle,
     .listing .copy,
+    .copy-md-item,
+    .to-top,
     .rail,
     .toc {
       display: none;
