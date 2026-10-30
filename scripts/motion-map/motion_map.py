@@ -307,7 +307,8 @@ def main():
         floats.append({"center": [int(xs.mean()), int(ys.mean())],
                        "box": [int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1],
                        "amp": amp})
-        np.maximum(floating, soft(m, 5, 2), out=floating)
+        # Wide enough that a bob of 6px and a rock of 3 degrees stay inside.
+        np.maximum(floating, soft(m, 12, 3), out=floating)
 
     for comp, _ in parts(region["magenta"], 150):
         add_float(comp, 1.0)
@@ -323,13 +324,13 @@ def main():
             fail(f"nothing floating in box {fl['box']}")
         add_float(lab == 1 + np.argmax(nd.sum(m, lab, range(1, n + 1))), fl.get("amp", 1.0))
 
-    # Drift: the sky slides slowly, feathered so its edges do not tear.
+    # Drift: the sky slides slowly, feathered wide so its edges do not tear.
     drift = np.zeros((H, W))
     for d_ in spec.get("drift", []):
         m = box(d_["box"])
         for e in d_.get("exclude", []):
             m = m & ~box(e)
-        np.maximum(drift, nd.gaussian_filter(nd.binary_erosion(m, iterations=12).astype(float), 6), out=drift)
+        np.maximum(drift, nd.gaussian_filter(nd.binary_erosion(m, iterations=30).astype(float), 18), out=drift)
 
     for k, v in (("swing", swings), ("glow", glows), ("fall", spec.get("fall", [])), ("twinkle", twinkle), ("float", floats)):
         if len(v) > MAX[k]:

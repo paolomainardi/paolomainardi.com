@@ -59,10 +59,10 @@
     "  vec3 m = texture2D(map, vec2(uv.x, uv.y * 0.5)).rgb;",
     "  vec3 n = texture2D(map, vec2(uv.x, 0.5 + uv.y * 0.5)).rgb;",
     "  vec2 src = px;",
-    // Water: a slow travelling ripple, mostly up and down.
-    "  src += n.r * vec2(0.9 * sin(t * 1.2 + px.y * 0.09 + px.x * 0.012), 1.8 * sin(t * 0.95 + px.x * 0.03 - px.y * 0.015));",
-    // Drift: the sky slides a few pixels one way, then back, over a minute and a half.
-    "  src.x -= n.b * 7.0 * sin(t * 0.07);",
+    // Water: swells rolling across, mostly up and down, with a little chop.
+    "  src += n.r * vec2(1.6 * sin(t * 0.9 + px.y * 0.06), 4.0 * sin(t * 1.1 - px.x * 0.022 + px.y * 0.035) + 1.2 * sin(t * 2.3 - px.x * 0.07));",
+    // Drift: the clouds slide one way, then back, over about fifty seconds.
+    "  src.x -= n.b * 22.0 * sin(t * 0.125);",
     // Floating things bob and rock about their middle.
     "  for (int i = 0; i < " + MAX.float + "; i++) {",
     "    if (i >= nFloat) break;",
@@ -70,8 +70,8 @@
     "    vec2 c = floatA[i].xy;",
     "    float f = float(i);",
     "    float inside = step(b.x - 16.0, px.x) * step(px.x, b.z + 16.0) * step(b.y - 16.0, px.y) * step(px.y, b.w + 16.0);",
-    "    float bob = floatA[i].z * 3.0 * sin(t * 0.8 + f * 1.9);",
-    "    float rock = floatA[i].z * 0.025 * sin(t * 0.6 + f);",
+    "    float bob = floatA[i].z * 6.0 * sin(t * 0.9 + f * 1.9);",
+    "    float rock = floatA[i].z * 0.05 * sin(t * 0.7 + f);",
     "    src = mix(src, c + rot(px - vec2(0.0, bob) - c, -rock), n.g * inside);",
     "  }",
     // Wind: sideways, in two slow waves under a gust.
