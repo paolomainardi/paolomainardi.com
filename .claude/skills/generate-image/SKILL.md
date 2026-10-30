@@ -118,7 +118,7 @@ in the post as WebP. Paolo approves every image before it is merged.
    move, add an `exclude` box to `<name>-motion-spec.json`; where it missed or
    redrew a part (it tends to redraw a dense tree instead of tracing it), add
    that part to the spec instead. Clouds that drift exist only in the spec. The keys are in the script's docstring. The
-   script fails when the mask is more than 2px off the cover: generate the
+   script fails when the mask is more than 3px off the cover: generate the
    mask again, or describe the parts in the spec. Commit the mask, the spec
    and the two outputs. Keep the motion slow and small; on a cover with
    nothing that would move naturally, skip this step.

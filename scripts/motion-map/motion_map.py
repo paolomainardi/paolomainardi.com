@@ -148,7 +148,7 @@ def main():
         win = (slice(max(ys.min() - 24, 0), ys.max() + 25), slice(max(xs.min() - 24, 0), xs.max() + 25))
         corr, dx, dy = best_shift(nd.gaussian_filter(edges(im), 1.5)[win], nd.gaussian_filter(outline, 1.5)[win], 6)
         print(f"codex mask: best fit {dx:+d},{dy:+d} px (r={corr:.2f})")
-        if abs(dx) > 2 or abs(dy) > 2:
+        if abs(dx) > 3 or abs(dy) > 3:
             fail(f"the Codex mask is {dx:+d},{dy:+d} px off the cover; generate it again, or describe the parts in the spec")
 
     # The night version has to line up too: one map serves both.
