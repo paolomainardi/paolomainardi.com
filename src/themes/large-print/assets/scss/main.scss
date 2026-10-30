@@ -1840,6 +1840,30 @@ body:has(.container.home) .navigation .navigation-title {
   filter: none;
 }
 
+// An animated cover: motion.js lays a canvas over the image, inside its
+// border, and fades it in once the first frame is drawn. The image stays
+// underneath and takes the clicks, so the overlay still opens.
+.frontispiece-motion {
+  position: relative;
+
+  canvas {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    filter: var(--image-dim, none);
+  }
+
+  canvas.on {
+    opacity: 1;
+  }
+
+  &:has(source.night) canvas {
+    filter: none;
+  }
+}
+
 // The image overlay, opened by zoom.js. An image that would show larger on its
 // own gets the zoom cursor. The overlay is a dim field with the image fitted
 // inside the viewport and the caption under it, both in fixed colours so they
@@ -3251,7 +3275,8 @@ summary:focus-visible {
     .to-top,
     .readbar,
     .rail,
-    .toc {
+    .toc,
+    .frontispiece-motion canvas {
       display: none;
     }
 

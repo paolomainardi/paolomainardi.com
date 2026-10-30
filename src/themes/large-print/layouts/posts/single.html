@@ -62,6 +62,15 @@
             {{ $img := partial "book/asset.html" . }}
             {{ $nightPath := replaceRE `\.webp$` "-night.webp" . }}
             {{ $night := cond (and (ne $nightPath .) (resources.Get (strings.TrimPrefix "/" $nightPath))) (partial "book/asset.html" $nightPath) dict }}
+            {{- /* A cover with a motion map next to it, <name>-motion.webp and
+                   <name>-motion.json from scripts/motion-map, is animated by
+                   motion.js on a canvas over the image. */ -}}
+            {{ $motion := dict }}
+            {{ $mapPath := replaceRE `\.webp$` "-motion.webp" (strings.TrimPrefix "/" .) }}
+            {{ $map := cond (ne $mapPath (strings.TrimPrefix "/" .)) (resources.Get $mapPath) nil }}
+            {{ $mapData := cond (ne $map nil) (resources.Get (replaceRE `\.webp$` ".json" $mapPath)) nil }}
+            {{ if and $map $mapData }}{{ $motion = dict "map" $map.RelPermalink "data" $mapData.Content }}{{ end }}
+            {{ with $motion.map }}<div class="frontispiece-motion">{{ end }}
             <picture class="frontispiece-picture">
                 {{ with $night }}<source class="night" media="(prefers-color-scheme: dark)" srcset="{{ or .srcset .url }}"{{ if .srcset }} sizes="(min-width: 868px) 820px, 100vw"{{ end }} />{{ end }}
                 <img class="frontispiece" src="{{ $img.url | safeURL }}" alt="{{ $.Title }}"
@@ -69,8 +78,10 @@
                     {{- with $img.srcset }} srcset="{{ . }}" sizes="(min-width: 868px) 820px, 100vw"{{ end }}
                     {{- with $img.zoom }} data-zoom="{{ . }}" data-zoom-width="{{ $img.zoomWidth }}"{{ end }}
                     {{- with $night.zoom }} data-zoom-night="{{ . }}"{{ end }}
+                    {{- with $motion.map }} data-motion-map="{{ . }}" data-motion="{{ $motion.data }}"{{ end }}
                     loading="eager" fetchpriority="high" decoding="async" />
             </picture>
+            {{ with $motion.map }}</div>{{ end }}
             {{ end }}
             <div class="text">
                 {{ .Content }}

@@ -106,6 +106,13 @@ Run `just` or `just --list` to see all recipes.
   and the steps: ask Paolo first, generate with Codex, convert to WebP. A
   generated cover also gets a night version, `<name>-night.webp` next to it,
   shown in the dark scheme; other images are dimmed there instead.
+- **Covers can be animated.** `just motion-map <cover.webp>` builds
+  `<name>-motion.webp` and `<name>-motion.json` from `<name>-motion-codex.png`
+  (a mask Codex paints in a fixed colour code) and `<name>-motion-spec.json`
+  (corrections and additions, see the docstring of
+  `scripts/motion-map/motion_map.py`). The post shows the motion when both
+  outputs sit next to the cover; `assets/js/motion.js` draws it. The script
+  fails when the mask or the night version does not line up with the cover.
 - **Series are data.** A post joins a series with `series = "<key>"` and
   `series_part = <n>` in its front matter. The key names an entry in
   `src/data/series.yaml` with `title`, `parts` (the planned total, for "Part 3
@@ -138,6 +145,7 @@ Run `just` or `just --list` to see all recipes.
 | `src/content/posts/<n>-<slug>/`   | One directory per post, `index.md` inside          |
 | `src/content/links/<slug>.md`     | One file per link, the note as the body            |
 | `src/assets/images/posts/`        | Post images, measured at build time                |
+| `scripts/motion-map/`             | Builds the motion maps of animated covers, in Docker |
 
 ## Code Style
 

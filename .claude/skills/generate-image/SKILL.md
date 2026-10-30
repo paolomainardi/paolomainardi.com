@@ -91,8 +91,37 @@ in the post as WebP. Paolo approves every image before it is merged.
    text. Pass the cover with `-i` after the prompt. Convert it like the cover,
    to `<name>-night.webp` in the same folder: the post picks it up by that
    name, with no front matter.
-8. **Check it on the page.** Build, serve the preview on the Tailscale
+8. **Make the motion map** once both versions are approved. Run Codex with the
+   approved PNG and this prompt, the cover passed with `-i` after it:
+
+   > The attached image is an illustrated blog cover, 1536x1024 pixels.
+   > Generate ONE new image: a motion mask for this cover. Same size and the
+   > exact same composition, every object in the exact same position, so the
+   > mask can be laid over the cover pixel for pixel. The mask is flat colours
+   > on pure black (#000000). No shading, no outlines, no texture, no text.
+   > Paint only the things that should move, each filled solid with its code
+   > colour, following the object's real silhouette:
+   > green #00FF00 plants and flowers rooted at the bottom, which sway in the
+   > wind; cyan #00FFFF things hanging from above that sway, such as trailing
+   > ivy or papers pegged on a line; blue #0000FF pendant lamps hanging from a
+   > cord, cord included, which swing; yellow #FFFF00 wheels that can spin;
+   > red #FF0000 cables or threads along which a light pulse can travel;
+   > white #FFFFFF a small dot on each light bulb that is lit or could glow.
+   > Everything else stays black. Do not paint people, robots, furniture,
+   > walls or windows. Save the result as mask.png in the current directory.
+
+   Save it as `<name>-motion-codex.png` next to the cover and run
+   `just motion-map <cover.webp> --overlay /site/.motion-review.png`. Look at
+   the overlay, then delete it. Where Codex painted something that must not
+   move, add an `exclude` box to `<name>-motion-spec.json`; where it missed or
+   redrew a part (it tends to redraw a dense tree instead of tracing it), add
+   that part to the spec instead. The keys are in the script's docstring. The
+   script fails when the mask is more than 2px off the cover: generate the
+   mask again, or describe the parts in the spec. Commit the mask, the spec
+   and the two outputs. Keep the motion slow and small; on a cover with
+   nothing that would move naturally, skip this step.
+9. **Check it on the page.** Build, serve the preview on the Tailscale
    address, and send Paolo both images and the preview link. The cover fills
    the text column at every width; check a phone width and the dark scheme
-   too.
-9. **Open a pull request** and merge only when Paolo says so.
+   too, and watch the motion in both.
+10. **Open a pull request** and merge only when Paolo says so.

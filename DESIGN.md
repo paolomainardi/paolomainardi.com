@@ -455,6 +455,23 @@ dark paper and saved next to it as `<name>-night.webp`. The page shows it
 whenever the dark scheme is on, by system setting or by the toggle, and does
 not dim it.
 
+**Animated cover.** A cover can move a little: plants sway, pendant lamps swing
+on their cords and their light breathes, a light runs along a thread, a leaf
+falls, and at night the lit windows outside go dark and come back. The painted
+pixels themselves are moved, by a WebGL canvas laid over the image inside its
+border, so the watercolour stays exactly as drawn. What moves, and how, comes
+from a motion map next to the cover, `<name>-motion.webp` and
+`<name>-motion.json`, built by `just motion-map` from a mask Codex paints and a
+short spec written on review. One map serves the day and the night version,
+which must line up within a pixel. The motion is slow and small, about 3px at
+most, and stays below the title in attention: a cover that pulls the eye from
+the first paragraph has too much. The image stays underneath and takes the
+clicks; the canvas only draws while the cover is on screen, at 30 frames a
+second, and is never created when the reader asks for reduced motion. A wheel
+turning in place was tried and dropped: rotating a painted wheel drags the
+wall and the machine behind it along, and a clean turn needs the wheel painted
+as its own layer.
+
 **Image overlay.** An image that would show at least 15% wider on its own gets a
 zoom cursor, and clicking it, or pressing Enter on it, opens it in a modal
 overlay: a near black field with the image fitted to the viewport and the caption
@@ -660,6 +677,9 @@ a label, a weight or a hairline would say the same thing first.
 **Don't** repeat the same words twice on one screen. The wordmark steps back to
 a quiet label on the home page precisely because the masthead below it already
 says the name.
+
+**Don't** animate anything but a cover. Motion inside the text competes with
+reading; the cover is the one place where a little life is welcome.
 
 **Don't** use `!important`. The theme ships one stylesheet, so order and scoping
 are enough.
