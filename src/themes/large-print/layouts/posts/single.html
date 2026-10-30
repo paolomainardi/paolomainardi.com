@@ -20,6 +20,7 @@
                 {{- /* Opens the Markdown version; reading.js copies it instead. */ -}}
                 {{- with .OutputFormats.Get "markdown" }}<span class="copy-md-item"> · <a class="copy-md" href="{{ .RelPermalink }}">Copy as Markdown</a></span>{{ end }}
             </div>
+            <span class="watermark" aria-hidden="true">P/M</span>
             <div class="post-title">
                 <h1 class="title">
                     <a class="title-link" href="{{ .Permalink | safeURL }}">
@@ -74,6 +75,7 @@
             {{ end }}
             <div class="text">
                 {{ .Content }}
+                <p class="signoff" aria-hidden="true">// pm</p>
             </div>
         </div>
 

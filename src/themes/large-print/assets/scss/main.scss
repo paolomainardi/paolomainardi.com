@@ -3358,3 +3358,144 @@ summary:focus-visible {
     transform: scaleX(1);
   }
 }
+
+// -----------------------------------------------------------------------------
+// Slash identity (preview)
+// -----------------------------------------------------------------------------
+
+// One mark, the italic blush slash, repeated wherever a label starts.
+@mixin slash($gap: 0.4em) {
+  content: "/";
+  margin-right: $gap;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--blush);
+  display: inline-block;
+}
+
+// The diagonal hatch behind the opener, notices and listings.
+$hatch: repeating-linear-gradient(
+  -45deg,
+  transparent 0 7px,
+  color-mix(in srgb, var(--rule) 70%, transparent) 7px 8px
+);
+
+.navigation .navigation-title {
+  font-style: italic;
+  font-weight: 400;
+
+  &:before {
+    @include slash;
+  }
+}
+
+.part:before {
+  @include slash(0.6em);
+  letter-spacing: 0;
+}
+
+.toc summary.part:before {
+  @include slash(0.6em);
+  width: auto;
+}
+
+.text h2 {
+  &:before {
+    @include slash(0.3em);
+  }
+
+  .heading-link {
+    display: none;
+  }
+}
+
+.kicker .topic {
+  font-style: italic;
+  text-transform: lowercase;
+
+  &:before {
+    @include slash(0.15em);
+  }
+}
+
+.notice .notice-title:before {
+  @include slash;
+}
+
+.notice {
+  padding: 1.6rem 2rem;
+  background-image: $hatch;
+}
+
+.listing .listing-body {
+  background-image: $hatch;
+}
+
+.external-link:after,
+.link-host:after {
+  content: "";
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  margin-left: 0.25em;
+  background-color: var(--ink-3);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='none' stroke='black' stroke-width='1.2'%3E%3Cpath d='M2 8L8 2M3.5 2H8V6.5'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.content header.opener {
+  position: relative;
+
+  > :not(.watermark) {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.opener .watermark {
+  position: absolute;
+  right: 0;
+  top: -2rem;
+  z-index: 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16rem;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--rule);
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.6;
+
+  @media only screen and (max-width: 768px) {
+    font-size: 10rem;
+  }
+}
+
+.signoff {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--blush);
+}
+
+.text .signoff {
+  margin-top: 3.2rem;
+}
+
+.colophon .signoff {
+  margin-left: auto;
+}
+
+.to-top {
+  font-style: italic;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+@media print {
+  .opener .watermark,
+  .signoff {
+    display: none;
+  }
+}

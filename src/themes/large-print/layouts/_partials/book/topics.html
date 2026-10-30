@@ -23,6 +23,6 @@
 {{- range $terms -}}
   {{- $label := .LinkTitle -}}
   {{- with .Data.Term }}{{ $label = . }}{{ end -}}
-  {{- $links = $links | append (printf `<a href="%s">%s</a>` .RelPermalink $label) -}}
+  {{- $links = $links | append (printf `<a class="topic" href="%s">%s</a>` .RelPermalink $label) -}}
 {{- end -}}
-{{- delimit $links " · " | safeHTML -}}
+{{- delimit $links " " | safeHTML -}}
