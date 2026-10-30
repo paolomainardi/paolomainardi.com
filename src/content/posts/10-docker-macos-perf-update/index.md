@@ -5,8 +5,8 @@ slug = "docker-performance-macos-2025"
 tags = ["linux", "docker", "macos"]
 draft = "false"
 toc = "true"
-#  featuredImage = "/images/posts/10-docker/og-benchmark-diagram.webp"
-images = ["/images/posts/10-docker/og-benchmark-diagram.webp"]
+featuredImage = "/images/posts/10-docker/docker-macos-calm-sea.webp"
+images = ["/images/posts/10-docker/docker-macos-calm-sea.webp"]
 +++
 
 {{< notice info >}}
