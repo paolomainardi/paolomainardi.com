@@ -42,6 +42,8 @@ The spec, all keys optional, coordinates in cover pixels, boxes [x0, y0, x1, y1]
             shape in the box that is neither paper nor water; it bobs and rocks
             about its middle
   drift     [{box, exclude}] sky whose clouds slide slowly sideways
+  beam      [{at, length}] a lighthouse lantern whose beam sweeps round;
+            length is how far the beam reaches when it points sideways
   glow_radius  the radius of Codex's lights, 110 by default
 
 --overlay writes the cover with the regions painted over it, for review.
@@ -65,7 +67,7 @@ CODES = {
     "orange": (255, 128, 0),    # water: ripples
     "magenta": (255, 0, 255),   # floating things: bob and rock
 }
-MAX = {"swing": 4, "glow": 6, "fall": 4, "twinkle": 12, "float": 3}
+MAX = {"swing": 4, "glow": 6, "fall": 4, "twinkle": 12, "float": 3, "beam": 4}
 
 
 def fail(msg):
@@ -332,7 +334,10 @@ def main():
             m = m & ~box(e)
         np.maximum(drift, nd.gaussian_filter(nd.binary_erosion(m, iterations=30).astype(float), 18), out=drift)
 
-    for k, v in (("swing", swings), ("glow", glows), ("fall", spec.get("fall", [])), ("twinkle", twinkle), ("float", floats)):
+    beams = [[b_["at"][0], b_["at"][1], b_.get("length", 300), round((i * 0.37) % 1, 3)]
+             for i, b_ in enumerate(spec.get("beam", []))]
+    for k, v in (("swing", swings), ("glow", glows), ("fall", spec.get("fall", [])), ("twinkle", twinkle),
+                 ("float", floats), ("beam", beams)):
         if len(v) > MAX[k]:
             fail(f"{len(v)} {k} entries, the player takes {MAX[k]}")
 
@@ -342,10 +347,10 @@ def main():
                                   np.stack([water, floating, drift], -1)], 0), 0, 1)
     Image.fromarray((rgb * 255).round().astype(np.uint8), "RGB").save(stem + "-motion.webp", lossless=True, quality=100, method=6)
     json.dump({"size": [W, H], "swing": swings, "glow": glows, "fall": spec.get("fall", []), "twinkle": twinkle,
-               "float": floats},
+               "float": floats, "beam": beams},
               open(stem + "-motion.json", "w"), separators=(",", ":"))
     print(f"{len(swings)} swing, {len(glows)} glow, {len(spec.get('fall', []))} fall, {len(twinkle)} twinkle,"
-          f" {len(floats)} float, wind {int((wind > 0.05).sum())} px, pulse {int((along > 0).sum())} px,"
+          f" {len(floats)} float, {len(beams)} beam, wind {int((wind > 0.05).sum())} px, pulse {int((along > 0).sum())} px,"
           f" water {int((water > 0.05).sum())} px, drift {int((drift > 0.05).sum())} px")
 
     if overlay:

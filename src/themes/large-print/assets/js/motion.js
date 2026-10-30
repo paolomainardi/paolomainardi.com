@@ -1,7 +1,7 @@
 // Animated covers. A cover with a motion map is redrawn on a WebGL canvas laid
 // over the image: plants sway, lamps swing and glow, a light runs along
-// threads, leaves fall, water ripples, floating things bob, clouds drift, and
-// at night the windows outside go dark and come back.
+// threads, leaves fall, water ripples, floating things bob, clouds drift,
+// lighthouse beams sweep, and at night the windows outside go dark and come back.
 // The image underneath stays the page's image, so nothing changes when the
 // reader asks for reduced motion, WebGL is missing, or the script fails.
 //
@@ -20,7 +20,7 @@
   if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return state("reduced motion");
   if (!window.WebGLRenderingContext) return state("no WebGL");
 
-  var MAX = { swing: 4, glow: 6, fall: 4, twinkle: 12, float: 3 };
+  var MAX = { swing: 4, glow: 6, fall: 4, twinkle: 12, float: 3, beam: 4 };
 
   var VS =
     "attribute vec2 p; varying vec2 uv;" +
@@ -37,7 +37,8 @@
     "uniform sampler2D img, map;",
     "uniform float t, night;",
     "uniform vec2 size;",
-    "uniform int nSwing, nGlow, nFall, nTwinkle, nFloat;",
+    "uniform int nSwing, nGlow, nFall, nTwinkle, nFloat, nBeam;",
+    "uniform vec4 beam[" + MAX.beam + "];",
     "uniform vec4 floatA[" + MAX.float + "];",
     "uniform vec4 floatBox[" + MAX.float + "];",
     // Packed four to a slot: some phones allow few uniform slots.
@@ -105,6 +106,22 @@
     "    float spot = exp(-dot(d, d) / 60.0);",
     "    vec3 day = mix(col, col * vec3(1.08, 0.96, 0.74) + vec3(0.07, 0.045, 0.0), glow * k * 0.7) + spot * k * vec3(0.2, 0.16, 0.07);",
     "    vec3 dark = col + (glow * 0.14 + spot * 0.3) * k * vec3(1.0, 0.72, 0.35);",
+    "    col = mix(day, dark, night);",
+    "  }",
+    // Lighthouse beams sweep round: seen from the side, a beam reaches furthest
+    // when it points sideways and flashes when it turns towards the reader.
+    "  for (int i = 0; i < " + MAX.beam + "; i++) {",
+    "    if (i >= nBeam) break;",
+    "    vec4 bm = beam[i];",
+    "    float th = t * 0.55 + bm.w * 6.2832;",
+    "    vec2 d = px - bm.xy;",
+    "    float along = d.x * sign(cos(th));",
+    "    float reach = bm.z * abs(cos(th)) + 20.0;",
+    "    float spread = 2.0 + max(along, 0.0) * 0.06;",
+    "    float cone = smoothstep(0.0, 14.0, along) * (1.0 - smoothstep(spread * 0.5, spread, abs(d.y))) * exp(-max(along, 0.0) / reach);",
+    "    float flash = pow(max(sin(th), 0.0), 12.0) * exp(-dot(d, d) / 500.0);",
+    "    vec3 day = mix(col, col * vec3(1.04, 1.0, 0.9) + vec3(0.06, 0.05, 0.02), cone * 0.45) + flash * vec3(0.25, 0.22, 0.15);",
+    "    vec3 dark = col + (cone * 0.4 + flash * 0.9) * vec3(1.0, 0.85, 0.55);",
     "    col = mix(day, dark, night);",
     "  }",
     // At night the lit windows outside go dark and come back, one at a time.
@@ -207,6 +224,8 @@
     ["4fv", "fallPath", flat(fall, function (f) { return [f.from[0], f.from[1], f.floor, f.drift || 20]; })]
   ]);
   set("Twinkle", twinkle.length, [["4fv", "twinkle", flat(twinkle, function (w) { return w; })]]);
+  var beams = data.beam || [];
+  set("Beam", beams.length, [["4fv", "beam", flat(beams, function (b) { return b; })]]);
   var floating = data.float || [];
   set("Float", floating.length, [
     ["4fv", "floatA", flat(floating, function (f) { return [f.center[0], f.center[1], f.amp, 0]; })],
