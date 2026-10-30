@@ -35,7 +35,7 @@
     "#endif",
     "varying vec2 uv;",
     "uniform sampler2D img, map;",
-    "uniform float t, night;",
+    "uniform float t, night, halo;",
     "uniform vec2 size;",
     "uniform int nSwing, nGlow, nFall, nTwinkle, nFloat, nBeam;",
     "uniform vec4 beam[" + MAX.beam + "];",
@@ -101,10 +101,12 @@
     "    }",
     "    vec2 d = px - at;",
     "    float r = length(d * vec2(1.0, 0.8));",
-    "    float glow = exp(-r * r / (glowA[i].z * glowA[i].z)) * smoothstep(-0.25, 0.2, d.y / glowA[i].z);",
-    "    float k = mod(glowA[i].w, 10.0) * (0.7 + 0.2 * sin(t * 0.9 + float(i) * 1.3) + 0.03 * sin(t * 11.0 + float(i) * 7.0));",
+    // A halo light that does not swing shines all round and breathes deeper.
+    "    float allRound = halo * step(lamp, -0.5);",
+    "    float glow = exp(-r * r / (glowA[i].z * glowA[i].z)) * mix(smoothstep(-0.25, 0.2, d.y / glowA[i].z), 1.0, allRound);",
+    "    float k = mod(glowA[i].w, 10.0) * (mix(0.7, 0.6, allRound) + mix(0.2, 0.4, allRound) * sin(t * 0.9 + float(i) * 1.3) + 0.03 * sin(t * 11.0 + float(i) * 7.0));",
     "    float spot = exp(-dot(d, d) / 60.0);",
-    "    vec3 day = mix(col, col * vec3(1.08, 0.96, 0.74) + vec3(0.07, 0.045, 0.0), glow * k * 0.7) + spot * k * vec3(0.2, 0.16, 0.07);",
+    "    vec3 day = mix(col, col * vec3(1.08, 0.96, 0.74) + vec3(0.07, 0.045, 0.0), min(glow * k * 0.7, 1.0)) + spot * k * vec3(0.2, 0.16, 0.07);",
     "    vec3 dark = col + (glow * 0.14 + spot * 0.3) * k * vec3(1.0, 0.72, 0.35);",
     "    col = mix(day, dark, night);",
     "  }",
@@ -210,6 +212,7 @@
 
   var swing = data.swing || [], glow = data.glow || [], fall = data.fall || [], twinkle = data.twinkle || [];
   gl.uniform2f(u("size"), data.size[0], data.size[1]);
+  gl.uniform1f(u("halo"), data.halo ? 1 : 0);
   set("Swing", swing.length, [
     ["4fv", "swingA", flat(swing, function (s) { return [s.anchor[0], s.anchor[1], s.amp, 0]; })],
     ["4fv", "swingBox", flat(swing, function (s) { return s.box; })]

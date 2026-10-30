@@ -47,6 +47,8 @@ The spec, all keys optional, coordinates in cover pixels, boxes [x0, y0, x1, y1]
   glow_radius  the radius of Codex's lights, 110 by default
   glow_strength  how bright Codex's lights glow, 1 by default; raise it on a
             pale cover, where a light at 1 barely shows
+  glow_halo  true for lights that shine all round (a signal lamp) rather than
+            down onto the floor; they also breathe deeper
 
 --overlay writes the cover with the regions painted over it, for review.
 """
@@ -356,7 +358,7 @@ def main():
                                   np.stack([water, floating, drift], -1)], 0), 0, 1)
     Image.fromarray((rgb * 255).round().astype(np.uint8), "RGB").save(stem + "-motion.webp", lossless=True, quality=100, method=6)
     json.dump({"size": [W, H], "swing": swings, "glow": glows, "fall": spec.get("fall", []), "twinkle": twinkle,
-               "float": floats, "beam": beams},
+               "float": floats, "beam": beams, "halo": bool(spec.get("glow_halo"))},
               open(stem + "-motion.json", "w"), separators=(",", ":"))
     print(f"{len(swings)} swing, {len(glows)} glow, {len(spec.get('fall', []))} fall, {len(twinkle)} twinkle,"
           f" {len(floats)} float, {len(beams)} beam, wind {int((wind > 0.05).sum())} px, pulse {int((along > 0).sum())} px,"

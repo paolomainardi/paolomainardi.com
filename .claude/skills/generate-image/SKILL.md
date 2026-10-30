@@ -155,7 +155,8 @@ in the post as WebP. Paolo approves every image before it is merged.
    redrew a part (it tends to redraw a dense tree instead of tracing it), add
    that part to the spec instead, with the spec-only motions of the brief. On
    a pale cover the lights barely show: set `glow_strength` (about 2) and a
-   `glow_radius` that fits the lamps. The keys are in the script's docstring.
+   `glow_radius` that fits the lamps, and `glow_halo` for lamps that shine
+   all round, such as signal lamps, rather than down onto a floor. The keys are in the script's docstring.
    The script fails when the mask is more than 3px off the cover: generate the
    mask again, or describe the parts in the spec. Then watch the motion on the
    preview before sending it, in both schemes: a brief item that does not
