@@ -47,7 +47,7 @@
                    column of section links filled most of the first screen. It
                    is opened on wide screens by reading.js. */ -}}
             {{ if $toc }}
-            <details class="toc">
+            <details class="toc" id="contents">
                 <summary class="part">On this page</summary>
                 {{ .TableOfContents }}
             </details>
@@ -161,6 +161,17 @@
 
     {{- /* Shown by reading.js once the reader is a screen into the post. */}}
     <a class="to-top" href="#top" hidden>Top</a>
+
+    {{- /* The reading bar on narrow screens: where the reader is, a way to the
+           contents, and back to the top. reading.js shows it on scroll up. */}}
+    <nav class="readbar" aria-label="Reading position" hidden>
+        {{ if $toc }}
+        <a class="readbar-section" href="#contents"><span class="readbar-label">Contents</span> <span class="readbar-current">{{ .Title }}</span></a>
+        {{ else }}
+        <span class="readbar-section"><span class="readbar-current">{{ .Title }}</span></span>
+        {{ end }}
+        <a class="readbar-top" href="#top">Top</a>
+    </nav>
 
 </section>
 {{ end }}

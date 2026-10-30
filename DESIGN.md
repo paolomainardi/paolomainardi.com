@@ -529,6 +529,13 @@ still forces either answer.
 the label type on paper with a hairline border, so it stays legible over the
 text on a phone. Hidden until the reader is a screen into the post.
 
+**Reading bar.** Below 900px, a bar along the bottom edge on paper with a
+hairline above: the label "Contents" and the current section on the left, "Top"
+on the right, and a 2px blush line along its top edge for how far into the post
+the reader is. It slides up when the reader scrolls up, the gesture of someone
+looking for their place, and away on scroll down, so it never sits over the
+text while they read. At these widths it replaces the back to top label.
+
 **Copy as Markdown.** The last item of the kicker on a post. It copies the
 post's Markdown version, published next to the page as `index.md`, so a reader
 can hand the whole post to an LLM. Where the browser cannot copy, it opens that

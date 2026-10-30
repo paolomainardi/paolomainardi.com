@@ -187,3 +187,95 @@
     );
   });
 })();
+
+// The reading bar on narrow screens: the current section, a way back to the
+// contents, and to the top. It comes up when the reader scrolls up, the usual
+// gesture for looking for something, and gets out of the way on scroll down.
+(function () {
+  "use strict";
+
+  var bar = document.querySelector(".readbar");
+  if (!bar || !window.matchMedia) {
+    return;
+  }
+
+  var narrow = window.matchMedia("(max-width: 899px)");
+  var current = bar.querySelector(".readbar-current");
+  var title = current.textContent;
+  var headings = Array.prototype.slice.call(
+    document.querySelectorAll(".text h2[id]")
+  );
+  var names = headings.map(function (heading) {
+    var copy = heading.cloneNode(true);
+    var link = copy.querySelector(".heading-link");
+    if (link) {
+      link.parentNode.removeChild(link);
+    }
+    return copy.textContent.trim();
+  });
+
+  var lastY = window.scrollY;
+  var lastHeight = document.documentElement.scrollHeight;
+  var queued = false;
+
+  function show(on) {
+    if (on) {
+      bar.setAttribute("data-shown", "true");
+    } else {
+      bar.removeAttribute("data-shown");
+    }
+  }
+
+  function update() {
+    queued = false;
+    var y = window.scrollY;
+    var height = document.documentElement.scrollHeight;
+    // A scroll that comes with a change in page height is the browser keeping
+    // the text in place while images load, not the reader, so it moves nothing.
+    if (!narrow.matches || y < window.innerHeight) {
+      show(false);
+    } else if (height === lastHeight && y < lastY - 4) {
+      show(true);
+    } else if (height === lastHeight && y > lastY + 4) {
+      show(false);
+    }
+    lastY = y;
+    lastHeight = height;
+
+    var band = window.innerHeight * 0.2;
+    var name = title;
+    for (var i = 0; i < headings.length; i++) {
+      if (headings[i].getBoundingClientRect().top <= band) {
+        name = names[i];
+      } else {
+        break;
+      }
+    }
+    if (current.textContent !== name) {
+      current.textContent = name;
+    }
+  }
+
+  function schedule() {
+    if (!queued) {
+      queued = true;
+      window.requestAnimationFrame(update);
+    }
+  }
+
+  // Jumping to the contents opens them, since they start closed on a phone.
+  var toContents = bar.querySelector('a[href="#contents"]');
+  if (toContents) {
+    toContents.addEventListener("click", function () {
+      var toc = document.getElementById("contents");
+      if (toc) {
+        toc.open = true;
+      }
+    });
+  }
+
+  bar.hidden = false;
+  window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("resize", schedule, { passive: true });
+  schedule();
+})();
