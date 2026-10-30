@@ -106,6 +106,8 @@ Run `just` or `just --list` to see all recipes.
   and the steps: ask Paolo first, generate with Codex, convert to WebP. A
   generated cover also gets a night version, `<name>-night.webp` next to it,
   shown in the dark scheme; other images are dimmed there instead.
+  The prompts that made a cover are kept next to it in `<name>-prompt.md`;
+  the repository is public, so it holds the prompts only.
 - **Covers can be animated.** `just motion-map <cover.webp>` builds
   `<name>-motion.webp` and `<name>-motion.json` from `<name>-motion-codex.png`
   (a mask Codex paints in a fixed colour code) and `<name>-motion-spec.json`

@@ -105,6 +105,13 @@ in the post as WebP. Paolo approves every image before it is merged.
    one, and delete the old file. Point `featuredImage` and `images` in the
    post's front matter at `/images/posts/<n>-<slug>/<name>.webp`.
 
+   Keep the prompts next to the cover, in `<name>-prompt.md`: the motion
+   brief, then every prompt sent to Codex as it was sent (cover, night, mask),
+   added as you go, with the reference images named by their cover. Hugo does
+   not publish it, but the repository is public: write only the brief and the
+   prompts, never a local path, a hostname or anything else from the scratch
+   directory. Regenerate from it rather than from memory.
+
 7. **Make the night version** once Paolo approves the cover. Run Codex again
    with the approved PNG and a prompt asking for the same scene, unchanged,
    redrawn for the dark scheme: paper `#1a1917` (never pure black), cream ink
@@ -156,13 +163,14 @@ in the post as WebP. Paolo approves every image before it is merged.
    that part to the spec instead, with the spec-only motions of the brief. On
    a pale cover the lights barely show: set `glow_strength` (about 2) and a
    `glow_radius` that fits the lamps, and `glow_halo` for lamps that shine
-   all round, such as signal lamps, rather than down onto a floor. The keys are in the script's docstring.
-   The script fails when the mask is more than 3px off the cover: generate the
+   all round, such as signal lamps, rather than down onto a floor. The keys
+   are in the script's docstring. The script fails when the mask is more than 3px off the cover: generate the
    mask again, or describe the parts in the spec. Then watch the motion on the
    preview before sending it, in both schemes: a brief item that does not
    move, or moves too little to notice, or something moving that is not in
-   the brief, is a mistake to fix first. Commit the mask, the spec and the two outputs. On a
-   cover with nothing that would move naturally, skip this step.
+   the brief, is a mistake to fix first. Commit the mask, the spec and the
+   two outputs. On a cover with nothing that would move naturally, skip this
+   step.
 
 9. **Check it on the page.** Build, serve the preview on the Tailscale
    address, and send Paolo both images and the preview link. The cover fills
