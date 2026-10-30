@@ -83,7 +83,16 @@ in the post as WebP. Paolo approves every image before it is merged.
    Use a new file name when replacing a cover, so caches do not serve the old
    one, and delete the old file. Point `featuredImage` and `images` in the
    post's front matter at `/images/posts/<n>-<slug>/<name>.webp`.
-7. **Check it on the page.** Build, serve the preview on the Tailscale
-   address, and send Paolo the image and the preview link. The cover fills the
-   text column at every width; check a phone width too.
-8. **Open a pull request** and merge only when Paolo says so.
+7. **Make the night version** once Paolo approves the cover. Run Codex again
+   with the approved PNG and a prompt asking for the same scene, unchanged,
+   redrawn for the dark scheme: paper `#1a1917` (never pure black), cream ink
+   `#f0e9dc` and `#bcb3a6`, washes darkened and desaturated, soft rose
+   `#e5a3b2` as the one accent, a calm evening rather than an eerie night, no
+   text. Pass the cover with `-i` after the prompt. Convert it like the cover,
+   to `<name>-night.webp` in the same folder: the post picks it up by that
+   name, with no front matter.
+8. **Check it on the page.** Build, serve the preview on the Tailscale
+   address, and send Paolo both images and the preview link. The cover fills
+   the text column at every width; check a phone width and the dark scheme
+   too.
+9. **Open a pull request** and merge only when Paolo says so.

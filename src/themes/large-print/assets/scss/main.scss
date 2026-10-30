@@ -387,6 +387,9 @@ main:focus {
 
   --code-wash: #201e1c;
   --code-ink: #ece5d8;
+
+  // Images drawn on light paper are toned down so they do not glare.
+  --image-dim: brightness(0.82) saturate(0.9);
 }
 
 body.colorscheme-light,
@@ -1808,7 +1811,7 @@ body:has(.container.home) .navigation .navigation-title {
 // a dense phone screen, width auto drew it at a third of the column. The
 // contents block sits above it, so a tall image no longer pushes the contents
 // below the fold.
-.post-content > .frontispiece {
+.post-content .frontispiece {
   display: block;
   width: 100%;
   max-width: 100%;
@@ -1821,6 +1824,20 @@ body:has(.container.home) .navigation .navigation-title {
     margin-left: var(--offset);
     max-width: var(--measure);
   }
+}
+
+// In the dark scheme, images drawn on light paper are toned down. A cover with
+// its own dark version is shown as it is.
+.content img {
+  filter: var(--image-dim, none);
+}
+
+.frontispiece-picture {
+  display: contents;
+}
+
+.frontispiece-picture:has(source.night) img {
+  filter: none;
 }
 
 // The image overlay, opened by zoom.js. An image that would show larger on its
@@ -3156,7 +3173,7 @@ summary:focus-visible {
     .masthead,
     .post-meta,
     .content header.opener,
-    .post-content > .frontispiece {
+    .post-content .frontispiece {
       margin-left: 0;
       max-width: none;
     }
