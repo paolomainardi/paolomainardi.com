@@ -217,7 +217,7 @@ Nothing is drawn over the picture to say the lamps can be pressed. My first vers
 
 A click on a big light, a **pendant**, a **desk lamp** or a **screen**, switches it off and on. A small lamp leaves its pattern for the state the reader chose, and a **second click** hands it back to its pattern. A switch works while the cover is **paused**, in both colour schemes, and inside the **zoom** overlay.
 
-A button is at least **44 pixels** for a finger and **24** for a mouse, and no two buttons **overlap**, so a tap never hits the wrong lamp. When two targets would overlap, the smaller lamp is not a button at that size. On a phone the container cover keeps its screen as a button and loses its desk lamp, which comes back in the **zoom**, where the cover is larger.
+A button is at least **44 pixels** for a finger and **24** for a mouse, and no two buttons **overlap**, so a tap never hits the wrong lamp. When two targets would overlap, the smaller lamp is not a button at that size. On a phone the container cover keeps its screen as a button and drops its desk lamp, which is a button again on a **wider screen**.
 
 ## Behaving on a real page
 

@@ -147,8 +147,8 @@ lamp leaves its pattern for the state the reader chose, and a second click hands
 back. A button is at least 44 pixels for a finger and 24 for a mouse, and no two
 buttons overlap, so a tap never hits a neighbour. Where a small lamp's target would
 overlap another, the small lamps are not buttons at the size the cover is drawn; where
-two big lights' targets would, the one with the smaller lamp is not. In the zoom,
-where the cover is larger, they usually are.
+two big lights' targets would, the one with the smaller lamp is not. On a wider
+screen, or in the zoom when it is wide enough, they are buttons again.
 
 ## Zoom
 
