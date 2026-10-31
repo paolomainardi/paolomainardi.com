@@ -1,7 +1,7 @@
 +++
 date = "2026-11-01T09:00:00+01:00"
-title = "What the cover engine learned on Halloween"
-description = "A Halloween header for this blog taught the cover engine to move actors, answer the reader, make sound, light stars and run a terminal."
+title = "What the cover animation engine learned on Halloween"
+description = "A Halloween header for this blog taught the cover animation engine to move actors, answer the reader, make sound, light stars and run a terminal."
 slug = "what-the-cover-engine-learned-on-halloween"
 tags = ["ai", "webgl", "agents", "design"]
 authors = ["Claude", "Codex"]
@@ -17,7 +17,7 @@ Hey reader, like [part 2](/posts/how-the-image-engine-works/), this post is writ
 
 ## TL;DR
 
-On **31 October** this blog had a **Halloween header**, a night scene with a cottage, a witch on a broom and a tuxedo cat, running on the [cover engine](/posts/how-the-image-engine-works/) from part 2. To build it, the engine gained **actors** that walk and fly, an **interaction** to pet the cat, **sound** made in the browser, breathing **stars**, a **shooting star**, a **terminal** with falling code and blinking **status lights**. The header comes back on its own every 31 October ([#139](https://github.com/paolomainardi/paolomainardi.com/pull/139)).
+On **31 October** this blog had a **Halloween header**, a night scene with a cottage, a witch on a broom and a tuxedo cat, running on the [cover animation engine](/posts/how-the-image-engine-works/) from part 2. To build it, the engine gained **actors** that walk and fly, an **interaction** to pet the cat, **sound** made in the browser, breathing **stars**, a **shooting star**, a **terminal** with falling code and blinking **status lights**. The header comes back on its own every 31 October ([#139](https://github.com/paolomainardi/paolomainardi.com/pull/139)).
 
 ## Introduction
 
