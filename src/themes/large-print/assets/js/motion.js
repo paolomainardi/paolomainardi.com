@@ -637,20 +637,31 @@
       var a = list.actor[i], r = routes[i], u = s - a.delay;
       var hidden = { x: 0, y: 0, ang: 0, alpha: 0, sprite: a.frames[0], flip: 1, done: false };
       if (u < 0) return hidden;
-      var d = u * a.speed, total = r.len[r.len.length - 1], done = d >= total;
+      var total = r.len[r.len.length - 1], d = u * a.speed, back = false;
+      // an actor on a loop goes along its path, rests, comes back along it the other way
+      // when it is set to, rests, and goes again
+      if (a.loop) {
+        var trip = total / a.speed, rest = a.loop.rest || 0, legs = a.loop.back ? 2 : 1;
+        var ph = u % ((trip + rest) * legs), leg = Math.floor(ph / (trip + rest));
+        ph -= leg * (trip + rest);
+        if (ph >= trip) return hidden;
+        back = leg === 1;
+        d = back ? total - ph * a.speed : ph * a.speed;
+      }
+      var done = !a.loop && d >= total;
       if (done && a.end < 0) return hidden;
       d = Math.min(d, total);
       var j = 1;
       while (j < r.len.length - 1 && r.len[j] < d) j++;
       var p0 = r.pts[j - 1], p1 = r.pts[j], f = (d - r.len[j - 1]) / Math.max(r.len[j] - r.len[j - 1], 1e-6);
-      var dx = p1[0] - p0[0], dy = p1[1] - p0[1], flip = dx < 0 ? -1 : 1;
+      var dx = p1[0] - p0[0], dy = p1[1] - p0[1], vx = back ? -dx : dx, vy = back ? -dy : dy, flip = vx < 0 ? -1 : 1;
       var walk = a.walk[1] - a.walk[0] + 1;
       // an actor that does not stay at the end of its path fades out over its last half second
-      var left = (total - d) / a.speed;
+      var left = a.loop ? 1 : (total - d) / a.speed;
       return {
         x: p0[0] + dx * f,
         y: p0[1] + dy * f + (done ? 0 : a.bob * Math.sin(u * 2.4)),
-        ang: a.tilt && !done ? Math.max(-0.3, Math.min(0.3, Math.atan2(dy * flip, dx * flip))) : 0,
+        ang: a.tilt && !done ? Math.max(-0.3, Math.min(0.3, Math.atan2(vy * flip, vx * flip))) : 0,
         alpha: a.end < 0 ? smooth(left / 0.5) : 1,
         sprite: done ? resting(a, i, s) : a.frames[a.walk[0] + Math.floor(u * a.fps) % walk],
         flip: flip,
@@ -929,6 +940,174 @@
       if (!paused) start();
     });
     stage.appendChild(pause);
+
+    // ---------------------------------------------------------------------------
+    // Ambience: a soundscape made in the browser, which plays only once the reader
+    // turns it on with the speaker button, and stops with the pause button or when the
+    // page is hidden. Its layers come from the spec: a music-box waltz, wind, crickets
+    // and an owl now and then. Nothing is a recording.
+    var amb = data.ambience;
+    if (amb) {
+      var sound = document.createElement("button"), soundOn = false, soundTimer = 0, layers = null;
+      sound.type = "button";
+      sound.className = "motion-sound";
+      sound.setAttribute("aria-label", amb.label || "Play the sounds of the scene");
+      sound.setAttribute("aria-pressed", "false");
+      sound.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">' +
+        '<path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>' +
+        '<path class="on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>' +
+        '<path class="off" d="M16.5 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+      sound.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        setSound(!soundOn);
+        if (ev.detail > 0) sound.blur();
+      });
+      stage.appendChild(sound);
+      pause.addEventListener("click", function () { if (paused) setSound(false); });
+      document.addEventListener("visibilitychange", function () {
+        if (audio && soundOn) document.hidden ? audio.suspend() : audio.resume();
+      });
+    }
+    function setSound(on) {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      soundOn = on;
+      sound.setAttribute("aria-pressed", on ? "true" : "false");
+      try {
+        audio = audio || new AC();
+        if (on) {
+          audio.resume();
+          if (!layers) layers = soundscape(audio);
+          layers.master.gain.cancelScheduledValues(audio.currentTime);
+          layers.master.gain.setTargetAtTime(opt(amb.volume, 0.6) * 0.5, audio.currentTime, 0.6);
+          clearInterval(soundTimer);
+          soundTimer = setInterval(function () { layers.tick(); }, 100);
+          layers.tick();
+        } else if (layers) {
+          layers.master.gain.setTargetAtTime(0, audio.currentTime, 0.3);
+          clearInterval(soundTimer);
+        }
+      } catch (e) {}
+    }
+    function soundscape(ac) {
+      var master = ac.createGain();
+      master.gain.value = 0;
+      master.connect(ac.destination);
+      // a soft room: a short burst of decaying noise as the reverb's impulse
+      var verb = ac.createConvolver(), ir = ac.createBuffer(2, ac.sampleRate * 2.6, ac.sampleRate);
+      for (var ch = 0; ch < 2; ch++) {
+        var dd = ir.getChannelData(ch);
+        for (var k = 0; k < dd.length; k++) dd[k] = (Math.random() * 2 - 1) * Math.pow(1 - k / dd.length, 3);
+      }
+      verb.buffer = ir;
+      var wet = ac.createGain();
+      wet.gain.value = 0.35;
+      verb.connect(wet);
+      wet.connect(master);
+      function out(node, dry) {
+        var g = ac.createGain();
+        g.gain.value = dry;
+        node.connect(g);
+        g.connect(master);
+        node.connect(verb);
+      }
+      function noise(sec) {
+        var b = ac.createBuffer(1, ac.sampleRate * sec, ac.sampleRate), d = b.getChannelData(0), l = 0;
+        for (var n = 0; n < d.length; n++) { l = (l + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[n] = l * 6; }
+        return b;
+      }
+
+      // the wind: soft noise through a band, rising and falling slowly
+      if (amb.wind) {
+        var w = ac.createBufferSource(), band = ac.createBiquadFilter(), wg = ac.createGain(), slow = ac.createOscillator(), depth = ac.createGain();
+        w.buffer = noise(8); w.loop = true;
+        band.type = "bandpass"; band.frequency.value = 420; band.Q.value = 0.6;
+        wg.gain.value = 0.18; slow.frequency.value = 0.07; depth.gain.value = 0.12;
+        slow.connect(depth); depth.connect(wg.gain);
+        w.connect(band); band.connect(wg); out(wg, 0.8);
+        w.start(); slow.start();
+      }
+
+      // a music-box note: a bell of three partials that dies away
+      function bell(f, at, vel) {
+        var g = ac.createGain();
+        g.gain.setValueAtTime(0, at);
+        g.gain.linearRampToValueAtTime(vel, at + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.0005, at + 1.6);
+        [[1, 1], [2.01, 0.35], [4.2, 0.08]].forEach(function (p) {
+          var o = ac.createOscillator(), og = ac.createGain();
+          o.frequency.value = f * p[0]; og.gain.value = p[1];
+          o.connect(og); og.connect(g);
+          o.start(at); o.stop(at + 1.7);
+        });
+        out(g, 0.7);
+      }
+      function hz(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+      // a slow waltz in D minor, eight bars, then four bars of night before it comes back
+      var MEL = [[74, 77, 81], [79, 77, 76], [74, 76, 77], [69, 0, 0], [70, 74, 77], [69, 73, 76], [74, 0, 69], [74, 0, 0]];
+      var BASS = [50, 45, 50, 45, 46, 45, 50, 50];
+      var beat = 60 / 76, song = { at: 0, step: 0 };
+
+      // a cricket chirps three pulses at a time, now left, now right
+      function chirp(at, pan) {
+        for (var c = 0; c < 3; c++) {
+          var o = ac.createOscillator(), g = ac.createGain(), p = ac.createStereoPanner ? ac.createStereoPanner() : ac.createGain();
+          o.frequency.value = 4400 + 200 * pan;
+          if (p.pan) p.pan.value = pan;
+          var t0 = at + c * 0.045;
+          g.gain.setValueAtTime(0, t0);
+          g.gain.linearRampToValueAtTime(0.025, t0 + 0.006);
+          g.gain.linearRampToValueAtTime(0, t0 + 0.03);
+          o.connect(g); g.connect(p); p.connect(master);
+          o.start(t0); o.stop(t0 + 0.04);
+        }
+      }
+      // an owl: hoo, then hoo-hoo, gliding down, far away
+      function owl(at) {
+        [[0, 0.5], [0.75, 0.25], [1.05, 0.45]].forEach(function (h) {
+          var o = ac.createOscillator(), g = ac.createGain(), lp = ac.createBiquadFilter(), t0 = at + h[0];
+          o.frequency.setValueAtTime(400, t0);
+          o.frequency.exponentialRampToValueAtTime(330, t0 + h[1]);
+          lp.type = "lowpass"; lp.frequency.value = 900;
+          g.gain.setValueAtTime(0, t0);
+          g.gain.linearRampToValueAtTime(0.09, t0 + 0.06);
+          g.gain.linearRampToValueAtTime(0, t0 + h[1]);
+          o.connect(lp); lp.connect(g); out(g, 0.5);
+          o.start(t0); o.stop(t0 + h[1] + 0.05);
+        });
+      }
+
+      var cricket = [0, 0.4], hoot = 0;
+      function tick() {
+        var now = ac.currentTime, ahead = now + 0.5;
+        if (amb.music === "waltz") {
+          if (song.at < now) song.at = now + 0.2;
+          while (song.at < ahead) {
+            var bar = Math.floor(song.step / 3), b = song.step % 3;
+            if (bar < 8) {
+              var m = MEL[bar][b];
+              if (m) bell(hz(m), song.at + (Math.random() - 0.5) * 0.02, b === 0 ? 0.12 : 0.08);
+              if (b === 0) bell(hz(BASS[bar]), song.at, 0.07);
+              if (b > 0) bell(hz(BASS[bar] + 12 + (b === 1 ? 3 : 7)), song.at, 0.025);
+            }
+            song.step = (song.step + 1) % 36;
+            song.at += beat;
+          }
+        }
+        if (amb.crickets) {
+          cricket.forEach(function (at, i) {
+            if (at < now) at = now + Math.random();
+            while (at < ahead) { chirp(at, i ? 0.6 : -0.5); at += (i ? 1.1 : 0.85) + Math.random() * 0.2; }
+            cricket[i] = at;
+          });
+        }
+        if (amb.owl) {
+          if (!hoot) hoot = now + 6;
+          if (hoot < ahead) { owl(hoot); hoot += amb.owl[0] + Math.random() * (amb.owl[1] - amb.owl[0]); }
+        }
+      }
+      return { master: master, tick: tick };
+    }
 
     // The cover goes back to the still image for good when the GPU drops the canvas or
     // the reader asks for reduced motion after the page has loaded.

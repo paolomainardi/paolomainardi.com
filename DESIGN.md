@@ -502,7 +502,10 @@ sleeps under ivy, a server rack blinks its status lights and green code falls
 down an old computer's screen. The stars breathe, a shooting star passes now and
 then, a witch with her cats flies across the sky above the roof, and a tuxedo cat
 walks home and sits by the steps, where the reader can pet it: it purrs, eyes
-closed, and a small heart rises. With reduced motion the scene stays still,
+closed, and a small heart rises. A speaker in the lower left corner, a navy disc
+always seen and off until pressed, plays a music-box waltz over wind, crickets and
+a distant owl, all made in the browser. The witch flies back the other way after
+a rest, and again, for as long as the page is open. With reduced motion the scene stays still,
 lit, without the two actors. It is the one day the site leaves its palette and
 its watercolour hand, chosen by Paolo.
 

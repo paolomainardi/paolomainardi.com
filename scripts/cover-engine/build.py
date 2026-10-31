@@ -46,8 +46,10 @@ Spec keys, all optional except publish:
   exclude     [[x0, y0, x1, y1]] areas that never move
   stars       true or {depth}: the stars in the sky objects breathe, each at its own pace
   meteor      {every: [min, max] s, length}: a shooting star crosses the sky objects now and then
+  ambience    {music: "waltz", wind, crickets, owl: [min, max] s, volume, label}: a soundscape
+              made in the browser, played once the reader turns it on
   terminal    {speed, columns}: how fast the characters fall down a terminal screen, how many columns
-  actors      [{id, sheet, grid, walk, fps, end, height, path, speed, delay, bob, tilt}]:
+  actors      [{id, sheet, grid, walk, fps, end, height, path, speed, delay, bob, tilt, loop}]:
               characters drawn apart from the scene that move along a path, and that the reader
               may interact with once they stop: interact {sheet, grid, frames, fps, rise, label, sound} (see docs)
 """
@@ -432,14 +434,15 @@ for a in spec.get("actors", []):
         interact = {"frames": frames[len(cells):], "fps": act.get("fps", 4), "label": act.get("label", a["id"]),
                     "sound": act.get("sound")}
         if rise:
-            hk = min(1.0, 2 * a["height"] * 0.45 / rise.height)
+            hk = min(1.0, 2 * a["height"] * 0.7 / rise.height)
             interact["rise"] = add_sprite(rise.resize((round(rise.width * hk), round(rise.height * hk)), Image.LANCZOS))
-            interact["riseK"] = round(a["height"] * 0.45 / (rise.height * hk), 4)
+            interact["riseK"] = round(a["height"] * 0.7 / (rise.height * hk), 4)
         del frames[len(cells):]
     walk = a.get("walk", [0, len(cells) - 1])
     actors.append({"id": a["id"], "frames": frames, "anchor": [round(left * k), round(up * k)], "k": round(1 / k * a["height"] / up, 4),
                    "path": a["path"], "speed": a.get("speed", 60), "delay": a.get("delay", 0), "fps": a.get("fps", 8),
-                   "walk": walk, "end": a.get("end", -1), "bob": a.get("bob", 0), "tilt": bool(a.get("tilt")), "interact": interact})
+                   "walk": walk, "end": a.get("end", -1), "bob": a.get("bob", 0), "tilt": bool(a.get("tilt")), "interact": interact,
+                   "loop": a.get("loop")})
 
 glyphs = None
 if terminals:
@@ -504,6 +507,7 @@ data = {
     "size": [W, H], "effects": effects, "swing": swings, "float": floats, "fall": falls, "lights": lights,
     "twinkle": twinkle, "beam": beams, "steam": steams, "actors": actors, "meteor": meteor, "sprites": rects,
     "terminal": terminals, "glyphs": glyphs, "terminalK": spec.get("terminal", {}),
+    "ambience": spec.get("ambience"),
     "starsK": spec["stars"] if isinstance(spec.get("stars"), dict) else {},
     "entry": {"from": spec.get("light_from", 62)} if entry else None,
     "lightsK": spec.get("lights", {}), "rainK": spec.get("rain", {}), "flashK": spec.get("flash", {}),

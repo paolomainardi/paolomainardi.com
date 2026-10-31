@@ -91,6 +91,7 @@ hundreds of pixels, a painted shape lands within a pixel or two. The prompt is i
   default), `length` in cover pixels. Needs a sky object.
 - `terminal`: `{speed, columns}`, how fast the characters fall (0.35 by default) and how
   many columns cross a screen (6 by default).
+- `ambience`: a soundscape, below.
 - `actors`: the characters drawn apart from the scene, below.
 - `still`, `amp`, `exclude`, `drift`, `pulse`, `floor`, `twinkle`.
 
@@ -115,6 +116,7 @@ builder keys out), and the spec says where it goes:
 | `delay`  | Seconds after the cover is shown before it sets off                                             |
 | `bob`    | Pixels it rises and falls while it moves, for something flying                                  |
 | `tilt`   | `true`: it leans with the slope of its path, by 17 degrees at most                              |
+| `loop`   | `{rest, back}`: it goes again after `rest` seconds; with `back`, every other trip runs the path the other way, the sheet mirrored |
 | `interact` | What the reader can do with it once it rests, below                                            |
 
 The builder stands every frame on the same feet, the bottom of the drawing under the
@@ -192,6 +194,25 @@ The effects today:
 3. A shared texture goes in `assets/images/motion/`, with its master and prompt in
    `covers/_effects/`, and a line in the template that passes its URL.
 4. Document it here and in the skill.
+
+## Ambience
+
+A cover can have a soundscape, made in the browser with the Web Audio API: nothing
+is a recording, so no model makes sound. It stays off until the reader presses the
+speaker, a dark disc in the lower left corner of the cover, always seen; the pause
+button and a hidden page stop it. Its layers come from `ambience` in the spec:
+
+| Key        | What                                                                 |
+| :--------- | :------------------------------------------------------------------- |
+| `music`    | `waltz`: a slow music-box waltz in D minor, eight bars, then a rest  |
+| `wind`     | `true`: soft wind rising and falling                                 |
+| `crickets` | `true`: two crickets, one on each side                               |
+| `owl`      | `[min, max]` seconds between the calls of a distant owl              |
+| `volume`   | 0 to 1, 0.6 by default                                               |
+| `label`    | The speaker's name for a screen reader                               |
+
+A sound of its own also plays when the reader interacts with an actor, with
+`sound` in `interact`.
 
 ## Lights and switches
 

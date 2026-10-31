@@ -20,7 +20,11 @@
       "speed": 200,
       "delay": 1.6,
       "bob": 6,
-      "tilt": true
+      "tilt": true,
+      "loop": {
+        "rest": 8,
+        "back": true
+      }
     },
     {
       "id": "cat",
@@ -43,5 +47,13 @@
         "sound": "purr"
       }
     }
-  ]
+  ],
+  "ambience": {
+    "music": "waltz",
+    "wind": true,
+    "crickets": true,
+    "owl": [18, 35],
+    "volume": 0.6,
+    "label": "Play the night sounds"
+  }
 }
