@@ -122,6 +122,7 @@ webp:lossless=true covers/<name>/cover.webp`), and every drawing after it
    | Drops running down a window                                                                                                                                                                               | none (shared texture)                                    | `glass`, `drops`                            |
    | Waves, bobbing, drifting clouds, swaying plants, swinging lamps and tools, small gestures, falling leaves, a light along a thread, a lighthouse beam, windows going dark at night, steam from a hot drink | none                                                     | `amp`, `still`, `pulse`, `floor`, `twinkle` |
    | Stars breathing in a night sky, a shooting star now and then                                                                                                                                             | a `sky` object in the object sheet                       | `stars`, `meteor`                           |
+   | Code falling on an old computer screen, status lights blinking on a machine                                                                                                                              | `terminal` objects, lights of type `led`                 | `terminal`                                  |
    | A character walking or flying across the scene once (an actor)                                                                                                                                           | its sprite sheet, below                                  | `actors`                                    |
 
    A changed weather, such as rain over a sunny scene, is a new cover: draw the
@@ -149,7 +150,7 @@ webp:lossless=true covers/<name>/cover.webp`), and every drawing after it
    >
    > Include only the things that give light or could move, one object each:
    >
-   > - kind "light": every light source that is lit or could be lit. The painted area is the glowing part only (a bulb, a lamp's glass, a lit window pane, a lighthouse lantern). "light" says how it shines: "spot" a small lamp, "pendant" a hanging bulb that lights the area below it, "desk" a desk or wall lamp that lights a pool in front of it, "window" a window pane of daylight or a lit window far away, "screen" a lit computer or television screen, "lighthouse" a lighthouse lantern. "of": the id of the lamp body it belongs to, if any. "label": two or three words naming the lamp for a screen reader, such as "Pendant lamp".
+   > - kind "light": every light source that is lit or could be lit. The painted area is the glowing part only (a bulb, a lamp's glass, a lit window pane, a lighthouse lantern). "light" says how it shines: "spot" a small lamp, "pendant" a hanging bulb that lights the area below it, "desk" a desk or wall lamp that lights a pool in front of it, "window" a window pane of daylight or a lit window far away, "screen" a lit computer or television screen, "lighthouse" a lighthouse lantern, "led" a tiny status light on a machine (one object per light). "of": the id of the lamp body it belongs to, if any. "label": two or three words naming the lamp for a screen reader, such as "Pendant lamp".
    > - kind "lamp": a lamp body that hangs on a cord and could swing, cord included; motion ["swing"].
    > - kind "tool": something held or hanging that could swing, such as a rake in a hand or a sign on a hook; motion ["swing"]; "anchor": [x, y], the point where it is held.
    > - kind "limb": a part of a robot or a person that could make a small movement while they work, such as an arm holding a brush or a head bent over a task; one object per limb, only the clearly visible ones, at most 6; motion ["idle"]; "anchor": [x, y], the joint it turns about (the shoulder for an arm, the neck for a head).
@@ -159,6 +160,7 @@ webp:lossless=true covers/<name>/cover.webp`), and every drawing after it
    > - kind "float": something floating on water; motion ["bob"].
    > - kind "sky": an open sky area, one object for each separate sky (the sky inside a screen, a picture or a window is a different object from the sky behind the scene); motion [].
    > - kind "cloud": a cloud that could drift; motion ["drift"].
+   > - kind "terminal": the glass of a lit computer screen showing text, one object per screen; motion ["code"].
    > - kind "steam": the top of a hot drink or anything else that could give off steam; the painted area is the opening the steam would rise from; motion ["steam"].
    > - kind "thread": a cable, wire or thread a light could run along, one object for all the threads that meet; motion ["pulse"].
    >   Never include whole people, whole robots, furniture or walls.

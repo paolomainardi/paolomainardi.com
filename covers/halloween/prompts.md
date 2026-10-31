@@ -2,9 +2,9 @@
 
 The header of the site on 31 October. Paolo chose the style from a reference: a naive gouache night scene, a cute young witch with her cats, a white cottage with lit windows. Codex drew a scene of its own in that style, not a copy of the reference.
 
-**Motion brief:** the light comes in from above; the windows, the two carved pumpkins and the lantern switch on their own and can be switched; the two bare trees sway; the stars breathe and a shooting star passes now and then. Two actors play once each time the header is shown: a witch on a broom with five cats flies across the sky once, above the roof, and out on the right, and a tuxedo cat walks along the path and sits by the steps, looking at the reader.
+**Motion brief:** the light comes in from above; the windows, the two carved pumpkins and the lantern switch on their own and can be switched; the status lights of the server rack blink; green code falls down the old computer's screen; the two bare trees sway; the stars breathe and a shooting star passes now and then. Two actors play once each time the header is shown: a witch on a broom with five cats flies across the sky, above the roof, and out on the right, and a tuxedo cat walks along the path and sits down, looking at the reader.
 
-The drawings were made at 1536x1024 and cropped to the band, 1536x620 from y=236. The scene is a night scene in both colour schemes, so `night.webp` and `unlit-night.webp` are copies of `cover.webp` and `unlit.webp`.
+The drawings were made at 1536x1024 and cropped to the band, 1536x620 from y=255. The first scene below was redrawn with old computer equipment (the nerdy redraw), and every state and sheet was made again from the redraw. The scene is a night scene in both colour schemes, so `night.webp` and `unlit-night.webp` are copies of `cover.webp` and `unlit.webp`.
 
 ## Cover
 
@@ -92,3 +92,62 @@ Sent with the cover attached, as the style reference. It made `cat.webp`, the ca
 > 1 to 6: a walk cycle seen exactly from the side, walking towards the RIGHT, six evenly spaced steps of one full stride, tail held up in a soft curve. Only the legs, the tail and a tiny bob of the body change between these six cells; the head, the body size and the colours stay identical.
 > 7: the same cat sitting, seen from the side facing right, tail around its paws.
 > 8: the same cat sitting like in cell 7, its head turned towards the viewer.
+
+## Nerdy redraw
+
+Sent with the first cover attached. It became `cover.webp`.
+
+> Edit the attached illustration with your image generation tool and save the result as nerd.png in the current directory, 1536x1024. Do not ask questions; decide.
+>
+> Keep the same scene, the same style, the same palette, the same framing: the night sky with its stars and the crescent moon, the white cottage with its lit windows and red door, the carved pumpkins, the autumn trees and bushes, the sandy path. Keep the cottage, the moon and the sky exactly where they are. Add, painted in the very same naive gouache picture book style (matte paint, soft edges, visible brush texture, no black ink outlines, no 3D, no glossy highlights), a few abandoned pieces of old computer equipment, as if the cottage belonged to an old engineer, cosy and a little spooky, never scary:
+>
+> - On the ground in front of the stone wall, left of the steps, an old beige CRT computer monitor with a chunky keyboard in front of it, sitting on a small wooden crate. Its screen glows bright green in the dark and shows several columns of small green characters, like a terminal.
+> - On the left hillside, half hidden among the bushes, an abandoned rusty shipping container lying on the ground, its doors ajar, covered with ivy and a few autumn leaves, one small pumpkin sitting on its roof.
+> - Leaning against the right side of the cottage, an old tall server rack with its door open, a few cables hanging out like vines, cobwebs in a corner, and many tiny green and amber status lights glowing on its front.
+> - A few thick black cables running across the ground among the leaves, like roots, from the server rack to the computer.
+>
+> The new objects are small, part of the scene, never bigger than the cottage. No text, no letters, no logos anywhere except the tiny green terminal characters on the screen.
+
+## Unlit, from the nerdy redraw
+
+Sent with the nerdy redraw attached.
+
+> Edit the attached image with your image generation tool and save the result as unlit.png in the current directory, 1536x1024. Do not ask questions; decide.
+>
+> Exactly the same scene, unchanged: every object, every star, every leaf, every cable, every brush stroke in the exact same position, same size, same framing, same colours, so the two images can be laid one over the other pixel for pixel. Only the light changes: every light in the scene is switched off.
+> - Every window of the cottage is dark: the glass is a deep dark blue-grey night colour, no yellow light, no glow on the walls around it.
+> - The two carved pumpkins are not lit: their carved eyes and mouths are dark holes, no glow inside or around them. The uncarved pumpkins stay as they are.
+> - The lantern beside the door is off, no glow.
+> - The old computer's screen is off: a dark grey-green glass with no characters and no glow.
+> - All the tiny green and amber status lights on the server rack are off: small dark dots, no glow.
+> - The warm glow on the ground and the steps in front of the house is gone; the ground keeps its ochre colour lit only by the moon.
+> Nothing else changes: the moon and the stars stay the same.
+
+## Object sheet, from the nerdy redraw
+
+Sent with the nerdy redraw attached.
+
+> The attached image is an illustrated header picture, 1536x1024 pixels. Produce an object sheet for it: two files in the current directory. Do not ask questions; decide.
+>
+> 1. objects.png: ONE new image made with your image generation tool, same size and the exact same composition, every object in the exact same position, so it can be laid over the picture pixel for pixel. Flat colours on pure black (#000000), no shading, no outlines, no texture, no text. Paint each object listed in objects.json filled solid with its own colour, following its real silhouette. Everything else stays black.
+>
+> 2. objects.json: a JSON array, one entry per object, in this form:
+>    {"id": "window-upper-left", "kind": "light", "label": "Upper left window", "light": "spot", "motion": [], "box": [x0, y0, x1, y1], "color": "#FF0000"}
+>
+> Include only these objects:
+> - kind "light", light "spot": each lit window of the cottage, one object per window, the painted area is the lit glass only; each of the two carved, lit pumpkins, the painted area is the whole pumpkin; the small lantern beside the red door, the painted area is its glass. "label": two or three words for a screen reader, such as "Attic window" or "Pumpkin lantern".
+> - kind "light", light "led": the tiny green and amber status lights on the front of the server rack, grouped in at most 8 small groups of neighbouring lights, one object per group, the painted area is the lights of that group only. "label": "Status lights".
+> - kind "terminal", motion ["code"]: the glowing green screen of the old computer, the painted area is the glass of the screen only.
+> - kind "plant", "outdoor": true, motion ["sway"]: the bare tree on the far left and the tree on the far right, trunk and branches included.
+> Use clearly different saturated colours for each object.
+
+## Sky sheet, from the nerdy redraw
+
+Sent with the nerdy redraw attached.
+
+> The attached image is an illustrated header picture, 1536x1024 pixels. Produce an object sheet for its sky: two files in the current directory. Do not ask questions; decide.
+>
+> 1. objects-sky.png: ONE new image made with your image generation tool, same size (1536x1024) and the exact same composition, so it can be laid over the picture pixel for pixel. Flat colour on pure black (#000000), no shading, no outlines, no texture, no text. Paint the open night sky filled solid with pure blue #0000FF, following its real outline: the stars inside the sky are part of the sky and are painted blue too. Everything that is not sky stays black: the moon, the cottage and its roof and chimney, the trees and their branches and leaves, the distant hills and bushes, the container, the server rack, the ground.
+>
+> 2. objects-sky.json: a JSON array with one entry:
+>    [{"id": "night-sky", "kind": "sky", "motion": [], "box": [x0, y0, x1, y1], "color": "#0000FF"}]

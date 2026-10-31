@@ -57,7 +57,7 @@ hundreds of pixels, a painted shape lands within a pixel or two. The prompt is i
 
 | Kind     | Fields                                                                            | Becomes                                                                                                                                    |
 | :------- | :-------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
-| `light`  | `light`: spot, pendant, desk, screen, window, lighthouse; `of`: its lamp; `label` | A light that breathes or switches and a switch the reader can press; a lighthouse sweeps a beam; a window is daylight and only marks glass |
+| `light`  | `light`: spot, pendant, desk, screen, window, lighthouse, led; `of`: its lamp; `label` | A light that breathes or switches and a switch the reader can press; a lighthouse sweeps a beam; a window is daylight and only marks glass; a led is a status light that blinks fast on its own and is not a switch |
 | `lamp`   |                                                                                   | A lamp body that swings on its cord, its light with it                                                                                     |
 | `tool`   | `anchor`                                                                          | Something held or hung that swings about its anchor                                                                                        |
 | `limb`   | `anchor`                                                                          | A figure's arm or head that makes small, slow moves about its joint                                                                        |
@@ -69,6 +69,7 @@ hundreds of pixels, a painted shape lands within a pixel or two. The prompt is i
 | `cloud`  |                                                                                   | Drifts                                                                                                                                     |
 | `thread` |                                                                                   | A light runs along it                                                                                                                      |
 | `steam`  |                                                                                   | Steam rises from it                                                                                                                        |
+| `terminal` |                                                                                 | An old computer's screen, where green characters fall fast                                                                                 |
 
 ## The spec
 
@@ -88,6 +89,8 @@ hundreds of pixels, a painted shape lands within a pixel or two. The prompt is i
   sky objects.
 - `meteor`: `{every: [min, max]}` seconds between two shooting stars (20 to 40 by
   default), `length` in cover pixels. Needs a sky object.
+- `terminal`: `{speed, columns}`, how fast the characters fall (0.35 by default) and how
+  many columns cross a screen (6 by default).
 - `actors`: the characters drawn apart from the scene, below.
 - `still`, `amp`, `exclude`, `drift`, `pulse`, `floor`, `twinkle`.
 
@@ -115,7 +118,7 @@ builder keys out), and the spec says where it goes:
 
 The builder stands every frame on the same feet, the bottom of the drawing under the
 middle of its upper body, so the cycle does not jump. It packs the frames of every
-actor and the shooting star in one atlas, `<name>-sprites.webp`, at twice the size
+actor, the shooting star and the glyphs of the terminals in one atlas, `<name>-sprites.webp`, at twice the size
 they are shown. An actor moves once each time the cover is shown; it faces the way
 it goes, and the sheet is drawn facing right.
 
@@ -159,6 +162,7 @@ The effects today:
 | `stars`   | Each star breathes at its own pace, now and then sparkles | `stars`, `sky` objects             |
 | `meteor`  | A drawn shooting star crosses the sky, behind the rest   | `meteor`, `sky` objects, the atlas |
 | `actors`  | Characters walk or fly along their path, frame by frame  | `actors`, the atlas                |
+| `terminal` | Green characters fall down a screen, once its light is in | `terminal` objects, the glyph texture in the atlas |
 
 ### Adding an effect
 
@@ -194,7 +198,8 @@ On 31 October the site header sits over a night scene built with the engine from
 `covers/halloween/`: the cottage windows, the pumpkins and the lantern switch, and
 the trees sway. `layouts/_partials/halloween.html` keeps it in a template that a
 small script adds to the page only on that day, or with `?halloween` in the
-address, so no other day downloads it. The stars breathe, a shooting star passes
+address, so no other day downloads it. The status lights of a server rack blink,
+green code falls down an old computer's screen, the stars breathe, a shooting star passes
 now and then, and two actors play once: a witch with her cats flies across the sky
 above the roof, and a tuxedo cat walks home and sits by the steps. The player runs on
 every image with a motion map, so the header and a post's cover move together.

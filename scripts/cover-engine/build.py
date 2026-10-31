@@ -24,8 +24,8 @@ shooting star passes, G window glass, B the phase of each star.
 
 With actors or a shooting star it also writes <name>-sprites.webp, their frames in one atlas.
 
-Object kinds: light (spot, pendant, desk, screen, window, lighthouse), lamp, tool,
-limb, plant, leaf, water, float, sky, cloud, thread, steam. See docs/cover-engine.md.
+Object kinds: light (spot, pendant, desk, screen, window, lighthouse, led), lamp, tool,
+limb, plant, leaf, water, float, sky, cloud, thread, steam, terminal. See docs/cover-engine.md.
 
 Spec keys, all optional except publish:
   publish     path and name of the published cover, without extension
@@ -46,6 +46,7 @@ Spec keys, all optional except publish:
   exclude     [[x0, y0, x1, y1]] areas that never move
   stars       true or {depth}: the stars in the sky objects breathe, each at its own pace
   meteor      {every: [min, max] s, length}: a shooting star crosses the sky objects now and then
+  terminal    {speed, columns}: how fast the characters fall down a terminal screen, how many columns
   actors      [{id, sheet, grid, walk, fps, end, height, path, speed, delay, bob, tilt}]:
               characters drawn apart from the scene that move along a path (see docs)
 """
@@ -192,7 +193,7 @@ pulse_spec = spec.get("pulse", {})
 pulse, wind, turn = (np.zeros((H, W)) for _ in range(3))
 water, floatc, drift = (np.zeros((H, W)) for _ in range(3))
 sky, glass = np.zeros((H, W)), np.zeros((H, W))
-swings, floats, falls, lights, beams, steams = [], [], [], [], [], []
+swings, floats, falls, lights, beams, steams, terminals = [], [], [], [], [], [], []
 
 for i, o in ids.items():
     m, k = masks[i], o["kind"]
@@ -249,6 +250,9 @@ for i, o in ids.items():
     elif k == "steam":
         # steam rises from the middle of the opening, as wide as the opening
         steams.append([int(xx[m].mean()), b[1], max(b[2] - b[0], 12), round((len(steams) * 0.43) % 1, 3)])
+    elif k == "terminal":
+        # characters fall down the screen; each terminal starts at its own point of the texture
+        terminals.append(b + [round((len(terminals) * 0.37) % 1, 3)])
     elif k == "leaf":
         falls.append({"sprite": b, "from": [int(xx[m].mean()), int(yy[m].mean())],
                       "floor": spec.get("floor", min(H - 20, b[3] + 300)), "drift": 14 + (len(falls) * 7) % 16})
@@ -292,8 +296,9 @@ for i, o in ids.items():
     if o.get("of") in masks:
         lb = box_of(masks[o["of"]])
         hit = [min(lb[0], b[0]), min(lb[1], b[1]), max(lb[2], b[2]), max(lb[3], b[3])]
+    # a status light blinks on its own, too small and too many to be a switch
     lights.append({"id": i, "label": o.get("label", i), "kind": kind, "big": big, "cool": kind == "screen", "pool": pool, "hit": hit,
-                   "swing": turn_of.get(o.get("of"), -1)})
+                   "swing": turn_of.get(o.get("of"), -1), "led": kind == "led"})
 
 twinkle = []
 if spec.get("twinkle"):
@@ -405,6 +410,14 @@ for a in spec.get("actors", []):
                    "path": a["path"], "speed": a.get("speed", 60), "delay": a.get("delay", 0), "fps": a.get("fps", 8),
                    "walk": walk, "end": a.get("end", -1), "bob": a.get("bob", 0), "tilt": bool(a.get("tilt"))})
 
+glyphs = None
+if terminals:
+    gpath = os.path.join(os.path.dirname(src), "_effects", "glyphs.webp")
+    if not os.path.exists(gpath):
+        fail("terminal objects need covers/_effects/glyphs.webp")
+    gim = Image.open(gpath).convert("RGBA").resize((512, 512), Image.LANCZOS)
+    glyphs = add_sprite(gim)
+
 meteor = None
 if spec.get("meteor"):
     mk = spec["meteor"] if isinstance(spec["meteor"], dict) else {}
@@ -435,8 +448,8 @@ for bx in spec.get("exclude", []):
     for ch in (pulse, wind, turn, water, floatc, drift, sky, glass, starc):
         ch[sel] = 0
 
-LIMIT = {"swing": 16, "light": 16, "fall": 8, "float": 3, "twinkle": 12, "beam": 4, "steam": 3, "actor": 4}
-for name, items in (("swing", swings), ("light", lights), ("fall", falls), ("float", floats), ("twinkle", twinkle), ("beam", beams), ("steam", steams), ("actor", actors)):
+LIMIT = {"terminal": 3, "swing": 16, "light": 24, "fall": 8, "float": 3, "twinkle": 12, "beam": 4, "steam": 3, "actor": 4}
+for name, items in (("terminal", terminals), ("swing", swings), ("light", lights), ("fall", falls), ("float", floats), ("twinkle", twinkle), ("beam", beams), ("steam", steams), ("actor", actors)):
     if len(items) > LIMIT[name]:
         print(f"note: {len(items)} {name}s, the player shows the first {LIMIT[name]}")
         del items[LIMIT[name]:]
@@ -454,11 +467,12 @@ effects = [name for name, on in [
     ("turn", bool(swings)), ("glass", bool(spec.get("drops")) and glass.any()), ("lights", bool(lights) or entry),
     ("flash", bool(storm)), ("rain", bool(storm) and sky.any()), ("twinkle", bool(twinkle)), ("beam", bool(beams)),
     ("pulse", pulse.any()), ("fall", bool(falls)), ("steam", bool(steams)),
-    ("stars", bool(nstars)), ("meteor", meteor is not None and sky.any()), ("actors", bool(actors))] if on]
+    ("stars", bool(nstars)), ("terminal", bool(terminals)), ("meteor", meteor is not None and sky.any()), ("actors", bool(actors))] if on]
 
 data = {
     "size": [W, H], "effects": effects, "swing": swings, "float": floats, "fall": falls, "lights": lights,
     "twinkle": twinkle, "beam": beams, "steam": steams, "actors": actors, "meteor": meteor, "sprites": rects,
+    "terminal": terminals, "glyphs": glyphs, "terminalK": spec.get("terminal", {}),
     "starsK": spec["stars"] if isinstance(spec.get("stars"), dict) else {},
     "entry": {"from": spec.get("light_from", 62)} if entry else None,
     "lightsK": spec.get("lights", {}), "rainK": spec.get("rain", {}), "flashK": spec.get("flash", {}),
@@ -485,4 +499,4 @@ if review:
 
 print(f"{pub}: {', '.join(effects) or 'no motion'}; {len(lights)} lights, {len(swings)} turning, {len(floats)} floating, "
       f"{len(falls)} falling, {len(beams)} beams, {len(twinkle)} lit windows, {len(steams)} steaming, "
-      f"{nstars} stars, {len(actors)} actors{', a shooting star' if meteor else ''}")
+      f"{nstars} stars, {len(terminals)} terminals, {len(actors)} actors{', a shooting star' if meteor else ''}")

@@ -45,7 +45,8 @@
     (data.effects || []).forEach(function (e) { on[e] = true; });
     var list = {
       swing: data.swing || [], float: data.float || [], fall: data.fall || [], light: data.lights || [],
-      twinkle: data.twinkle || [], beam: data.beam || [], steam: data.steam || [], actor: data.actors || []
+      twinkle: data.twinkle || [], beam: data.beam || [], steam: data.steam || [], actor: data.actors || [],
+      terminal: data.terminal || []
     };
     // GLSL arrays need a size of at least one; the counts below say how many are used.
     function size(name) { return Math.max(list[name].length, 1); }
@@ -62,7 +63,7 @@
     // Timings of the light: it comes in after HOLD seconds, over ENTRY seconds.
     var HOLD = 0.6, ENTRY = 2;
     var entry = data.entry;
-    var lightsK = data.lightsK || {}, rainK = data.rainK || {}, flashK = data.flashK || {}, starsK = data.starsK || {};
+    var lightsK = data.lightsK || {}, rainK = data.rainK || {}, flashK = data.flashK || {}, starsK = data.starsK || {}, terminalK = data.terminalK || {};
     // the sprites of the actors and the shooting star, packed in one atlas by the builder
     var rects = data.sprites || [];
     var atlasW = 1, atlasH = 1;
@@ -330,6 +331,35 @@
         setup: function (c) { c.gl.uniform1f(c.u("starDepth"), opt(starsK.depth, 0.75)); }
       },
       {
+        name: "terminal",
+        // green characters fall fast down an old terminal's screen, once its light is in
+        decl: function () { return "uniform vec4 termBox[" + size("terminal") + "]; uniform vec4 glyphRect; uniform vec3 termK;"; },
+        color: [
+          "if (spritesOn > 0.5) {",
+          "  for (int i = 0; i < " + size("terminal") + "; i++) {",
+          "    vec4 b = termBox[i];",
+          "    vec2 q = (px - b.xy) / (b.zw - b.xy);",
+          "    if (q.x > 0.0 && q.y > 0.0 && q.x < 1.0 && q.y < 1.0) {",
+          "      float edge = smoothstep(0.0, 0.08, q.x) * smoothstep(0.0, 0.08, 1.0 - q.x) * smoothstep(0.0, 0.1, q.y) * smoothstep(0.0, 0.1, 1.0 - q.y);",
+          "      float f = float(i) * 0.37;",
+          "      vec2 g = vec2(q.x * termK.y / 40.0 + f, (q.y * (b.w - b.y) / (b.z - b.x) * termK.y / 40.0) - t * termK.x + f);",
+          "      vec4 gl = texture2D(spritesImg, (glyphRect.xy + 1.0 + fract(g) * (glyphRect.zw - 2.0)) / spriteSize);",
+          "      float on = edge * termK.z;",
+          "      col = mix(col, col * 0.25 + vec3(0.0, 0.05, 0.02), on * 0.8);",
+          "      col += gl.rgb * on * 1.2;",
+          "    }",
+          "  }",
+          "}"
+        ].join("\n"),
+        setup: function (c) {
+          c.gl.uniform4fv(c.u("termBox"), flat(list.terminal, function (b) { return b.slice(0, 4); }));
+          c.gl.uniform4fv(c.u("glyphRect"), rects[data.glyphs]);
+        },
+        frame: function (c, s) {
+          c.gl.uniform3f(c.u("termK"), opt(terminalK.speed, 0.35), opt(terminalK.columns, 6), smooth((s - HOLD - ENTRY * 0.6) / 1.2));
+        }
+      },
+      {
         name: "meteor",
         // a drawn shooting star crosses the sky now and then, behind everything that is not sky
         decl: "uniform vec4 meteorA, meteorB, meteorC;",
@@ -385,7 +415,7 @@
       }
     ].filter(function (e) { return on[e.name]; });
 
-    var SPRITES = on.meteor || on.actors;
+    var SPRITES = on.meteor || on.actors || on.terminal;
     if (SPRITES) EFFECTS.unshift({
       name: "sprites",
       decl: "uniform sampler2D spritesImg; uniform float spritesOn; uniform vec2 spriteSize;",
@@ -481,8 +511,11 @@
 
     var switches = list.light.map(function () { return { ov: null, ovAt: 0, hover: false, buttons: [] }; });
     var clock = 0;
+    // a status light: on or off for a fraction of a second at a time, at its own rate
+    function blink(i, s) { var rate = 2 + 5 * rnd(i, 0); return rnd(i, Math.floor(s * rate) + 1) < 0.3 ? 1 : 0; }
     function level(i, s, fade) {
       var st = switches[i], l = list.light[i];
+      if (l.led) return blink(i, s) * fade;
       var auto = (l.big ? big(i, s, l) : (PATTERNS[(lightsK.pattern || {})[l.kind]] || PATTERNS.calls)(l, i, s)) * fade;
       if (st.ov === null) {
         // the wink: once the light is in, each lamp the reader can switch flickers off and on, in turn
@@ -723,8 +756,9 @@
     // only for the keyboard.
     var layer = document.createElement("div");
     layer.className = "motion-switches";
-    if (list.light.length) stage.appendChild(layer);
+    if (list.light.some(function (l) { return !l.led; })) stage.appendChild(layer);
     list.light.forEach(function (l, i) {
+      if (l.led) return;
       var b = l.hit, btn = document.createElement("button");
       btn.type = "button";
       btn.className = "switch" + (l.big ? " big" : " small");

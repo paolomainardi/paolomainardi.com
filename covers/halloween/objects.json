@@ -6,10 +6,10 @@
     "light": "spot",
     "motion": [],
     "box": [
-      958,
-      272,
-      994,
-      337
+      957,
+      252,
+      993,
+      314
     ],
     "color": "#FF0000"
   },
@@ -20,10 +20,10 @@
     "light": "spot",
     "motion": [],
     "box": [
-      1174,
-      287,
-      1208,
-      348
+      1172,
+      267,
+      1207,
+      325
     ],
     "color": "#00FF00"
   },
@@ -34,12 +34,12 @@
     "light": "spot",
     "motion": [],
     "box": [
-      889,
-      421,
-      936,
-      492
+      888,
+      399,
+      935,
+      470
     ],
-    "color": "#0000FF"
+    "color": "#0080FF"
   },
   {
     "id": "window-lower-right",
@@ -48,68 +48,54 @@
     "light": "spot",
     "motion": [],
     "box": [
-      1157,
-      422,
-      1251,
-      492
+      1155,
+      401,
+      1250,
+      472
     ],
     "color": "#FFFF00"
   },
   {
-    "id": "window-side-upper",
+    "id": "window-door",
     "kind": "light",
-    "label": "Upper side window",
+    "label": "Door window",
     "light": "spot",
     "motion": [],
     "box": [
-      1329,
-      355,
-      1349,
-      401
+      1016,
+      408,
+      1044,
+      442
     ],
     "color": "#FF00FF"
   },
   {
-    "id": "window-side-lower",
+    "id": "window-side",
     "kind": "light",
-    "label": "Lower side window",
+    "label": "Side window",
     "light": "spot",
     "motion": [],
     "box": [
-      1329,
-      442,
-      1348,
-      488
+      1328,
+      333,
+      1344,
+      380
     ],
     "color": "#00FFFF"
   },
   {
-    "id": "window-door",
+    "id": "door-lantern",
     "kind": "light",
-    "label": "Front door window",
+    "label": "Door lantern",
     "light": "spot",
     "motion": [],
     "box": [
-      1018,
-      430,
-      1043,
-      461
+      973,
+      417,
+      990,
+      433
     ],
     "color": "#FF8000"
-  },
-  {
-    "id": "lantern-door",
-    "kind": "light",
-    "label": "Door wall lantern",
-    "light": "spot",
-    "motion": [],
-    "box": [
-      975,
-      439,
-      988,
-      453
-    ],
-    "color": "#8000FF"
   },
   {
     "id": "pumpkin-large",
@@ -118,12 +104,12 @@
     "light": "spot",
     "motion": [],
     "box": [
-      1122,
-      508,
+      1121,
+      489,
       1219,
-      609
+      587
     ],
-    "color": "#00FF80"
+    "color": "#8000FF"
   },
   {
     "id": "pumpkin-small",
@@ -132,33 +118,48 @@
     "light": "spot",
     "motion": [],
     "box": [
-      1213,
-      547,
-      1280,
-      614
+      1208,
+      522,
+      1279,
+      593
     ],
-    "color": "#0080FF"
+    "color": "#FF0080"
+  },
+  {
+    "id": "computer-screen",
+    "kind": "terminal",
+    "label": "Computer screen",
+    "motion": [
+      "code"
+    ],
+    "box": [
+      749,
+      477,
+      799,
+      521
+    ],
+    "color": "#80FF00"
   },
   {
     "id": "tree-left",
     "kind": "plant",
-    "label": "Left bare tree",
+    "label": "Left tree",
     "outdoor": true,
     "motion": [
       "sway"
     ],
     "box": [
       0,
-      76,
-      157,
-      584
+      49,
+      164,
+      575
     ],
-    "color": "#FF0080"
+    "color": "#00FF80"
   },
   {
     "id": "tree-right",
     "kind": "plant",
-    "label": "Right bare tree",
+    "label": "Right tree",
     "outdoor": true,
     "motion": [
       "sway"
@@ -167,8 +168,120 @@
       1325,
       0,
       1536,
-      550
+      584
     ],
-    "color": "#80FF00"
+    "color": "#FF4000"
+  },
+  {
+    "id": "status-lights-1",
+    "kind": "light",
+    "label": "Status lights",
+    "light": "led",
+    "motion": [],
+    "box": [
+      1342,
+      412,
+      1379,
+      419
+    ],
+    "color": "#4000FF"
+  },
+  {
+    "id": "status-lights-2",
+    "kind": "light",
+    "label": "Status lights",
+    "light": "led",
+    "motion": [],
+    "box": [
+      1342,
+      423,
+      1379,
+      430
+    ],
+    "color": "#FF0040"
+  },
+  {
+    "id": "status-lights-3",
+    "kind": "light",
+    "label": "Status lights",
+    "light": "led",
+    "motion": [],
+    "box": [
+      1342,
+      446,
+      1379,
+      453
+    ],
+    "color": "#0080A0"
+  },
+  {
+    "id": "status-lights-4",
+    "kind": "light",
+    "label": "Status lights",
+    "light": "led",
+    "motion": [],
+    "box": [
+      1342,
+      468,
+      1379,
+      475
+    ],
+    "color": "#A000FF"
+  },
+  {
+    "id": "status-lights-5",
+    "kind": "light",
+    "label": "Status lights",
+    "light": "led",
+    "motion": [],
+    "box": [
+      1342,
+      491,
+      1379,
+      498
+    ],
+    "color": "#A0FF00"
+  },
+  {
+    "id": "status-lights-6",
+    "kind": "light",
+    "label": "Status lights",
+    "light": "led",
+    "motion": [],
+    "box": [
+      1342,
+      514,
+      1379,
+      521
+    ],
+    "color": "#FF00C0"
+  },
+  {
+    "id": "status-lights-7",
+    "kind": "light",
+    "label": "Status lights",
+    "light": "led",
+    "motion": [],
+    "box": [
+      1342,
+      537,
+      1379,
+      544
+    ],
+    "color": "#00A0FF"
+  },
+  {
+    "id": "status-lights-8",
+    "kind": "light",
+    "label": "Status lights",
+    "light": "led",
+    "motion": [],
+    "box": [
+      1342,
+      560,
+      1379,
+      566
+    ],
+    "color": "#FFC000"
   }
 ]
