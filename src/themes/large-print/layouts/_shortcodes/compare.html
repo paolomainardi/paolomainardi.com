@@ -1,0 +1,32 @@
+{{- /*
+  Two images of the same frame, one over the other, with a handle the reader
+  drags to show more of one or the other: a day and a night drawing, a before
+  and an after.
+
+    {{< compare before="/images/posts/<post>/day.webp" after="/images/posts/<post>/night.webp"
+        before-label="Day" after-label="Night" alt="What both images show" >}}
+    Caption, in markdown.
+    {{< /compare >}}
+
+  The images must have the same size. The handle is a range input, so it works
+  with a pointer, a finger and the arrow keys; compare.js moves the split.
+  Without the script the figure stays split down the middle.
+*/ -}}
+{{- $before := partial "book/asset.html" (.Get "before") -}}
+{{- $after := partial "book/asset.html" (.Get "after") -}}
+{{- if or (eq $before.width 0) (eq $after.width 0) }}{{ errorf "compare: before and after must be images under assets in %s" .Page.File.Path }}{{ end -}}
+{{- $bl := .Get "before-label" | default "Before" -}}
+{{- $al := .Get "after-label" | default "After" -}}
+<figure class="compare">
+  <div class="compare-stage" style="--split: 50">
+    <img src="{{ $after.url }}" alt=""{{ with $after.srcset }} srcset="{{ . }}" sizes="(min-width: 868px) 820px, 100vw"{{ end }} width="{{ $after.width }}" height="{{ $after.height }}" loading="lazy" decoding="async">
+    <img class="compare-before" src="{{ $before.url }}" alt="{{ .Get "alt" }}"{{ with $before.srcset }} srcset="{{ . }}" sizes="(min-width: 868px) 820px, 100vw"{{ end }} width="{{ $before.width }}" height="{{ $before.height }}" loading="lazy" decoding="async">
+    <span class="compare-label compare-label-before" aria-hidden="true">{{ $bl }}</span>
+    <span class="compare-label compare-label-after" aria-hidden="true">{{ $al }}</span>
+    <input class="compare-range" type="range" min="0" max="100" value="50" aria-label="{{ $bl }} or {{ $al }}" data-before="{{ $bl }}" data-after="{{ $al }}">
+    <span class="compare-handle" aria-hidden="true"></span>
+  </div>
+  {{- with .Inner }}
+  <figcaption>{{ . | $.Page.RenderString }}</figcaption>
+  {{- end }}
+</figure>

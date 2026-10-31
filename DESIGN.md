@@ -164,6 +164,11 @@ components:
     backgroundColor: "{colors.code-wash}"
     rounded: "{rounded.md}"
     padding: 14px
+  compare-handle:
+    backgroundColor: "{colors.paper}"
+    textColor: "{colors.ink}"
+    width: 40px
+    height: 40px
   table-head:
     textColor: "{colors.ink-muted}"
     typography: "{typography.label}"
@@ -495,6 +500,15 @@ Images that already show at full size, linked images and charts are left alone.
 On a touch screen the rule is looser: any image with a larger copy opens on
 tap, even when the overlay is no wider than the page, because tapping and then
 pinching into the detail is how a phone reader looks at a screenshot.
+
+**Image comparison.** The `compare` shortcode: two images of the same frame in
+one figure mat, split by a vertical hairline in paper with a round grip, 40px,
+in the middle. The first image shows left of the split, the second right of it,
+and a small uppercase label on paper names each in its top corner. The reader
+drags the grip, or taps anywhere on the image, or uses the arrow keys; the
+focus ring sits on the grip, in blush. It stays split down the middle without
+the script. It moves only when the reader moves it, so it is the way to show a
+change of state, such as day and night, without animating the text.
 
 **Table.** Unnumbered, like listings and figures. Three rules and nothing
 else: one above the head, one under it, one under the last row, with rows

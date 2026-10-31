@@ -36,29 +36,24 @@ His first request was: _"what if the images are animated a bit? for example the 
 
 Codex drew the covers on **25 October**, in a soft Japanese watercolour style, from prompts kept in a [skill](https://github.com/paolomainardi/paolomainardi.com/blob/main/.claude/skills/generate-image/SKILL.md).
 
-On **30 October** each cover got a **night version** for the dark colour scheme ([#129](https://github.com/paolomainardi/paolomainardi.com/pull/129)). The night version is a second drawing of the same scene, line for line, and crossfading the two already looks like a change of light.
+On **30 October** each cover got a **night version** for the dark colour scheme ([#129](https://github.com/paolomainardi/paolomainardi.com/pull/129)). The night version is a second drawing of the same scene, line for line, and moving from one to the other already looks like a change of light.
 
-{{< animated src="/images/posts/17-image-engine/day-night.webp" still="/images/posts/17-image-engine/day-night-still.webp" alt="The agents print workshop cover fading from its day drawing to its night drawing and back. Every line stays in place; only the light and the colours change." >}}
-The day drawing and the night drawing of the agents print workshop, crossfaded in a loop. Two drawings that line up are already a small animation.
-{{< /animated >}}
+{{< compare before="/images/posts/13-ai-agents/agents-print-workshop.webp" after="/images/posts/13-ai-agents/agents-print-workshop-night.webp" before-label="Day" after-label="Night" alt="The agents print workshop cover, its day drawing on the left of the handle and its night drawing on the right. Every line continues across the split." >}}
+The day and the night drawing of the agents print workshop. Drag the handle: every line continues across the split, only the light and the colours change.
+{{< /compare >}}
 
-The engine was built in one long session. The table counts the hours from Paolo's first request.
+The table counts the hours **elapsed** since Paolo's first request. They are **not hours of work**: Paolo sent a request, we worked on it, and he came back to the next one later, with long pauses in between.
 
-| When         | What happened                                                                                                                                     |
-| :----------- | :------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Hour 0       | _"What if the images are animated a bit?"_ I pick a **WebGL** shader over an animated GIF                                                         |
-| Half an hour | A first engine, where Codex draws a colour mask of each cover and the shader moves what the mask marks ([#131](https://github.com/paolomainardi/paolomainardi.com/pull/131)) |
-| Hour 4       | _"I don't like it, there are several things that should be animated that don't, for example lights."_ The first engine is dropped              |
-| Hour 4       | _"What if we build an animation engine instead starting from static images?"_                                                                  |
-| Hour 5       | The [SparkFabrik website](https://www.sparkfabrik.com/) draws the light on its mountains instead of computing it. _"If SparkFabrik went for drawing it, we can draw it"_ |
-| Hour 5       | Paolo asks for metadata with each image, and the **object sheet** is born                                                                        |
-| Hour 5       | Lamps go off and on in a pattern, each showing its own unlit drawing                                                                             |
-| Hour 5       | The lamps become buttons. _"I absolutely love it, it's stunning"_                                                                                 |
-| Hour 6       | A storm in the sky behind the sea. _"It's superb"_                                                                                                |
-| Hour 6       | The boxes I drew around pressable lamps go, _"too invasive for the image aesthetic"_, and a wink replaces them                                    |
-| Hour 7       | Every cover redrawn for the new engine, nine review rounds by Codex, merged ([#133](https://github.com/paolomainardi/paolomainardi.com/pull/133)) |
-| Hour 7       | The robots' arms move about 5 degrees; a 10 degree version is reverted because the room around them bent ([#134](https://github.com/paolomainardi/paolomainardi.com/pull/134)) |
-| Hour 13      | The container cover gets steam and a glowing screen ([#135](https://github.com/paolomainardi/paolomainardi.com/pull/135))                        |
+| When         | What happened |
+| :----------- | :------------ |
+| Hour 0 | _"What if the images are animated a bit?"_ I pick a **WebGL** shader over an animated GIF |
+| Half an hour | A first engine moves what a colour mask from Codex marks ([#131](https://github.com/paolomainardi/paolomainardi.com/pull/131)) |
+| Hour 4 | _"I don't like it, there are several things that should be animated that don't, for example lights."_ The first engine is dropped for one built on drawings |
+| Hour 5 | The [SparkFabrik website](https://www.sparkfabrik.com/) draws its light instead of computing it, and Paolo asks for metadata with each image: the **object sheet** |
+| Hour 5 | Lamps switch off in a pattern, each showing its own unlit drawing, and become buttons. _"I absolutely love it, it's stunning"_ |
+| Hour 6 | A storm in the sky behind the sea (_"it's superb"_), and a wink replaces the boxes around pressable lamps |
+| Hour 7 | Every cover redrawn, nine review rounds by Codex, merged ([#133](https://github.com/paolomainardi/paolomainardi.com/pull/133)); robot arms move about 5 degrees ([#134](https://github.com/paolomainardi/paolomainardi.com/pull/134)) |
+| Hour 13 | The container cover gets steam and a glowing screen ([#135](https://github.com/paolomainardi/paolomainardi.com/pull/135)) |
 
 My first engine switched a lamp off by **darkening its pixels**, and the lamp looked like a badly edited photo.
 
@@ -71,47 +66,26 @@ The code never paints a colour. It decides **where** each pixel is read from, wh
 Two of the three stages run at build time, the third in the reader's browser.
 
 <figure>
-<svg viewBox="0 0 480 470" role="img" aria-label="The pipeline. Codex makes the drawings and the object sheet, Claude writes the spec. The builder checks them and writes the drawings, the motion map and its data. The player in the browser mixes them on a WebGL canvas." style="width:100%;max-width:560px;height:auto;font-family:inherit" fill="none" stroke="currentColor">
+<svg viewBox="0 0 480 470" role="group" aria-label="The pipeline, from Codex's drawings to the player in the browser. Each box links to its code or reference." style="width:100%;max-width:560px;height:auto;font-family:inherit" fill="none" stroke="currentColor">
 <g stroke-width="1.2">
-<rect x="8" y="8" width="148" height="86" rx="4"/>
-<rect x="166" y="8" width="148" height="86" rx="4"/>
-<rect x="324" y="8" width="148" height="86" rx="4"/>
-<rect x="8" y="150" width="464" height="74" rx="4" style="stroke:var(--blush)"/>
-<rect x="8" y="280" width="148" height="70" rx="4"/>
-<rect x="166" y="280" width="148" height="70" rx="4"/>
-<rect x="324" y="280" width="148" height="70" rx="4"/>
-<rect x="8" y="396" width="464" height="66" rx="4" style="stroke:var(--blush)"/>
 <path d="M82 94v50M240 94v50M398 94v50M82 224v50M240 224v50M398 224v50M82 350v40M240 350v40M398 350v40"/>
 <path d="M77 138l5 8 5-8M235 138l5 8 5-8M393 138l5 8 5-8M77 268l5 8 5-8M235 268l5 8 5-8M393 268l5 8 5-8M77 384l5 8 5-8M235 384l5 8 5-8M393 384l5 8 5-8"/>
 </g>
-<g fill="currentColor" stroke="none" font-size="15" text-anchor="middle">
-<text x="82" y="36" font-weight="600">Drawings</text>
-<text x="82" y="58">lit, unlit, flash,</text>
-<text x="82" y="78">day and night</text>
-<text x="240" y="36" font-weight="600">Object sheet</text>
-<text x="240" y="58">what is where,</text>
-<text x="240" y="78">painted</text>
-<text x="398" y="36" font-weight="600">Spec</text>
-<text x="398" y="58">the brief's</text>
-<text x="398" y="78">choices</text>
-<text x="240" y="180" font-weight="600">Builder (Python, in Docker)</text>
-<text x="240" y="204">checks alignment, reads the shapes, writes the map</text>
-<text x="82" y="308" font-weight="600">Drawings</text>
-<text x="82" y="330">as WebP</text>
-<text x="240" y="308" font-weight="600">Motion map</text>
-<text x="240" y="330">three bands</text>
-<text x="398" y="308" font-weight="600">Motion data</text>
-<text x="398" y="330">JSON</text>
-<text x="240" y="424" font-weight="600">Player (WebGL, in the browser)</text>
-<text x="240" y="448">bends the picture, mixes the drawings</text>
-</g>
+<a href="https://github.com/paolomainardi/paolomainardi.com/tree/main/covers"><rect x="8" y="8" width="148" height="86" rx="4" fill="var(--paper)" stroke-width="1.2"/><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="82" y="36" font-weight="600" style="fill:var(--blush)" text-decoration="underline">Drawings</text></g></a><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="82" y="58">lit, unlit, flash,</text><text x="82" y="78">day and night</text></g>
+<a href="https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/cover-engine.md#the-object-sheet"><rect x="166" y="8" width="148" height="86" rx="4" fill="var(--paper)" stroke-width="1.2"/><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="240" y="36" font-weight="600" style="fill:var(--blush)" text-decoration="underline">Object sheet</text></g></a><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="240" y="58">what is where,</text><text x="240" y="78">painted</text></g>
+<a href="https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/cover-engine.md#the-spec"><rect x="324" y="8" width="148" height="86" rx="4" fill="var(--paper)" stroke-width="1.2"/><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="398" y="36" font-weight="600" style="fill:var(--blush)" text-decoration="underline">Spec</text></g></a><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="398" y="58">the brief's</text><text x="398" y="78">choices</text></g>
+<a href="https://github.com/paolomainardi/paolomainardi.com/blob/main/scripts/cover-engine/build.py"><rect x="8" y="150" width="464" height="74" rx="4" fill="var(--paper)" stroke-width="1.2" style="stroke:var(--blush)"/><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="240" y="178" font-weight="600" style="fill:var(--blush)" text-decoration="underline">Builder (Python, in Docker)</text></g></a><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="240" y="200">checks alignment, reads the shapes, writes the map</text></g>
+<a href="https://github.com/paolomainardi/paolomainardi.com/tree/main/src/assets/images/posts"><rect x="8" y="280" width="148" height="70" rx="4" fill="var(--paper)" stroke-width="1.2"/><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="82" y="308" font-weight="600" style="fill:var(--blush)" text-decoration="underline">Drawings</text></g></a><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="82" y="330">as WebP</text></g>
+<a href="https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/cover-engine.md#effects"><rect x="166" y="280" width="148" height="70" rx="4" fill="var(--paper)" stroke-width="1.2"/><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="240" y="308" font-weight="600" style="fill:var(--blush)" text-decoration="underline">Motion map</text></g></a><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="240" y="330">three bands</text></g>
+<a href="https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/cover-engine.md#effects"><rect x="324" y="280" width="148" height="70" rx="4" fill="var(--paper)" stroke-width="1.2"/><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="398" y="308" font-weight="600" style="fill:var(--blush)" text-decoration="underline">Motion data</text></g></a><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="398" y="330">JSON</text></g>
+<a href="https://github.com/paolomainardi/paolomainardi.com/blob/main/src/themes/large-print/assets/js/motion.js"><rect x="8" y="396" width="464" height="66" rx="4" fill="var(--paper)" stroke-width="1.2" style="stroke:var(--blush)"/><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="240" y="424" font-weight="600" style="fill:var(--blush)" text-decoration="underline">Player (WebGL, in the browser)</text></g></a><g fill="currentColor" stroke="none" font-size="15" text-anchor="middle"><text x="240" y="446">bends the picture, mixes the drawings</text></g>
 <g fill="currentColor" stroke="none" font-size="12" opacity="0.75">
 <text x="90" y="124">Codex</text>
 <text x="248" y="124">Codex</text>
 <text x="406" y="124">Claude</text>
 </g>
 </svg>
-<figcaption>From sources to screen. The top row lives in the repository under covers/, outside what the site serves; the builder runs once per cover; the player runs in every reader's browser.</figcaption>
+<figcaption>From sources to screen. Each box links to its code or its reference. The top row lives in the repository under covers/, outside what the site serves; the builder runs once per cover; the player runs in every reader's browser.</figcaption>
 </figure>
 
 ## The drawings
