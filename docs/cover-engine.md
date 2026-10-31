@@ -240,8 +240,9 @@ the trees sway. `layouts/_partials/halloween.html` keeps it in a template that a
 small script adds to the page only on that day, by the reader's own date, so no
 other day downloads it. The status lights of a server rack blink,
 green code falls down an old computer's screen, the stars breathe, a shooting star passes
-now and then, and two actors play once: a witch with her cats flies across the sky
-above the roof, and a tuxedo cat walks home and sits by the steps. The player runs on
+now and then, a witch with her cats flies across the sky above the roof and back,
+again and again, and a tuxedo cat walks home once and sits by the steps, where the
+reader can pet it. The player runs on
 every image with a motion map, so the header and a post's cover move together.
 
 ## Zoom

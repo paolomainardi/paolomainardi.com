@@ -2231,7 +2231,7 @@ body:has(.container.home) .halloween-band ~ .navigation .navigation-title {
 // A cover whose light comes in waits hidden for its unlit drawing; motion.js shows
 // it as soon as the canvas is ready, and this animation shows it after 1.2 s in
 // any case, so a failed script never hides the cover.
-.motion-wait .frontispiece-motion > picture img {
+.motion-wait .frontispiece-motion:not(.motion-ready) > picture img {
   opacity: 0;
   animation: motion-show 0s 1.2s forwards;
 }

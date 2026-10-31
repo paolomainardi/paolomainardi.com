@@ -20,11 +20,12 @@
   Array.prototype.forEach.call(document.querySelectorAll("img[data-motion-map]"), run);
 
   function run(img) {
-    var root = document.documentElement;
     // The cover waits hidden for its unlit drawing when its light comes in; whatever
-    // happens next, it is shown again.
+    // happens next, it is shown again. Each animated picture is released on its own, so
+    // one that is ready first never reveals another still waiting.
     function release() {
-      root.classList.remove("motion-wait");
+      var box = img.closest(".frontispiece-motion");
+      if (box) box.classList.add("motion-ready");
     }
     // Why the cover is still, for whoever is looking at the page's markup.
     function state(s) {
@@ -613,6 +614,7 @@
         var AC = window.AudioContext || window.webkitAudioContext;
         if (!AC) return;
         audio = audio || new AC();
+        audio.resume();
         var ac = audio, now = ac.currentTime, len = 2.6;
         var buf = ac.createBuffer(1, Math.floor(ac.sampleRate * len), ac.sampleRate), d = buf.getChannelData(0), last = 0;
         for (var n = 0; n < d.length; n++) { last = (last + 0.04 * (Math.random() * 2 - 1)) / 1.04; d[n] = last * 3.5; }
@@ -965,7 +967,7 @@
       stage.appendChild(sound);
       pause.addEventListener("click", function () { if (paused) setSound(false); });
       document.addEventListener("visibilitychange", function () {
-        if (audio && soundOn) document.hidden ? audio.suspend() : audio.resume();
+        if (audio && soundOn) { if (document.hidden) audio.suspend(); else audio.resume(); }
       });
     }
     function setSound(on) {
@@ -974,8 +976,8 @@
       soundOn = on;
       sound.setAttribute("aria-pressed", on ? "true" : "false");
       try {
-        audio = audio || new AC();
         if (on) {
+          audio = audio || new AC();
           audio.resume();
           if (!layers) layers = soundscape(audio);
           layers.master.gain.cancelScheduledValues(audio.currentTime);
@@ -983,9 +985,12 @@
           clearInterval(soundTimer);
           soundTimer = setInterval(function () { layers.tick(); }, 100);
           layers.tick();
-        } else if (layers) {
-          layers.master.gain.setTargetAtTime(0, audio.currentTime, 0.3);
+        } else {
           clearInterval(soundTimer);
+          if (!layers) return;
+          layers.master.gain.setTargetAtTime(0, audio.currentTime, 0.3);
+          // once faded, the context sleeps, and the looping wind with it
+          setTimeout(function () { if (!soundOn) audio.suspend(); }, 1500);
         }
       } catch (e) {}
     }
@@ -1102,7 +1107,7 @@
           });
         }
         if (amb.owl) {
-          if (!hoot) hoot = now + 6;
+          if (hoot < now) hoot = now + 6;
           if (hoot < ahead) { owl(hoot); hoot += amb.owl[0] + Math.random() * (amb.owl[1] - amb.owl[0]); }
         }
       }
@@ -1114,6 +1119,7 @@
     var gone = false;
     function stop(why) {
       gone = true;
+      if (amb) setSound(false);
       if (stage.parentNode) stage.parentNode.removeChild(stage);
       release();
       state(why);

@@ -226,7 +226,7 @@
       1379,
       475
     ],
-    "color": "#A000FF"
+    "color": "#808080"
   },
   {
     "id": "status-lights-5",
@@ -240,7 +240,7 @@
       1379,
       498
     ],
-    "color": "#A0FF00"
+    "color": "#400040"
   },
   {
     "id": "status-lights-6",
@@ -268,7 +268,7 @@
       1379,
       544
     ],
-    "color": "#00A0FF"
+    "color": "#C0C0FF"
   },
   {
     "id": "status-lights-8",
