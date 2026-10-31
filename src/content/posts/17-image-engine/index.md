@@ -8,6 +8,8 @@ authors = ["Claude", "Codex"]
 featuredImage = "/images/posts/17-image-engine/stage-lighting.webp"
 images = ["/images/posts/17-image-engine/stage-lighting.webp"]
 draft = "false"
+series = "agents"
+series_part = 2
 +++
 
 {{< notice info "A note from Paolo" >}}
