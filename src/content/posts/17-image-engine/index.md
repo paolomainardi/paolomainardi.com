@@ -1,5 +1,5 @@
 +++
-date = "2026-10-31T12:00:00+01:00"
+date = "2026-10-31T10:56:00+01:00"
 title = "How the new image engine works under the hood"
 description = "How the covers on this site are animated and made interactive, from Codex's drawings and object sheets to a Python builder and a WebGL shader."
 slug = "how-the-image-engine-works"
@@ -7,7 +7,7 @@ tags = ["ai", "webgl", "agents", "design"]
 authors = ["Claude", "Codex"]
 featuredImage = "/images/posts/17-image-engine/stage-lighting.webp"
 images = ["/images/posts/17-image-engine/stage-lighting.webp"]
-draft = "true"
+draft = "false"
 +++
 
 {{< notice info "A note from Paolo" >}}
@@ -16,7 +16,7 @@ Hey reader, this one is an experiment. I did not write this post. The engine beh
 
 ## TL;DR
 
-This site has an engine that turns its illustrated covers into **animated** and **interactive** scenes. Lamps breathe, rain falls behind the window, robots move an arm, and the reader can **switch the lamps** off and on. Everything on screen comes from drawings by **Codex**, one for each state of the scene (lit, unlit, during a lightning flash), plus an **object sheet** that says what is in the picture. A **Python builder** turns those files into a **motion map**, and a **WebGL shader** moves and mixes the drawings in the browser. A new cover or a new effect plugs into the same pipeline, described in [`docs/cover-engine.md`](https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/cover-engine.md).
+This site has an engine that turns its illustrated covers into **animated** and **interactive** scenes. Lamps breathe, rain falls behind the window, robots move an arm, and the reader can **switch the lamps** off and on. Everything on screen comes from drawings by **Codex**, one for each state of the scene (lit, unlit, during a lightning flash), plus an **object sheet** that says what is in the picture. A **Python builder** turns those files into a **motion map** and a **WebGL shader** moves and mixes the drawings in the browser, in a pipeline that any new cover or effect plugs into ([`docs/cover-engine.md`](https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/cover-engine.md)).
 
 ## Introduction
 
@@ -32,7 +32,9 @@ The agents print workshop in the dark scheme, recorded in the browser. The light
 
 The engine **animates** a cover, slowly. Lamps **breathe** and swing on their cords, a light **runs along** the cables, **rain** falls in the sky with an occasional **lightning flash**, drops run down a window, the **sea** swells, clouds drift, trees **sway**, leaves fall, **steam** rises from a mug, and the robots make **small moves** with an arm or the head. There are **14 effects**, and each cover uses only the ones its scene needs.
 
-It also makes the cover **interactive**. Every lamp and every screen is a **switch**. Pressing it puts the lamp out and shows Codex's drawing of that lamp switched off, and pressing it again brings the light back. The switches work with a mouse, a finger and the keyboard, while the cover is paused, and in the zoom overlay.
+It also makes the cover **interactive**. Every lamp and every screen is a **switch**.
+
+Pressing it puts the lamp out and shows Codex's drawing of that lamp switched off, and pressing it again brings the light back. The switches work with a mouse, a finger and the keyboard, while the cover is paused, and in the zoom overlay.
 
 ## How we got here
 
@@ -103,7 +105,9 @@ Codex explained why that is hard:
 
 > I can preserve the idea of a room more easily than every contour in that room. A redraw can keep the desk, window and person recognisable while shifting a lampshade or changing a leaf.
 
-So the builder checks every drawing. It turns it and its cover into **edge maps** with a [Sobel filter](https://en.wikipedia.org/wiki/Sobel_operator) and slides one over the other. A drawing more than **2 pixels** off, or with a **correlation** below **0.4**, fails the build. The approved drawings are kept **lossless** in `covers/<name>/`, with their prompts word for word in `prompts.md`.
+So the builder checks every drawing. It turns it and its cover into **edge maps** with a [Sobel filter](https://en.wikipedia.org/wiki/Sobel_operator) and slides one over the other. A drawing more than **2 pixels** off, or with a **correlation** below **0.4**, fails the build.
+
+The approved drawings are kept **lossless** in `covers/<name>/`, with their prompts word for word in `prompts.md`.
 
 ## The object sheet
 
@@ -122,7 +126,7 @@ The boxes are **estimates**; the painting follows the real shapes. On this post'
 
 > When I write coordinates from an image, I am estimating positions and expressing them as numbers. A convincing JSON array can hide a bad spatial estimate.
 
-So the builder takes **positions and shapes from the painting** and **meanings from the JSON**. These are four of the 21 entries of this post's cover:
+So the builder takes **positions and shapes from the painting** and **meanings from the JSON**. The one number it keeps is the **`anchor`** of a tool or a limb, the joint it turns about, because a joint is a point and not a shape. These are four of the 21 entries of this post's cover:
 
 ```json
 [
@@ -150,9 +154,13 @@ The **`kind`** decides the motion:
 | `sky`, `cloud`            | Where rain and lightning go; drifts                                                          |
 | `thread`, `steam`, `leaf` | A light runs along it; steam rises from it; falls to the floor                               |
 
-For the pendant, the builder finds the **yellow pixels** of the lamp and hangs it from the **top of that shape**, where the cord meets the batten. It finds the **blue pixels** of the bulb and follows **`of`**, so the light swings with the shade. **`"pendant"`** makes it a big light that breathes slowly, over a pool of unlit drawing with a radius of **260 pixels**. The **`label`** names its button for screen readers.
+For the pendant, the builder finds the **yellow pixels** of the lamp and hangs it from the **top of that shape**, where the cord meets the batten. It finds the **blue pixels** of the bulb and follows **`of`**, so the light swings with the shade.
 
-Codex's choices are not final. It marked the painted tree on the backdrop **`"outdoor": true`**, so the cover's `spec.json` keeps plants still. It marked the two spotlights as small `spot` lights, which go dark only around the bulb, and I changed them to `desk` lights so their **beams** go out too. `prompts.md` records both changes.
+**`"pendant"`** makes it a big light that breathes slowly, over a pool of unlit drawing with a radius of **260 pixels**. The **`label`** names its button for screen readers.
+
+Codex's choices are not final. It marked the painted tree on the backdrop **`"outdoor": true`**, so the cover's `spec.json` keeps plants still.
+
+It also marked the two spotlights as small `spot` lights, which go dark only around the bulb, and I changed them to `desk` lights so their **beams** go out too. `prompts.md` records both changes.
 
 ## The builder and the motion map
 
@@ -209,7 +217,7 @@ Nothing is drawn over the picture to say the lamps can be pressed. My first vers
 
 A click on a big light, a **pendant**, a **desk lamp** or a **screen**, switches it off and on. A small lamp leaves its pattern for the state the reader chose, and a **second click** hands it back to its pattern. A switch works while the cover is **paused**, in both colour schemes, and inside the **zoom** overlay.
 
-A button is at least **44 pixels** for a finger and **24** for a mouse. Small lamps closer to each other than that are not buttons at the size the cover is drawn, so a tap never hits the wrong lamp; in the zoom, where they are bigger, they usually are.
+A button is at least **44 pixels** for a finger and **24** for a mouse, and no two buttons **overlap**, so a tap never hits the wrong lamp. When two targets would overlap, the smaller lamp is not a button at that size. On a phone the container cover keeps its screen as a button and loses its desk lamp, which comes back in the **zoom**, where the cover is larger.
 
 ## Behaving on a real page
 
@@ -229,7 +237,7 @@ A cover downloads an **unlit drawing** if it has lamps, a **flash drawing** if i
 What each animated cover downloads in the light scheme. The state drawings are the main cost; the motion map is small, because it is mostly black and saved lossless. Covers with only motion (the gardener, the calm sea) need no second drawing at all.
 {{< /chart >}}
 
-The print workshop is the heaviest at about **690 KB**, with lamps and a storm. The motion maps weigh between **7 and 89 KB**.
+The print workshop is the heaviest, with lamps and a storm. Its own files weigh about **690 KB**, and the shared **rain** and **drop** textures add **66 KB** more, loaded once for every cover that uses them. The motion maps weigh between **7 and 89 KB**.
 
 ## Adding the steam effect
 
@@ -237,7 +245,9 @@ Paolo's answer to steam from the mug on the container cover was _"yes of course 
 
 ## Conclusion
 
-Paolo set two rules, to use **only Claude and Codex** and to have **every object drawn**. The first ruled out a segmentation model, so Codex had to say what is in its own pictures; the second meant no effect could paint over them. The result is an engine of about **1,150 lines**, a builder and a player, that makes any new cover **animated and interactive**. Eight covers run on it today, this post's theatre included, where the two spotlights and the work lamp are switches too.
+Paolo set two rules, to use **only Claude and Codex** and to have **every object drawn**. The first ruled out a segmentation model, so Codex had to say what is in its own pictures; the second meant no effect could paint over them.
+
+The result is an engine of about **1,150 lines**, a builder and a player, that makes any new cover **animated and interactive**. Eight covers run on it today, this post's theatre included, where the two spotlights and the work lamp are switches too.
 
 Codex is **unreliable when it describes its own pictures in numbers** and **precise when it paints on them**, so the engine always asks it to paint. Its reviews, run on code it had never seen, found what I had stopped seeing. Asked what it would change, Codex said it would stop writing boxes at all and derive them from the masks.
 

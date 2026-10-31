@@ -588,10 +588,12 @@
     btn.setAttribute("aria-pressed", "true");
     btn.dataset.box = b.join(",");
     btn.addEventListener("click", function (ev) { ev.stopPropagation(); toggle(i); });
-    btn.addEventListener("pointerenter", function () { switches[i].hover = true; });
-    btn.addEventListener("pointerleave", function () { switches[i].hover = false; });
-    btn.addEventListener("focus", function () { switches[i].hover = true; });
-    btn.addEventListener("blur", function () { switches[i].hover = false; });
+    // paused, the frame loop is stopped, so the lamp is drawn again at once
+    function hover(on) { return function () { switches[i].hover = on; redraw(); }; }
+    btn.addEventListener("pointerenter", hover(true));
+    btn.addEventListener("pointerleave", hover(false));
+    btn.addEventListener("focus", hover(true));
+    btn.addEventListener("blur", hover(false));
     switches[i].buttons.push(btn);
     layer.appendChild(btn);
   });
@@ -613,23 +615,33 @@
     stage.style.width = w + "px";
     stage.style.height = h + "px";
     // a target of 44 pixels for a finger, 24 for a mouse (WCAG 2.5.8), whatever the size of
-    // the lamp; small lamps closer than that to each other are not buttons at this size,
-    // so a tap never hits a neighbour
+    // the lamp. Targets must not overlap, so a tap never hits a neighbour: where a small
+    // lamp's target would overlap another, small lamps are not buttons at this size; where
+    // two big lights' targets would, the one with the smaller lamp is not.
     var min = (coarse ? 44 : 24) * W / Math.max(w, 1), crowded = false;
-    list.light.forEach(function (a, i) {
-      list.light.forEach(function (b, j) {
-        if (j > i && !a.big && !b.big && Math.abs(a.pool[0] - b.pool[0]) < min && Math.abs(a.pool[1] - b.pool[1]) < min) crowded = true;
+    var btns = Array.prototype.slice.call(layer.childNodes);
+    var rects = btns.map(function (btn) {
+      var b = btn.dataset.box.split(",").map(Number), big = btn.classList.contains("big");
+      var px = Math.max(big ? 0 : 10, (min - (b[2] - b[0])) / 2);
+      var py = Math.max(big ? 0 : 10, (min - (b[3] - b[1])) / 2);
+      return { big: big, area: (b[2] - b[0]) * (b[3] - b[1]), off: false, r: [b[0] - px, b[1] - py, b[2] + px, b[3] + py] };
+    });
+    function overlap(a, b) { return a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3]; }
+    rects.forEach(function (a, i) {
+      rects.forEach(function (b, j) {
+        if (j <= i || a.off || b.off || !overlap(a.r, b.r)) return;
+        if (!a.big || !b.big) crowded = true;
+        else (a.area < b.area ? a : b).off = true;
       });
     });
     layer.classList.toggle("crowded", crowded);
-    layer.childNodes.forEach(function (btn) {
-      var b = btn.dataset.box.split(",").map(Number);
-      var px = Math.max(btn.classList.contains("big") ? 0 : 10, (min - (b[2] - b[0])) / 2);
-      var py = Math.max(btn.classList.contains("big") ? 0 : 10, (min - (b[3] - b[1])) / 2);
-      btn.style.left = (b[0] - px) / W * 100 + "%";
-      btn.style.top = (b[1] - py) / H * 100 + "%";
-      btn.style.width = (b[2] - b[0] + 2 * px) / W * 100 + "%";
-      btn.style.height = (b[3] - b[1] + 2 * py) / H * 100 + "%";
+    btns.forEach(function (btn, k) {
+      var r = rects[k].r;
+      btn.style.display = rects[k].off ? "none" : "";
+      btn.style.left = r[0] / W * 100 + "%";
+      btn.style.top = r[1] / H * 100 + "%";
+      btn.style.width = (r[2] - r[0]) / W * 100 + "%";
+      btn.style.height = (r[3] - r[1]) / H * 100 + "%";
     });
     var scale = Math.min(window.devicePixelRatio || 1, 2);
     var bw = Math.min(Math.round(w * scale), W);

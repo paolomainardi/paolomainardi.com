@@ -76,7 +76,7 @@ hundreds of pixels, a painted shape lands within a pixel or two. The prompt is i
 
 - `publish`: the published cover's path without extension.
 - `entry`: the light comes in when the cover is first shown; `light_from` says from
-  where, in degrees, 0 from the right and 90 from above (28, the upper right, by default).
+  where, in degrees, 0 from the right and 90 from above (62, the upper right, by default).
 - `lights`: `pattern` for the small lamps (`calls`, `wave`, `breathe`), `breathe` for
   the speed of the breathing (1 normal, 0.5 a slow breath every 11 seconds), `glow`.
 - `storm`: `sky` is the list of sky objects where rain falls and lightning shows, or
@@ -144,9 +144,11 @@ Every light is a button over the cover: named from the object sheet's `label`, w
 `aria-pressed`, a focus ring for the keyboard only, and nothing drawn over the
 picture. Under the pointer the lamp brightens. A pendant switches off and on; a small
 lamp leaves its pattern for the state the reader chose, and a second click hands it
-back. A button is at least 44 pixels for a finger and 24 for a mouse; small lamps
-closer to each other than that are not buttons at the size the cover is drawn, so a
-tap never hits a neighbour, and in the zoom they usually are.
+back. A button is at least 44 pixels for a finger and 24 for a mouse, and no two
+buttons overlap, so a tap never hits a neighbour. Where a small lamp's target would
+overlap another, the small lamps are not buttons at the size the cover is drawn; where
+two big lights' targets would, the one with the smaller lamp is not. In the zoom,
+where the cover is larger, they usually are.
 
 ## Zoom
 
