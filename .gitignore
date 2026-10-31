@@ -14,6 +14,3 @@ src/resources/_gen
 .playwright-cli/
 .env
 node_modules
-
-# motion-map review overlays
-.motion-review.png

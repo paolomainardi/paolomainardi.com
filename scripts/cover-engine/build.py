@@ -91,7 +91,7 @@ def shift(a, b, r=4):
     for dy in range(-r, r + 1):
         for dx in range(-r, r + 1):
             c = np.corrcoef(a[r:-r, r:-r].ravel(), np.roll(np.roll(b, dy, 0), dx, 1)[r:-r, r:-r].ravel())[0, 1]
-            if c > best[0]:
+            if np.isfinite(c) and c > best[0]:
                 best = (c, dx * 2, dy * 2)
     return best
 
@@ -112,6 +112,9 @@ for name in ["night", "unlit", "flash", "unlit-night", "flash-night"]:
     drawings[name] = im
     c, dx, dy = shift(refs["night" if name.endswith("-night") else "day"], edges(im))
     print(f"{name + '.webp':<17} {dx:+d},{dy:+d} px (r={c:.2f})")
+    # a blank or unrelated drawing has no edges in common with the cover
+    if not np.isfinite(c) or c < 0.4:
+        fail(f"{name}.webp does not match the cover (r={c:.2f}); draw it again from the cover")
     if abs(dx) > 2 or abs(dy) > 2:
         fail(f"{name}.webp is {dx:+d},{dy:+d} px off the cover; draw it again from the cover")
 

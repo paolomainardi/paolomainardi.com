@@ -159,5 +159,9 @@ them back.
   the cover.
 - Only the first frame's drawings load before it; the flash, rain and drops after.
 - A cover whose light comes in waits hidden for its unlit drawing, 1.2 seconds at most.
-- Reduced motion, no WebGL, or a failing script leave the cover as a still image.
+- A pause button sits in the lower right corner of the cover, seen while the pointer
+  is over it or it has focus, and faintly on touch screens. It stops the motion and
+  starts it again.
+- Reduced motion (at load or switched on later), no WebGL, a lost WebGL context, or a
+  failing script leave the cover as a still image.
   `data-motion-state` on the image says why it is still.

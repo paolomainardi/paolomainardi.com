@@ -475,7 +475,7 @@ whose idea needs a story to move (a train passing, a lever thrown) stays still:
 layers that move whole objects were considered and set aside. The lamps a
 reader can press show nothing over the picture: they wink once after the light
 comes in and brighten under the pointer, and a focus ring appears only for the
-keyboard. The canvas draws while the cover is on screen, at 30 frames a second,
+keyboard. A small pause button in the corner of the cover, seen under the pointer or with focus, stops the motion. The canvas draws while the cover is on screen, at 30 frames a second,
 carries into the zoom, and is never created when the reader asks for reduced
 motion. A wheel turning in place was tried and dropped: rotating a painted wheel
 drags the wall and the machine behind it along. Faint lights tinted by the

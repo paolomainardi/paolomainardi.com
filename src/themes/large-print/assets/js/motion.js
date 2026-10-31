@@ -50,6 +50,8 @@
     items.forEach(function (x, i) { out.push.apply(out, pick(x, i)); });
     return out;
   }
+  // a setting, or its default when it is absent; an explicit 0 stays 0
+  function opt(v, d) { return v === undefined || v === null ? d : v; }
   function rnd(i, n) { var x = Math.sin(i * 127.1 + n * 311.7) * 43758.5453; return x - Math.floor(x); }
   function smooth(x) { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); }
 
@@ -157,7 +159,7 @@
       textures: [{ unit: 2, name: "unlit", attr: "data-motion-unlit", scheme: true, first: true }],
       setup: function (c) {
         c.gl.uniform1i(c.u("nLight"), list.light.length);
-        var a = ((entry && entry.from) || 28) * Math.PI / 180;
+        var a = opt(entry && entry.from, 28) * Math.PI / 180;
         c.gl.uniform2f(c.u("entryDir"), Math.cos(a), -Math.sin(a));
         c.gl.uniform4fv(c.u("lightA"), flat(list.light, function (l) { return l.pool; }));
       },
@@ -167,7 +169,7 @@
         c.gl.uniform1f(c.u("edge"), entry ? 1.4 - ease * 1.85 : -1);
         if (list.light.length) {
           var fade = entry ? Math.min(1, Math.max(0, (s - HOLD - ENTRY) / 1.5)) : 1;
-          var glowK = (lightsK.glow || 1) * fade * (c.night ? 0.95 : 0.6);
+          var glowK = opt(lightsK.glow, 1) * fade * (c.night ? 0.95 : 0.6);
           c.gl.uniform4fv(c.u("lightB"), flat(list.light, function (l, i) {
             return [level(i, s, fade), (l.big ? 1 : 0) + (switches[i].hover ? 2 : 0), l.swing, glowK];
           }));
@@ -196,11 +198,11 @@
       ].join("\n"),
       textures: [{ unit: 4, name: "rainImg", attr: "data-motion-rain", ready: "rainOn" }],
       setup: function (c) {
-        c.gl.uniform1f(c.u("rainScale"), rainK.scale || 2);
+        c.gl.uniform1f(c.u("rainScale"), opt(rainK.scale, 2));
       },
       frame: function (c, s) {
-        var sp = rainK.speed || 1;
-        c.gl.uniform1f(c.u("rainOp"), c.ready.rainOn ? rainK.opacity || (c.night ? 0.5 : 0.45) : 0);
+        var sp = opt(rainK.speed, 1);
+        c.gl.uniform1f(c.u("rainOp"), c.ready.rainOn ? opt(rainK.opacity, c.night ? 0.5 : 0.45) : 0);
         c.gl.uniform2f(c.u("rainAt"), (s * 0.21 * sp) % 1, -(s * 1.17 * sp) % 1);
       }
     },
@@ -327,7 +329,7 @@
 
   // ---------------------------------------------------------------------------
   // Lights: how dark each one is (0 lit, 1 off) at time s in seconds.
-  var speed = lightsK.breathe || 1;
+  var speed = opt(lightsK.breathe, 1);
   function calls(i, s) {
     s += rnd(i, 0) * 30;
     var n = 0, at = 0, lit, off;
@@ -381,10 +383,10 @@
 
   // A lightning flash every [min, max] seconds: a double flicker that fades.
   function lightning(s) {
-    var every = flashK.every || [8, 15], fd = flashK.fade || 0.38, n = 0, at = 2;
+    var every = opt(flashK.every, [8, 15]), fd = opt(flashK.fade, 0.38), n = 0, at = 2;
     for (;;) { var gap = every[0] + (every[1] - every[0]) * rnd(99, n); if (s < at + gap) break; at += gap; n++; }
     var u = s - at;
-    return (flashK.strength || 1) * (u < 0.07 ? 1 : u < 0.14 ? 0.25 : u < 0.22 ? 0.85 : u < 0.22 + fd ? 0.85 * (1 - smooth((u - 0.22) / fd)) : 0);
+    return opt(flashK.strength, 1) * (u < 0.07 ? 1 : u < 0.14 ? 0.25 : u < 0.22 ? 0.85 : u < 0.22 + fd ? 0.85 * (1 - smooth((u - 0.22) / fd)) : 0);
   }
 
   // ---------------------------------------------------------------------------
@@ -430,14 +432,21 @@
   }
   var ctx = { gl: gl, u: u, night: false, ready: {} };
 
+  // One texture per unit, made once and refilled: a scheme swap or the zoom never
+  // leaves an old texture behind on the GPU.
+  var units = {};
   function upload(unit, source) {
     gl.activeTexture(gl.TEXTURE0 + unit);
-    gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+    if (!units[unit]) {
+      units[unit] = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, units[unit]);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    }
+    gl.bindTexture(gl.TEXTURE_2D, units[unit]);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, source);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   }
   function fetchImage(src, done) {
     var im = new Image();
@@ -469,7 +478,11 @@
     var url = img.getAttribute(tx.attr + (tx.scheme && ctx.night ? "-night" : ""));
     return url || img.getAttribute(tx.attr);
   }
+  // Each load of the scheme's drawings has a number; a drawing that arrives after a
+  // newer load started belongs to the old scheme and is dropped.
+  var generation = 0;
   function picture(done) {
+    var gen = ++generation;
     var src = img.currentSrc || img.src;
     ctx.night = /-night/.test(src);
     gl.uniform1f(u("night"), ctx.night ? 1 : 0);
@@ -477,21 +490,27 @@
     var left = first.length + 1, missing = [], picture0 = null;
     // a state drawing that cannot be loaded is replaced by the picture itself: no state, no harm
     function one() {
-      if (--left) return;
+      if (gen !== generation || --left) return;
       missing.forEach(function (unit) { if (picture0) upload(unit, picture0); });
       if (done) done();
     }
-    fetchImage(src, function (im) { if (im) { picture0 = im; upload(0, im); } one(); });
+    fetchImage(src, function (im) { if (gen === generation && im) { picture0 = im; upload(0, im); } one(); });
     first.forEach(function (tx) {
       var url = textureURL(tx);
       if (!url) { missing.push(tx.unit); return one(); }
-      fetchImage(url, function (im) { if (im) upload(tx.unit, im); else missing.push(tx.unit); one(); });
+      fetchImage(url, function (im) {
+        if (gen !== generation) return;
+        if (im) upload(tx.unit, im); else missing.push(tx.unit);
+        one();
+      });
     });
-    textures.filter(function (tx) { return !tx.first; }).forEach(function (tx) {
+    // the drawings the first frame does not need; a texture shared by both schemes loads once
+    textures.filter(function (tx) { return !tx.first && !(tx.loaded && !tx.scheme); }).forEach(function (tx) {
       var url = textureURL(tx);
       if (!url) return;
+      tx.loaded = true;
       fetchImage(url, function (im) {
-        if (!im) return;
+        if (!im || (tx.scheme && gen !== generation)) return;
         upload(tx.unit, im);
         if (tx.ready) { ctx.ready[tx.ready] = true; gl.uniform1f(u(tx.ready), 1); }
       });
@@ -556,9 +575,42 @@
     }
   }
 
+  // The reader can pause the motion: a small button in the corner of the cover,
+  // seen when the pointer is over the cover or the button has focus.
+  var paused = false;
+  var pause = document.createElement("button");
+  pause.type = "button";
+  pause.className = "motion-pause";
+  pause.setAttribute("aria-label", "Pause the cover animation");
+  pause.setAttribute("aria-pressed", "false");
+  pause.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+    paused = !paused;
+    pause.setAttribute("aria-pressed", paused ? "true" : "false");
+    if (!paused) start();
+  });
+  stage.appendChild(pause);
+
+  // The cover goes back to the still image for good when the GPU drops the canvas or
+  // the reader asks for reduced motion after the page has loaded.
+  var gone = false;
+  function stop(why) {
+    gone = true;
+    if (stage.parentNode) stage.parentNode.removeChild(stage);
+    release();
+    state(why);
+  }
+  canvas.addEventListener("webglcontextlost", function (ev) { ev.preventDefault(); stop("WebGL context lost"); });
+  if (window.matchMedia) {
+    var reduce = matchMedia("(prefers-reduced-motion: reduce)");
+    var onReduce = function () { if (reduce.matches) stop("reduced motion"); };
+    if (reduce.addEventListener) reduce.addEventListener("change", onReduce);
+    else if (reduce.addListener) reduce.addListener(onReduce);
+  }
+
   var visible = true, running = false, last = 0, shown = false;
   function frame(now) {
-    if ((!visible && !zoom) || document.hidden) {
+    if (gone || paused || (!visible && !zoom) || document.hidden) {
       running = false;
       return;
     }
@@ -578,7 +630,7 @@
     }
   }
   function start() {
-    if (running || (!visible && !zoom) || document.hidden) return;
+    if (gone || paused || running || (!visible && !zoom) || document.hidden) return;
     running = true;
     last = 0;
     requestAnimationFrame(frame);
@@ -596,7 +648,8 @@
           zoom = ev.detail;
           zoom.dialog.appendChild(stage);
           stage.classList.add("in-zoom");
-          fetchImage(zoom.full, function (im) { if (im && zoom) upload(0, im); });
+          var zgen = ++generation;
+          fetchImage(zoom.full, function (im) { if (im && zoom && zgen === generation) upload(0, im); });
           zoom.image.addEventListener("load", place);
           place();
           requestAnimationFrame(place);
