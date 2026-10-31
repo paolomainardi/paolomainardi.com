@@ -22,8 +22,8 @@ thread, G wind, B the parts that turn (lamps, tools, limbs). Band 2: R water, G
 floating things, B drift. Band 3: R the sky where rain falls and lightning shows,
 G window glass.
 
-Object kinds: light (spot, pendant, desk, window, lighthouse), lamp, tool, limb,
-plant, leaf, water, float, sky, cloud, thread. See docs/cover-engine.md.
+Object kinds: light (spot, pendant, desk, screen, window, lighthouse), lamp, tool,
+limb, plant, leaf, water, float, sky, cloud, thread, steam. See docs/cover-engine.md.
 
 Spec keys, all optional except publish:
   publish     path and name of the published cover, without extension
@@ -186,7 +186,7 @@ pulse_spec = spec.get("pulse", {})
 pulse, wind, turn = (np.zeros((H, W)) for _ in range(3))
 water, floatc, drift = (np.zeros((H, W)) for _ in range(3))
 sky, glass = np.zeros((H, W)), np.zeros((H, W))
-swings, floats, falls, lights, beams = [], [], [], [], []
+swings, floats, falls, lights, beams, steams = [], [], [], [], [], []
 
 for i, o in ids.items():
     m, k = masks[i], o["kind"]
@@ -240,6 +240,9 @@ for i, o in ids.items():
             along = np.where(reach, 1 - dist / dist[reach].max(), 0)
             near = nd.binary_dilation(m, iterations=2)
             np.maximum(pulse, np.where(near, np.maximum(nd.grey_dilation(along, size=5), 2 / 255), 0), out=pulse)
+    elif k == "steam":
+        # steam rises from the middle of the opening, as wide as the opening
+        steams.append([int(xx[m].mean()), b[1], max(b[2] - b[0], 12), round((len(steams) * 0.43) % 1, 3)])
     elif k == "leaf":
         falls.append({"sprite": b, "from": [int(xx[m].mean()), int(yy[m].mean())],
                       "floor": spec.get("floor", min(H - 20, b[3] + 300)), "drift": 14 + (len(falls) * 7) % 16})
@@ -276,13 +279,14 @@ for i, o in ids.items():
         continue
     if kind == "window":
         continue
-    big = kind in ("pendant", "desk")
-    pool = {"pendant": [cx, cy + 120, 260, 260], "desk": [cx, cy + 60, 200, 170]}.get(kind, [cx, cy, int(w * 0.7) + 2, int(h * 0.7) + 2])
+    big = kind in ("pendant", "desk", "screen")
+    pool = {"pendant": [cx, cy + 120, 260, 260], "desk": [cx, cy + 60, 200, 170],
+            "screen": [cx, cy, int(w * 0.75) + 30, int(h * 0.75) + 30]}.get(kind, [cx, cy, int(w * 0.7) + 2, int(h * 0.7) + 2])
     hit = b
     if o.get("of") in masks:
         lb = box_of(masks[o["of"]])
         hit = [min(lb[0], b[0]), min(lb[1], b[1]), max(lb[2], b[2]), max(lb[3], b[3])]
-    lights.append({"id": i, "label": o.get("label", i), "kind": kind, "big": big, "pool": pool, "hit": hit,
+    lights.append({"id": i, "label": o.get("label", i), "kind": kind, "big": big, "cool": kind == "screen", "pool": pool, "hit": hit,
                    "swing": turn_of.get(o.get("of"), -1)})
 
 twinkle = []
@@ -306,8 +310,8 @@ for bx in spec.get("exclude", []):
     for ch in (pulse, wind, turn, water, floatc, drift, sky, glass):
         ch[sel] = 0
 
-LIMIT = {"swing": 16, "light": 16, "fall": 8, "float": 3, "twinkle": 12, "beam": 4}
-for name, items in (("swing", swings), ("light", lights), ("fall", falls), ("float", floats), ("twinkle", twinkle), ("beam", beams)):
+LIMIT = {"swing": 16, "light": 16, "fall": 8, "float": 3, "twinkle": 12, "beam": 4, "steam": 3}
+for name, items in (("swing", swings), ("light", lights), ("fall", falls), ("float", floats), ("twinkle", twinkle), ("beam", beams), ("steam", steams)):
     if len(items) > LIMIT[name]:
         print(f"note: {len(items)} {name}s, the player shows the first {LIMIT[name]}")
         del items[LIMIT[name]:]
@@ -324,11 +328,11 @@ effects = [name for name, on in [
     ("water", water.any()), ("drift", drift.any()), ("float", bool(floats)), ("wind", wind.any()),
     ("turn", bool(swings)), ("glass", bool(spec.get("drops")) and glass.any()), ("lights", bool(lights) or entry),
     ("flash", bool(storm)), ("rain", bool(storm) and sky.any()), ("twinkle", bool(twinkle)), ("beam", bool(beams)),
-    ("pulse", pulse.any()), ("fall", bool(falls))] if on]
+    ("pulse", pulse.any()), ("fall", bool(falls)), ("steam", bool(steams))] if on]
 
 data = {
     "size": [W, H], "effects": effects, "swing": swings, "float": floats, "fall": falls, "lights": lights,
-    "twinkle": twinkle, "beam": beams,
+    "twinkle": twinkle, "beam": beams, "steam": steams,
     "entry": {"from": spec.get("light_from", 62)} if entry else None,
     "lightsK": spec.get("lights", {}), "rainK": spec.get("rain", {}), "flashK": spec.get("flash", {}),
     "states": sorted(n for n in drawings if n != "night"),
@@ -349,4 +353,4 @@ if review:
     rev.save(review)
 
 print(f"{pub}: {', '.join(effects) or 'no motion'}; {len(lights)} lights, {len(swings)} turning, {len(floats)} floating, "
-      f"{len(falls)} falling, {len(beams)} beams, {len(twinkle)} lit windows")
+      f"{len(falls)} falling, {len(beams)} beams, {len(twinkle)} lit windows, {len(steams)} steaming")

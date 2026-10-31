@@ -460,7 +460,7 @@ breathe, switch on and off on a pattern and can be pressed by the reader; the
 light comes in when the cover is first shown; plants outside sway, lamps and
 tools swing, a figure makes a small gesture now and then, water rolls, a
 floating thing bobs, clouds drift, leaves fall, a light runs along a thread, a
-lighthouse sweeps its beam, rain falls behind a window or over a sea and
+lighthouse sweeps its beam, steam rises from a hot drink, rain falls behind a window or over a sea and
 lightning flashes, and at night the lit windows outside go dark and come back.
 Every pixel on screen is a drawing: Codex draws the scene in each state it
 needs (lit, unlit, during a flash), lined up with the cover, and a WebGL canvas

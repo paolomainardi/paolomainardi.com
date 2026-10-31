@@ -1,0 +1,265 @@
+[
+  {
+    "id": "window-top-left",
+    "kind": "light",
+    "label": "Upper left pane",
+    "light": "window",
+    "motion": [],
+    "box": [
+      125,
+      0,
+      1531,
+      68
+    ],
+    "color": "#FF0000"
+  },
+  {
+    "id": "window-top-right",
+    "kind": "light",
+    "label": "Upper right pane",
+    "light": "window",
+    "motion": [],
+    "box": [
+      0,
+      0,
+      1417,
+      458
+    ],
+    "color": "#00FF00"
+  },
+  {
+    "id": "window-middle-left",
+    "kind": "light",
+    "label": "Middle left pane",
+    "light": "window",
+    "motion": [],
+    "box": [
+      125,
+      20,
+      172,
+      206
+    ],
+    "color": "#0000FF"
+  },
+  {
+    "id": "window-middle-right",
+    "kind": "light",
+    "label": "Middle right pane",
+    "light": "window",
+    "motion": [],
+    "box": [
+      183,
+      36,
+      233,
+      215
+    ],
+    "color": "#FFFF00"
+  },
+  {
+    "id": "window-bottom-left",
+    "kind": "light",
+    "label": "Lower left pane",
+    "light": "window",
+    "motion": [],
+    "box": [
+      125,
+      214,
+      1535,
+      300
+    ],
+    "color": "#FF00FF"
+  },
+  {
+    "id": "window-bottom-right",
+    "kind": "light",
+    "label": "Lower right pane",
+    "light": "window",
+    "motion": [],
+    "box": [
+      183,
+      131,
+      233,
+      390
+    ],
+    "color": "#00FFFF"
+  },
+  {
+    "id": "computer-screen",
+    "kind": "light",
+    "label": "Computer screen",
+    "light": "screen",
+    "motion": [],
+    "box": [
+      183,
+      36,
+      1414,
+      428
+    ],
+    "color": "#FF8000"
+  },
+  {
+    "id": "desk-lamp-bulb",
+    "kind": "light",
+    "label": "Desk lamp",
+    "light": "desk",
+    "of": "desk-lamp",
+    "motion": [],
+    "box": [
+      150,
+      217,
+      1536,
+      300
+    ],
+    "color": "#8000FF"
+  },
+  {
+    "id": "floor-monstera",
+    "kind": "plant",
+    "label": "Floor monstera",
+    "outdoor": false,
+    "motion": [
+      "sway"
+    ],
+    "box": [
+      0,
+      131,
+      315,
+      697
+    ],
+    "color": "#00FF80"
+  },
+  {
+    "id": "shelf-trailing-plant",
+    "kind": "plant",
+    "label": "Trailing shelf plant",
+    "outdoor": false,
+    "motion": [
+      "sway"
+    ],
+    "box": [
+      144,
+      0,
+      1193,
+      365
+    ],
+    "color": "#FF0080"
+  },
+  {
+    "id": "bookshelf-small-plant",
+    "kind": "plant",
+    "label": "Small shelf plant",
+    "outdoor": false,
+    "motion": [
+      "sway"
+    ],
+    "box": [
+      41,
+      62,
+      216,
+      191
+    ],
+    "color": "#80FF00"
+  },
+  {
+    "id": "outdoor-tree",
+    "kind": "plant",
+    "label": "Window garden tree",
+    "outdoor": true,
+    "motion": [
+      "sway"
+    ],
+    "box": [
+      154,
+      132,
+      233,
+      390
+    ],
+    "color": "#0080FF"
+  },
+  {
+    "id": "large-picture-sky",
+    "kind": "sky",
+    "label": "Landscape picture sky",
+    "motion": [],
+    "box": [
+      214,
+      54,
+      643,
+      193
+    ],
+    "color": "#FFFFFF"
+  },
+  {
+    "id": "small-picture-sky",
+    "kind": "sky",
+    "label": "Small picture sky",
+    "motion": [],
+    "box": [
+      125,
+      0,
+      1536,
+      664
+    ],
+    "color": "#800000"
+  },
+  {
+    "id": "coffee-surface",
+    "kind": "steam",
+    "label": "Hot coffee surface",
+    "motion": [
+      "steam"
+    ],
+    "box": [
+      0,
+      0,
+      1418,
+      698
+    ],
+    "color": "#008000"
+  },
+  {
+    "id": "power-cable",
+    "kind": "thread",
+    "label": "Crate power cable",
+    "motion": [
+      "pulse"
+    ],
+    "box": [
+      124,
+      19,
+      1536,
+      606
+    ],
+    "color": "#000080"
+  },
+  {
+    "id": "monitor-cable",
+    "kind": "thread",
+    "label": "Monitor data cable",
+    "motion": [
+      "pulse"
+    ],
+    "box": [
+      183,
+      35,
+      1414,
+      670
+    ],
+    "color": "#808000"
+  },
+  {
+    "id": "ribbon-cable",
+    "kind": "thread",
+    "label": "Crate ribbon cable",
+    "motion": [
+      "pulse"
+    ],
+    "box": [
+      125,
+      0,
+      1535,
+      609
+    ],
+    "color": "#800080"
+  }
+]

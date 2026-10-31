@@ -112,13 +112,13 @@ webp:lossless=true covers/<name>/cover.webp`), and every drawing after it
    drawings, made by Codex from the cover (and from the night version for the
    `-night` one), "exactly the same scene, unchanged, only the light changes":
 
-   | Effect in the brief                                                                                                                                                               | Drawings                                                 | Spec                                        |
-   | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------- | :------------------------------------------ |
-   | The light comes in; lamps breathe, switch, can be pressed                                                                                                                         | `unlit`, `unlit-night`: every lamp off, no glow          | `entry`, `light_from`, `lights`             |
-   | A storm or a distant thunder                                                                                                                                                      | `flash`, `flash-night`: the same moment lit by lightning | `storm`, `flash`                            |
-   | Rain in the sky or behind a window                                                                                                                                                | none (shared texture)                                    | `storm.sky`, `rain`                         |
-   | Drops running down a window                                                                                                                                                       | none (shared texture)                                    | `glass`, `drops`                            |
-   | Waves, bobbing, drifting clouds, swaying plants, swinging lamps and tools, small gestures, falling leaves, a light along a thread, a lighthouse beam, windows going dark at night | none                                                     | `amp`, `still`, `pulse`, `floor`, `twinkle` |
+   | Effect in the brief                                                                                                                                                                                       | Drawings                                                 | Spec                                        |
+   | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------- | :------------------------------------------ |
+   | The light comes in; lamps breathe, switch, can be pressed                                                                                                                                                 | `unlit`, `unlit-night`: every lamp off, no glow          | `entry`, `light_from`, `lights`             |
+   | A storm or a distant thunder                                                                                                                                                                              | `flash`, `flash-night`: the same moment lit by lightning | `storm`, `flash`                            |
+   | Rain in the sky or behind a window                                                                                                                                                                        | none (shared texture)                                    | `storm.sky`, `rain`                         |
+   | Drops running down a window                                                                                                                                                                               | none (shared texture)                                    | `glass`, `drops`                            |
+   | Waves, bobbing, drifting clouds, swaying plants, swinging lamps and tools, small gestures, falling leaves, a light along a thread, a lighthouse beam, windows going dark at night, steam from a hot drink | none                                                     | `amp`, `still`, `pulse`, `floor`, `twinkle` |
 
    A changed weather, such as rain over a sunny scene, is a new cover: draw the
    rainy cover first and every state from it.
@@ -134,7 +134,7 @@ webp:lossless=true covers/<name>/cover.webp`), and every drawing after it
    >
    > Include only the things that give light or could move, one object each:
    >
-   > - kind "light": every light source that is lit or could be lit. The painted area is the glowing part only (a bulb, a lamp's glass, a lit window pane, a lighthouse lantern). "light" says how it shines: "spot" a small lamp, "pendant" a hanging bulb that lights the area below it, "desk" a desk or wall lamp that lights a pool in front of it, "window" a window pane of daylight or a lit window far away, "lighthouse" a lighthouse lantern. "of": the id of the lamp body it belongs to, if any. "label": two or three words naming the lamp for a screen reader, such as "Pendant lamp".
+   > - kind "light": every light source that is lit or could be lit. The painted area is the glowing part only (a bulb, a lamp's glass, a lit window pane, a lighthouse lantern). "light" says how it shines: "spot" a small lamp, "pendant" a hanging bulb that lights the area below it, "desk" a desk or wall lamp that lights a pool in front of it, "window" a window pane of daylight or a lit window far away, "screen" a lit computer or television screen, "lighthouse" a lighthouse lantern. "of": the id of the lamp body it belongs to, if any. "label": two or three words naming the lamp for a screen reader, such as "Pendant lamp".
    > - kind "lamp": a lamp body that hangs on a cord and could swing, cord included; motion ["swing"].
    > - kind "tool": something held or hanging that could swing, such as a rake in a hand or a sign on a hook; motion ["swing"]; "anchor": [x, y], the point where it is held.
    > - kind "limb": a part of a robot or a person that could make a small movement while they work, such as an arm holding a brush or a head bent over a task; one object per limb, only the clearly visible ones, at most 6; motion ["idle"]; "anchor": [x, y], the joint it turns about (the shoulder for an arm, the neck for a head).
@@ -144,6 +144,7 @@ webp:lossless=true covers/<name>/cover.webp`), and every drawing after it
    > - kind "float": something floating on water; motion ["bob"].
    > - kind "sky": an open sky area, one object for each separate sky (the sky inside a screen, a picture or a window is a different object from the sky behind the scene); motion [].
    > - kind "cloud": a cloud that could drift; motion ["drift"].
+   > - kind "steam": the top of a hot drink or anything else that could give off steam; the painted area is the opening the steam would rise from; motion ["steam"].
    > - kind "thread": a cable, wire or thread a light could run along, one object for all the threads that meet; motion ["pulse"].
    >   Never include whole people, whole robots, furniture or walls.
    >
