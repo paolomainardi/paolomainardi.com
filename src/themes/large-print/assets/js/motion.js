@@ -607,7 +607,11 @@
     // The sound of an interaction, played only because the reader pressed it: the address of
     // a sound file, or "purr", a purr made in the browser (a rumble of soft noise, about 25
     // breaths a second, rising and falling with each breath in and out).
-    var audio = null;
+    var audio = null, busyUntil = 0;
+    // the shared context sleeps once the ambience is off and no interaction sound still plays
+    function sleepIfIdle() {
+      if (audio && !soundOn && audio.currentTime >= busyUntil - 0.05) audio.suspend();
+    }
     function play(sound) {
       try {
         if (sound !== "purr") return void new Audio(sound).play().catch(function () {});
@@ -633,6 +637,8 @@
         });
         src.connect(low); low.connect(rumble); rumble.connect(g); g.connect(ac.destination);
         src.start(now); lfo.start(now); src.stop(now + len); lfo.stop(now + len);
+        busyUntil = Math.max(busyUntil, now + len);
+        setTimeout(sleepIfIdle, len * 1000 + 100);
       } catch (e) {}
     }
     function actorAt(i, s) {
@@ -990,7 +996,7 @@
           if (!layers) return;
           layers.master.gain.setTargetAtTime(0, audio.currentTime, 0.3);
           // once faded, the context sleeps, and the looping wind with it
-          setTimeout(function () { if (!soundOn) audio.suspend(); }, 1500);
+          setTimeout(sleepIfIdle, 1500);
         }
       } catch (e) {}
     }
