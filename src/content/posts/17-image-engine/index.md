@@ -16,9 +16,9 @@ Hey reader, this one is an experiment. I did not write this post. The engine beh
 
 ## TL;DR
 
-Eight covers on this site are animated, and every pixel in them comes from a drawing by **Codex**: one drawing per state of the scene (lit, unlit, during a lightning flash), plus an **object sheet** that says what is in the picture.
+This site has an **engine that animates its illustrated covers** by moving and mixing drawings made by **Codex**. For each cover, Codex draws the scene in every state it needs (lit, unlit, during a lightning flash) and an **object sheet** that says what is in the picture.
 
-A **Python builder** turns those files into a **motion map**, and a **WebGL shader** mixes the drawings in the browser. Each lamp is a **button** that shows the lamp's own unlit drawing. The reference is [`docs/cover-engine.md`](https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/cover-engine.md).
+A **Python builder** turns those files into a **motion map**, and a **WebGL shader** mixes the drawings in the browser. Lamps become **buttons** that switch to their own unlit drawing, and a new cover or a new effect plugs into the same pipeline. The reference is [`docs/cover-engine.md`](https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/cover-engine.md).
 
 ## Introduction
 
@@ -51,7 +51,7 @@ My first engine switched a lamp off by **darkening its pixels**, and it looked l
 
 ## From drawings to screen
 
-The code never paints a colour. It decides **where** each pixel is read from, which is how things move, and **which drawing** it is read from, which is how lights go out.
+Every object on screen comes from a drawing. The code decides **where** each pixel is read from, which is how things move, and **which drawing** it is read from, which is how lights go out. It adds only light on top: the **glow** of a lamp, the **pulse** along a cable, the **rain** and the **steam**.
 
 <figure>
 <svg viewBox="0 0 480 470" role="group" aria-label="The pipeline, from Codex's drawings to the player in the browser. Each box links to its code or reference." style="width:100%;max-width:560px;height:auto;font-family:inherit" fill="none" stroke="currentColor">
@@ -134,7 +134,7 @@ The **`kind`** decides the motion:
 
 | Kind                      | Becomes                                                                                       |
 | :------------------------ | :-------------------------------------------------------------------------------------------- |
-| `light`                   | A light with a level, a glow and a button; `light` says how it shines, `of` names its lamp   |
+| `light`                   | A light with a level and a glow; `light` says how it shines, `of` names its lamp; lamps and screens get a button, windows and lighthouses do not |
 | `lamp`, `tool`            | Swings on its cord or about its `anchor`, its light with it                                  |
 | `limb`                    | A figure's arm or head, small slow moves about its `anchor`                                  |
 | `plant`                   | Sways from its root, only when `outdoor`                                                     |
@@ -160,7 +160,7 @@ The **motion map** is an image three times the height of the cover. Its channels
 
 ![The motion map of the storm at sea cover, its three bands side by side. Band 1 is almost empty: only a small plant in the wind, in green. Band 2 has the sea in red, the floating container in green and the clouds in blue. Band 3 has the sky where rain falls and lightning shows, in red.](/images/posts/17-image-engine/motion-map.webp)
 
-Every mask is **blurred at the edge**, so the picture does not tear where a moving part meets a still one. For a light along a cable, a [breadth first search](https://en.wikipedia.org/wiki/Breadth-first_search) walks the painted cable and writes each pixel's **distance** from the start; the pulse is a band of distance that grows with time.
+Every mask except the cables is **blurred at the edge**, so the picture does not tear where a moving part meets a still one. For a light along a cable, a [breadth first search](https://en.wikipedia.org/wiki/Breadth-first_search) walks the painted cable and writes each pixel's **distance** from the start; the pulse is a band of distance that grows with time.
 
 The **motion data** is a small JSON file with the rest: the effects the cover uses, each swinging part with its anchor and amplitude, each light with its kind, label and pool. On the container cover it is **559 bytes**.
 
@@ -191,11 +191,11 @@ col = mix(col, texture2D(unlit, suv).rgb, dark);
 
 ![The switchboard cover in the browser with the pendant lamp lit, and switched off by a click. The pool around the lamp shows the unlit drawing: the shade loses its glow and the wall behind it its warmth.](/images/posts/17-image-engine/lamp-switch.webp)
 
-Each light is also a real `<button>` over the cover, with the label from the object sheet and `aria-pressed`. Nothing is drawn over the picture: each lamp **winks** once after the light comes in, and brightens under the pointer. A button is at least **44 pixels** for a finger and **24** for a mouse.
+Each lamp and each screen is also a real `<button>` over the cover, with the label from the object sheet and `aria-pressed`. Nothing is drawn over the picture: each lamp **winks** once after the light comes in, and brightens under the pointer. A button is at least **44 pixels** for a finger and **24** for a mouse.
 
 ## Behaving on a real page
 
-The player loads only the **first frame's** drawings before it starts, stops **off screen** and in a background tab, and draws at the device's pixel ratio, **never above 2**. It has a **pause button**, as [WCAG 2.2.2](https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html) asks, and stays a **still image** with reduced motion, without WebGL, or when a script fails.
+The player starts as soon as the **first frame's** drawings arrive, without waiting for the flash or the rain. It stops **off screen** and in a background tab, and draws at the device's pixel ratio, **never above 2**. It has a **pause button**, one of the ways [WCAG 2.2.2](https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html) accepts for motion that starts on its own, and stays a **still image** with reduced motion, without WebGL, or when a script fails.
 
 Much of this came from Codex's **reviews**. When the code works, I commit it on a branch and run Codex in a **read-only sandbox** with a prompt like this:
 
@@ -205,7 +205,7 @@ The review is **unsteered**: the prompt names no file and none of my suspicions.
 
 ## What a cover costs
 
-A cover downloads an **unlit drawing** if it has lamps, a **flash drawing** if it has a storm, and always a **motion map**.
+A cover downloads an **unlit drawing** if it has lamps, a **flash drawing** if it has a storm, and always a **motion map**. The chart shows the **full-size** files. On a narrow screen the browser can pick a smaller copy of the cover itself; the state drawings and the map always load at full size.
 
 {{< chart type="dot" data="cover-weight.csv" y="cover" x="kb" series="file" unit=" KB" axis="kilobytes, fewer is lighter" >}}
 What each animated cover downloads in the light scheme. The state drawings are the main cost; the motion map is small, because it is mostly black and saved lossless. Covers with only motion (the gardener, the calm sea) need no second drawing at all.
@@ -219,7 +219,7 @@ Paolo's answer to steam from the mug on the container cover was _"yes of course 
 
 ## Conclusion
 
-Paolo set two rules: **only Claude and Codex**, and **every pixel drawn**. The first ruled out a segmentation model, so Codex had to say what is in its own pictures; the second meant no effect could paint over them. The result is about **1,150 lines** of builder and player and **eight** animated covers, this post's theatre included.
+Paolo set two rules: **only Claude and Codex**, and **every object drawn**. The first ruled out a segmentation model, so Codex had to say what is in its own pictures; the second meant no effect could paint over them. The result is an engine of about **1,150 lines**, a builder and a player, that any new cover can use: eight covers run on it today, this post's theatre included.
 
 Two things worked better than I expected. Codex is **unreliable when it describes its own pictures in numbers** and **precise when it paints on them**, so the engine always asks it to paint. And a reviewer that has **never seen the code** finds what its author has stopped seeing. Asked what it would change, Codex said it would stop writing boxes at all and derive them from the masks.
 

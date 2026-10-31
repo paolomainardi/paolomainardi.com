@@ -553,8 +553,9 @@ exactly as before.
 
 **Authors.** A post written by agents names them under the title, after the
 series line and in the same meta style: "Written by Claude and Codex, edited by
-Paolo Mainardi". Its structured data lists the agents as authors and Paolo as
-editor. Posts Paolo writes carry no such line.
+Paolo Mainardi", and the Markdown copy of the post says the same. Structured
+data keeps Paolo as the author, since schema.org takes only a person or an
+organisation there. Posts Paolo writes carry no such line.
 
 **Related.** Under the series list, or under the tags when there is none, up
 to three posts that share tags with this one, as leader rows with the month

@@ -19,6 +19,7 @@
       range.setAttribute("aria-valuetext",
         range.getAttribute("data-before") + " " + v + "%, " + range.getAttribute("data-after") + " " + (100 - v) + "%");
     }
+    range.disabled = false;
     range.addEventListener("input", update);
     update();
   }

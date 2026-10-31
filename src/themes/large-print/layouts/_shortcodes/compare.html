@@ -10,7 +10,8 @@
 
   The images must have the same size. The handle is a range input, so it works
   with a pointer, a finger and the arrow keys; compare.js moves the split.
-  Without the script the figure stays split down the middle.
+  Without the script the figure stays split down the middle and the input
+  stays disabled.
 */ -}}
 {{- $before := partial "book/asset.html" (.Get "before") -}}
 {{- $after := partial "book/asset.html" (.Get "after") -}}
@@ -23,7 +24,7 @@
     <img class="compare-before" src="{{ $before.url }}" alt="{{ .Get "alt" }}"{{ with $before.srcset }} srcset="{{ . }}" sizes="(min-width: 868px) 820px, 100vw"{{ end }} width="{{ $before.width }}" height="{{ $before.height }}" loading="lazy" decoding="async">
     <span class="compare-label compare-label-before" aria-hidden="true">{{ $bl }}</span>
     <span class="compare-label compare-label-after" aria-hidden="true">{{ $al }}</span>
-    <input class="compare-range" type="range" min="0" max="100" value="50" aria-label="{{ $bl }} or {{ $al }}" data-before="{{ $bl }}" data-after="{{ $al }}">
+    <input class="compare-range" type="range" disabled min="0" max="100" value="50" aria-label="{{ $bl }} or {{ $al }}" data-before="{{ $bl }}" data-after="{{ $al }}">
     <span class="compare-handle" aria-hidden="true"></span>
   </div>
   {{- with .Inner }}
