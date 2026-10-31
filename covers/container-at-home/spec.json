@@ -1,0 +1,14 @@
+{
+  "publish": "src/assets/images/posts/5-docker-native/container-at-home",
+  "entry": true,
+  "light_from": 150,
+  "lights": {
+    "breathe": 0.6
+  },
+  "pulse": {
+    "from": [
+      812,
+      520
+    ]
+  }
+}

@@ -16,14 +16,14 @@ own unlit drawing.
 
 The pieces:
 
-| Piece           | Where                                                                 | What                                                                      |
-| :-------------- | :-------------------------------------------------------------------- | :------------------------------------------------------------------------ |
-| Sources         | `covers/<name>/`                                                      | Lossless masters, object sheets, spec, prompts. Not served by Hugo        |
-| Builder         | `scripts/cover-engine/build.py`, run by `just cover <name>` in Docker | Checks the drawings line up, reads the object sheet, writes the web files |
-| Web files       | `src/assets/images/posts/<post>/<name>*.webp`, `<name>-motion.json`   | The cover, its state drawings, the motion map and its data                |
-| Template        | `layouts/posts/single.html`                                           | Passes the player every file the cover uses                               |
-| Player          | `assets/js/motion.js`                                                 | The shader, the effects, the lamp switches                                |
-| Effect textures | `assets/images/motion/`                                               | Rain and raindrops, shared by every cover; masters in `covers/_effects/`  |
+| Piece           | Where                                                                 | What                                                                            |
+| :-------------- | :-------------------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| Sources         | `covers/<name>/`                                                      | Lossless masters, object sheets, spec, prompts. Not served by Hugo              |
+| Builder         | `scripts/cover-engine/build.py`, run by `just cover <name>` in Docker | Checks the drawings line up, reads the object sheet, writes the web files       |
+| Web files       | `src/assets/images/posts/<post>/<name>*.webp`, `<name>-motion.json`   | The cover, its state drawings, the motion map and its data                      |
+| Template        | `layouts/posts/single.html`                                           | Passes the player every file the cover uses                                     |
+| Player          | `assets/js/motion.js`                                                 | The shader, the effects, the lamp switches                                      |
+| Effect textures | `assets/images/motion/`                                               | Rain, raindrops and steam, shared by every cover; masters in `covers/_effects/` |
 
 ## The sources of a cover
 
@@ -54,19 +54,20 @@ shape, and the JSON for everything else: a box Codex writes as numbers can be of
 hundreds of pixels, a painted shape lands within a pixel or two. The prompt is in the
 `generate-image` skill.
 
-| Kind     | Fields                                                                    | Becomes                                                                                                                                    |
-| :------- | :------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------- |
-| `light`  | `light`: spot, pendant, desk, window, lighthouse; `of`: its lamp; `label` | A light that breathes or switches and a switch the reader can press; a lighthouse sweeps a beam; a window is daylight and only marks glass |
-| `lamp`   |                                                                           | A lamp body that swings on its cord, its light with it                                                                                     |
-| `tool`   | `anchor`                                                                  | Something held or hung that swings about its anchor                                                                                        |
-| `limb`   | `anchor`                                                                  | A figure's arm or head that makes small, slow moves about its joint                                                                        |
-| `plant`  | `outdoor`                                                                 | Sways from its root; an indoor plant stays still                                                                                           |
-| `leaf`   |                                                                           | Falls from its place to the floor                                                                                                          |
-| `water`  |                                                                           | Swells and ripples                                                                                                                         |
-| `float`  |                                                                           | Bobs and rocks on the water                                                                                                                |
-| `sky`    |                                                                           | Where rain and lightning go, when the spec names it                                                                                        |
-| `cloud`  |                                                                           | Drifts                                                                                                                                     |
-| `thread` |                                                                           | A light runs along it                                                                                                                      |
+| Kind     | Fields                                                                            | Becomes                                                                                                                                    |
+| :------- | :-------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| `light`  | `light`: spot, pendant, desk, screen, window, lighthouse; `of`: its lamp; `label` | A light that breathes or switches and a switch the reader can press; a lighthouse sweeps a beam; a window is daylight and only marks glass |
+| `lamp`   |                                                                                   | A lamp body that swings on its cord, its light with it                                                                                     |
+| `tool`   | `anchor`                                                                          | Something held or hung that swings about its anchor                                                                                        |
+| `limb`   | `anchor`                                                                          | A figure's arm or head that makes small, slow moves about its joint                                                                        |
+| `plant`  | `outdoor`                                                                         | Sways from its root; an indoor plant stays still                                                                                           |
+| `leaf`   |                                                                                   | Falls from its place to the floor                                                                                                          |
+| `water`  |                                                                                   | Swells and ripples                                                                                                                         |
+| `float`  |                                                                                   | Bobs and rocks on the water                                                                                                                |
+| `sky`    |                                                                                   | Where rain and lightning go, when the spec names it                                                                                        |
+| `cloud`  |                                                                                   | Drifts                                                                                                                                     |
+| `thread` |                                                                                   | A light runs along it                                                                                                                      |
+| `steam`  |                                                                                   | Steam rises from it                                                                                                                        |
 
 ## The spec
 
@@ -119,6 +120,7 @@ The effects today:
 | `beam`    | A lighthouse beam sweeps round                           | `light` objects of type lighthouse |
 | `pulse`   | A light runs along threads                               | `thread` objects                   |
 | `fall`    | Leaves fall and fade                                     | `leaf` objects                     |
+| `steam`   | A drawn wisp rises, sways and breathes                   | `steam` objects, the steam texture |
 
 ### Adding an effect
 
@@ -134,8 +136,8 @@ The effects today:
 
 Each light has a level from 0 (lit) to 1 (off), computed on every frame from its
 pattern: `calls` (on for 3 to 9 seconds, off for 1 to 3, back with a double blink),
-`wave`, `breathe`; a pendant or a desk lamp breathes slowly with a warm glow at its
-peak. Where a light is off, the shader shows its unlit drawing in a soft pool around
+`wave`, `breathe`; a pendant or a desk lamp breathes slowly with a warm glow at its peak, and a
+screen stays lit with a cool glow and only wavers. Where a light is off, the shader shows its unlit drawing in a soft pool around
 it. After the light comes in, each lamp winks once to show it can be pressed.
 
 Every light is a button over the cover: named from the object sheet's `label`, with

@@ -41,7 +41,7 @@
   (data.effects || []).forEach(function (e) { on[e] = true; });
   var list = {
     swing: data.swing || [], float: data.float || [], fall: data.fall || [], light: data.lights || [],
-    twinkle: data.twinkle || [], beam: data.beam || []
+    twinkle: data.twinkle || [], beam: data.beam || [], steam: data.steam || []
   };
   // GLSL arrays need a size of at least one; the counts below say how many are used.
   function size(name) { return Math.max(list[name].length, 1); }
@@ -144,12 +144,14 @@
         "for (int i = 0; i < " + size("light") + "; i++) {",
         "  if (i >= nLight) break;",
         "  vec4 B = lightB[i];",
-        "  float big = mod(B.y, 2.0), hover = floor(B.y / 2.0);",
+        // B.y packs big (1), hover (2) and a cool glow for a screen (4)
+        "  float big = mod(B.y, 2.0), hover = mod(floor(B.y / 2.0), 2.0), cool = floor(B.y / 4.0);",
         "  vec2 pc = follow(lightA[i].xy, B.z);",
         "  float r = length((px - pc) / lightA[i].zw);",
         "  float fall = big > 0.5 ? mix(1.0, 0.55, smoothstep(0.0, 0.45, r)) * (1.0 - smoothstep(0.45, 1.0, r)) : 1.0 - smoothstep(0.7, 1.0, r);",
         "  dark = max(dark, B.x * fall);",
-        "  glow += big * (1.0 - B.x) * (1.0 - smoothstep(0.0, 0.9, r)) * B.w * mix(vec3(0.0, 0.07, 0.24), vec3(0.55, 0.37, 0.2), night);",
+        "  vec3 tint = mix(mix(vec3(0.0, 0.07, 0.24), vec3(0.55, 0.37, 0.2), night), mix(vec3(0.12, 0.05, 0.0), vec3(0.3, 0.38, 0.5), night), cool);",
+        "  glow += big * (1.0 - B.x) * (1.0 - smoothstep(0.0, 0.9, r)) * B.w * tint;",
         "  hov += hover * (1.0 - smoothstep(0.0, 1.0, length((px - pc) / max(lightA[i].zw * 0.7, vec2(40.0)))));",
         "}",
         "col = mix(col, off, clamp(dark, 0.0, 1.0));",
@@ -171,7 +173,7 @@
           var fade = entry ? Math.min(1, Math.max(0, (s - HOLD - ENTRY) / 1.5)) : 1;
           var glowK = opt(lightsK.glow, 1) * fade * (c.night ? 0.95 : 0.6);
           c.gl.uniform4fv(c.u("lightB"), flat(list.light, function (l, i) {
-            return [level(i, s, fade), (l.big ? 1 : 0) + (switches[i].hover ? 2 : 0), l.swing, glowK];
+            return [level(i, s, fade), (l.big ? 1 : 0) + (switches[i].hover ? 2 : 0) + (l.cool ? 4 : 0), l.swing, glowK];
           }));
         }
       }
@@ -242,6 +244,35 @@
         "}"
       ].join("\n"),
       setup: function (c) { c.gl.uniform4fv(c.u("beam"), flat(list.beam, function (b) { return b; })); }
+    },
+    {
+      name: "steam",
+      // a drawn wisp rises from each source, swaying more as it rises and breathing slowly:
+      // a light tone on paper, a soft glow at night
+      decl: function () { return "uniform sampler2D steamImg; uniform float steamOn; uniform vec4 steam[" + size("steam") + "];"; },
+      color: [
+        "if (steamOn > 0.5) {",
+        "  for (int i = 0; i < " + size("steam") + "; i++) {",
+        "    vec4 st = steam[i];",
+        "    float tall = st.z * 4.5;",
+        "    float v = (st.y - px.y) / tall;",
+        "    if (v > 0.0 && v < 1.0) {",
+        "      float sway = (0.10 * sin(t * 0.9 + v * 4.0 + st.w * 6.2832) + 0.05 * sin(t * 1.7 - v * 7.0)) * v;",
+        "      float x = (px.x - st.x) / (st.z * 2.6) + 0.5 + sway;",
+        "      if (x > 0.0 && x < 1.0) {",
+        "        float a = texture2D(steamImg, vec2(x, 1.0 - v * (0.92 + 0.08 * sin(t * 0.5 + st.w * 6.0)))).r;",
+        "        a *= (0.7 + 0.3 * sin(t * 1.2 + st.w * 6.2832 + v * 3.0)) * smoothstep(0.0, 0.08, v);",
+        // by day steam is white over a dark ground and a soft grey over a bright one
+        "        float lum = dot(col, vec3(0.3, 0.59, 0.11));",
+        "        vec3 dayTone = mix(vec3(1.0, 0.99, 0.97), col * 0.84, smoothstep(0.7, 0.92, lum));",
+        "        col = mix(mix(col, dayTone, a * 0.85), col + a * 0.6 * (1.0 - col), night);",
+        "      }",
+        "    }",
+        "  }",
+        "}"
+      ].join("\n"),
+      textures: [{ unit: 6, name: "steamImg", attr: "data-motion-steam", ready: "steamOn" }],
+      setup: function (c) { c.gl.uniform4fv(c.u("steam"), flat(list.steam, function (st) { return st; })); }
     },
     {
       name: "pulse",
@@ -356,14 +387,17 @@
     wave: function (l, i, s) { var ph = ((s / 7 - l.pool[0] / W * 0.7) % 1 + 1) % 1; return ph < 0.12 ? smooth(ph / 0.03) * smooth((0.12 - ph) / 0.03) : 0; },
     breathe: function (l, i, s) { return 0.5 + 0.5 * Math.sin(s * speed * (1.6 + 0.3 * (i % 4)) + i * 1.7); }
   };
-  // a big lamp breathes slowly with a faint flicker
-  function big(i, s) { return 0.6 * (0.5 + 0.5 * Math.sin(s * speed * 1.1 + i * 2.3)) + 0.08 * Math.max(0, Math.sin(s * 13 + i)); }
+  // a big lamp breathes slowly with a faint flicker; a screen stays lit and only wavers
+  function big(i, s, l) {
+    if (l && l.cool) return 0.08 * (0.5 + 0.5 * Math.sin(s * speed * 0.8 + i)) + 0.05 * Math.max(0, Math.sin(s * 17 + i * 3));
+    return 0.6 * (0.5 + 0.5 * Math.sin(s * speed * 1.1 + i * 2.3)) + 0.08 * Math.max(0, Math.sin(s * 13 + i));
+  }
 
   var switches = list.light.map(function () { return { ov: null, ovAt: 0, hover: false, buttons: [] }; });
   var clock = 0;
   function level(i, s, fade) {
     var st = switches[i], l = list.light[i];
-    var auto = (l.big ? big(i, s) : (PATTERNS[(lightsK.pattern || {})[l.kind]] || PATTERNS.calls)(l, i, s)) * fade;
+    var auto = (l.big ? big(i, s, l) : (PATTERNS[(lightsK.pattern || {})[l.kind]] || PATTERNS.calls)(l, i, s)) * fade;
     if (st.ov === null) {
       // the wink: once the light is in, each lamp the reader can switch flickers off and on, in turn
       var w = s - HOLD - ENTRY - 1 - i * 0.22;
