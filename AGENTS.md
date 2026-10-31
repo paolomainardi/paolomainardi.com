@@ -99,8 +99,8 @@ Run `just` or `just --list` to see all recipes.
   entry without `link` fails the build. Notes are plain Markdown, no HTML.
 - **Posts are written with the `write-post` skill.** `.claude/skills/write-post/`
   holds the procedure and `voice.md`, Paolo's voice. Drafts must pass
-  `python3 scripts/check-post-style.py <index.md>`, which rejects dashes as
-  punctuation, marketing words and a colon before a bold phrase. Opinions in a post come from Paolo, never from the model.
+  `python3 scripts/check-post-style.py <index.md>`: no dashes as punctuation,
+  no marketing words. Opinions in a post come from Paolo, never from the model.
 - **Images are generated with the `generate-image` skill.**
   `.claude/skills/generate-image/` holds the palette, the illustration style
   and the steps: ask Paolo first, generate with Codex, convert to WebP. A

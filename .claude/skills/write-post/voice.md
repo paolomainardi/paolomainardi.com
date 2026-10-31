@@ -109,7 +109,7 @@ heading each, and end with the data and references.
   - or as two sentences: "We do not chat. I write a prompt, …".
   A colon is fine only at the end of a sentence that introduces a code block,
   a quote or a list on its own lines, and inside quoted text. Headings have no
-  colon either. `scripts/check-post-style.py` flags a colon followed by bold.
+  colon either.
 - Generic AI phrasing: "In today's fast-paced world", "Let's dive in",
   "game-changer", "In conclusion", summaries that repeat the post.
 - Italian-English slips that appear in older posts ("I am using it since"):

@@ -65,8 +65,7 @@ for every sentence.
      paragraph.
 6. **Check it.**
    - `python3 scripts/check-post-style.py src/content/posts/<n>-<slug>/index.md`
-     passes: no dashes as punctuation, no marketing words, no colon before a
-     bold phrase.
+     passes: no dashes as punctuation, no marketing words.
    - The production build is clean, and `scripts/a11y-check.cjs` passes on the
      new page.
    - Read the draft once against voice.md's "Things to avoid".
