@@ -330,14 +330,19 @@
   // ---------------------------------------------------------------------------
   // Lights: how dark each one is (0 lit, 1 off) at time s in seconds.
   var speed = opt(lightsK.breathe, 1);
+  // each lamp remembers the cycle it is in, so the work per frame stays the same
+  var cycles = {};
   function calls(i, s) {
     s += rnd(i, 0) * 30;
-    var n = 0, at = 0, lit, off;
+    var c = cycles[i];
+    if (!c || s < c.at) c = cycles[i] = { n: 0, at: 0 };
+    var lit, off;
     for (;;) {
-      lit = 3 + 6 * rnd(i, n + 1); off = 1 + 2 * rnd(i, n + 2);
-      if (s < at + lit + off) break;
-      at += lit + off; n++;
+      lit = 3 + 6 * rnd(i, c.n + 1); off = 1 + 2 * rnd(i, c.n + 2);
+      if (s < c.at + lit + off) break;
+      c.at += lit + off; c.n++;
     }
+    var at = c.at;
     var u = s - at;
     if (u < lit) return 0;
     var back = off - (u - lit);
@@ -386,11 +391,13 @@
   }
 
   // A lightning flash every [min, max] seconds: a double flicker that fades.
+  var storm = null;
   function lightning(s) {
-    var every = opt(flashK.every, [8, 15]), fd = opt(flashK.fade, 0.38), n = 0, at = 2;
-    if (s < at) return 0;
-    for (;;) { var gap = every[0] + (every[1] - every[0]) * rnd(99, n); if (s < at + gap) break; at += gap; n++; }
-    var u = s - at;
+    var every = opt(flashK.every, [8, 15]), fd = opt(flashK.fade, 0.38);
+    if (s < 2) return 0;
+    if (!storm || s < storm.at) storm = { n: 0, at: 2 };
+    for (;;) { var gap = every[0] + (every[1] - every[0]) * rnd(99, storm.n); if (s < storm.at + gap) break; storm.at += gap; storm.n++; }
+    var u = s - storm.at;
     return opt(flashK.strength, 1) * (u < 0.07 ? 1 : u < 0.14 ? 0.25 : u < 0.22 ? 0.85 : u < 0.22 + fd ? 0.85 * (1 - smooth((u - 0.22) / fd)) : 0);
   }
 
@@ -498,7 +505,9 @@
     // a state drawing that cannot be loaded is replaced by the picture itself: no state, no harm
     function one() {
       if (gen !== generation || --left) return;
-      missing.forEach(function (unit) { if (picture0) upload(unit, picture0); });
+      // without its own picture the canvas would cover the image with nothing
+      if (!picture0) return stop("no picture");
+      missing.forEach(function (unit) { upload(unit, picture0); });
       if (zoom && started) zoomPicture();
       redraw();
       if (done) done();
