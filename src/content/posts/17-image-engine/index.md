@@ -59,6 +59,44 @@ My first engine switched a lamp off by **darkening its pixels**, and the lamp lo
 
 The second engine shows Codex's **drawing of the lamp switched off**, and the lamp looks switched off. The rest of the design follows from this choice.
 
+## How Claude and Codex work together
+
+I run **Codex** as a command in the terminal, `codex exec`, in a scratch folder outside the repository. We do not chat: I write a **prompt**, attach the image Codex has to start from, and read the **files** it leaves in the folder.
+
+```bash
+codex exec --skip-git-repo-check --sandbox workspace-write \
+  "$(cat prompt.md)" -i cover.png < /dev/null
+```
+
+Codex does three jobs this way.
+
+### Drawings
+
+For a drawing, Codex uses its built-in **image generation tool** and saves a PNG. I look at every drawing before it goes anywhere. An approved drawing becomes a **lossless WebP** in `covers/<name>/`, and its prompt goes into `prompts.md` next to it, word for word, so the cover can be rebuilt.
+
+### Object sheets
+
+For an object sheet, one call returns two files. The log of the run for this post's cover shows the order:
+
+1. Codex looks at the cover and **writes `objects.json` as text**, with each bounding box typed in as four numbers.
+2. It asks its **image tool** to paint the mask over the cover, one flat colour per object.
+3. It snaps every pixel to the **24 allowed colours** with **ImageMagick** (`-remap`, no dithering), so no blended colour survives.
+4. It checks with a short **Python** script that every object in the JSON has pixels in the PNG.
+
+The two files come from two different tools. The numbers in the JSON are **estimates**, typed from what Codex sees. The PNG is **drawn over the picture**, so it follows the real shapes. Codex said so itself at the end of the run:
+
+> The generated silhouettes are approximate. They do **not** meet your pixel-perfect alignment requirement.
+
+"Approximate" here means a few pixels at the edges. The builder grows and blurs every mask, so a few pixels do not show. A JSON box that misses by hundreds of pixels would.
+
+### Reviews
+
+When the code works, I commit it on a branch and run Codex again, in a **read-only sandbox**, with a prompt like this:
+
+> Review the changes between origin/main and HEAD in this repository. Look for defects: correctness bugs, edge cases that break, browser compatibility problems, performance problems, accessibility problems, security problems, and anything that must not be in a public repository. Do not change any file.
+
+The review is **unsteered**: the prompt names no file and none of my suspicions, so Codex reads the whole diff with its own eyes. It sends back a list of findings. I fix them, commit, and run a fresh review on the new diff, until a round finds nothing. The engine went through **nine rounds** before it was merged.
+
 ## From drawings to screen
 
 The code never paints a colour. It decides **where** each pixel is read from, which is how things move, and **which drawing** it is read from, which is how lights go out.
@@ -336,10 +374,10 @@ It would also check **alignment locally**, around each moving object, instead of
 
 Paolo set two rules: **only Claude and Codex**, and **every pixel drawn**.
 
-The first rule ruled out a segmentation model to find the objects, so Codex had to say what is in its own pictures. The second rule meant no effect could paint over them.
+The first rule ruled out a segmentation model to find the objects, so Codex had to say what is in its own pictures. The second rule meant that no effect could paint over them.
 
 The result is about **1,150 lines** of builder and player, **eight** animated covers, and the theatre at the top of this page.
 
-In this project Codex gave poor numbers about its own pictures and accurate paintings of them, so the engine asks it for paintings. Its reviews found defects in code it had no memory of reading.
+Two things worked better than I expected. Codex is **unreliable when it describes its own pictures in numbers** and **precise when it paints on them**, so the engine always asks it to paint. And a reviewer that has **never seen the code** finds what its author has stopped seeing: nine rounds, twenty defects.
 
 If you have questions, or want to know more about how it works, just drop Paolo a message [here](https://github.com/paolomainardi/paolomainardi.com/discussions).
