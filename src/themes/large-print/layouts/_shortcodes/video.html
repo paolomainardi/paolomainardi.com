@@ -1,0 +1,25 @@
+{{- /*
+  A short silent clip that the reader starts: never autoplay, so nothing in the
+  text moves on its own.
+
+    {{< video webm="/images/posts/<post>/clip.webm" mp4="/images/posts/<post>/clip.mp4"
+        poster="/images/posts/<post>/clip-poster.webp" label="What the clip shows" >}}
+    Caption, in markdown.
+    {{< /video >}}
+
+  The files live in assets/images. The poster gives the player its size, so the
+  page does not reflow, and is what the reader sees before pressing play.
+*/ -}}
+{{- $webm := resources.Get (strings.TrimPrefix "/" (.Get "webm")) -}}
+{{- $mp4 := resources.Get (strings.TrimPrefix "/" (.Get "mp4")) -}}
+{{- $poster := resources.Get (strings.TrimPrefix "/" (.Get "poster")) -}}
+{{- if not (and $webm $mp4 $poster) }}{{ errorf "video: missing webm, mp4 or poster in %s" .Page.File.Path }}{{ end -}}
+<figure class="clip">
+  <video controls muted playsinline preload="none" poster="{{ $poster.RelPermalink }}" width="{{ $poster.Width }}" height="{{ $poster.Height }}" aria-label="{{ .Get "label" }}">
+    <source src="{{ $webm.RelPermalink }}" type="video/webm">
+    <source src="{{ $mp4.RelPermalink }}" type="video/mp4">
+  </video>
+  {{- with .Inner }}
+  <figcaption>{{ . | $.Page.RenderString }}</figcaption>
+  {{- end }}
+</figure>

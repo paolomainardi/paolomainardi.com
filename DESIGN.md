@@ -510,6 +510,11 @@ focus ring sits on the grip, in blush. It stays split down the middle without
 the script. It moves only when the reader moves it, so it is the way to show a
 change of state, such as day and night, without animating the text.
 
+**Clip.** The `video` shortcode: a short silent screen recording in the same mat
+as an image, with the browser's own controls and a poster frame. It never plays
+on its own; the reader presses play, so it does not break the rule against
+motion in the text.
+
 **Table.** Unnumbered, like listings and figures. Three rules and nothing
 else: one above the head, one under it, one under the last row, with rows
 separated by space. Column heads are small uppercase labels. A column whose

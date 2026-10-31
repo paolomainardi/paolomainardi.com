@@ -1778,6 +1778,21 @@ body:has(.container.home) .navigation .navigation-title {
 
 }
 
+// A clip the reader starts (the video shortcode), in the same mat as an image.
+.content figure.clip video {
+  display: block;
+  width: 100%;
+  height: auto;
+  padding: 1.4rem;
+  background-color: var(--code-wash);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+
+  @media only screen and (max-width: 559px) {
+    padding: 0.8rem;
+  }
+}
+
 // Two images of one frame, split by a handle the reader drags (the compare
 // shortcode). The first image is clipped to the left of the split; the range
 // input lies over both, invisible, so a pointer, a finger or the arrow keys
