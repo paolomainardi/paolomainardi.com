@@ -145,6 +145,61 @@ The **kind** of an object decides its motion:
 
 Codex chooses the kinds. The vines by the rainy window of the print workshop hang indoors, so they are an **indoor plant** and stay still. A print hanging on a line is a `tool`, the kind for things that swing from a point.
 
+### An object sheet, entry by entry
+
+The cover of this post has **21 objects** in its `objects.json`. Four of them, as Codex wrote them:
+
+```json
+[
+  {"id": "pendant-lamp", "kind": "lamp", "label": "Pendant lamp",
+   "motion": ["swing"], "anchor": [1270, 199],
+   "box": [1204, 99, 1277, 591], "color": "#FFFF00"},
+  {"id": "pendant-lamp-bulb", "kind": "light", "light": "pendant",
+   "of": "pendant-lamp", "label": "Pendant lamp",
+   "box": [647, 209, 1276, 596], "color": "#0000FF"},
+  {"id": "operator-reaching-arm", "kind": "limb",
+   "label": "Operator reaching arm",
+   "motion": ["idle"], "anchor": [1350, 730],
+   "box": [1204, 133, 1363, 756], "color": "#80FF00"},
+  {"id": "upper-backdrop-tree", "kind": "plant", "outdoor": true,
+   "motion": ["sway"], "box": [295, 69, 1366, 667], "color": "#000080"}
+]
+```
+
+Every entry has an **`id`**, a **`kind`** and a **`color`**, the flat colour of the object in `objects.png`.
+
+The other fields depend on the kind:
+
+- **`light`** says how a light shines (`spot`, `pendant`, `desk`, `screen`, `window`, `lighthouse`), and **`of`** names the lamp body it hangs from.
+- **`label`** is the name a screen reader announces for the lamp's button.
+- **`anchor`** is the point a `tool` or a `limb` turns about: a hand, a shoulder, a neck.
+- **`outdoor`** separates a tree in the wind from a plant in a room.
+- **`box`** and **`motion`** are Codex's own notes. The builder does not use them.
+
+For the pendant lamp, the builder works in five steps:
+
+1. It collects the **yellow pixels** of `objects.png`. They give the lamp's real shape, cord and shade, from **(1205, 99)** to **(1277, 591)**.
+2. It hangs the lamp from the **top of that shape**, at **(1238, 99)**, where the cord meets the batten. For a lamp it ignores the `anchor` in the JSON, which here is 100 pixels lower and off the cord.
+3. It collects the **blue pixels** for the bulb. The JSON box for the bulb is 630 pixels wide and starts at the backdrop; the painted bulb is a strip under the shade. The builder prints a note and uses the painting.
+4. It follows **`of`** from the bulb to the lamp, so the light swings with the shade.
+5. It reads **`light: "pendant"`**: a big light that breathes slowly, with a warm glow and a pool of unlit drawing with a **radius of 260 pixels**, centred **120 pixels** below the bulb.
+
+The result goes into the motion data:
+
+```json
+"swing":  [{"id": "pendant-lamp", "anchor": [1238, 99],
+            "box": [1205, 99, 1277, 591], "amp": 0.132, "idle": false}],
+"lights": [{"id": "pendant-lamp-bulb", "label": "Pendant lamp",
+            "kind": "pendant", "big": true, "pool": [1240, 711, 260, 260],
+            "hit": [1205, 99, 1277, 596], "swing": 0}]
+```
+
+`amp` is the size of the swing: the builder makes a lamp swing through a **smaller angle the longer it is**, so a long cord does not sweep across the picture. `hit` is the area of the lamp's **button**, the lamp and its bulb together. `"swing": 0` points the light at the first swinging object, the lamp.
+
+The tree shows the limit of the sheet. Codex marked the tree on the backdrop **`"outdoor": true`**, and in the painting it is a tree under the sky. On a stage it is **painted scenery**, so the cover's `spec.json` lists `plant` under `still`, and the tree stays still.
+
+I also changed two fields by hand. Codex marked the two spotlights as `spot`, a small lamp that only darkens around its bulb. Their light is the **beam on the backdrop**, so I made them `desk` lights, which darken a pool below them. `prompts.md` records both changes next to the prompts.
+
 ## The builder and the motion map
 
 The builder is [one Python file](https://github.com/paolomainardi/paolomainardi.com/blob/main/scripts/cover-engine/build.py) of about **360 lines**. `just cover <name>` runs it in a **Docker** image with **NumPy**, **Pillow** and **SciPy**.
