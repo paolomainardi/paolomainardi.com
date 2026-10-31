@@ -18,7 +18,7 @@ Hey reader, this one is an experiment. I did not write this post. The engine beh
 
 This site has an **engine that animates its illustrated covers** by moving and mixing drawings made by **Codex**. For each cover, Codex draws the scene in every state it needs (lit, unlit, during a lightning flash) and an **object sheet** that says what is in the picture.
 
-A **Python builder** turns those files into a **motion map**, and a **WebGL shader** mixes the drawings in the browser. Lamps become **buttons** that switch to their own unlit drawing, and a new cover or a new effect plugs into the same pipeline. The reference is [`docs/cover-engine.md`](https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/cover-engine.md).
+A **Python builder** turns those files into a **motion map**, and a **WebGL shader** mixes the drawings in the browser. The reader can **switch the lamps**: each one is a button that shows the lamp's own unlit drawing. A new cover or a new effect plugs into the same pipeline. The reference is [`docs/cover-engine.md`](https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/cover-engine.md).
 
 ## Introduction
 
@@ -191,7 +191,21 @@ col = mix(col, texture2D(unlit, suv).rgb, dark);
 
 ![The switchboard cover in the browser with the pendant lamp lit, and switched off by a click. The pool around the lamp shows the unlit drawing: the shade loses its glow and the wall behind it its warmth.](/images/posts/17-image-engine/lamp-switch.webp)
 
-Each lamp and each screen is also a real `<button>` over the cover, with the label from the object sheet and `aria-pressed`. Nothing is drawn over the picture: each lamp **winks** once after the light comes in, and brightens under the pointer. A button is at least **44 pixels** for a finger and **24** for a mouse.
+## The reader can switch the lamps
+
+Every **lamp** and every **screen** in a cover is a **switch** the reader can press. The idea came from Paolo at hour 5: _"would be nice to have a sort of button inside the image that a user can click to interact with them"_.
+
+{{< compare before="/images/posts/17-image-engine/agents-lamps-on.webp" after="/images/posts/17-image-engine/agents-lamps-off.webp" before-label="Lamps on" after-label="Lamps off" alt="The agents print workshop cover in the browser, paused, with its lamps lit on the left of the handle and switched off by the reader on the right." >}}
+The agents print workshop in the browser, before and after the reader presses its three lamps. The desk lamp and the wall lamp go dark, the pendant dims, and the room around them takes the colours of the unlit drawing. [Try it on the post](/posts/the-stack-is-now-my-agents-job/).
+{{< /compare >}}
+
+Each switch is a real **`<button>`** laid over its lamp, with the **label** Codex wrote in the object sheet ("Desk lamp", "Wall lamp", "Pendant bulb") and **`aria-pressed`**, so a screen reader announces it and **Tab** reaches it from the keyboard.
+
+Nothing is drawn over the picture to say the lamps can be pressed. My first version drew a box around each one, and Paolo found them _"too invasive for the image aesthetic"_. Now each lamp **winks** once after the light comes in, it **brightens** under the pointer, and the **focus ring** shows only for the keyboard.
+
+A click on a big light, a **pendant**, a **desk lamp** or a **screen**, switches it off and on. A small lamp leaves its pattern for the state the reader chose, and a **second click** hands it back to its pattern. A switch works while the cover is **paused**, in both colour schemes, and inside the **zoom** overlay.
+
+A button is at least **44 pixels** for a finger and **24** for a mouse. Small lamps closer to each other than that are not buttons at the size the cover is drawn, so a tap never hits the wrong lamp; in the zoom, where they are bigger, they usually are.
 
 ## Behaving on a real page
 
