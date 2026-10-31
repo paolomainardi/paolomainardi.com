@@ -469,7 +469,8 @@ light comes in when the cover is first shown; plants outside sway, lamps and
 tools swing, a figure makes a small gesture now and then, water rolls, a
 floating thing bobs, clouds drift, leaves fall, a light runs along a thread, a
 lighthouse sweeps its beam, steam rises from a hot drink, rain falls behind a window or over a sea and
-lightning flashes, and at night the lit windows outside go dark and come back.
+lightning flashes, at night the lit windows outside go dark and come back, the
+stars of a night sky breathe and a shooting star passes now and then.
 Every pixel on screen is a drawing: Codex draws the scene in each state it
 needs (lit, unlit, during a flash), lined up with the cover, and a WebGL canvas
 over the image bends the picture and mixes those drawings with soft masks, so a
@@ -479,8 +480,11 @@ by the pipeline; an object sheet Codex paints says where each thing is.
 `docs/cover-engine.md` describes the engine and its effects. The motion is slow
 and small and stays below the title in attention: a cover that pulls the eye
 from the first paragraph has too much. Indoor plants do not sway, and a scene
-whose idea needs a story to move (a train passing, a lever thrown) stays still:
-layers that move whole objects were considered and set aside. The lamps a
+whose idea needs a story to move (a train passing, a lever thrown) stays still.
+The one exception is an actor, a character drawn apart from the scene in a
+sprite sheet, which crosses it or arrives once each time the cover is shown,
+such as a cat walking home; it was added for the Halloween header in October
+2026, after layers that move whole objects had first been set aside. The lamps a
 reader can press show nothing over the picture: they wink once after the light
 comes in and brighten under the pointer, and a focus ring appears only for the
 keyboard. A small pause button in the corner of the cover, seen under the pointer or with focus, stops the motion. The canvas draws while the cover is on screen, at 30 frames a second,
@@ -489,6 +493,22 @@ motion. A wheel turning in place was tried and dropped: rotating a painted wheel
 drags the wall and the machine behind it along. Faint lights tinted by the
 shader were tried and dropped too: they barely showed on paper, which is why
 lights are drawn in their states.
+
+**Halloween header.** On 31 October only, the header sits over a wide night
+scene in naive gouache, built with the animated cover engine: the cottage lights
+come in and switch, and the reader can press them. The wordmark and the links
+turn cream over a navy shade, and the wordmark is set in UnifrakturMaguntia, a
+gothic blackletter, the one day it leaves Literata. An old engineer lives there: a rusty container
+sleeps under ivy, a server rack blinks its status lights and green code falls
+down an old computer's screen. The stars breathe, a shooting star passes now and
+then, a witch with her cats flies across the sky above the roof, and a tuxedo cat
+walks home and sits by the steps, where the reader can pet it: it purrs, eyes
+closed, and a small heart rises. A speaker in the lower left corner, a navy disc
+always seen and off until pressed, plays a music-box waltz over wind, crickets and
+a distant owl, all made in the browser. The witch flies back the other way after
+a rest, and again, for as long as the page is open. With reduced motion the scene stays still,
+lit, without the two actors. It is the one day the site leaves its palette and
+its watercolour hand, chosen by Paolo.
 
 **Image overlay.** An image that would show at least 15% wider on its own gets a
 zoom cursor, and clicking it, or pressing Enter on it, opens it in a modal
@@ -716,8 +736,9 @@ a label, a weight or a hairline would say the same thing first.
 a quiet label on the home page precisely because the masthead below it already
 says the name.
 
-**Don't** animate anything but a cover. Motion inside the text competes with
-reading; the cover is the one place where a little life is welcome.
+**Don't** animate anything but a cover, and the Halloween header on its one day.
+Motion inside the text competes with reading; the cover is the one place where a
+little life is welcome.
 
 **Don't** use `!important`. The theme ships one stylesheet, so order and scoping
 are enough.

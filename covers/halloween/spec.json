@@ -1,0 +1,59 @@
+{
+  "publish": "src/assets/images/halloween/halloween",
+  "entry": true,
+  "light_from": 90,
+  "lights": {
+    "pattern": {
+      "spot": "calls"
+    }
+  },
+  "stars": true,
+  "meteor": {
+    "every": [18, 35]
+  },
+  "actors": [
+    {
+      "id": "witch",
+      "sheet": "broom.webp",
+      "height": 150,
+      "path": [[-330, 250], [300, 180], [700, 200], [1100, 110], [1880, 40]],
+      "speed": 200,
+      "delay": 1.6,
+      "bob": 6,
+      "tilt": true,
+      "loop": {
+        "rest": 8,
+        "back": true
+      }
+    },
+    {
+      "id": "cat",
+      "sheet": "cat.webp",
+      "grid": [4, 2],
+      "walk": [0, 5],
+      "fps": 7,
+      "end": 7,
+      "height": 62,
+      "path": [[-90, 612], [300, 606], [620, 600], [880, 592]],
+      "speed": 46,
+      "delay": 3,
+      "interact": {
+        "sheet": "cat-pet.webp",
+        "grid": [4, 2],
+        "frames": [0, 1, 2, 1, 2, 3, 3, 4, 4, 4],
+        "fps": 4,
+        "rise": 5,
+        "label": "Pet the cat",
+        "sound": "purr"
+      }
+    }
+  ],
+  "ambience": {
+    "music": "waltz",
+    "wind": true,
+    "crickets": true,
+    "owl": [18, 35],
+    "volume": 0.6,
+    "label": "Play the night sounds"
+  }
+}

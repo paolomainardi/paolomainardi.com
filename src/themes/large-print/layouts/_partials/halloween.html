@@ -1,0 +1,39 @@
+{{- /*
+  Halloween header, on 31 October only, by the reader's own date.
+
+  A night scene built by scripts/cover-engine sits behind the site header: the
+  cottage lights come on, then switch on their own and under the reader's
+  click, the stars breathe, a shooting star passes now and then, a witch with
+  her cats flies across the sky once and a tuxedo cat walks home. The markup is a
+  template, so on any other day nothing is downloaded. Every file carries a hash of
+  its content in its name, so a browser never mixes an old drawing with new data.
+*/ -}}
+{{ $img := resources.Get "images/halloween/halloween.webp" | fingerprint }}
+{{ $map := resources.Get "images/halloween/halloween-motion.webp" | fingerprint }}
+{{ $data := resources.Get "images/halloween/halloween-motion.json" }}
+{{ $night := resources.Get "images/halloween/halloween-night.webp" | fingerprint }}
+{{ if and $img $map $data }}
+{{ $d := $data.Content | transform.Unmarshal }}
+{{ $attrs := dict "data-motion-map" $map.RelPermalink "data-motion" $data.Content }}
+{{ with resources.Get "images/halloween/halloween-sprites.webp" | fingerprint }}{{ $attrs = merge $attrs (dict "data-motion-sprites" .RelPermalink) }}{{ end }}
+{{ range $d.states }}{{ $s := . }}{{ with resources.Get (printf "images/halloween/halloween-%s.webp" $s) | fingerprint }}{{ $attrs = merge $attrs (dict (printf "data-motion-%s" $s) .RelPermalink) }}{{ end }}{{ end }}
+<template id="halloween">
+  <div class="halloween-band frontispiece-motion">
+    <picture>
+      {{ with $night }}<source class="night" media="(prefers-color-scheme: dark)" srcset="{{ .RelPermalink }}" />{{ end }}
+      <img src="{{ $img.RelPermalink }}" alt="" width="{{ $img.Width }}" height="{{ $img.Height }}"
+        {{- range $k, $v := $attrs }} {{ printf "%s=\"%s\"" $k (htmlEscape $v) | safeHTMLAttr }}{{ end }} />
+    </picture>
+  </div>
+</template>
+<script>
+  (function () {
+    var d = new Date();
+    if (!(d.getMonth() === 9 && d.getDate() === 31)) return;
+    var t = document.getElementById("halloween");
+    t.parentNode.insertBefore(t.content.cloneNode(true), t);
+    if (window.WebGLRenderingContext && !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches))
+      document.documentElement.classList.add("motion-wait");
+  })();
+</script>
+{{ end }}

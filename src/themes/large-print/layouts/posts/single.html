@@ -71,7 +71,8 @@
                    need (<name>-unlit.webp, <name>-flash.webp and their -night
                    versions). motion.js draws it on a canvas over the image; the
                    attributes below give it every file, and the shared rain and
-                   drop and steam textures when the cover uses them. */ -}}
+                   drop and steam textures when the cover uses them, and the atlas of its
+                   actors and shooting star. */ -}}
             {{ $motion := dict }}
             {{ $base := replaceRE `\.webp$` "" (strings.TrimPrefix "/" .) }}
             {{ $map := cond (ne $base (strings.TrimPrefix "/" .)) (resources.Get (printf "%s-motion.webp" $base)) nil }}
@@ -82,6 +83,7 @@
             {{ range $d.states }}{{ $s := . }}{{ with resources.Get (printf "%s-%s.webp" $base $s) }}{{ $attrs = merge $attrs (dict (printf "data-motion-%s" $s) .RelPermalink) }}{{ end }}{{ end }}
             {{ if in $d.effects "rain" }}{{ with resources.Get "images/motion/rain.webp" }}{{ $attrs = merge $attrs (dict "data-motion-rain" .RelPermalink) }}{{ end }}{{ end }}
             {{ if in $d.effects "glass" }}{{ with resources.Get "images/motion/drops.webp" }}{{ $attrs = merge $attrs (dict "data-motion-drops" .RelPermalink) }}{{ end }}{{ end }}
+            {{ with resources.Get (printf "%s-sprites.webp" $base) }}{{ $attrs = merge $attrs (dict "data-motion-sprites" .RelPermalink) }}{{ end }}
             {{ if in $d.effects "steam" }}{{ with resources.Get "images/motion/steam.webp" }}{{ $attrs = merge $attrs (dict "data-motion-steam" .RelPermalink) }}{{ end }}{{ end }}
             {{ $motion = dict "map" $map.RelPermalink "attrs" $attrs "entry" $d.entry }}
             {{ end }}

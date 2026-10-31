@@ -19,11 +19,13 @@ It writes, at the spec's "publish" path (src/assets/images/posts/<post>/<name>):
 
 <name>-motion.webp is three times the cover's height. Band 1: R the distance along a
 thread, G wind, B the parts that turn (lamps, tools, limbs). Band 2: R water, G
-floating things, B drift. Band 3: R the sky where rain falls and lightning shows,
-G window glass.
+floating things, B drift. Band 3: R the sky where rain falls, lightning shows and a
+shooting star passes, G window glass, B the phase of each star.
 
-Object kinds: light (spot, pendant, desk, screen, window, lighthouse), lamp, tool,
-limb, plant, leaf, water, float, sky, cloud, thread, steam. See docs/cover-engine.md.
+With actors or a shooting star it also writes <name>-sprites.webp, their frames in one atlas.
+
+Object kinds: light (spot, pendant, desk, screen, window, lighthouse, led), lamp, tool,
+limb, plant, leaf, water, float, sky, cloud, thread, steam, terminal. See docs/cover-engine.md.
 
 Spec keys, all optional except publish:
   publish     path and name of the published cover, without extension
@@ -42,6 +44,14 @@ Spec keys, all optional except publish:
   twinkle     [{box}] where to look for lit windows in the night version
   amp         {id: factor} to make one thing move more or less
   exclude     [[x0, y0, x1, y1]] areas that never move
+  stars       true or {depth}: the stars in the sky objects breathe, each at its own pace
+  meteor      {every: [min, max] s, length}: a shooting star crosses the sky objects now and then
+  ambience    {music: "waltz", wind, crickets, owl: [min, max] s, volume, label}: a soundscape
+              made in the browser, played once the reader turns it on
+  terminal    {speed, columns}: how fast the characters fall down a terminal screen, how many columns
+  actors      [{id, sheet, grid, walk, fps, end, height, path, speed, delay, bob, tilt, loop}]:
+              characters drawn apart from the scene that move along a path, and that the reader
+              may interact with once they stop: interact {sheet, grid, frames, fps, rise, label, sound} (see docs)
 """
 import json
 import os
@@ -186,7 +196,7 @@ pulse_spec = spec.get("pulse", {})
 pulse, wind, turn = (np.zeros((H, W)) for _ in range(3))
 water, floatc, drift = (np.zeros((H, W)) for _ in range(3))
 sky, glass = np.zeros((H, W)), np.zeros((H, W))
-swings, floats, falls, lights, beams, steams = [], [], [], [], [], []
+swings, floats, falls, lights, beams, steams, terminals = [], [], [], [], [], [], []
 
 for i, o in ids.items():
     m, k = masks[i], o["kind"]
@@ -243,6 +253,9 @@ for i, o in ids.items():
     elif k == "steam":
         # steam rises from the middle of the opening, as wide as the opening
         steams.append([int(xx[m].mean()), b[1], max(b[2] - b[0], 12), round((len(steams) * 0.43) % 1, 3)])
+    elif k == "terminal":
+        # characters fall down the screen; each terminal starts at its own point of the texture
+        terminals.append(b + [round((len(terminals) * 0.37) % 1, 3)])
     elif k == "leaf":
         falls.append({"sprite": b, "from": [int(xx[m].mean()), int(yy[m].mean())],
                       "floor": spec.get("floor", min(H - 20, b[3] + 300)), "drift": 14 + (len(falls) * 7) % 16})
@@ -286,8 +299,9 @@ for i, o in ids.items():
     if o.get("of") in masks:
         lb = box_of(masks[o["of"]])
         hit = [min(lb[0], b[0]), min(lb[1], b[1]), max(lb[2], b[2]), max(lb[3], b[3])]
+    # a status light blinks on its own, too small and too many to be a switch
     lights.append({"id": i, "label": o.get("label", i), "kind": kind, "big": big, "cool": kind == "screen", "pool": pool, "hit": hit,
-                   "swing": turn_of.get(o.get("of"), -1)})
+                   "swing": turn_of.get(o.get("of"), -1), "led": kind == "led"})
 
 twinkle = []
 if spec.get("twinkle"):
@@ -305,13 +319,171 @@ if spec.get("twinkle"):
                 twinkle.append([(sl[1].start + sl[1].stop) / 2, (sl[0].start + sl[0].stop) / 2, max(h, w) / 2 + 2,
                                 round((len(twinkle) * 0.618) % 1, 3)])
 
+# The sky the stars and the shooting star belong to: every sky object, unless a storm
+# already named its own.
+sky_all = np.zeros((H, W), bool)
+for i, o in ids.items():
+    if o["kind"] == "sky":
+        sky_all |= masks[i]
+if (spec.get("stars") or spec.get("meteor")) and not sky_all.any():
+    fail("stars and meteor need a sky object in the object sheet")
+if spec.get("meteor") and not storm:
+    sky = np.clip(nd.gaussian_filter(nd.binary_erosion(sky_all, iterations=3).astype(float), 3), 0, 1)
+
+# Stars: the small bright spots of the sky. Each gets its own phase in the blue
+# channel of the third band, flat over the star so the filtering never mixes two phases.
+starc = np.zeros((H, W))
+nstars = 0
+if spec.get("stars"):
+    lum = np.asarray(cover.convert("L"), float)
+    blue = np.asarray(cover).astype(float)[..., 2]
+    peak = lum - nd.median_filter(lum, size=25)
+    # a painted star stands well above the sky around it, the grain of the paper does not;
+    # it is pale, an autumn leaf against the sky is not
+    spots = nd.binary_erosion(sky_all, iterations=4) & (peak > 60) & (lum > 110) & (blue > 90)
+    lab, n = nd.label(nd.binary_dilation(spots, iterations=1))
+    for k, sl in enumerate(nd.find_objects(lab), 1):
+        h, w = sl[0].stop - sl[0].start, sl[1].stop - sl[1].start
+        if h > 40 or w > 40:
+            continue
+        nstars += 1
+        blob = nd.binary_dilation(lab == k, iterations=2)
+        starc[blob] = 0.1 + 0.9 * ((nstars * 0.618) % 1)
+
+# Sprites: actors and the shooting star are drawn apart from the scene and packed in one
+# atlas, <name>-sprites.webp, so they take a single texture unit.
+sprites = []
+
+
+def key_out(im):
+    """A sheet without transparency is keyed out on its flat background."""
+    a = np.asarray(im).astype(float)
+    if a[..., 3].min() < 250:
+        return im
+    bg = np.median(np.concatenate([a[0, :, :3], a[-1, :, :3], a[:, 0, :3], a[:, -1, :3]]), 0)
+    d = np.abs(a[..., :3] - bg).max(-1)
+    a[..., 3] = np.clip((d - 40) / 60, 0, 1) * 255
+    return Image.fromarray(a.round().astype(np.uint8), "RGBA")
+
+
+def bleed(im):
+    """Colour under the transparent pixels from the nearest painted one, so filtering at
+    the edge never pulls in black."""
+    a = np.asarray(im).copy()
+    solid = a[..., 3] > 8
+    if solid.any():
+        _, (iy, ix) = nd.distance_transform_edt(~solid, return_indices=True)
+        a[..., :3] = a[iy, ix, :3]
+    return Image.fromarray(a, "RGBA")
+
+
+def add_sprite(im):
+    sprites.append(bleed(im))
+    return len(sprites) - 1
+
+
+actors = []
+for a in spec.get("actors", []):
+    sheet = key_out(Image.open(path(a["sheet"])).convert("RGBA"))
+    cols, rows = a.get("grid", [1, 1])
+    cw, ch = sheet.width // cols, sheet.height // rows
+    cells = [sheet.crop((c * cw, r * ch, (c + 1) * cw, (r + 1) * ch)) for r in range(rows) for c in range(cols)]
+    # the poses it takes when the reader interacts with it, from a second sheet; they stand on
+    # the same feet as the others, and what rises over it (a heart, a note) is a sprite of its own
+    act, pcells, rise = a.get("interact"), [], None
+    if act:
+        psheet = key_out(Image.open(path(act["sheet"])).convert("RGBA"))
+        pc, pr = act.get("grid", [1, 1])
+        pw, ph = psheet.width // pc, psheet.height // pr
+        allp = [psheet.crop((c * pw, r * ph, (c + 1) * pw, (r + 1) * ph)) for r in range(pr) for c in range(pc)]
+        # a second sheet is drawn at its own scale: its poses take the height of the pose the
+        # actor rests in
+        def tall(im):
+            b = Image.fromarray((np.asarray(im)[..., 3] > 32).astype(np.uint8) * 255).getbbox()
+            return b[3] - b[1] if b else 1
+        f = tall(cells[a.get("end", -1)]) / np.median([tall(allp[i]) for i in act["frames"]])
+        pcells = [allp[i].resize((round(pw * f), round(ph * f)), Image.LANCZOS) for i in act["frames"]]
+        if "rise" in act:
+            hc = allp[act["rise"]]
+            hb = hc.getbbox()
+            if not hb:
+                fail(f"actor {a['id']}: the rise cell is empty")
+            rise = hc.crop(hb)
+    # every frame stands on the same feet: the bottom of the drawing, under the middle of
+    # its upper body, which does not move when the legs do
+    feet = []
+    for cell in cells + pcells:
+        al = np.asarray(cell)[..., 3] > 32
+        if not al.any():
+            fail(f"actor {a['id']}: a cell of {a['sheet']} is empty")
+        ys, xs = np.where(al)
+        top, bot = ys.min(), ys.max() + 1
+        upper = ys < top + (bot - top) * 0.6
+        feet.append((int(xs[upper].mean()), int(bot), xs.min(), xs.max() + 1, top))
+    left = max(f[0] - f[2] for f in feet) + 2
+    right = max(f[3] - f[0] for f in feet) + 2
+    up = max(f[1] - f[4] for f in feet) + 2
+    # stored at twice the size it is shown in the cover, for screens at two pixels a pixel
+    k = min(1.0, 2 * a["height"] / up)
+    frames = []
+    for cell, f in zip(cells + pcells, feet):
+        fr = cell.crop((f[0] - left, f[1] - up, f[0] + right, f[1] + 2))
+        frames.append(add_sprite(fr.resize((max(1, round(fr.width * k)), max(1, round(fr.height * k))), Image.LANCZOS)))
+    interact = None
+    if act:
+        interact = {"frames": frames[len(cells):], "fps": act.get("fps", 4), "label": act.get("label", a["id"]),
+                    "sound": act.get("sound")}
+        if rise:
+            hk = min(1.0, 2 * a["height"] * 0.7 / rise.height)
+            interact["rise"] = add_sprite(rise.resize((round(rise.width * hk), round(rise.height * hk)), Image.LANCZOS))
+            interact["riseK"] = round(a["height"] * 0.7 / (rise.height * hk), 4)
+        del frames[len(cells):]
+    walk = a.get("walk", [0, len(cells) - 1])
+    actors.append({"id": a["id"], "frames": frames, "anchor": [round(left * k), round(up * k)], "k": round(1 / k * a["height"] / up, 4),
+                   "path": a["path"], "speed": a.get("speed", 60), "delay": a.get("delay", 0), "fps": a.get("fps", 8),
+                   "walk": walk, "end": a.get("end", -1), "bob": a.get("bob", 0), "tilt": bool(a.get("tilt")), "interact": interact,
+                   "loop": a.get("loop")})
+
+glyphs = None
+if terminals:
+    gpath = os.path.join(os.path.dirname(src), "_effects", "glyphs.webp")
+    if not os.path.exists(gpath):
+        fail("terminal objects need covers/_effects/glyphs.webp")
+    gim = Image.open(gpath).convert("RGBA").resize((512, 512), Image.LANCZOS)
+    glyphs = add_sprite(gim)
+
+meteor = None
+if spec.get("meteor"):
+    mk = spec["meteor"] if isinstance(spec["meteor"], dict) else {}
+    mpath = os.path.join(os.path.dirname(src), "_effects", "meteor.webp")
+    if not os.path.exists(mpath):
+        fail("meteor needs covers/_effects/meteor.webp")
+    mim = key_out(Image.open(mpath).convert("RGBA"))
+    length = mk.get("length", int(W * 0.18))
+    mk2 = min(1.0, 2 * length / mim.width)
+    mim = mim.resize((round(mim.width * mk2), round(mim.height * mk2)), Image.LANCZOS)
+    meteor = {"sprite": add_sprite(mim), "k": round(length / mim.width, 4), "every": mk.get("every", [20, 40])}
+
+rects = []
+if sprites:
+    # shelves: sprites side by side, a new row when the next one would pass 2048 pixels
+    x = y = row = 0
+    for sp in sprites:
+        if x + sp.width > 2048:
+            x, y, row = 0, y + row + 2, 0
+        rects.append([x, y, sp.width, sp.height])
+        x, row = x + sp.width + 2, max(row, sp.height)
+    atlas = Image.new("RGBA", (max(r[0] + r[2] for r in rects), y + row), (0, 0, 0, 0))
+    for sp, r in zip(sprites, rects):
+        atlas.paste(sp, (r[0], r[1]))
+
 for bx in spec.get("exclude", []):
     sel = (xx >= bx[0]) & (xx < bx[2]) & (yy >= bx[1]) & (yy < bx[3])
-    for ch in (pulse, wind, turn, water, floatc, drift, sky, glass):
+    for ch in (pulse, wind, turn, water, floatc, drift, sky, glass, starc):
         ch[sel] = 0
 
-LIMIT = {"swing": 16, "light": 16, "fall": 8, "float": 3, "twinkle": 12, "beam": 4, "steam": 3}
-for name, items in (("swing", swings), ("light", lights), ("fall", falls), ("float", floats), ("twinkle", twinkle), ("beam", beams), ("steam", steams)):
+LIMIT = {"terminal": 3, "swing": 16, "light": 24, "fall": 8, "float": 3, "twinkle": 12, "beam": 4, "steam": 3, "actor": 4}
+for name, items in (("terminal", terminals), ("swing", swings), ("light", lights), ("fall", falls), ("float", floats), ("twinkle", twinkle), ("beam", beams), ("steam", steams), ("actor", actors)):
     if len(items) > LIMIT[name]:
         print(f"note: {len(items)} {name}s, the player shows the first {LIMIT[name]}")
         del items[LIMIT[name]:]
@@ -328,11 +500,15 @@ effects = [name for name, on in [
     ("water", water.any()), ("drift", drift.any()), ("float", bool(floats)), ("wind", wind.any()),
     ("turn", bool(swings)), ("glass", bool(spec.get("drops")) and glass.any()), ("lights", bool(lights) or entry),
     ("flash", bool(storm)), ("rain", bool(storm) and sky.any()), ("twinkle", bool(twinkle)), ("beam", bool(beams)),
-    ("pulse", pulse.any()), ("fall", bool(falls)), ("steam", bool(steams))] if on]
+    ("pulse", pulse.any()), ("fall", bool(falls)), ("steam", bool(steams)),
+    ("stars", bool(nstars)), ("terminal", bool(terminals)), ("meteor", meteor is not None and sky.any()), ("actors", bool(actors))] if on]
 
 data = {
     "size": [W, H], "effects": effects, "swing": swings, "float": floats, "fall": falls, "lights": lights,
-    "twinkle": twinkle, "beam": beams, "steam": steams,
+    "twinkle": twinkle, "beam": beams, "steam": steams, "actors": actors, "meteor": meteor, "sprites": rects,
+    "terminal": terminals, "glyphs": glyphs, "terminalK": spec.get("terminal", {}),
+    "ambience": spec.get("ambience"),
+    "starsK": spec["stars"] if isinstance(spec.get("stars"), dict) else {},
     "entry": {"from": spec.get("light_from", 62)} if entry else None,
     "lightsK": spec.get("lights", {}), "rainK": spec.get("rain", {}), "flashK": spec.get("flash", {}),
     "states": sorted(n for n in drawings if n != "night"),
@@ -341,16 +517,21 @@ data = {
 pub = spec["publish"]
 os.makedirs(os.path.dirname(pub), exist_ok=True)
 bands = np.concatenate([np.stack([pulse, wind, turn], -1), np.stack([water, floatc, drift], -1),
-                        np.stack([sky, glass, np.zeros((H, W))], -1)], 0)
+                        np.stack([sky, glass, starc], -1)], 0)
 Image.fromarray((np.clip(bands, 0, 1) * 255).round().astype(np.uint8)).save(pub + "-motion.webp", lossless=True, quality=100, method=6)
 cover.save(pub + ".webp", quality=85, method=6)
 for name, im in drawings.items():
     im.save(f"{pub}-{name}.webp", quality=85, method=6)
 json.dump(data, open(pub + "-motion.json", "w"), separators=(",", ":"))
+if sprites:
+    atlas.save(pub + "-sprites.webp", quality=88, method=6, exact=True)
+elif os.path.exists(pub + "-sprites.webp"):
+    os.remove(pub + "-sprites.webp")
 
 if review:
     rev = Image.blend(cover, Image.fromarray((np.stack([np.maximum(pulse, water), np.maximum(wind, floatc), np.maximum(turn, drift)], -1) * 255).astype(np.uint8)), 0.5)
     rev.save(review)
 
 print(f"{pub}: {', '.join(effects) or 'no motion'}; {len(lights)} lights, {len(swings)} turning, {len(floats)} floating, "
-      f"{len(falls)} falling, {len(beams)} beams, {len(twinkle)} lit windows, {len(steams)} steaming")
+      f"{len(falls)} falling, {len(beams)} beams, {len(twinkle)} lit windows, {len(steams)} steaming, "
+      f"{nstars} stars, {len(terminals)} terminals, {len(actors)} actors{', a shooting star' if meteor else ''}")

@@ -1,0 +1,186 @@
+# Prompts for halloween
+
+The header of the site on 31 October. Paolo chose the style from a reference: a naive gouache night scene, a cute young witch with her cats, a white cottage with lit windows. Codex drew a scene of its own in that style, not a copy of the reference.
+
+**Motion brief:** the light comes in from above; the windows, the two carved pumpkins and the lantern switch on their own and can be switched; the status lights of the server rack blink; green code falls down the old computer's screen; the two bare trees sway; the stars breathe and a shooting star passes now and then. Two actors play once each time the header is shown: a witch on a broom with five cats flies across the sky, above the roof, and out on the right, and a tuxedo cat walks along the path and sits down, looking at the reader. The reader can pet the cat: it purrs with its eyes closed and a small heart rises.
+
+The drawings were made at 1536x1024 and cropped to the band, 1536x620 from y=255. The first scene below was redrawn with old computer equipment (the nerdy redraw), and every state and sheet was made again from the redraw. The scene is a night scene in both colour schemes, so `night.webp` and `unlit-night.webp` are copies of `cover.webp` and `unlit.webp`.
+
+## Cover
+
+> Generate one image with your image generation tool and save it as scene.png in the current directory, landscape 1536x1024. Do not ask questions; decide.
+>
+> Subject: a quiet Halloween night for the header of a personal tech blog. The feeling is "coming home on Halloween night": warm, cosy, a little magical, never scary.
+>
+> Style: a naive hand-painted gouache illustration on textured paper, like a picture book painting. Matte paint, visible brush texture and paper grain, soft edges, simple shapes, no outlines in black ink, no glossy highlights, no 3D, no photorealism, no text, no letters, no logos.
+>
+> Scene, a wide panorama read from left to right:
+> - A deep navy and dark teal night sky filling the upper half, with many small hand-painted cream and pale gold stars of different sizes, some five-pointed, some just dots, and a thin cream crescent moon in the upper left area.
+> - On the right of centre, a small white wooden two-storey cottage with a steep dark roof, a brick chimney, a red front door with three stone steps and a small lantern beside it. It has several small windows. Draw ALL windows lit with warm yellow light from inside, glowing softly.
+> - In front of the cottage a few round orange pumpkins on the ground, two of them carved with simple friendly faces and lit from inside with a warm glow.
+> - Thin bare autumn trees on the far left and far right, with a few rust and orange leaves, low autumn bushes in rust and ochre along the ground.
+> - A wide sandy ochre path and ground across the bottom, with a few fallen leaves.
+> - No people, no witch, no animals in this picture: the upper sky stays open and empty apart from stars, because a witch on a broom will fly across it later.
+>
+> Composition: this picture will be cropped to a wide band of 1536x560 pixels, taken from y=300 to y=860. Keep the moon, the top of the cottage roof and chimney, the pumpkins and the trees fully inside that band. The left third of the band behind the moon must stay calm sky, because the blog title sits there.
+>
+> Palette: navy #1d2a3a, dark teal #23383f, cream stars #efe4c8, pale gold #e6c77a, warm window yellow #f2c35b, pumpkin orange #d9772e, rust #a8492b, ochre ground #b8996a, white cottage #e8e1d2, red door #a3262a.
+
+## Broom
+
+> Generate one image with your image generation tool and save it as broom.png in the current directory, 1536x1024, with a TRANSPARENT background (PNG with alpha, nothing behind the subject). If transparency is impossible, use a flat pure green #00FF00 background with nothing else on it. Do not ask questions; decide.
+>
+> Subject, seen from the side, flying towards the right of the picture: a small cute young witch riding a long wooden broom with a straw brush at the back. She wears a black dress and a big pointed black hat, long auburn hair blowing back, brown boots, a calm little smile. Five cats sit in a row on the broom handle behind her: a white fluffy cat, a black cat with yellow eyes, a white cat with a red scarf, an orange tabby cat and a black cat. All of them small, round and sweet.
+>
+> Style: a naive hand-painted gouache illustration, like a picture book painting. Matte paint, visible brush texture, soft edges, simple shapes, no black ink outlines, no glossy highlights, no 3D, no text.
+>
+> The witch, the cats and the broom fill the width of the picture, centred, with a little empty margin all around. Nothing else in the picture: no moon, no stars, no ground, no shadow.
+
+The broom was trimmed to its drawing and saved as `broom.webp`, the witch's sprite sheet of one frame.
+
+## Unlit
+
+Sent with the cover attached.
+
+> Edit the attached image with your image generation tool and save the result as unlit.png in the current directory, 1536x1024. Do not ask questions; decide.
+>
+> Exactly the same scene, unchanged: every object, every star, every leaf, every brush stroke in the exact same position, same size, same framing, same colours, so the two images can be laid one over the other pixel for pixel. Only the light changes: every light in the scene is switched off.
+> - Every window of the cottage is dark: the glass is a deep dark blue-grey night colour, no yellow light, no glow on the walls around it.
+> - The two carved pumpkins are not lit: their carved eyes and mouths are dark holes, no glow inside or around them. The uncarved pumpkins stay as they are.
+> - The lantern beside the door is off, no glow.
+> - The warm glow on the ground and the steps in front of the house is gone; the ground keeps its ochre colour lit only by the moon.
+> Nothing else changes: the moon and the stars stay the same.
+
+## Object sheet
+
+Sent with the cover attached.
+
+> The attached image is an illustrated header picture, 1536x1024 pixels. Produce an object sheet for it: two files in the current directory. Do not ask questions; decide.
+>
+> 1. objects.png: ONE new image made with your image generation tool, same size and the exact same composition, every object in the exact same position, so it can be laid over the picture pixel for pixel. Flat colours on pure black (#000000), no shading, no outlines, no texture, no text. Paint each object listed in objects.json filled solid with its own colour, following its real silhouette. Everything else stays black.
+>
+> 2. objects.json: a JSON array, one entry per object, in this form:
+>    {"id": "window-upper-left", "kind": "light", "label": "Upper left window", "light": "spot", "motion": [], "box": [x0, y0, x1, y1], "color": "#FF0000"}
+>
+> Include only these objects:
+> - kind "light", light "spot": each lit window of the cottage, one object per window, the painted area is the lit glass only; each of the two carved, lit pumpkins, the painted area is the whole pumpkin; the small lantern beside the red door, the painted area is its glass. "label": two or three words for a screen reader, such as "Attic window" or "Pumpkin lantern".
+> - kind "plant", "outdoor": true, motion ["sway"]: the bare tree on the far left and the tree on the far right, trunk and branches included.
+> Use clearly different saturated colours for each object.
+
+## Sky sheet
+
+Sent with the cropped cover attached. It made `objects-sky.json` and `objects-sky.png`.
+
+> The attached image is an illustrated header picture, 1536x620 pixels. Produce an object sheet for its sky: two files in the current directory. Do not ask questions; decide.
+>
+> 1. objects-sky.png: ONE new image made with your image generation tool, same size (1536x620) and the exact same composition, so it can be laid over the picture pixel for pixel. Flat colour on pure black (#000000), no shading, no outlines, no texture, no text. Paint the open night sky filled solid with pure blue #0000FF, following its real outline: the stars inside the sky are part of the sky and are painted blue too. Everything that is not sky stays black: the moon, the cottage and its roof and chimney, the trees and their branches and leaves, the distant hills and bushes, the ground.
+>
+> 2. objects-sky.json: a JSON array with one entry:
+>    [{"id": "night-sky", "kind": "sky", "motion": [], "box": [x0, y0, x1, y1], "color": "#0000FF"}]
+
+## Tuxedo cat
+
+Sent with the cover attached, as the style reference. It made `cat.webp`, the cat's sprite sheet.
+
+> Generate one image with your image generation tool and save it as cat.png in the current directory, 1536x1024, with a TRANSPARENT background (PNG with alpha). If transparency is impossible, use a flat pure green #00FF00 background with nothing else on it. Do not ask questions; decide.
+>
+> It is a sprite sheet for an animation: a grid of 4 columns and 2 rows, 8 equal cells of 384x512 pixels, each cell holding the SAME cat, the same size, its feet on the same line near the bottom of the cell, centred in the cell, with nothing crossing into another cell. No grid lines, no numbers, no text.
+>
+> The cat: a small tuxedo cat, black with a white chest, a white muzzle and four white paws, green eyes, a long black tail. Painted in the same naive gouache picture book style as the attached picture: matte paint, soft edges, visible brush texture, simple round shapes, no black ink outlines, no 3D. Sweet and calm, never scary.
+>
+> Cells, read left to right, top row first:
+> 1 to 6: a walk cycle seen exactly from the side, walking towards the RIGHT, six evenly spaced steps of one full stride, tail held up in a soft curve. Only the legs, the tail and a tiny bob of the body change between these six cells; the head, the body size and the colours stay identical.
+> 7: the same cat sitting, seen from the side facing right, tail around its paws.
+> 8: the same cat sitting like in cell 7, its head turned towards the viewer.
+
+## Nerdy redraw
+
+Sent with the first cover attached. It became `cover.webp`.
+
+> Edit the attached illustration with your image generation tool and save the result as nerd.png in the current directory, 1536x1024. Do not ask questions; decide.
+>
+> Keep the same scene, the same style, the same palette, the same framing: the night sky with its stars and the crescent moon, the white cottage with its lit windows and red door, the carved pumpkins, the autumn trees and bushes, the sandy path. Keep the cottage, the moon and the sky exactly where they are. Add, painted in the very same naive gouache picture book style (matte paint, soft edges, visible brush texture, no black ink outlines, no 3D, no glossy highlights), a few abandoned pieces of old computer equipment, as if the cottage belonged to an old engineer, cosy and a little spooky, never scary:
+>
+> - On the ground in front of the stone wall, left of the steps, an old beige CRT computer monitor with a chunky keyboard in front of it, sitting on a small wooden crate. Its screen glows bright green in the dark and shows several columns of small green characters, like a terminal.
+> - On the left hillside, half hidden among the bushes, an abandoned rusty shipping container lying on the ground, its doors ajar, covered with ivy and a few autumn leaves, one small pumpkin sitting on its roof.
+> - Leaning against the right side of the cottage, an old tall server rack with its door open, a few cables hanging out like vines, cobwebs in a corner, and many tiny green and amber status lights glowing on its front.
+> - A few thick black cables running across the ground among the leaves, like roots, from the server rack to the computer.
+>
+> The new objects are small, part of the scene, never bigger than the cottage. No text, no letters, no logos anywhere except the tiny green terminal characters on the screen.
+
+## Unlit, from the nerdy redraw
+
+Sent with the nerdy redraw attached.
+
+> Edit the attached image with your image generation tool and save the result as unlit.png in the current directory, 1536x1024. Do not ask questions; decide.
+>
+> Exactly the same scene, unchanged: every object, every star, every leaf, every cable, every brush stroke in the exact same position, same size, same framing, same colours, so the two images can be laid one over the other pixel for pixel. Only the light changes: every light in the scene is switched off.
+> - Every window of the cottage is dark: the glass is a deep dark blue-grey night colour, no yellow light, no glow on the walls around it.
+> - The two carved pumpkins are not lit: their carved eyes and mouths are dark holes, no glow inside or around them. The uncarved pumpkins stay as they are.
+> - The lantern beside the door is off, no glow.
+> - The old computer's screen is off: a dark grey-green glass with no characters and no glow.
+> - All the tiny green and amber status lights on the server rack are off: small dark dots, no glow.
+> - The warm glow on the ground and the steps in front of the house is gone; the ground keeps its ochre colour lit only by the moon.
+> Nothing else changes: the moon and the stars stay the same.
+
+## Object sheet, from the nerdy redraw
+
+Sent with the nerdy redraw attached.
+
+> The attached image is an illustrated header picture, 1536x1024 pixels. Produce an object sheet for it: two files in the current directory. Do not ask questions; decide.
+>
+> 1. objects.png: ONE new image made with your image generation tool, same size and the exact same composition, every object in the exact same position, so it can be laid over the picture pixel for pixel. Flat colours on pure black (#000000), no shading, no outlines, no texture, no text. Paint each object listed in objects.json filled solid with its own colour, following its real silhouette. Everything else stays black.
+>
+> 2. objects.json: a JSON array, one entry per object, in this form:
+>    {"id": "window-upper-left", "kind": "light", "label": "Upper left window", "light": "spot", "motion": [], "box": [x0, y0, x1, y1], "color": "#FF0000"}
+>
+> Include only these objects:
+> - kind "light", light "spot": each lit window of the cottage, one object per window, the painted area is the lit glass only; each of the two carved, lit pumpkins, the painted area is the whole pumpkin; the small lantern beside the red door, the painted area is its glass. "label": two or three words for a screen reader, such as "Attic window" or "Pumpkin lantern".
+> - kind "light", light "led": the tiny green and amber status lights on the front of the server rack, grouped in at most 8 small groups of neighbouring lights, one object per group, the painted area is the lights of that group only. "label": "Status lights".
+> - kind "terminal", motion ["code"]: the glowing green screen of the old computer, the painted area is the glass of the screen only.
+> - kind "plant", "outdoor": true, motion ["sway"]: the bare tree on the far left and the tree on the far right, trunk and branches included.
+> Use clearly different saturated colours for each object.
+
+## Sky sheet, from the nerdy redraw
+
+Sent with the nerdy redraw attached.
+
+> The attached image is an illustrated header picture, 1536x1024 pixels. Produce an object sheet for its sky: two files in the current directory. Do not ask questions; decide.
+>
+> 1. objects-sky.png: ONE new image made with your image generation tool, same size (1536x1024) and the exact same composition, so it can be laid over the picture pixel for pixel. Flat colour on pure black (#000000), no shading, no outlines, no texture, no text. Paint the open night sky filled solid with pure blue #0000FF, following its real outline: the stars inside the sky are part of the sky and are painted blue too. Everything that is not sky stays black: the moon, the cottage and its roof and chimney, the trees and their branches and leaves, the distant hills and bushes, the container, the server rack, the ground.
+>
+> 2. objects-sky.json: a JSON array with one entry:
+>    [{"id": "night-sky", "kind": "sky", "motion": [], "box": [x0, y0, x1, y1], "color": "#0000FF"}]
+
+## Petting the cat
+
+Sent with the cat's sprite sheet attached. A first version, whose poses did not move like a cat, was replaced by the second below.
+
+> Generate one image with your image generation tool and save it as pet.png in the current directory, 1536x1024, with a TRANSPARENT background (PNG with alpha). If transparency is impossible, use a flat pure green #00FF00 background with nothing else on it. Do not ask questions; decide.
+>
+> The attached image is the sprite sheet of a tuxedo cat. Draw MORE poses of exactly the SAME cat (same size, same colours, same white chest, muzzle and paws, same green eyes, same naive gouache picture book style, matte paint, soft edges, no black ink outlines, no 3D), as a new sprite sheet: a grid of 4 columns and 2 rows, 8 equal cells of 384x512 pixels, the cat centred in its cell with its paws on the same line near the bottom of the cell, exactly as big as the sitting cat in the attached sheet. No grid lines, no numbers, no text.
+>
+> Cells, read left to right, top row first:
+> 1: the cat sitting facing the viewer, eyes closed in a happy smile, head tilted a little to the left as if a hand were scratching its head.
+> 2: the same, head tilted a little to the right, eyes closed, purring.
+> 3: the same, chin raised, eyes closed, very content.
+> 4: the same sitting cat facing the viewer, eyes open, a tiny happy blink.
+> 5: a single small soft pink heart, painted in gouache, centred, about a quarter of the cell wide. Nothing else in the cell.
+> 6, 7, 8: empty, fully transparent.
+
+## Petting the cat, like a cat
+
+Sent with the cat's sprite sheet attached. It made `cat-pet.webp`, the poses the cat answers with when the reader pets it, and the heart that rises.
+
+> Generate one image with your image generation tool and save it as pet.png in the current directory, 1536x1024, with a TRANSPARENT background (PNG with alpha). If transparency is impossible, use a flat pure green #00FF00 background with nothing else on it. Do not ask questions; decide.
+>
+> The attached image is the sprite sheet of a tuxedo cat; its cell 8 shows the cat sitting and facing the viewer. Draw MORE poses of exactly the SAME cat (same size as in cell 8, same colours, same white chest, muzzle and paws, same green eyes, same naive gouache picture book style, matte paint, soft edges, no black ink outlines, no 3D), as a new sprite sheet: a grid of 4 columns and 2 rows, 8 equal cells of 384x512 pixels, the cat centred in its cell with its paws on the same line near the bottom of the cell. No grid lines, no numbers, no text, no hand, no person.
+>
+> The cat is being stroked by an invisible hand above its head and answers like a real cat:
+> 1: sitting, it pushes its head up and forward into the hand (a head bunt), ears slightly flattened back, eyes half closed.
+> 2: it rubs its cheek against the hand, head turned and tilted to the right, eyes closed, tail starting to rise.
+> 3: it rubs the other cheek, head turned and tilted to the left, eyes closed, tail up with a curl at the tip.
+> 4: it leans its whole body up and arches a little into the hand, chin raised, eyes closed, tail up and curled, blissful.
+> 5: it settles back sitting facing the viewer and gives a slow blink: eyes half closed, a tiny content smile, tail curled around its paws.
+> 6: a single small soft pink heart, painted in gouache, centred, about a quarter of the cell wide. Nothing else in the cell.
+> 7 and 8: empty, fully transparent.

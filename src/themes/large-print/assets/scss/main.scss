@@ -255,6 +255,18 @@ main:focus {
 // packages. Georgia and ui-monospace stay as fallbacks while the faces load.
 // -----------------------------------------------------------------------------
 
+// The Halloween wordmark: UnifrakturMaguntia, a gothic blackletter under the SIL
+// Open Font License, cut down to the letters of the name and renamed, as the license
+// asks of a modified copy (halloween-wordmark-OFL.txt). Only the Halloween header
+// uses it, so no other day downloads it.
+@font-face {
+  font-family: "Halloween Wordmark";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/halloween-wordmark.woff2") format("woff2");
+}
+
 @font-face {
   font-family: "Literata";
   font-style: normal;
@@ -594,6 +606,71 @@ body:has(.container.home) .navigation .navigation-title {
   font-size: 1.7rem;
   font-weight: 400;
   color: var(--ink-3);
+}
+
+// Halloween, 31 October only (layouts/_partials/halloween.html): the header
+// sits over a night scene, in cream type. The scene is a night drawing in both schemes, so it is never dimmed.
+.wrapper:has(> .halloween-band) {
+  position: relative;
+}
+
+.halloween-band {
+  position: relative;
+  z-index: 3; // over the section rail, which is fixed at the left edge
+  overflow: hidden;
+  margin-bottom: 5.6rem;
+  background: #1d2a3a;
+
+  picture img {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: none;
+  }
+
+  .motion-stage canvas {
+    filter: none;
+  }
+
+  ~ .navigation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 4;
+    margin: 0;
+    border-bottom: 0;
+    background: linear-gradient(rgba(29, 42, 58, 0.8), rgba(29, 42, 58, 0));
+    pointer-events: none;
+
+    .container {
+      pointer-events: auto;
+    }
+
+    .navigation-title,
+    .navigation-link,
+    .colorscheme-toggle {
+      color: #efe4c8;
+
+      &:hover,
+      &:focus {
+        color: #f2c35b;
+      }
+    }
+  }
+
+  @media only screen and (max-width: 768px) {
+    margin-bottom: 3.2rem;
+  }
+}
+
+.halloween-band ~ .navigation .navigation-title,
+body:has(.container.home) .halloween-band ~ .navigation .navigation-title {
+  font-family: "Halloween Wordmark", var(--serif);
+  font-size: 2.6rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: #efe4c8;
 }
 
 // -----------------------------------------------------------------------------
@@ -2088,6 +2165,54 @@ body:has(.container.home) .navigation .navigation-title {
     opacity: 0.7;
   }
 
+  // The speaker of a scene with an ambience, in the lower left corner, away from the
+  // pause button: a dark disc always seen, because the sound stays off until the reader
+  // finds it. Waves when it plays, a cross when it does not.
+  .motion-sound {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(29, 42, 58, 0.78);
+    color: #efe4c8;
+    box-shadow: 0 0 0 1px rgba(239, 228, 200, 0.35);
+    cursor: pointer;
+    pointer-events: auto;
+    opacity: 0.9;
+    line-height: 0;
+
+    svg {
+      margin: auto;
+    }
+
+    .on,
+    &[aria-pressed="true"] .off {
+      display: none;
+    }
+
+    &[aria-pressed="true"] .on {
+      display: inline;
+    }
+
+    &:hover {
+      opacity: 1;
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    &:focus-visible {
+      opacity: 1;
+      outline: 2px solid var(--blush);
+      outline-offset: 1px;
+    }
+  }
+
   // small lamps closer to each other than a fingertip are not buttons at the
   // size the cover is drawn (motion.js marks the layer crowded); in the zoom they
   // usually are
@@ -2106,7 +2231,7 @@ body:has(.container.home) .navigation .navigation-title {
 // A cover whose light comes in waits hidden for its unlit drawing; motion.js shows
 // it as soon as the canvas is ready, and this animation shows it after 1.2 s in
 // any case, so a failed script never hides the cover.
-.motion-wait .frontispiece-motion > picture img {
+.motion-wait .frontispiece-motion:not(.motion-ready) > picture img {
   opacity: 0;
   animation: motion-show 0s 1.2s forwards;
 }
