@@ -638,7 +638,8 @@
         src.connect(low); low.connect(rumble); rumble.connect(g); g.connect(ac.destination);
         src.start(now); lfo.start(now); src.stop(now + len); lfo.stop(now + len);
         busyUntil = Math.max(busyUntil, now + len);
-        setTimeout(sleepIfIdle, len * 1000 + 100);
+        // the end of the sound itself, on the audio clock, even after a hidden tab
+        src.onended = sleepIfIdle;
       } catch (e) {}
     }
     function actorAt(i, s) {
