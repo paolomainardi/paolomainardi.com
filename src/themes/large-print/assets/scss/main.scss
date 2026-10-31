@@ -255,6 +255,18 @@ main:focus {
 // packages. Georgia and ui-monospace stay as fallbacks while the faces load.
 // -----------------------------------------------------------------------------
 
+// The Halloween wordmark: UnifrakturMaguntia, a gothic blackletter under the SIL
+// Open Font License, cut down to the letters of the name and renamed, as the license
+// asks of a modified copy (halloween-wordmark-OFL.txt). Only the Halloween header
+// uses it, so no other day downloads it.
+@font-face {
+  font-family: "Halloween Wordmark";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/halloween-wordmark.woff2") format("woff2");
+}
+
 @font-face {
   font-family: "Literata";
   font-style: normal;
@@ -652,7 +664,12 @@ body:has(.container.home) .navigation .navigation-title {
   }
 }
 
+.halloween-band ~ .navigation .navigation-title,
 body:has(.container.home) .halloween-band ~ .navigation .navigation-title {
+  font-family: "Halloween Wordmark", var(--serif);
+  font-size: 2.6rem;
+  font-weight: 400;
+  letter-spacing: 0;
   color: #efe4c8;
 }
 

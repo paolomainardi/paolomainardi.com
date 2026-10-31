@@ -1,5 +1,5 @@
 {{- /*
-  Halloween header, on 31 October only (or with ?halloween in the address).
+  Halloween header, on 31 October only, by the reader's own date.
 
   A night scene built by scripts/cover-engine sits behind the site header: the
   cottage lights come on, then switch on their own and under the reader's
@@ -29,7 +29,7 @@
 <script>
   (function () {
     var d = new Date();
-    if (!((d.getMonth() === 9 && d.getDate() === 31) || /[?&]halloween\b/.test(location.search))) return;
+    if (!(d.getMonth() === 9 && d.getDate() === 31)) return;
     var t = document.getElementById("halloween");
     t.parentNode.insertBefore(t.content.cloneNode(true), t);
     if (window.WebGLRenderingContext && !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches))

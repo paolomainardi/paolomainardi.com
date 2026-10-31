@@ -497,7 +497,8 @@ lights are drawn in their states.
 **Halloween header.** On 31 October only, the header sits over a wide night
 scene in naive gouache, built with the animated cover engine: the cottage lights
 come in and switch, and the reader can press them. The wordmark and the links
-turn cream over a navy shade. An old engineer lives there: a rusty container
+turn cream over a navy shade, and the wordmark is set in UnifrakturMaguntia, a
+gothic blackletter, the one day it leaves Literata. An old engineer lives there: a rusty container
 sleeps under ivy, a server rack blinks its status lights and green code falls
 down an old computer's screen. The stars breathe, a shooting star passes now and
 then, a witch with her cats flies across the sky above the roof, and a tuxedo cat
