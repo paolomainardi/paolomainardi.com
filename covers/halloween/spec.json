@@ -6,5 +6,33 @@
     "pattern": {
       "spot": "calls"
     }
-  }
+  },
+  "stars": true,
+  "meteor": {
+    "every": [18, 35]
+  },
+  "actors": [
+    {
+      "id": "witch",
+      "sheet": "broom.webp",
+      "height": 150,
+      "path": [[-330, 260], [300, 195], [700, 215], [1100, 130], [1880, 60]],
+      "speed": 200,
+      "delay": 1.6,
+      "bob": 6,
+      "tilt": true
+    },
+    {
+      "id": "cat",
+      "sheet": "cat.webp",
+      "grid": [4, 2],
+      "walk": [0, 5],
+      "fps": 7,
+      "end": 7,
+      "height": 62,
+      "path": [[-90, 612], [300, 606], [620, 603], [848, 598]],
+      "speed": 46,
+      "delay": 3
+    }
+  ]
 }

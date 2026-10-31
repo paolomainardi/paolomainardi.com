@@ -39,6 +39,7 @@ lossy copy loses detail on each round.
 | `objects.json`, `objects.png`    | Every animated cover: the object sheet              |
 | `objects-<pass>.json`, `.png`    | Further sheets, such as the limbs of the figures    |
 | `extras.png`                     | Optional: a white dot where a swinging lamp is hung |
+| `<actor>.webp`                   | Actors: a sprite sheet for each, drawn apart from the scene |
 | `spec.json`                      | The choices Codex cannot make, and where to publish |
 | `prompts.md`                     | The brief and every prompt that made the drawings   |
 
@@ -64,7 +65,7 @@ hundreds of pixels, a painted shape lands within a pixel or two. The prompt is i
 | `leaf`   |                                                                                   | Falls from its place to the floor                                                                                                          |
 | `water`  |                                                                                   | Swells and ripples                                                                                                                         |
 | `float`  |                                                                                   | Bobs and rocks on the water                                                                                                                |
-| `sky`    |                                                                                   | Where rain and lightning go, when the spec names it                                                                                        |
+| `sky`    |                                                                                   | Where rain and lightning go, when the spec names it; where the stars breathe and the shooting star passes                                 |
 | `cloud`  |                                                                                   | Drifts                                                                                                                                     |
 | `thread` |                                                                                   | A light runs along it                                                                                                                      |
 | `steam`  |                                                                                   | Steam rises from it                                                                                                                        |
@@ -82,7 +83,41 @@ hundreds of pixels, a painted shape lands within a pixel or two. The prompt is i
 - `storm`: `sky` is the list of sky objects where rain falls and lightning shows, or
   `"glass"` for the window panes; `rain` and `flash` tune them; `drops` runs drops
   down the glass named by `glass`.
+- `stars`: `true`, or `{depth}` for how far a star dims (0.75 by default). The builder
+  finds the stars itself: small pale spots well above the sky around them, inside the
+  sky objects.
+- `meteor`: `{every: [min, max]}` seconds between two shooting stars (20 to 40 by
+  default), `length` in cover pixels. Needs a sky object.
+- `actors`: the characters drawn apart from the scene, below.
 - `still`, `amp`, `exclude`, `drift`, `pulse`, `floor`, `twinkle`.
+
+## Actors
+
+An actor is a character that is not painted in the scene and moves across it: a
+witch flying past, a cat walking home. Codex draws it as a sprite sheet, a grid of
+poses of the same character on a transparent background (or a flat colour the
+builder keys out), and the spec says where it goes:
+
+| Key      | What                                                                                            |
+| :------- | :---------------------------------------------------------------------------------------------- |
+| `id`     | Its name                                                                                        |
+| `sheet`  | The sprite sheet in `covers/<name>/`                                                            |
+| `grid`   | `[columns, rows]` of the sheet, `[1, 1]` for a single drawing                                   |
+| `walk`   | `[first, last]` frame of the cycle played while it moves, counted left to right, top row first  |
+| `fps`    | Frames a second of that cycle                                                                   |
+| `end`    | The frame it keeps at the end of its path; without it, the actor fades out there                |
+| `height` | Its height in cover pixels, from its feet to the top of its tallest frame                       |
+| `path`   | Points in cover pixels the feet pass through; the curve through them is smooth                  |
+| `speed`  | Cover pixels a second along the path                                                            |
+| `delay`  | Seconds after the cover is shown before it sets off                                             |
+| `bob`    | Pixels it rises and falls while it moves, for something flying                                  |
+| `tilt`   | `true`: it leans with the slope of its path, by 17 degrees at most                              |
+
+The builder stands every frame on the same feet, the bottom of the drawing under the
+middle of its upper body, so the cycle does not jump. It packs the frames of every
+actor and the shooting star in one atlas, `<name>-sprites.webp`, at twice the size
+they are shown. An actor moves once each time the cover is shown; it faces the way
+it goes, and the sheet is drawn facing right.
 
 ## Effects
 
@@ -121,12 +156,15 @@ The effects today:
 | `pulse`   | A light runs along threads                               | `thread` objects                   |
 | `fall`    | Leaves fall and fade                                     | `leaf` objects                     |
 | `steam`   | A drawn wisp rises, sways and breathes                   | `steam` objects, the steam texture |
+| `stars`   | Each star breathes at its own pace, now and then sparkles | `stars`, `sky` objects             |
+| `meteor`  | A drawn shooting star crosses the sky, behind the rest   | `meteor`, `sky` objects, the atlas |
+| `actors`  | Characters walk or fly along their path, frame by frame  | `actors`, the atlas                |
 
 ### Adding an effect
 
 1. The builder: read the objects or the spec it needs, write its data in
    `<name>-motion.json` or a channel of the map, and add its name to `effects` when
-   the cover uses it. The third band of the map has a free blue channel.
+   the cover uses it. The third band of the map has no free channel left: its blue holds the phase of each star.
 2. The player: add an entry to `EFFECTS`. Keep it slow and small, as DESIGN.md asks.
 3. A shared texture goes in `assets/images/motion/`, with its master and prompt in
    `covers/_effects/`, and a line in the template that passes its URL.
@@ -156,10 +194,10 @@ On 31 October the site header sits over a night scene built with the engine from
 `covers/halloween/`: the cottage windows, the pumpkins and the lantern switch, and
 the trees sway. `layouts/_partials/halloween.html` keeps it in a template that a
 small script adds to the page only on that day, or with `?halloween` in the
-address, so no other day downloads it. A witch on a broom, a separate drawing,
-crosses the sky once, moved by the stylesheet rather than the shader. The player
-runs on every image with a motion map, so the header and a post's cover move
-together.
+address, so no other day downloads it. The stars breathe, a shooting star passes
+now and then, and two actors play once: a witch with her cats flies across the sky
+above the roof, and a tuxedo cat walks home and sits by the steps. The player runs on
+every image with a motion map, so the header and a post's cover move together.
 
 ## Zoom
 

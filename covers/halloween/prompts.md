@@ -2,7 +2,7 @@
 
 The header of the site on 31 October. Paolo chose the style from a reference: a naive gouache night scene, a cute young witch with her cats, a white cottage with lit windows. Codex drew a scene of its own in that style, not a copy of the reference.
 
-**Motion brief:** the light comes in from above; the windows, the two carved pumpkins and the lantern switch on their own and can be switched; the two bare trees sway. A witch on a broom with five cats, a separate drawing, flies across the sky once, above the roof, moved by the stylesheet.
+**Motion brief:** the light comes in from above; the windows, the two carved pumpkins and the lantern switch on their own and can be switched; the two bare trees sway; the stars breathe and a shooting star passes now and then. Two actors play once each time the header is shown: a witch on a broom with five cats flies across the sky once, above the roof, and out on the right, and a tuxedo cat walks along the path and sits by the steps, looking at the reader.
 
 The drawings were made at 1536x1024 and cropped to the band, 1536x620 from y=236. The scene is a night scene in both colour schemes, so `night.webp` and `unlit-night.webp` are copies of `cover.webp` and `unlit.webp`.
 
@@ -36,7 +36,7 @@ The drawings were made at 1536x1024 and cropped to the band, 1536x620 from y=236
 >
 > The witch, the cats and the broom fill the width of the picture, centred, with a little empty margin all around. Nothing else in the picture: no moon, no stars, no ground, no shadow.
 
-The broom was trimmed to its drawing and saved as `broom.webp`.
+The broom was trimmed to its drawing and saved as `broom.webp`, the witch's sprite sheet of one frame.
 
 ## Unlit
 
@@ -66,3 +66,29 @@ Sent with the cover attached.
 > - kind "light", light "spot": each lit window of the cottage, one object per window, the painted area is the lit glass only; each of the two carved, lit pumpkins, the painted area is the whole pumpkin; the small lantern beside the red door, the painted area is its glass. "label": two or three words for a screen reader, such as "Attic window" or "Pumpkin lantern".
 > - kind "plant", "outdoor": true, motion ["sway"]: the bare tree on the far left and the tree on the far right, trunk and branches included.
 > Use clearly different saturated colours for each object.
+
+## Sky sheet
+
+Sent with the cropped cover attached. It made `objects-sky.json` and `objects-sky.png`.
+
+> The attached image is an illustrated header picture, 1536x620 pixels. Produce an object sheet for its sky: two files in the current directory. Do not ask questions; decide.
+>
+> 1. objects-sky.png: ONE new image made with your image generation tool, same size (1536x620) and the exact same composition, so it can be laid over the picture pixel for pixel. Flat colour on pure black (#000000), no shading, no outlines, no texture, no text. Paint the open night sky filled solid with pure blue #0000FF, following its real outline: the stars inside the sky are part of the sky and are painted blue too. Everything that is not sky stays black: the moon, the cottage and its roof and chimney, the trees and their branches and leaves, the distant hills and bushes, the ground.
+>
+> 2. objects-sky.json: a JSON array with one entry:
+>    [{"id": "night-sky", "kind": "sky", "motion": [], "box": [x0, y0, x1, y1], "color": "#0000FF"}]
+
+## Tuxedo cat
+
+Sent with the cover attached, as the style reference. It made `cat.webp`, the cat's sprite sheet.
+
+> Generate one image with your image generation tool and save it as cat.png in the current directory, 1536x1024, with a TRANSPARENT background (PNG with alpha). If transparency is impossible, use a flat pure green #00FF00 background with nothing else on it. Do not ask questions; decide.
+>
+> It is a sprite sheet for an animation: a grid of 4 columns and 2 rows, 8 equal cells of 384x512 pixels, each cell holding the SAME cat, the same size, its feet on the same line near the bottom of the cell, centred in the cell, with nothing crossing into another cell. No grid lines, no numbers, no text.
+>
+> The cat: a small tuxedo cat, black with a white chest, a white muzzle and four white paws, green eyes, a long black tail. Painted in the same naive gouache picture book style as the attached picture: matte paint, soft edges, visible brush texture, simple round shapes, no black ink outlines, no 3D. Sweet and calm, never scary.
+>
+> Cells, read left to right, top row first:
+> 1 to 6: a walk cycle seen exactly from the side, walking towards the RIGHT, six evenly spaced steps of one full stride, tail held up in a soft curve. Only the legs, the tail and a tiny bob of the body change between these six cells; the head, the body size and the colours stay identical.
+> 7: the same cat sitting, seen from the side facing right, tail around its paws.
+> 8: the same cat sitting like in cell 7, its head turned towards the viewer.

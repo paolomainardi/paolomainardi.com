@@ -3,17 +3,18 @@
 
   A night scene built by scripts/cover-engine sits behind the site header: the
   cottage lights come on, then switch on their own and under the reader's
-  click, and a witch with her cats flies across the sky once. The markup is a
+  click, the stars breathe, a shooting star passes now and then, a witch with
+  her cats flies across the sky once and a tuxedo cat walks home. The markup is a
   template, so on any other day nothing is downloaded.
 */ -}}
 {{ $img := resources.Get "images/halloween/halloween.webp" }}
 {{ $map := resources.Get "images/halloween/halloween-motion.webp" }}
 {{ $data := resources.Get "images/halloween/halloween-motion.json" }}
-{{ $broom := resources.Get "images/halloween/broom.webp" }}
 {{ $night := resources.Get "images/halloween/halloween-night.webp" }}
-{{ if and $img $map $data $broom }}
+{{ if and $img $map $data }}
 {{ $d := $data.Content | transform.Unmarshal }}
 {{ $attrs := dict "data-motion-map" $map.RelPermalink "data-motion" $data.Content }}
+{{ with resources.Get "images/halloween/halloween-sprites.webp" }}{{ $attrs = merge $attrs (dict "data-motion-sprites" .RelPermalink) }}{{ end }}
 {{ range $d.states }}{{ $s := . }}{{ with resources.Get (printf "images/halloween/halloween-%s.webp" $s) }}{{ $attrs = merge $attrs (dict (printf "data-motion-%s" $s) .RelPermalink) }}{{ end }}{{ end }}
 <template id="halloween">
   <div class="halloween-band frontispiece-motion">
@@ -22,7 +23,6 @@
       <img src="{{ $img.RelPermalink }}" alt="" width="{{ $img.Width }}" height="{{ $img.Height }}"
         {{- range $k, $v := $attrs }} {{ printf "%s=\"%s\"" $k (htmlEscape $v) | safeHTMLAttr }}{{ end }} />
     </picture>
-    <img class="halloween-broom" src="{{ $broom.RelPermalink }}" alt="" width="{{ $broom.Width }}" height="{{ $broom.Height }}" />
   </div>
 </template>
 <script>

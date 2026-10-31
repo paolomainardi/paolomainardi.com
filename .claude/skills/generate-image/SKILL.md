@@ -58,7 +58,9 @@ in the post as WebP. Paolo approves every image before it is merged.
      in the real scene and carries the idea; leave the rest still. The motion
      is ambient: light, weather, water, wind, a swing, a small gesture. A scene
      whose idea needs a story to move (a train passing, a lever thrown) stays
-     still. Decide for this scene, and say it in the brief: whether the light
+     still. The one exception is an actor: a character drawn apart from the
+     scene that crosses it or arrives once each time the cover is shown, such
+     as a cat walking home; ask Paolo before adding one. Decide for this scene, and say it in the brief: whether the light
      comes in and from where, how fast the lights breathe (a quiet room slowly,
      a switchboard briskly), which plants sway (indoor plants do not).
 
@@ -119,9 +121,22 @@ webp:lossless=true covers/<name>/cover.webp`), and every drawing after it
    | Rain in the sky or behind a window                                                                                                                                                                        | none (shared texture)                                    | `storm.sky`, `rain`                         |
    | Drops running down a window                                                                                                                                                                               | none (shared texture)                                    | `glass`, `drops`                            |
    | Waves, bobbing, drifting clouds, swaying plants, swinging lamps and tools, small gestures, falling leaves, a light along a thread, a lighthouse beam, windows going dark at night, steam from a hot drink | none                                                     | `amp`, `still`, `pulse`, `floor`, `twinkle` |
+   | Stars breathing in a night sky, a shooting star now and then                                                                                                                                             | a `sky` object in the object sheet                       | `stars`, `meteor`                           |
+   | A character walking or flying across the scene once (an actor)                                                                                                                                           | its sprite sheet, below                                  | `actors`                                    |
 
    A changed weather, such as rain over a sunny scene, is a new cover: draw the
    rainy cover first and every state from it.
+
+   An actor's sprite sheet is drawn by Codex with the cover attached as the
+   style reference: "a sprite sheet for an animation, a grid of C columns and R
+   rows of equal cells, each holding the SAME character, the same size, its
+   feet on the same line near the bottom of the cell, nothing crossing into
+   another cell, transparent background (or a flat pure green if transparency
+   is impossible), no grid lines, no text", then the character, the style of
+   the cover, and what each cell shows: for a walk, six evenly spaced steps of
+   one stride seen from the side, facing right, then the pose it ends in. A
+   character that only flies is one drawing, `grid` `[1, 1]`. Look at every
+   cell: the head, the size and the colours must not change between frames.
 
    Then ask Codex for the object sheet, the cover attached, with this prompt:
 

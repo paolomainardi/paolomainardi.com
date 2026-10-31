@@ -45,7 +45,7 @@
     (data.effects || []).forEach(function (e) { on[e] = true; });
     var list = {
       swing: data.swing || [], float: data.float || [], fall: data.fall || [], light: data.lights || [],
-      twinkle: data.twinkle || [], beam: data.beam || [], steam: data.steam || []
+      twinkle: data.twinkle || [], beam: data.beam || [], steam: data.steam || [], actor: data.actors || []
     };
     // GLSL arrays need a size of at least one; the counts below say how many are used.
     function size(name) { return Math.max(list[name].length, 1); }
@@ -62,7 +62,11 @@
     // Timings of the light: it comes in after HOLD seconds, over ENTRY seconds.
     var HOLD = 0.6, ENTRY = 2;
     var entry = data.entry;
-    var lightsK = data.lightsK || {}, rainK = data.rainK || {}, flashK = data.flashK || {};
+    var lightsK = data.lightsK || {}, rainK = data.rainK || {}, flashK = data.flashK || {}, starsK = data.starsK || {};
+    // the sprites of the actors and the shooting star, packed in one atlas by the builder
+    var rects = data.sprites || [];
+    var atlasW = 1, atlasH = 1;
+    rects.forEach(function (r) { atlasW = Math.max(atlasW, r[0] + r[2]); atlasH = Math.max(atlasH, r[1] + r[3]); });
 
     // ---------------------------------------------------------------------------
     // Effects. displace runs before the picture is read and moves src, the point
@@ -308,8 +312,86 @@
           c.gl.uniform4fv(c.u("fallSprite"), flat(list.fall, function (f) { return f.sprite; }));
           c.gl.uniform4fv(c.u("fallPath"), flat(list.fall, function (f) { return [f.from[0], f.from[1], f.floor, f.drift || 20]; }));
         }
+      },
+      {
+        name: "stars",
+        // each star of the sky breathes at its own pace, dimming towards the sky around it,
+        // and now and then sparkles
+        decl: "uniform float starDepth;",
+        color: [
+          "if (starPh > 0.02) {",
+          "  float br = 0.5 + 0.5 * sin(t * (0.5 + starPh * 1.4) + starPh * 61.0);",
+          "  float sp = pow(max(sin(t * (0.19 + starPh * 0.31) + starPh * 17.0), 0.0), 30.0);",
+          "  vec3 sa = texture2D(lit, (src + vec2(22.0, 0.0)) / size).rgb, sb = texture2D(lit, (src - vec2(22.0, 0.0)) / size).rgb;",
+          "  vec3 bg = dot(sa, vec3(0.3, 0.59, 0.11)) < dot(sb, vec3(0.3, 0.59, 0.11)) ? sa : sb;",
+          "  col = mix(bg, col, 1.0 - starDepth * (1.0 - br)) + sp * 0.6 * max(col - bg, 0.0);",
+          "}"
+        ].join("\n"),
+        setup: function (c) { c.gl.uniform1f(c.u("starDepth"), opt(starsK.depth, 0.75)); }
+      },
+      {
+        name: "meteor",
+        // a drawn shooting star crosses the sky now and then, behind everything that is not sky
+        decl: "uniform vec4 meteorA, meteorB, meteorC;",
+        color: [
+          "if (meteorA.w > 0.0 && spritesOn > 0.5) {",
+          "  vec2 q = rot(px - meteorA.xy, -meteorA.z) / meteorC.z + meteorC.xy;",
+          "  if (q.x > 0.0 && q.y > 0.0 && q.x < meteorB.z && q.y < meteorB.w) {",
+          "    vec4 s = texture2D(spritesImg, (meteorB.xy + q) / spriteSize);",
+          "    col = mix(col, s.rgb, s.a * meteorA.w * smoothstep(0.5, 0.9, sky));",
+          "  }",
+          "}"
+        ].join("\n"),
+        setup: function (c) {
+          var r = rects[data.meteor.sprite];
+          c.gl.uniform4fv(c.u("meteorB"), r);
+          c.gl.uniform4f(c.u("meteorC"), r[2], r[3] / 2, data.meteor.k, 1);
+        },
+        frame: function (c, s) { c.gl.uniform4fv(c.u("meteorA"), shootingStar(s)); }
+      },
+      {
+        name: "actors",
+        // characters drawn apart from the scene walk or fly along their path, frame by frame
+        decl: function () { return "uniform vec4 actorA[" + size("actor") + "], actorB[" + size("actor") + "], actorC[" + size("actor") + "];"; },
+        color: [
+          "if (spritesOn > 0.5) {",
+          "  for (int i = 0; i < " + size("actor") + "; i++) {",
+          "    vec4 A = actorA[i];",
+          "    if (A.w > 0.0) {",
+          "      vec4 B = actorB[i], C = actorC[i];",
+          "      vec2 q = rot(px - A.xy, -A.z) / C.z;",
+          "      q.x *= C.w;",
+          "      q += C.xy;",
+          "      if (q.x > 0.0 && q.y > 0.0 && q.x < B.z && q.y < B.w) {",
+          "        vec4 s = texture2D(spritesImg, (B.xy + q) / spriteSize);",
+          "        col = mix(col, s.rgb, s.a * A.w);",
+          "      }",
+          "    }",
+          "  }",
+          "}"
+        ].join("\n"),
+        frame: function (c, s) {
+          var A = [], B = [], C = [];
+          list.actor.forEach(function (a, i) {
+            var st = actorAt(i, s);
+            A.push(st.x, st.y, st.ang, st.alpha);
+            B.push.apply(B, rects[a.frames[st.frame]]);
+            C.push(a.anchor[0], a.anchor[1], a.k, st.flip);
+          });
+          c.gl.uniform4fv(c.u("actorA"), A);
+          c.gl.uniform4fv(c.u("actorB"), B);
+          c.gl.uniform4fv(c.u("actorC"), C);
+        }
       }
     ].filter(function (e) { return on[e.name]; });
+
+    var SPRITES = on.meteor || on.actors;
+    if (SPRITES) EFFECTS.unshift({
+      name: "sprites",
+      decl: "uniform sampler2D spritesImg; uniform float spritesOn; uniform vec2 spriteSize;",
+      textures: [{ unit: 7, name: "spritesImg", attr: "data-motion-sprites", ready: "spritesOn", alpha: true }],
+      setup: function (c) { c.gl.uniform2f(c.u("spriteSize"), atlasW, atlasH); }
+    });
 
     function part(key) {
       return EFFECTS.map(function (e) { return typeof e[key] === "function" ? e[key]() : e[key] || ""; }).join("\n");
@@ -348,11 +430,11 @@
       part("decl"),
       "void main(){",
       "  vec2 px = uv * size;",
-      // the map is three bands: thread, wind, turn; water, float, drift; sky, glass
+      // the map is three bands: thread, wind, turn; water, float, drift; sky, glass, stars
       "  vec3 m = texture2D(map, vec2(uv.x, uv.y / 3.0)).rgb;",
       "  vec3 n = texture2D(map, vec2(uv.x, (1.0 + uv.y) / 3.0)).rgb;",
-      "  vec2 b3 = texture2D(map, vec2(uv.x, (2.0 + uv.y) / 3.0)).rg;",
-      "  float sky = b3.x, glass = b3.y;",
+      "  vec3 b3 = texture2D(map, vec2(uv.x, (2.0 + uv.y) / 3.0)).rgb;",
+      "  float sky = b3.x, glass = b3.y, starPh = b3.z;",
       "  vec2 src = px;",
       part("displace"),
       "  vec2 suv = src / size;",
@@ -439,6 +521,63 @@
       return opt(flashK.strength, 1) * (u < 0.07 ? 1 : u < 0.14 ? 0.25 : u < 0.22 ? 0.85 : u < 0.22 + fd ? 0.85 * (1 - smooth((u - 0.22) / fd)) : 0);
     }
 
+    // A shooting star every [min, max] seconds: it crosses part of the sky in 1.4 s,
+    // from a point and in a direction drawn for each one.
+    var shot = null;
+    function shootingStar(s) {
+      var every = opt(data.meteor.every, [20, 40]);
+      if (!shot || s < shot.at) shot = { n: 0, at: 4 };
+      for (;;) { var gap = 1.4 + every[0] + (every[1] - every[0]) * rnd(77, shot.n); if (s < shot.at + gap) break; shot.at += gap; shot.n++; }
+      var u = s - shot.at;
+      if (u > 1.4) return [0, 0, 0, 0];
+      var r1 = rnd(78, shot.n), r2 = rnd(79, shot.n), r3 = rnd(80, shot.n);
+      var dir = r3 < 0.5 ? 1 : -1, ang = (0.25 + 0.25 * r2) * (dir > 0 ? 1 : -1) + (dir > 0 ? 0 : Math.PI);
+      var x0 = W * (0.15 + 0.7 * r1), y0 = H * (0.14 + 0.2 * r2), go = W * 0.3 * smooth(u / 1.4);
+      var fade = smooth(u / 0.25) * (1 - smooth((u - 1.0) / 0.4));
+      return [x0 + Math.cos(ang) * go, y0 + Math.sin(ang) * go, ang, fade * 0.9];
+    }
+
+    // Actors: each path is a smooth curve through its points, walked at a steady speed.
+    var routes = list.actor.map(function (a) {
+      var p = a.path, pts = [], len = [0];
+      function at(j) { return p[Math.max(0, Math.min(p.length - 1, j))]; }
+      for (var j = 0; j < p.length - 1; j++) {
+        var p0 = at(j - 1), p1 = at(j), p2 = at(j + 1), p3 = at(j + 2);
+        for (var k = 0; k < 32; k++) {
+          var q = k / 32, q2 = q * q, q3 = q2 * q;
+          pts.push([0, 1].map(function (d) {
+            return 0.5 * (2 * p1[d] + (p2[d] - p0[d]) * q + (2 * p0[d] - 5 * p1[d] + 4 * p2[d] - p3[d]) * q2 + (3 * p1[d] - p0[d] - 3 * p2[d] + p3[d]) * q3);
+          }));
+        }
+      }
+      pts.push(p[p.length - 1]);
+      for (var i = 1; i < pts.length; i++) len.push(len[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+      return { pts: pts, len: len };
+    });
+    function actorAt(i, s) {
+      var a = list.actor[i], r = routes[i], u = s - a.delay;
+      var hidden = { x: 0, y: 0, ang: 0, alpha: 0, frame: 0, flip: 1 };
+      if (u < 0) return hidden;
+      var d = u * a.speed, total = r.len[r.len.length - 1], done = d >= total;
+      if (done && a.end < 0) return hidden;
+      d = Math.min(d, total);
+      var j = 1;
+      while (j < r.len.length - 1 && r.len[j] < d) j++;
+      var p0 = r.pts[j - 1], p1 = r.pts[j], f = (d - r.len[j - 1]) / Math.max(r.len[j] - r.len[j - 1], 1e-6);
+      var dx = p1[0] - p0[0], dy = p1[1] - p0[1], flip = dx < 0 ? -1 : 1;
+      var walk = a.walk[1] - a.walk[0] + 1;
+      // an actor that does not stay at the end of its path fades out over its last half second
+      var left = (total - d) / a.speed;
+      return {
+        x: p0[0] + dx * f,
+        y: p0[1] + dy * f + (done ? 0 : a.bob * Math.sin(u * 2.4)),
+        ang: a.tilt && !done ? Math.max(-0.3, Math.min(0.3, Math.atan2(dy * flip, dx * flip))) : 0,
+        alpha: a.end < 0 ? smooth(left / 0.5) : 1,
+        frame: done ? a.end : a.walk[0] + Math.floor(u * a.fps) % walk,
+        flip: flip
+      };
+    }
+
     // ---------------------------------------------------------------------------
     // The stage holds the canvas and the switches; it covers the cover on the page,
     // and moves over the enlarged picture when the reader zooms.
@@ -487,7 +626,7 @@
     // One texture per unit, made once and refilled: a scheme swap or the zoom never
     // leaves an old texture behind on the GPU.
     var units = {};
-    function upload(unit, source) {
+    function upload(unit, source, alpha) {
       gl.activeTexture(gl.TEXTURE0 + unit);
       if (!units[unit]) {
         units[unit] = gl.createTexture();
@@ -498,7 +637,8 @@
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       }
       gl.bindTexture(gl.TEXTURE_2D, units[unit]);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, source);
+      var fmt = alpha ? gl.RGBA : gl.RGB;
+      gl.texImage2D(gl.TEXTURE_2D, 0, fmt, fmt, gl.UNSIGNED_BYTE, source);
     }
     function fetchImage(src, done) {
       var im = new Image();
@@ -556,7 +696,7 @@
         if (!url) { missing.push(tx.unit); return one(); }
         fetchImage(url, function (im) {
           if (gen !== generation) return;
-          if (im) upload(tx.unit, im); else missing.push(tx.unit);
+          if (im) upload(tx.unit, im, tx.alpha); else missing.push(tx.unit);
           one();
         });
       });
@@ -571,7 +711,7 @@
         tx.loaded = true;
         fetchImage(url, function (im) {
           if (!im || (tx.scheme && gen !== generation)) return;
-          upload(tx.unit, im);
+          upload(tx.unit, im, tx.alpha);
           if (tx.ready) { ctx.ready[tx.ready] = true; gl.uniform1f(u(tx.ready), 1); }
           redraw();
         });
