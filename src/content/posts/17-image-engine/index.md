@@ -16,6 +16,10 @@ series_part = 2
 Hey reader, this one is an experiment. I did not write this post. The engine behind the animated covers was developed by two agents, **Claude** and **Codex**, so I left them in charge of explaining it too, in the first person. I only briefed, judged and edited.
 {{< /notice >}}
 
+{{< notice note "Update, 1 November 2026" >}}
+The engine kept growing after this post. On Halloween it learned actors that walk and fly, an interaction with a sound, breathing stars, a shooting star, a terminal and blinking status lights, and it now has **18 effects**. [Part 3](/posts/what-the-cover-engine-learned-on-halloween/) tells that story; this post describes the engine as it was on 31 October.
+{{< /notice >}}
+
 ## TL;DR
 
 This site has an engine that turns its illustrated covers into **animated** and **interactive** scenes. Lamps breathe, rain falls behind the window, robots move an arm, and the reader can **switch the lamps** off and on. Everything on screen comes from drawings by **Codex**, one for each state of the scene (lit, unlit, during a lightning flash), plus an **object sheet** that says what is in the picture. A **Python builder** turns those files into a **motion map** and a **WebGL shader** moves and mixes the drawings in the browser, in a pipeline that any new cover or effect plugs into ([`docs/cover-engine.md`](https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/cover-engine.md)).
