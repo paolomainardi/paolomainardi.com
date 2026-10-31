@@ -565,6 +565,7 @@
   // The stage covers the image inside its border, at the size it is drawn: the cover
   // on the page, or the enlarged picture while the reader zooms.
   var zoom = null;
+  var coarse = !!(window.matchMedia && matchMedia("(pointer: coarse)").matches);
   function place() {
     var target = zoom ? zoom.image : img, w = target.clientWidth, h = target.clientHeight;
     if (zoom) {
@@ -577,8 +578,16 @@
     }
     stage.style.width = w + "px";
     stage.style.height = h + "px";
-    // at least 44 pixels to aim at, whatever the size of the lamp
-    var min = 44 * W / Math.max(w, 1);
+    // a target of 44 pixels for a finger, 24 for a mouse (WCAG 2.5.8), whatever the size of
+    // the lamp; small lamps closer than that to each other are not buttons at this size,
+    // so a tap never hits a neighbour
+    var min = (coarse ? 44 : 24) * W / Math.max(w, 1), crowded = false;
+    list.light.forEach(function (a, i) {
+      list.light.forEach(function (b, j) {
+        if (j > i && !a.big && !b.big && Math.abs(a.pool[0] - b.pool[0]) < min && Math.abs(a.pool[1] - b.pool[1]) < min) crowded = true;
+      });
+    });
+    layer.classList.toggle("crowded", crowded);
     layer.childNodes.forEach(function (btn) {
       var b = btn.dataset.box.split(",").map(Number);
       var px = Math.max(btn.classList.contains("big") ? 0 : 10, (min - (b[2] - b[0])) / 2);
@@ -611,6 +620,9 @@
     ev.stopPropagation();
     paused = !paused;
     pause.setAttribute("aria-pressed", paused ? "true" : "false");
+    // a pause during the light entry lands on the cover fully lit
+    if (paused && entry && clock < HOLD + ENTRY + 1.5) clock = HOLD + ENTRY + 1.5;
+    redraw();
     if (!paused) start();
   });
   stage.appendChild(pause);

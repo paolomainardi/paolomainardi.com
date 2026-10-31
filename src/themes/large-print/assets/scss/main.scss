@@ -1968,16 +1968,11 @@ body:has(.container.home) .navigation .navigation-title {
     opacity: 0.85;
   }
 
-  // a small lamp is a few pixels wide on a phone: there only the big lamps
-  // switch, except in the zoom, where every lamp is big enough
-  @media (max-width: 700px) {
-    .switch.small {
-      display: none;
-    }
-
-    &.in-zoom .switch.small {
-      display: block;
-    }
+  // small lamps closer to each other than a fingertip are not buttons at the
+  // size the cover is drawn (motion.js marks the layer crowded); in the zoom they
+  // usually are
+  .crowded .switch.small {
+    display: none;
   }
 }
 

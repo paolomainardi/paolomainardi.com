@@ -139,10 +139,12 @@ peak. Where a light is off, the shader shows its unlit drawing in a soft pool ar
 it. After the light comes in, each lamp winks once to show it can be pressed.
 
 Every light is a button over the cover: named from the object sheet's `label`, with
-`aria-pressed`, at least 44 pixels to aim at, a focus ring for the keyboard only, and
-nothing drawn over the picture. Under the pointer the lamp brightens. A pendant
-switches off and on; a small lamp leaves its pattern for the state the reader chose,
-and a second click hands it back. Below 700 pixels only the big lamps are buttons.
+`aria-pressed`, a focus ring for the keyboard only, and nothing drawn over the
+picture. Under the pointer the lamp brightens. A pendant switches off and on; a small
+lamp leaves its pattern for the state the reader chose, and a second click hands it
+back. A button is at least 44 pixels for a finger and 24 for a mouse; small lamps
+closer to each other than that are not buttons at the size the cover is drawn, so a
+tap never hits a neighbour, and in the zoom they usually are.
 
 ## Zoom
 
