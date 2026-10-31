@@ -19,6 +19,9 @@ for every sentence.
   wrote in his notes. If a section needs one and there is none, ask.
 - **Facts come with a source.** Numbers, versions, dates and claims link to
   where they come from: a pull request, a benchmark, the project's own page.
+- **Facts, not announcements.** No slogan headings, no sentences that sell
+  what comes next, no bold label followed by a colon. Short paragraphs and
+  plenty of bold on terms and numbers. voice.md has the details.
 - **No AI disclosure notice.** Posts do not open with a note about how AI
   helped write them.
 - **English only,** even when he answers in Italian.

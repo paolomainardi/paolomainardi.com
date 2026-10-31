@@ -28,10 +28,11 @@ recent voice.
    under the title as the subtitle and is the page's meta description.
 2. **`## TL;DR`**: two to four sentences, the answer first, key terms in bold,
    links to the main things named.
-3. **`## Introduction`**: why he did it, in personal terms, with the goal
-   stated plainly at the end ("So the goal was simple: …").
-4. **Context or history**, then **the requirements** as a bulleted list with
-   bold lead-ins ("**Silent**: living room standards, not office standards.").
+3. **`## Introduction`**: why he did it, in personal terms, ending with the
+   goal in a plain sentence.
+4. **Context or history**, then **the requirements** as a plain bulleted list,
+   with the key term of each item in bold where it falls in the sentence
+   ("Living room standards for **noise**, not office ones.").
 5. **The body**, one `##` per part and `###` for the pieces of a part. Tables
    for anything with the same fields per row.
 6. **`## Conclusion`**: short, what he got and how he feels about it, no
@@ -44,10 +45,12 @@ heading each, and end with the data and references.
 
 ## Sentences and paragraphs
 
-- **Short paragraphs**, two to four sentences. A one-sentence paragraph is used
-  as a hinge: "This is the part I changed my mind about."
-- **Rhetorical question, then the plain answer**: "So what is actually
-  happening under the hood?"
+- **Short paragraphs**, one to three sentences, with a blank line between
+  them. Start a new paragraph whenever the subject changes; a long block of
+  text is always split.
+- **Facts first.** Each paragraph opens with a fact: what the thing is, what
+  it does, a number. Never with a sentence that introduces or sells what comes
+  next.
 - **Explains by analogy**: "An image-based system is basically firmware."
 - **Concrete numbers, with sources**: prices, ratios, versions, dates, each
   linked to where it comes from. A strong reaction is allowed once the number
@@ -59,8 +62,12 @@ heading each, and end with the data and references.
 
 ## Formatting
 
-- **Bold** for key terms and named things, a few per section, never whole
-  sentences.
+- **Bold** generously on technical terms, tools, file formats, named people,
+  agents and projects, and the numbers that matter, so a reader skimming the
+  bold words gets the outline. Never whole sentences, and never a bold label
+  followed by a colon.
+- **Italics** for quoted words and for the one word a sentence turns on
+  ("where a pixel is read from, and _which drawing_").
 - **Links inline**, to primary sources: projects, specs, benchmarks, his own
   older posts.
 - **Italic asides in parentheses** for jokes and side notes:
@@ -85,6 +92,14 @@ heading each, and end with the data and references.
   "powerful", "cutting-edge", "best-in-class", "revolutionary", "next level",
   "effortless", "robust". A claim of speed or quality needs a number and a
   source next to it.
+- **Announcements and slogans.** No heading or sentence that pitches an idea
+  before the facts: "Every pixel is a drawing", "The browser never invents a
+  pixel", "That is harder than it sounds", "Here is the trick", "This is the
+  part that matters", "The answer is simple". Headings name the topic ("From
+  drawings to screen", "The object sheet"); sentences state the fact.
+- **Bold label, colon, explanation.** "**Silent**: living room standards" or
+  "The engine has one rule: …" reads like a slide. Write the sentence instead,
+  with the key term in bold where it falls.
 - Generic AI phrasing: "In today's fast-paced world", "Let's dive in",
   "game-changer", "In conclusion", summaries that repeat the post.
 - Italian-English slips that appear in older posts ("I am using it since"):
