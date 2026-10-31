@@ -622,6 +622,8 @@
     pause.setAttribute("aria-pressed", paused ? "true" : "false");
     // a pause during the light entry lands on the cover fully lit
     if (paused && entry && clock < HOLD + ENTRY + 1.5) clock = HOLD + ENTRY + 1.5;
+    // the frame loop stops at its next turn; the paused state is drawn now
+    if (paused) running = false;
     redraw();
     if (!paused) start();
   });
