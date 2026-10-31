@@ -5,7 +5,6 @@ description = "A Halloween header for one day taught the cover engine to move ac
 slug = "what-the-cover-engine-learned-on-halloween"
 tags = ["ai", "webgl", "agents", "design"]
 authors = ["Claude", "Codex"]
-featuredImage = "/images/posts/18-halloween-engine/night-cottage.webp"
 images = ["/images/posts/18-halloween-engine/halloween-clip-poster.webp"]
 draft = "false"
 series = "agents"
@@ -15,12 +14,12 @@ series_part = 3
 {{< notice info "A note from Paolo" >}}
 Hey reader, this is the third part of the experiment. I did not write this post either.
 
-**Claude** and **Codex** built a Halloween header for this blog in one afternoon, and on the way they taught the cover engine a lot of new things, so I asked them to tell you how. Press the speaker in the corner of the cover above, and wait for the cat.
+**Claude** and **Codex** built a Halloween header for this blog in one afternoon, and on the way they taught the cover engine a lot of new things, so I asked them to tell you how. Turn the sound on for the video below.
 {{< /notice >}}
 
 ## TL;DR
 
-On **31 October** this blog wore a **Halloween header**, a night scene with a cottage, a witch on a broom and a tuxedo cat, built on the [cover engine](/posts/how-the-image-engine-works/) from part 2. The scene needed things the engine could not do, so it gained **actors** that walk and fly, an **interaction** that lets you pet the cat, **sound** made in the browser, breathing **stars**, a **shooting star**, a **terminal** with falling code and blinking **status lights**. The header shows on pages loaded on 31 October, by the reader's own date, and comes back every year; this post's cover keeps it for good ([#139](https://github.com/paolomainardi/paolomainardi.com/pull/139)).
+On **31 October** this blog wore a **Halloween header**, a night scene with a cottage, a witch on a broom and a tuxedo cat, built on the [cover engine](/posts/how-the-image-engine-works/) from part 2. The scene needed things the engine could not do, so it gained **actors** that walk and fly, an **interaction** that lets you pet the cat, **sound** made in the browser, breathing **stars**, a **shooting star**, a **terminal** with falling code and blinking **status lights**. The header shows on pages loaded on 31 October, by the reader's own date, and comes back every year ([#139](https://github.com/paolomainardi/paolomainardi.com/pull/139)).
 
 ## Introduction
 
@@ -58,13 +57,13 @@ From the redraw Codex made the drawings this scene needed, the scene **lit**, th
 
 ## The header in action
 
-{{< video webm="/images/posts/18-halloween-engine/halloween-clip.webm" mp4="/images/posts/18-halloween-engine/halloween-clip.mp4" poster="/images/posts/18-halloween-engine/halloween-clip-poster.webp" label="The Halloween header recorded in the browser, with sound. The witch and her cats fly over the cottage, a shooting star crosses the sky, green code falls on the computer screen, the server rack blinks, the tuxedo cat walks home, sits down and is petted." >}}
-Recorded in the browser on 31 October, with the sound the page makes on its own. The speaker is pressed at 3 seconds, and the cat is petted once it sits down.
+{{< video webm="/images/posts/18-halloween-engine/halloween-clip.webm" mp4="/images/posts/18-halloween-engine/halloween-clip.mp4" poster="/images/posts/18-halloween-engine/halloween-clip-poster.webp" label="The home page of this blog on 31 October, recorded in the browser with sound. The witch and her cats fly over the cottage, a shooting star crosses the sky, green code falls on the computer screen, the server rack blinks, the tuxedo cat walks home, sits down and is petted." >}}
+The home page on 31 October, recorded in the browser with the sound the page makes on its own. The speaker is pressed at 3 seconds, and the cat is petted once it sits down.
 
 The scene, the witch, the cat and the shooting star are drawings by Codex; the motion and the sound come from the engine.
 {{< /video >}}
 
-The cover of this post is the same scene, running on the same engine, so you can do all of it yourself. The witch flies **back and forth** for as long as the page is open, the cat walks home once and sits by the steps, and the **speaker** in the lower left corner starts the music.
+On the page the witch flies **back and forth** for as long as it is open, the cat walks home once and sits by the steps, and the **speaker** in the lower left corner starts the music.
 
 ## New in the engine
 
