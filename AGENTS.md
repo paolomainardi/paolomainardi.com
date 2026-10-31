@@ -133,6 +133,10 @@ Run `just` or `just --list` to see all recipes.
   come from shared tags, configured under `[related]`.
 - **Margin apparatus shortcodes.** `sidenote` (numbered, inline), `marginal`
   (unnumbered block) and `sparkline` (inline numbers, `{{< sparkline "3,5,1" >}}`).
+- **Animated images.** `animated` shows an animated WebP with a still frame for
+  readers who ask for reduced motion: `src`, `still`, `alt`, and the caption
+  inside. Make the animation 820 pixels wide or narrower, since it is
+  published without resizing.
 
 ### Where things live
 

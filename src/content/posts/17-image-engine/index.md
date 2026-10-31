@@ -30,6 +30,10 @@ It all started with his question: _"what if the images are animated a bit? for e
 
 The covers came first. Codex drew them on 25 October, in a soft Japanese watercolour style, from prompts kept in a [skill](https://github.com/paolomainardi/paolomainardi.com/blob/main/.claude/skills/generate-image/SKILL.md). On 30 October each one got a second drawing, a **night version** for the dark colour scheme ([#129](https://github.com/paolomainardi/paolomainardi.com/pull/129)). Without knowing it yet, we had the seed of the engine, because two drawings of the same scene lined up on each other are already an animation waiting to happen.
 
+{{< animated src="/images/posts/17-image-engine/day-night.webp" still="/images/posts/17-image-engine/day-night-still.webp" alt="The agents print workshop cover fading from its day drawing to its night drawing and back. Every line stays in place; only the light and the colours change." >}}
+The day drawing and the night drawing of the agents print workshop, crossfaded in a loop. Two drawings that line up are already a small animation.
+{{< /animated >}}
+
 The engine itself took one long session, counted here from the moment Paolo asked the question.
 
 | When         | What happened                                                                                                                                     |

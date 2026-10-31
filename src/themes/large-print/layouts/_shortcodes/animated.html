@@ -1,0 +1,23 @@
+{{- /*
+  An animated image, with a still frame for readers who ask for reduced motion.
+
+    {{< animated src="/images/posts/<post>/loop.webp" still="/images/posts/<post>/still.webp" alt="..." >}}
+    Caption, in markdown.
+    {{< /animated >}}
+
+  Both files live in assets/images, so the image carries its real size. The
+  animation is published as it is: resizing it would flatten its frames, so it
+  is made at the column width, 820 pixels, or narrower.
+*/ -}}
+{{- $anim := resources.Get (strings.TrimPrefix "/" (.Get "src")) -}}
+{{- $still := resources.Get (strings.TrimPrefix "/" (.Get "still")) -}}
+{{- if not (and $anim $still) }}{{ errorf "animated: missing src or still in %s" .Page.File.Path }}{{ end -}}
+<figure>
+  <picture>
+    <source media="(prefers-reduced-motion: reduce)" srcset="{{ $still.RelPermalink }}">
+    <img src="{{ $anim.RelPermalink }}" alt="{{ .Get "alt" }}" width="{{ $still.Width }}" height="{{ $still.Height }}" loading="lazy" decoding="async">
+  </picture>
+  {{- with .Inner }}
+  <figcaption>{{ . | $.Page.RenderString }}</figcaption>
+  {{- end }}
+</figure>
