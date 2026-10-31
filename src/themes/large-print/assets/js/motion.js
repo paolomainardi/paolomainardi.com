@@ -302,7 +302,7 @@
     "  float f = float(i);",
     "  float sw = 0.055 * sin(t * (1.1 + 0.15 * f) + f * 2.1) * (0.7 + 0.3 * sin(t * 0.23 + f));",
     // a limb moves now and then, small and irregular
-    "  float idle = 0.055 * (0.6 * sin(t * 0.7 + f * 1.3) + 0.4 * sin(t * 1.9 + f * 2.7)) * smoothstep(-0.2, 0.6, sin(t * 0.21 + f));",
+    "  float idle = 0.055 * (0.6 * sin(t * 0.7 + f * 1.3) + 0.4 * sin(t * 1.9 + f * 2.7)) * smoothstep(-0.6, 0.3, sin(t * 0.35 + f));",
     "  return s.z * mix(sw, idle, s.w);",
     "}",
     // a light hung from a lamp follows its swing
