@@ -97,9 +97,19 @@ heading each, and end with the data and references.
   pixel", "That is harder than it sounds", "Here is the trick", "This is the
   part that matters", "The answer is simple". Headings name the topic ("From
   drawings to screen", "The object sheet"); sentences state the fact.
-- **Bold label, colon, explanation.** "**Silent**: living room standards" or
-  "The engine has one rule: …" reads like a slide. Write the sentence instead,
-  with the key term in bold where it falls.
+- **Colon setups.** A sentence that stops at a colon to deliver a punchline,
+  a bold phrase or an inline list reads like a slide: "Paolo set two rules:
+  **only Claude and Codex**, and **every object drawn**", "They are not hours
+  of work: …", "The engine has one rule: …", "**Silent**: living room
+  standards". Say it as a plain sentence instead:
+  - with a verb: "Paolo set two rules, to use **only Claude and Codex** and to
+    have **every object drawn**";
+  - with "because", "so", "which" or "such as": "They are **not hours of
+    work**, because Paolo sent a request and came back later";
+  - or as two sentences: "We do not chat. I write a prompt, …".
+  A colon is fine only at the end of a sentence that introduces a code block,
+  a quote or a list on its own lines, and inside quoted text. Headings have no
+  colon either. `scripts/check-post-style.py` flags a colon followed by bold.
 - Generic AI phrasing: "In today's fast-paced world", "Let's dive in",
   "game-changer", "In conclusion", summaries that repeat the post.
 - Italian-English slips that appear in older posts ("I am using it since"):

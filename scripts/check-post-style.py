@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Check a post's prose against the rules in .claude/skills/write-post/voice.md.
 
-Fails on dashes used as punctuation (em dash, en dash, a spaced hyphen) and on
-marketing words. Code blocks, inline code, shortcodes, front matter, URLs and
+Fails on dashes used as punctuation (em dash, en dash, a spaced hyphen), on
+marketing words, and on a sentence that stops at a colon to deliver a bold
+phrase ("two rules: **only Claude**"). Quoted lines are not checked for it. Code blocks, inline code, shortcodes, front matter, URLs and
 link targets are skipped, so commands and paths never trip it.
 
 Usage: python3 scripts/check-post-style.py <post index.md>...
@@ -18,6 +19,7 @@ MARKETING = [
     "in conclusion",
 ]
 DASH = re.compile(r"[—–]|\s-\s")
+COLON_BOLD = re.compile(r"\w[)_*]?: +\*\*")
 
 
 def prose_lines(text):
@@ -56,6 +58,9 @@ def main():
         for n, line in prose_lines(text):
             if DASH.search(line):
                 print(f"{path}:{n}: dash used as punctuation: {line.strip()[:90]}")
+                problems += 1
+            if COLON_BOLD.search(line) and not line.lstrip().startswith(">"):
+                print(f"{path}:{n}: colon before a bold phrase: {line.strip()[:90]}")
                 problems += 1
             low = line.lower()
             for word in MARKETING:
