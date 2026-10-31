@@ -384,6 +384,7 @@
   // A lightning flash every [min, max] seconds: a double flicker that fades.
   function lightning(s) {
     var every = opt(flashK.every, [8, 15]), fd = opt(flashK.fade, 0.38), n = 0, at = 2;
+    if (s < at) return 0;
     for (;;) { var gap = every[0] + (every[1] - every[0]) * rnd(99, n); if (s < at + gap) break; at += gap; n++; }
     var u = s - at;
     return opt(flashK.strength, 1) * (u < 0.07 ? 1 : u < 0.14 ? 0.25 : u < 0.22 ? 0.85 : u < 0.22 + fd ? 0.85 * (1 - smooth((u - 0.22) / fd)) : 0);
@@ -492,6 +493,7 @@
     function one() {
       if (gen !== generation || --left) return;
       missing.forEach(function (unit) { if (picture0) upload(unit, picture0); });
+      redraw();
       if (done) done();
     }
     fetchImage(src, function (im) { if (gen === generation && im) { picture0 = im; upload(0, im); } one(); });
@@ -572,6 +574,7 @@
       canvas.width = bw;
       canvas.height = bh;
       gl.viewport(0, 0, bw, bh);
+      redraw();
     }
   }
 
@@ -609,6 +612,16 @@
   }
 
   var visible = true, running = false, last = 0, shown = false;
+  function draw() {
+    gl.uniform1f(u("t"), clock);
+    EFFECTS.forEach(function (e) { if (e.frame) e.frame(ctx, clock); });
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+  // A paused or hidden cover is drawn again, at the same moment, whenever its size
+  // or its drawings change: resizing the canvas clears it.
+  function redraw() {
+    if (shown && !running && !gone) draw();
+  }
   function frame(now) {
     if (gone || paused || (!visible && !zoom) || document.hidden) {
       running = false;
@@ -619,9 +632,7 @@
     if (last && now - last < 32) return;
     clock += Math.min(now - (last || now), 100) / 1000;
     last = now;
-    gl.uniform1f(u("t"), clock);
-    EFFECTS.forEach(function (e) { if (e.frame) e.frame(ctx, clock); });
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    draw();
     if (!shown) {
       shown = true;
       stage.classList.add("on");
@@ -636,25 +647,34 @@
     requestAnimationFrame(frame);
   }
 
+  // The cover follows the colour scheme: when scheme.js swaps it, the canvas takes
+  // the new picture and its state drawings, also while the first ones still load.
+  var started = false;
   function begin() {
+    img.addEventListener("load", function () { if (started && !gone) picture(); });
     fetchImage(img.getAttribute("data-motion-map"), function (map) {
       if (!map) return release(), state("no motion map");
       upload(1, map);
+      var first = img.currentSrc || img.src;
       picture(function () {
+        started = true;
+        if ((img.currentSrc || img.src) !== first) picture();
         img.parentNode.insertBefore(stage, img.nextSibling);
         place();
         // the animation goes with the reader into the zoom, at full size, and comes back
         img.addEventListener("zoom:open", function (ev) {
+          if (gone) return;
           zoom = ev.detail;
           zoom.dialog.appendChild(stage);
           stage.classList.add("in-zoom");
           var zgen = ++generation;
-          fetchImage(zoom.full, function (im) { if (im && zoom && zgen === generation) upload(0, im); });
+          fetchImage(zoom.full, function (im) { if (im && zoom && zgen === generation) { upload(0, im); redraw(); } });
           zoom.image.addEventListener("load", place);
           place();
           requestAnimationFrame(place);
         });
         img.addEventListener("zoom:close", function () {
+          if (gone) return;
           if (zoom) zoom.image.removeEventListener("load", place);
           zoom = null;
           stage.classList.remove("in-zoom");
@@ -663,9 +683,6 @@
           place();
         });
         window.addEventListener("resize", place);
-        // The cover follows the colour scheme: when scheme.js swaps it, the canvas
-        // takes the new picture and its state drawings.
-        img.addEventListener("load", function () { picture(); });
         document.addEventListener("visibilitychange", start);
         if ("IntersectionObserver" in window) {
           new IntersectionObserver(function (entries) {
