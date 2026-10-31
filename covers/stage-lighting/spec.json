@@ -1,0 +1,26 @@
+{
+  "publish": "src/assets/images/posts/17-image-engine/stage-lighting",
+  "entry": true,
+  "light_from": 90,
+  "lights": {
+    "pattern": {
+      "spot": "breathe"
+    },
+    "breathe": 0.5
+  },
+  "still": [
+    "plant",
+    "cloud",
+    "sky",
+    "tool",
+    "painter-raised-arm",
+    "painter-lowered-arm",
+    "wall-electrical-cables"
+  ],
+  "pulse": {
+    "from": [
+      1345,
+      655
+    ]
+  }
+}

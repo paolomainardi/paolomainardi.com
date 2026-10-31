@@ -1,0 +1,357 @@
+[
+  {
+    "id": "left-spotlight-bulb",
+    "kind": "light",
+    "label": "Left spotlight",
+    "light": "desk",
+    "motion": [],
+    "box": [
+      401,
+      224,
+      432,
+      254
+    ],
+    "color": "#FF0000"
+  },
+  {
+    "id": "right-spotlight-bulb",
+    "kind": "light",
+    "label": "Right spotlight",
+    "light": "desk",
+    "motion": [],
+    "box": [
+      975,
+      141,
+      1010,
+      175
+    ],
+    "color": "#00FF00"
+  },
+  {
+    "id": "pendant-lamp-bulb",
+    "kind": "light",
+    "label": "Pendant lamp",
+    "light": "pendant",
+    "of": "pendant-lamp",
+    "motion": [],
+    "box": [
+      647,
+      209,
+      1276,
+      596
+    ],
+    "color": "#0000FF"
+  },
+  {
+    "id": "pendant-lamp",
+    "kind": "lamp",
+    "label": "Pendant lamp",
+    "motion": [
+      "swing"
+    ],
+    "anchor": [
+      1270,
+      199
+    ],
+    "box": [
+      1204,
+      99,
+      1277,
+      591
+    ],
+    "color": "#FFFF00"
+  },
+  {
+    "id": "paintbrush",
+    "kind": "tool",
+    "label": "Painter brush",
+    "motion": [
+      "swing"
+    ],
+    "anchor": [
+      349,
+      487
+    ],
+    "box": [
+      349,
+      85,
+      1347,
+      566
+    ],
+    "color": "#FF00FF"
+  },
+  {
+    "id": "paint-bucket",
+    "kind": "tool",
+    "label": "Paint bucket",
+    "motion": [
+      "swing"
+    ],
+    "anchor": [
+      324,
+      571
+    ],
+    "box": [
+      301,
+      523,
+      344,
+      625
+    ],
+    "color": "#00FFFF"
+  },
+  {
+    "id": "painter-head",
+    "kind": "limb",
+    "label": "Painter head",
+    "motion": [
+      "idle"
+    ],
+    "anchor": [
+      294,
+      500
+    ],
+    "box": [
+      269,
+      103,
+      1257,
+      590
+    ],
+    "color": "#FF8000"
+  },
+  {
+    "id": "painter-raised-arm",
+    "kind": "limb",
+    "label": "Painter raised arm",
+    "motion": [
+      "idle"
+    ],
+    "anchor": [
+      305,
+      515
+    ],
+    "box": [
+      296,
+      66,
+      1351,
+      668
+    ],
+    "color": "#8000FF"
+  },
+  {
+    "id": "painter-lowered-arm",
+    "kind": "limb",
+    "label": "Painter lowered arm",
+    "motion": [
+      "idle"
+    ],
+    "anchor": [
+      305,
+      519
+    ],
+    "box": [
+      300,
+      130,
+      1436,
+      589
+    ],
+    "color": "#00FF80"
+  },
+  {
+    "id": "operator-head",
+    "kind": "limb",
+    "label": "Operator head",
+    "motion": [
+      "idle"
+    ],
+    "anchor": [
+      1374,
+      706
+    ],
+    "box": [
+      409,
+      230,
+      1400,
+      704
+    ],
+    "color": "#FF0080"
+  },
+  {
+    "id": "operator-reaching-arm",
+    "kind": "limb",
+    "label": "Operator reaching arm",
+    "motion": [
+      "idle"
+    ],
+    "anchor": [
+      1350,
+      730
+    ],
+    "box": [
+      1204,
+      133,
+      1363,
+      756
+    ],
+    "color": "#80FF00"
+  },
+  {
+    "id": "upper-backdrop-sky",
+    "kind": "sky",
+    "label": "Upper backdrop sky",
+    "motion": [],
+    "box": [
+      305,
+      105,
+      1255,
+      608
+    ],
+    "color": "#0080FF"
+  },
+  {
+    "id": "lower-backdrop-sky",
+    "kind": "sky",
+    "label": "Lower backdrop sky",
+    "motion": [],
+    "box": [
+      374,
+      440,
+      996,
+      664
+    ],
+    "color": "#FFFFFF"
+  },
+  {
+    "id": "upper-cloud-bank",
+    "kind": "cloud",
+    "label": "Upper cloud bank",
+    "motion": [
+      "drift"
+    ],
+    "box": [
+      269,
+      52,
+      1417,
+      705
+    ],
+    "color": "#800000"
+  },
+  {
+    "id": "lower-cloud-bank",
+    "kind": "cloud",
+    "label": "Lower cloud bank",
+    "motion": [
+      "drift"
+    ],
+    "box": [
+      299,
+      44,
+      1458,
+      756
+    ],
+    "color": "#008000"
+  },
+  {
+    "id": "upper-backdrop-tree",
+    "kind": "plant",
+    "label": "Upper backdrop tree",
+    "outdoor": true,
+    "motion": [
+      "sway"
+    ],
+    "box": [
+      295,
+      69,
+      1366,
+      667
+    ],
+    "color": "#000080"
+  },
+  {
+    "id": "lower-backdrop-tree",
+    "kind": "plant",
+    "label": "Lower backdrop tree",
+    "outdoor": true,
+    "motion": [
+      "sway"
+    ],
+    "box": [
+      269,
+      54,
+      1456,
+      756
+    ],
+    "color": "#808000"
+  },
+  {
+    "id": "wall-electrical-cables",
+    "kind": "thread",
+    "label": "Wall electrical cables",
+    "motion": [
+      "pulse"
+    ],
+    "box": [
+      295,
+      52,
+      1414,
+      705
+    ],
+    "color": "#800080"
+  },
+  {
+    "id": "left-stage-rope",
+    "kind": "tool",
+    "label": "Left stage rope",
+    "motion": [
+      "swing"
+    ],
+    "anchor": [
+      1381,
+      83
+    ],
+    "box": [
+      300,
+      42,
+      1457,
+      739
+    ],
+    "color": "#008080"
+  },
+  {
+    "id": "middle-stage-rope",
+    "kind": "tool",
+    "label": "Middle stage rope",
+    "motion": [
+      "swing"
+    ],
+    "anchor": [
+      1409,
+      91
+    ],
+    "box": [
+      373,
+      52,
+      1416,
+      663
+    ],
+    "color": "#FF8080"
+  },
+  {
+    "id": "right-stage-rope",
+    "kind": "tool",
+    "label": "Right stage rope",
+    "motion": [
+      "swing"
+    ],
+    "anchor": [
+      1436,
+      164
+    ],
+    "box": [
+      373,
+      69,
+      1457,
+      739
+    ],
+    "color": "#80FF80"
+  }
+]

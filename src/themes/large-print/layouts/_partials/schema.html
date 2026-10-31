@@ -3,7 +3,8 @@
 
   The home page describes the site and its author; a post describes itself as
   a BlogPosting by that author. The author's profiles come from the social
-  links, minus the feed.
+  links, minus the feed. A post with authors in its front matter was written
+  by agents: they are its authors and Paolo its editor.
 */ -}}
 {{- $sameAs := slice -}}
 {{- range site.Params.social }}{{ if ne .name "RSS" }}{{ $sameAs = $sameAs | append .url }}{{ end }}{{ end -}}
@@ -32,6 +33,11 @@
     "dateModified" (.Lastmod.Format "2006-01-02T15:04:05Z07:00")
     "inLanguage" site.Language.Locale
     "author" $person -}}
+  {{- with .Params.authors -}}
+    {{- $agents := slice -}}
+    {{- range . }}{{ $agents = $agents | append (dict "@type" "SoftwareApplication" "name" .) }}{{ end -}}
+    {{- $data = merge $data (dict "author" $agents "editor" $person) -}}
+  {{- end -}}
   {{- with .Params.images }}{{ $data = merge $data (dict "image" (index . 0 | absURL)) }}{{ end -}}
   {{- with .Params.tags }}{{ $data = merge $data (dict "keywords" .) }}{{ end -}}
 {{- end -}}

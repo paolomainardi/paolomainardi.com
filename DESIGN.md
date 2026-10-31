@@ -274,6 +274,9 @@ components:
   series-line:
     textColor: "{colors.ink-faint}"
     typography: "{typography.meta}"
+  authors-line:
+    textColor: "{colors.ink-faint}"
+    typography: "{typography.meta}"
   series-title:
     textColor: "{colors.ink}"
     typography: "{typography.h4}"
@@ -533,6 +536,11 @@ it then points at the previous and next published parts, labelled "Part 2" and
 post under its usual label. The planned total comes from `data/series.yaml`, so
 "of 16" is right before the parts exist. A post outside a series renders
 exactly as before.
+
+**Authors.** A post written by agents names them under the title, after the
+series line and in the same meta style: "Written by Claude and Codex, edited by
+Paolo Mainardi". Its structured data lists the agents as authors and Paolo as
+editor. Posts Paolo writes carry no such line.
 
 **Related.** Under the series list, or under the tags when there is none, up
 to three posts that share tags with this one, as leader rows with the month

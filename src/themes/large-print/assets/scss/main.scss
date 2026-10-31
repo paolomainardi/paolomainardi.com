@@ -1159,7 +1159,8 @@ body:has(.container.home) .navigation .navigation-title {
 
   // The series line under the title reads like the kicker above it.
   .kicker,
-  .series-line {
+  .series-line,
+  .authors-line {
     font-size: 1.6rem;
     line-height: 1.5;
     color: var(--ink-3);
@@ -1213,7 +1214,8 @@ body:has(.container.home) .navigation .navigation-title {
     margin-top: 1.2rem;
   }
 
-  .series-line {
+  .series-line,
+  .authors-line {
     margin: 1.6rem 0 0;
   }
 }
