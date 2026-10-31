@@ -1,0 +1,11 @@
+[
+  {
+    "id": "painter-palette-arm",
+    "kind": "limb",
+    "label": "Palette arm",
+    "motion": ["idle"],
+    "box": [189, 508, 275, 559],
+    "anchor": [268, 516],
+    "color": "#FF0000"
+  }
+]
