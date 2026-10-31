@@ -164,6 +164,11 @@ components:
     backgroundColor: "{colors.code-wash}"
     rounded: "{rounded.md}"
     padding: 14px
+  compare-handle:
+    backgroundColor: "{colors.paper}"
+    textColor: "{colors.ink}"
+    width: 40px
+    height: 40px
   table-head:
     textColor: "{colors.ink-muted}"
     typography: "{typography.label}"
@@ -272,6 +277,9 @@ components:
     textColor: "{colors.ink-muted}"
     height: 14px
   series-line:
+    textColor: "{colors.ink-faint}"
+    typography: "{typography.meta}"
+  authors-line:
     textColor: "{colors.ink-faint}"
     typography: "{typography.meta}"
   series-title:
@@ -493,6 +501,20 @@ On a touch screen the rule is looser: any image with a larger copy opens on
 tap, even when the overlay is no wider than the page, because tapping and then
 pinching into the detail is how a phone reader looks at a screenshot.
 
+**Image comparison.** The `compare` shortcode: two images of the same frame in
+one figure mat, split by a vertical hairline in paper with a round grip, 40px,
+in the middle. The first image shows left of the split, the second right of it,
+and a small uppercase label on paper names each in its top corner. The reader
+drags the grip, or taps anywhere on the image, or uses the arrow keys; the
+focus ring sits on the grip, in blush. It stays split down the middle without
+the script. It moves only when the reader moves it, so it is the way to show a
+change of state, such as day and night, without animating the text.
+
+**Clip.** The `video` shortcode: a short silent screen recording in the same mat
+as an image, with the browser's own controls and a poster frame. It never plays
+on its own; the reader presses play, so it does not break the rule against
+motion in the text.
+
 **Table.** Unnumbered, like listings and figures. Three rules and nothing
 else: one above the head, one under it, one under the last row, with rows
 separated by space. Column heads are small uppercase labels. A column whose
@@ -533,6 +555,12 @@ it then points at the previous and next published parts, labelled "Part 2" and
 post under its usual label. The planned total comes from `data/series.yaml`, so
 "of 16" is right before the parts exist. A post outside a series renders
 exactly as before.
+
+**Authors.** A post written by agents names them under the title, after the
+series line and in the same meta style: "Written by Claude and Codex, edited by
+Paolo Mainardi", and the Markdown copy of the post says the same. Structured
+data keeps Paolo as the author, since schema.org takes only a person or an
+organisation there. Posts Paolo writes carry no such line.
 
 **Related.** Under the series list, or under the tags when there is none, up
 to three posts that share tags with this one, as leader rows with the month

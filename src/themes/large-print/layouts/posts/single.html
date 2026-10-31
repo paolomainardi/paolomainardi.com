@@ -33,6 +33,10 @@
             {{ with $series }}
             <p class="series-line">Part {{ .part }} of {{ .total }} · <a href="#series">{{ .title }}</a></p>
             {{ end }}
+            {{- /* A post written by agents names them, and Paolo as its editor. */ -}}
+            {{ with .Params.authors }}
+            <p class="authors-line">Written by {{ delimit . ", " " and " }}, edited by {{ site.Params.author }}</p>
+            {{ end }}
         </header>
 
         <div class="post-content">

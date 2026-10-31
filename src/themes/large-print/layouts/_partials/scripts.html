@@ -1,9 +1,9 @@
 {{- /*
   The colour scheme toggle, the copy button, the reading aids, the image
-  overlay and the animated cover, concatenated into one local file and
+  overlay, the animated cover and the image comparison, concatenated into one local file and
   deferred, so they never hold up the first paint. Each script is an IIFE that returns early when the page has nothing for it to do.
 */ -}}
-{{- $js := slice (resources.Get "js/scheme.js") (resources.Get "js/copy-code.js") (resources.Get "js/reading.js") (resources.Get "js/zoom.js") (resources.Get "js/motion.js") | resources.Concat "js/site.js" -}}
+{{- $js := slice (resources.Get "js/scheme.js") (resources.Get "js/copy-code.js") (resources.Get "js/reading.js") (resources.Get "js/zoom.js") (resources.Get "js/motion.js") (resources.Get "js/compare.js") | resources.Concat "js/site.js" -}}
 {{- if hugo.IsProduction }}
 {{- $js = $js | minify | fingerprint }}
 <script defer src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" crossorigin="anonymous"></script>

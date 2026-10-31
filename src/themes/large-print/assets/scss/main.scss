@@ -1159,7 +1159,8 @@ body:has(.container.home) .navigation .navigation-title {
 
   // The series line under the title reads like the kicker above it.
   .kicker,
-  .series-line {
+  .series-line,
+  .authors-line {
     font-size: 1.6rem;
     line-height: 1.5;
     color: var(--ink-3);
@@ -1213,7 +1214,8 @@ body:has(.container.home) .navigation .navigation-title {
     margin-top: 1.2rem;
   }
 
-  .series-line {
+  .series-line,
+  .authors-line {
     margin: 1.6rem 0 0;
   }
 }
@@ -1774,6 +1776,124 @@ body:has(.container.home) .navigation .navigation-title {
     }
   }
 
+}
+
+// A clip the reader starts (the video shortcode), in the same mat as an image.
+.content figure.clip video {
+  display: block;
+  width: 100%;
+  height: auto;
+  padding: 1.4rem;
+  background-color: var(--code-wash);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+
+  @media only screen and (max-width: 559px) {
+    padding: 0.8rem;
+  }
+}
+
+// Two images of one frame, split by a handle the reader drags (the compare
+// shortcode). The first image is clipped to the left of the split; the range
+// input lies over both, invisible, so a pointer, a finger or the arrow keys
+// move it, and the handle and its grip are drawn where it points.
+.content .compare-stage {
+  --mat: 1.4rem;
+  position: relative;
+  padding: var(--mat);
+  background-color: var(--code-wash);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+
+  @media only screen and (max-width: 559px) {
+    --mat: 0.8rem;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    padding: 0;
+    background: none;
+    border: 0;
+    border-radius: 2px;
+  }
+
+  .compare-before {
+    position: absolute;
+    top: var(--mat);
+    left: var(--mat);
+    width: calc(100% - 2 * var(--mat));
+    height: calc(100% - 2 * var(--mat));
+    clip-path: inset(0 calc(100% - var(--split) * 1%) 0 0);
+  }
+}
+
+.compare-range {
+  position: absolute;
+  top: var(--mat);
+  left: var(--mat);
+  width: calc(100% - 2 * var(--mat));
+  height: calc(100% - 2 * var(--mat));
+  margin: 0;
+  opacity: 0;
+  cursor: ew-resize;
+  touch-action: pan-y;
+  appearance: none;
+}
+
+.compare-handle {
+  position: absolute;
+  top: var(--mat);
+  bottom: var(--mat);
+  left: calc(var(--mat) + (100% - 2 * var(--mat)) * var(--split) / 100);
+  width: 2px;
+  margin-left: -1px;
+  background-color: var(--paper);
+  box-shadow: 0 0 0 1px var(--ink-3);
+  pointer-events: none;
+
+  &::after {
+    content: "\2039\00a0\203a";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4rem;
+    height: 4rem;
+    transform: translate(-50%, -50%);
+    border: 1px solid var(--ink-3);
+    border-radius: 50%;
+    background-color: var(--paper);
+    color: var(--ink);
+    font-size: 2rem;
+    line-height: 3.7rem;
+    text-align: center;
+  }
+}
+
+.compare-range:focus-visible ~ .compare-handle::after {
+  outline: 2px solid var(--blush);
+  outline-offset: 2px;
+}
+
+.compare-label {
+  position: absolute;
+  top: calc(var(--mat) + 1rem);
+  padding: 0.2rem 0.8rem;
+  border-radius: 2px;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-size: 1.3rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.compare-label-before {
+  left: calc(var(--mat) + 1rem);
+}
+
+.compare-label-after {
+  right: calc(var(--mat) + 1rem);
 }
 
 // The caption is the apparatus for a figure. It sits in the outer margin

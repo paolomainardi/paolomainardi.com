@@ -133,6 +133,13 @@ Run `just` or `just --list` to see all recipes.
   come from shared tags, configured under `[related]`.
 - **Margin apparatus shortcodes.** `sidenote` (numbered, inline), `marginal`
   (unnumbered block) and `sparkline` (inline numbers, `{{< sparkline "3,5,1" >}}`).
+- **Image comparison.** `compare` stacks two images of the same size with a
+  handle the reader drags between them: `before`, `after`, `before-label`,
+  `after-label`, `alt`, and the caption inside. Use it for a day and a night
+  drawing, or a before and an after, instead of an animation.
+- **Clips.** `video` shows a short silent clip the reader starts, never on
+  autoplay: `webm`, `mp4`, `poster` (which also sets the size), `label`, and
+  the caption inside.
 
 ### Where things live
 

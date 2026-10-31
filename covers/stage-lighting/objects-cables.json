@@ -1,0 +1,17 @@
+[
+  {
+    "id": "desk-cables",
+    "kind": "thread",
+    "label": "Cables",
+    "motion": [
+      "pulse"
+    ],
+    "box": [
+      1237,
+      78,
+      1361,
+      654
+    ],
+    "color": "#FF0000"
+  }
+]
