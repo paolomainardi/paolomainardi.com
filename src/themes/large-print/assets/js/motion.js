@@ -1,29 +1,284 @@
-// Animated covers. A cover with a motion map is redrawn on a WebGL canvas laid
-// over the image: plants sway, lamps swing and glow, a light runs along
-// threads, leaves fall, water ripples, floating things bob, clouds drift,
-// lighthouse beams sweep, and at night the windows outside go dark and come back.
+// Animated covers. A cover built by scripts/cover-engine is redrawn on a WebGL
+// canvas laid over the image. The shader bends the picture (plants sway, lamps
+// swing, water rolls, things float, clouds drift, leaves fall) and reads every
+// pixel from the drawings Codex made of the same scene: lit, unlit, during a
+// lightning flash. Lights breathe or switch on a pattern, the light comes in
+// when the cover is first shown, and the reader can switch the lamps.
+//
+// The shader is assembled from the effects a cover uses, listed in its
+// motion.json; each effect below brings its own shader code, its settings and
+// its update on every frame. docs/cover-engine.md describes how to add one.
+//
 // The image underneath stays the page's image, so nothing changes when the
 // reader asks for reduced motion, WebGL is missing, or the script fails.
-//
-// The map is built by scripts/motion-map from the cover, twice its height. Top
-// half: R the distance along a thread, G wind, B the parts that swing. Bottom
-// half: R water, G floating things, B drift. data-motion holds the rest.
 (function () {
   "use strict";
 
   var img = document.querySelector("img[data-motion-map]");
   if (!img) return;
+  var root = document.documentElement;
+  // The cover waits hidden for its unlit drawing when its light comes in; whatever
+  // happens next, it is shown again.
+  function release() {
+    root.classList.remove("motion-wait");
+  }
   // Why the cover is still, for whoever is looking at the page's markup.
   function state(s) {
     img.setAttribute("data-motion-state", s);
   }
-  if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return state("reduced motion");
-  if (!window.WebGLRenderingContext) return state("no WebGL");
+  if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return release(), state("reduced motion");
+  if (!window.WebGLRenderingContext) return release(), state("no WebGL");
 
-  var MAX = { swing: 4, glow: 6, fall: 4, twinkle: 12, float: 3, beam: 4 };
+  var data;
+  try {
+    data = JSON.parse(img.getAttribute("data-motion"));
+  } catch (e) {
+    return release(), state("no motion data");
+  }
 
-  var VS =
-    "attribute vec2 p; varying vec2 uv;" +
+  var W = data.size[0], H = data.size[1];
+  var on = {};
+  (data.effects || []).forEach(function (e) { on[e] = true; });
+  var list = {
+    swing: data.swing || [], float: data.float || [], fall: data.fall || [], light: data.lights || [],
+    twinkle: data.twinkle || [], beam: data.beam || []
+  };
+  // GLSL arrays need a size of at least one; the counts below say how many are used.
+  function size(name) { return Math.max(list[name].length, 1); }
+  function flat(items, pick) {
+    var out = [];
+    items.forEach(function (x, i) { out.push.apply(out, pick(x, i)); });
+    return out;
+  }
+  function rnd(i, n) { var x = Math.sin(i * 127.1 + n * 311.7) * 43758.5453; return x - Math.floor(x); }
+  function smooth(x) { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); }
+
+  // Timings of the light: it comes in after HOLD seconds, over ENTRY seconds.
+  var HOLD = 0.6, ENTRY = 2;
+  var entry = data.entry;
+  var lightsK = data.lightsK || {}, rainK = data.rainK || {}, flashK = data.flashK || {};
+
+  // ---------------------------------------------------------------------------
+  // Effects. displace runs before the picture is read and moves src, the point
+  // the pixel is read from; color runs after and changes col. They run in the
+  // order of this list.
+  var EFFECTS = [
+    {
+      name: "water",
+      displace: "src += n.r * vec2(1.6 * sin(t * 0.9 + px.y * 0.06), 4.0 * sin(t * 1.1 - px.x * 0.022 + px.y * 0.035) + 1.2 * sin(t * 2.3 - px.x * 0.07));"
+    },
+    {
+      name: "drift",
+      // the clouds slide one way, then back, over about fifty seconds
+      displace: "src.x -= n.b * 22.0 * sin(t * 0.125);"
+    },
+    {
+      name: "float",
+      decl: function () { return "uniform vec4 floatA[" + size("float") + "]; uniform vec4 floatBox[" + size("float") + "];"; },
+      displace: [
+        "for (int i = 0; i < " + size("float") + "; i++) {",
+        "  vec4 b = floatBox[i]; vec2 c = floatA[i].xy; float f = float(i);",
+        "  float inside = step(b.x - 16.0, px.x) * step(px.x, b.z + 16.0) * step(b.y - 16.0, px.y) * step(px.y, b.w + 16.0);",
+        "  float bob = floatA[i].z * 6.0 * sin(t * 0.9 + f * 1.9);",
+        "  float rock = floatA[i].z * 0.05 * sin(t * 0.7 + f);",
+        "  src = mix(src, c + rot(px - vec2(0.0, bob) - c, -rock), n.g * inside);",
+        "}"
+      ].join("\n"),
+      setup: function (c) {
+        c.gl.uniform4fv(c.u("floatA"), flat(list.float, function (f) { return [f.center[0], f.center[1], f.amp, 0]; }));
+        c.gl.uniform4fv(c.u("floatBox"), flat(list.float, function (f) { return f.box; }));
+      }
+    },
+    {
+      name: "wind",
+      // sideways, in two slow waves under a gust
+      displace: [
+        "float gust = 0.6 + 0.4 * sin(t * 0.35);",
+        "src.x -= m.g * gust * (2.4 * sin(t * 1.4 + px.y * 0.025) + 0.8 * sin(t * 3.1 + px.y * 0.07 + px.x * 0.03));"
+      ].join("\n")
+    },
+    {
+      name: "turn",
+      // lamps and tools swing about their hook; limbs make small, irregular moves
+      displace: [
+        "for (int i = 0; i < " + size("swing") + "; i++) {",
+        "  vec4 b = swingBox[i];",
+        "  float inside = step(b.x - 12.0, px.x) * step(px.x, b.z + 12.0) * step(b.y - 4.0, px.y) * step(px.y, b.w + 12.0);",
+        "  src = mix(src, swingA[i].xy + rot(px - swingA[i].xy, -swing(i)), m.b * inside);",
+        "}"
+      ].join("\n")
+    },
+    {
+      name: "glass",
+      // drops on the glass slide slowly down and bend the view through them
+      decl: function () { return "uniform sampler2D dropsImg; uniform float dropsOn;"; },
+      displace: [
+        "float drop = 0.0;",
+        "if (dropsOn > 0.5 && glass > 0.0) {",
+        "  vec2 dq = fract(uv * vec2(3.0, 2.0) + vec2(0.0, -t * 0.018));",
+        "  vec2 e = vec2(1.5 / 512.0, 0.0);",
+        "  drop = texture2D(dropsImg, dq).r;",
+        "  src += vec2(texture2D(dropsImg, dq + e.xy).r - texture2D(dropsImg, dq - e.xy).r,",
+        "              texture2D(dropsImg, dq + e.yx).r - texture2D(dropsImg, dq - e.yx).r) * 14.0 * glass;",
+        "}"
+      ].join("\n"),
+      color: "col = mix(col + drop * 0.22 * glass * (1.0 - col), col + drop * 0.3 * glass * (1.0 - col), night);",
+      textures: [{ unit: 5, name: "dropsImg", attr: "data-motion-drops", ready: "dropsOn" }]
+    },
+    {
+      name: "lights",
+      // A light lets its unlit drawing in around it as it goes out (level 1), and a big
+      // light adds a warm glow when fully lit; under the pointer a lamp brightens.
+      // The light entry is the same unlit drawing, swept away by a soft band.
+      decl: function () {
+        return "uniform sampler2D unlit; uniform float edge; uniform vec2 entryDir;" +
+          "uniform vec4 lightA[" + size("light") + "]; uniform vec4 lightB[" + size("light") + "]; uniform int nLight;";
+      },
+      color: [
+        "vec3 off = texture2D(unlit, suv).rgb;",
+        "float len = abs(size.x * entryDir.x) + abs(size.y * entryDir.y);",
+        "float dark = 1.0 - smoothstep(edge - 0.45, edge, dot(px - size * 0.5, entryDir) / len + 0.5);",
+        "vec3 glow = vec3(0.0); float hov = 0.0;",
+        "for (int i = 0; i < " + size("light") + "; i++) {",
+        "  if (i >= nLight) break;",
+        "  vec4 B = lightB[i];",
+        "  float big = mod(B.y, 2.0), hover = floor(B.y / 2.0);",
+        "  vec2 pc = follow(lightA[i].xy, B.z);",
+        "  float r = length((px - pc) / lightA[i].zw);",
+        "  float fall = big > 0.5 ? mix(1.0, 0.55, smoothstep(0.0, 0.45, r)) * (1.0 - smoothstep(0.45, 1.0, r)) : 1.0 - smoothstep(0.7, 1.0, r);",
+        "  dark = max(dark, B.x * fall);",
+        "  glow += big * (1.0 - B.x) * (1.0 - smoothstep(0.0, 0.9, r)) * B.w * mix(vec3(0.0, 0.07, 0.24), vec3(0.55, 0.37, 0.2), night);",
+        "  hov += hover * (1.0 - smoothstep(0.0, 1.0, length((px - pc) / max(lightA[i].zw * 0.7, vec2(40.0)))));",
+        "}",
+        "col = mix(col, off, clamp(dark, 0.0, 1.0));",
+        "col = mix(col * (1.0 - glow), 1.0 - (1.0 - col) * (1.0 - glow), night);",
+        "col = 1.0 - (1.0 - col) * (1.0 - clamp(hov, 0.0, 1.0) * vec3(0.55, 0.42, 0.22));"
+      ].join("\n"),
+      textures: [{ unit: 2, name: "unlit", attr: "data-motion-unlit", scheme: true, first: true }],
+      setup: function (c) {
+        c.gl.uniform1i(c.u("nLight"), list.light.length);
+        var a = ((entry && entry.from) || 28) * Math.PI / 180;
+        c.gl.uniform2f(c.u("entryDir"), Math.cos(a), -Math.sin(a));
+        c.gl.uniform4fv(c.u("lightA"), flat(list.light, function (l) { return l.pool; }));
+      },
+      frame: function (c, s) {
+        var k = Math.min(1, Math.max(0, (s - HOLD) / ENTRY));
+        var ease = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+        c.gl.uniform1f(c.u("edge"), entry ? 1.4 - ease * 1.85 : -1);
+        if (list.light.length) {
+          var fade = entry ? Math.min(1, Math.max(0, (s - HOLD - ENTRY) / 1.5)) : 1;
+          var glowK = (lightsK.glow || 1) * fade * (c.night ? 0.95 : 0.6);
+          c.gl.uniform4fv(c.u("lightB"), flat(list.light, function (l, i) {
+            return [level(i, s, fade), (l.big ? 1 : 0) + (switches[i].hover ? 2 : 0), l.swing, glowK];
+          }));
+        }
+      }
+    },
+    {
+      name: "flash",
+      // a lightning flash: the flash drawing shows for a double flicker, then fades
+      decl: function () { return "uniform sampler2D flashImg; uniform float flash;"; },
+      color: "if (flash > 0.0) col = mix(col, texture2D(flashImg, suv).rgb, flash);",
+      textures: [{ unit: 3, name: "flashImg", attr: "data-motion-flash", scheme: true, ready: "flashOn" }],
+      frame: function (c, s) {
+        c.gl.uniform1f(c.u("flash"), c.ready.flashOn ? lightning(s) : 0);
+      }
+    },
+    {
+      name: "rain",
+      // rain falls in the sky of the storm, darker streaks by day, light ones by night
+      decl: function () { return "uniform sampler2D rainImg; uniform vec2 rainAt; uniform float rainOp, rainScale;"; },
+      color: [
+        "if (sky > 0.0) {",
+        "  float rn = texture2D(rainImg, fract(uv * rainScale + rainAt)).r;",
+        "  col = mix(col * (1.0 - rn * 0.9 * rainOp * sky), col + rn * rainOp * sky * (1.0 - col), night);",
+        "}"
+      ].join("\n"),
+      textures: [{ unit: 4, name: "rainImg", attr: "data-motion-rain", ready: "rainOn" }],
+      setup: function (c) {
+        c.gl.uniform1f(c.u("rainScale"), rainK.scale || 2);
+      },
+      frame: function (c, s) {
+        var sp = rainK.speed || 1;
+        c.gl.uniform1f(c.u("rainOp"), c.ready.rainOn ? rainK.opacity || (c.night ? 0.5 : 0.45) : 0);
+        c.gl.uniform2f(c.u("rainAt"), (s * 0.21 * sp) % 1, -(s * 1.17 * sp) % 1);
+      }
+    },
+    {
+      name: "twinkle",
+      // at night the lit windows outside go dark and come back, one at a time
+      decl: function () { return "uniform vec4 twinkle[" + size("twinkle") + "];"; },
+      color: [
+        "for (int i = 0; i < " + size("twinkle") + "; i++) {",
+        "  vec4 w = twinkle[i];",
+        "  float cyc = t * 0.05 + w.w * 7.0, ph = fract(cyc);",
+        "  float gone = smoothstep(0.0, 0.03, ph) * (1.0 - smoothstep(0.25, 0.28, ph)) * step(0.5, fract(sin(floor(cyc) * 12.9898 + w.w * 78.2) * 43758.5));",
+        "  float near = 1.0 - smoothstep(w.z * 0.5, w.z, length(px - w.xy));",
+        "  float lit = smoothstep(0.35, 0.6, dot(col, vec3(0.3, 0.59, 0.11)));",
+        "  col = mix(col, col * vec3(0.3, 0.32, 0.45), gone * near * lit * night);",
+        "}"
+      ].join("\n"),
+      setup: function (c) { c.gl.uniform4fv(c.u("twinkle"), flat(list.twinkle, function (w) { return w; })); }
+    },
+    {
+      name: "beam",
+      // seen from the side, a beam reaches furthest when it points sideways and flashes
+      // when it turns towards the reader
+      decl: function () { return "uniform vec4 beam[" + size("beam") + "];"; },
+      color: [
+        "for (int i = 0; i < " + size("beam") + "; i++) {",
+        "  vec4 bm = beam[i];",
+        "  float th = t * 0.55 + bm.w * 6.2832;",
+        "  vec2 d = px - bm.xy;",
+        "  float along = d.x * sign(cos(th));",
+        "  float reach = bm.z * abs(cos(th)) + 20.0;",
+        "  float spread = 2.0 + max(along, 0.0) * 0.06;",
+        "  float cone = smoothstep(0.0, 14.0, along) * (1.0 - smoothstep(spread * 0.5, spread, abs(d.y))) * exp(-max(along, 0.0) / reach);",
+        "  float fl = pow(max(sin(th), 0.0), 12.0) * exp(-dot(d, d) / 500.0);",
+        "  vec3 day = mix(col, col * vec3(1.04, 1.0, 0.9) + vec3(0.06, 0.05, 0.02), cone * 0.45) + fl * vec3(0.25, 0.22, 0.15);",
+        "  col = mix(day, col + (cone * 0.4 + fl * 0.9) * vec3(1.0, 0.85, 0.55), night);",
+        "}"
+      ].join("\n"),
+      setup: function (c) { c.gl.uniform4fv(c.u("beam"), flat(list.beam, function (b) { return b; })); }
+    },
+    {
+      name: "pulse",
+      // a light runs along the threads, away from where they start
+      color: [
+        "float wave = fract(m.r * 2.5 + t * 0.22);",
+        "float pl = smoothstep(0.0, 0.08, wave) * (1.0 - smoothstep(0.08, 0.22, wave));",
+        "col = mix(col, mix(vec3(1.0, 0.82, 0.86), vec3(1.0, 0.65, 0.75), night), step(1.5 / 255.0, m.r) * pl * 0.75);"
+      ].join("\n")
+    },
+    {
+      name: "fall",
+      // a leaf drifts down from its branch, turning, and fades on the floor
+      decl: function () { return "uniform vec4 fallSprite[" + size("fall") + "]; uniform vec4 fallPath[" + size("fall") + "];"; },
+      color: [
+        "for (int i = 0; i < " + size("fall") + "; i++) {",
+        "  vec4 sp = fallSprite[i]; vec4 path = fallPath[i];",
+        "  float ph = fract(t * 0.06 + float(i) * 0.37);",
+        "  vec2 pos = vec2(path.x + path.w * sin(ph * 5.0 + float(i) * 2.0) + ph * 40.0, mix(path.y, path.z, ph));",
+        "  vec2 q = (sp.xy + sp.zw) * 0.5 + rot(px - pos, -0.8 * sin(ph * 7.0 + float(i)));",
+        "  if (q.x > sp.x && q.x < sp.z && q.y > sp.y && q.y < sp.w) {",
+        "    vec3 s = texture2D(lit, q / size).rgb;",
+        "    vec3 bg = texture2D(lit, vec2(sp.x, sp.w) / size).rgb;",
+        "    col = mix(col, s, smoothstep(0.06, 0.2, length(s - bg)) * smoothstep(0.0, 0.06, ph) * (1.0 - smoothstep(0.88, 1.0, ph)));",
+        "  }",
+        "}"
+      ].join("\n"),
+      setup: function (c) {
+        c.gl.uniform4fv(c.u("fallSprite"), flat(list.fall, function (f) { return f.sprite; }));
+        c.gl.uniform4fv(c.u("fallPath"), flat(list.fall, function (f) { return [f.from[0], f.from[1], f.floor, f.drift || 20]; }));
+      }
+    }
+  ].filter(function (e) { return on[e.name]; });
+
+  function part(key) {
+    return EFFECTS.map(function (e) { return typeof e[key] === "function" ? e[key]() : e[key] || ""; }).join("\n");
+  }
+
+  var VS = "attribute vec2 p; varying vec2 uv;" +
     "void main(){ uv = vec2(p.x * 0.5 + 0.5, 0.5 - p.y * 0.5); gl_Position = vec4(p, 0.0, 1.0); }";
 
   var FS = [
@@ -34,138 +289,114 @@
     "precision mediump float;",
     "#endif",
     "varying vec2 uv;",
-    "uniform sampler2D img, map;",
-    "uniform float t, night, halo;",
+    "uniform sampler2D lit, map;",
+    "uniform float t, night;",
     "uniform vec2 size;",
-    "uniform int nSwing, nGlow, nFall, nTwinkle, nFloat, nBeam;",
-    "uniform vec4 beam[" + MAX.beam + "];",
-    "uniform vec4 floatA[" + MAX.float + "];",
-    "uniform vec4 floatBox[" + MAX.float + "];",
-    // Packed four to a slot: some phones allow few uniform slots.
-    "uniform vec4 swingA[" + MAX.swing + "];",
-    "uniform vec4 swingBox[" + MAX.swing + "];",
-    "uniform vec4 glowA[" + MAX.glow + "];",
-    "uniform vec4 fallSprite[" + MAX.fall + "];",
-    "uniform vec4 fallPath[" + MAX.fall + "];",
-    "uniform vec4 twinkle[" + MAX.twinkle + "];",
+    "uniform vec4 swingA[" + size("swing") + "]; uniform vec4 swingBox[" + size("swing") + "];",
     "vec2 rot(vec2 v, float a){ float c = cos(a), s = sin(a); return vec2(c * v.x - s * v.y, s * v.x + c * v.y); }",
     "float swing(int i){",
-    "  float a = 0.0;",
-    "  for (int j = 0; j < " + MAX.swing + "; j++) { if (j == i) a = swingA[j].z; }",
+    "  vec4 s = vec4(0.0);",
+    "  for (int j = 0; j < " + size("swing") + "; j++) { if (j == i) s = swingA[j]; }",
     "  float f = float(i);",
-    "  return a * 0.055 * sin(t * (1.1 + 0.15 * f) + f * 2.1) * (0.7 + 0.3 * sin(t * 0.23 + f));",
+    "  float sw = 0.055 * sin(t * (1.1 + 0.15 * f) + f * 2.1) * (0.7 + 0.3 * sin(t * 0.23 + f));",
+    // a limb moves now and then, small and irregular
+    "  float idle = 0.055 * (0.6 * sin(t * 0.7 + f * 1.3) + 0.4 * sin(t * 1.9 + f * 2.7)) * smoothstep(-0.2, 0.6, sin(t * 0.21 + f));",
+    "  return s.z * mix(sw, idle, s.w);",
     "}",
+    // a light hung from a lamp follows its swing
+    "vec2 follow(vec2 at, float lamp){",
+    "  for (int j = 0; j < " + size("swing") + "; j++) { if (float(j) == lamp) at = swingA[j].xy + rot(at - swingA[j].xy, swing(j)); }",
+    "  return at;",
+    "}",
+    part("decl"),
     "void main(){",
     "  vec2 px = uv * size;",
-    "  vec3 m = texture2D(map, vec2(uv.x, uv.y * 0.5)).rgb;",
-    "  vec3 n = texture2D(map, vec2(uv.x, 0.5 + uv.y * 0.5)).rgb;",
+    // the map is three bands: thread, wind, turn; water, float, drift; sky, glass
+    "  vec3 m = texture2D(map, vec2(uv.x, uv.y / 3.0)).rgb;",
+    "  vec3 n = texture2D(map, vec2(uv.x, (1.0 + uv.y) / 3.0)).rgb;",
+    "  vec2 b3 = texture2D(map, vec2(uv.x, (2.0 + uv.y) / 3.0)).rg;",
+    "  float sky = b3.x, glass = b3.y;",
     "  vec2 src = px;",
-    // Water: swells rolling across, mostly up and down, with a little chop.
-    "  src += n.r * vec2(1.6 * sin(t * 0.9 + px.y * 0.06), 4.0 * sin(t * 1.1 - px.x * 0.022 + px.y * 0.035) + 1.2 * sin(t * 2.3 - px.x * 0.07));",
-    // Drift: the clouds slide one way, then back, over about fifty seconds.
-    "  src.x -= n.b * 22.0 * sin(t * 0.125);",
-    // Floating things bob and rock about their middle.
-    "  for (int i = 0; i < " + MAX.float + "; i++) {",
-    "    if (i >= nFloat) break;",
-    "    vec4 b = floatBox[i];",
-    "    vec2 c = floatA[i].xy;",
-    "    float f = float(i);",
-    "    float inside = step(b.x - 16.0, px.x) * step(px.x, b.z + 16.0) * step(b.y - 16.0, px.y) * step(px.y, b.w + 16.0);",
-    "    float bob = floatA[i].z * 6.0 * sin(t * 0.9 + f * 1.9);",
-    "    float rock = floatA[i].z * 0.05 * sin(t * 0.7 + f);",
-    "    src = mix(src, c + rot(px - vec2(0.0, bob) - c, -rock), n.g * inside);",
-    "  }",
-    // Wind: sideways, in two slow waves under a gust.
-    "  float gust = 0.6 + 0.4 * sin(t * 0.35);",
-    "  src.x -= m.g * gust * (2.4 * sin(t * 1.4 + px.y * 0.025) + 0.8 * sin(t * 3.1 + px.y * 0.07 + px.x * 0.03));",
-    // Swinging parts turn about their anchor.
-    "  for (int i = 0; i < " + MAX.swing + "; i++) {",
-    "    if (i >= nSwing) break;",
-    "    vec4 b = swingBox[i];",
-    "    float inside = step(b.x - 12.0, px.x) * step(px.x, b.z + 12.0) * step(b.y - 4.0, px.y) * step(px.y, b.w + 12.0);",
-    "    src = mix(src, swingA[i].xy + rot(px - swingA[i].xy, -swing(i)), m.b * inside);",
-    "  }",
-    "  vec3 col = texture2D(img, src / size).rgb;",
-    // A light runs along the threads towards the point where they meet.
-    "  float wave = fract(m.r * 2.5 + t * 0.22);",
-    "  float pulse = smoothstep(0.0, 0.08, wave) * (1.0 - smoothstep(0.08, 0.22, wave));",
-    "  col = mix(col, mix(vec3(1.0, 0.82, 0.86), vec3(1.0, 0.65, 0.75), night), step(1.5 / 255.0, m.r) * pulse * 0.75);",
-    // Lights breathe: by day a warm tint, by night added light.
-    "  for (int i = 0; i < " + MAX.glow + "; i++) {",
-    "    if (i >= nGlow) break;",
-    "    vec2 at = glowA[i].xy;",
-    // w holds the lamp the light hangs from, plus one, times ten, plus the strength.
-    "    float lamp = floor(glowA[i].w / 10.0) - 1.0;",
-    "    for (int j = 0; j < " + MAX.swing + "; j++) {",
-    "      if (float(j) == lamp) at = swingA[j].xy + rot(at - swingA[j].xy, swing(j));",
-    "    }",
-    "    vec2 d = px - at;",
-    "    float r = length(d * vec2(1.0, 0.8));",
-    // A halo light that does not swing shines all round and breathes deeper.
-    "    float allRound = halo * step(lamp, -0.5);",
-    "    float glow = exp(-r * r / (glowA[i].z * glowA[i].z)) * mix(smoothstep(-0.25, 0.2, d.y / glowA[i].z), 1.0, allRound);",
-    "    float k = mod(glowA[i].w, 10.0) * (mix(0.7, 0.6, allRound) + mix(0.2, 0.4, allRound) * sin(t * 0.9 + float(i) * 1.3) + 0.03 * sin(t * 11.0 + float(i) * 7.0));",
-    "    float spot = exp(-dot(d, d) / 60.0);",
-    "    vec3 day = mix(col, col * vec3(1.08, 0.96, 0.74) + vec3(0.07, 0.045, 0.0), min(glow * k * 0.7, 1.0)) + spot * k * vec3(0.2, 0.16, 0.07);",
-    "    vec3 dark = col + (glow * 0.14 + spot * 0.3) * k * vec3(1.0, 0.72, 0.35);",
-    "    col = mix(day, dark, night);",
-    "  }",
-    // Lighthouse beams sweep round: seen from the side, a beam reaches furthest
-    // when it points sideways and flashes when it turns towards the reader.
-    "  for (int i = 0; i < " + MAX.beam + "; i++) {",
-    "    if (i >= nBeam) break;",
-    "    vec4 bm = beam[i];",
-    "    float th = t * 0.55 + bm.w * 6.2832;",
-    "    vec2 d = px - bm.xy;",
-    "    float along = d.x * sign(cos(th));",
-    "    float reach = bm.z * abs(cos(th)) + 20.0;",
-    "    float spread = 2.0 + max(along, 0.0) * 0.06;",
-    "    float cone = smoothstep(0.0, 14.0, along) * (1.0 - smoothstep(spread * 0.5, spread, abs(d.y))) * exp(-max(along, 0.0) / reach);",
-    "    float flash = pow(max(sin(th), 0.0), 12.0) * exp(-dot(d, d) / 500.0);",
-    "    vec3 day = mix(col, col * vec3(1.04, 1.0, 0.9) + vec3(0.06, 0.05, 0.02), cone * 0.45) + flash * vec3(0.25, 0.22, 0.15);",
-    "    vec3 dark = col + (cone * 0.4 + flash * 0.9) * vec3(1.0, 0.85, 0.55);",
-    "    col = mix(day, dark, night);",
-    "  }",
-    // At night the lit windows outside go dark and come back, one at a time.
-    "  for (int i = 0; i < " + MAX.twinkle + "; i++) {",
-    "    if (i >= nTwinkle) break;",
-    "    vec4 w = twinkle[i];",
-    "    float cyc = t * 0.05 + w.w * 7.0;",
-    "    float ph = fract(cyc);",
-    "    float off = smoothstep(0.0, 0.03, ph) * (1.0 - smoothstep(0.25, 0.28, ph)) * step(0.5, fract(sin(floor(cyc) * 12.9898 + w.w * 78.2) * 43758.5));",
-    "    float near = 1.0 - smoothstep(w.z * 0.6, w.z * 1.4, length(px - w.xy));",
-    "    col = mix(col, col * vec3(0.3, 0.32, 0.45), off * near * night);",
-    "  }",
-    // Leaves fall: a copy of one leaf drifts down, turning, and fades on the floor.
-    "  for (int i = 0; i < " + MAX.fall + "; i++) {",
-    "    if (i >= nFall) break;",
-    "    vec4 sp = fallSprite[i];",
-    "    vec4 path = fallPath[i];",
-    "    float ph = fract(t * 0.06 + float(i) * 0.37);",
-    "    vec2 pos = vec2(path.x + path.w * sin(ph * 5.0 + float(i) * 2.0) + ph * 40.0, mix(path.y, path.z, ph));",
-    "    vec2 q = (sp.xy + sp.zw) * 0.5 + rot(px - pos, -0.8 * sin(ph * 7.0 + float(i)));",
-    "    if (q.x > sp.x && q.x < sp.z && q.y > sp.y && q.y < sp.w) {",
-    "      vec3 s = texture2D(img, q / size).rgb;",
-    "      vec3 bg = texture2D(img, vec2(sp.x, sp.w) / size).rgb;",
-    "      float a = smoothstep(0.06, 0.2, length(s - bg)) * smoothstep(0.0, 0.06, ph) * (1.0 - smoothstep(0.88, 1.0, ph));",
-    "      col = mix(col, s, a);",
-    "    }",
-    "  }",
+    part("displace"),
+    "  vec2 suv = src / size;",
+    "  vec3 col = texture2D(lit, suv).rgb;",
+    part("color"),
     "  gl_FragColor = vec4(col, 1.0);",
     "}"
   ].join("\n");
 
-  var data;
-  try {
-    data = JSON.parse(img.getAttribute("data-motion"));
-  } catch (e) {
-    return;
+  // ---------------------------------------------------------------------------
+  // Lights: how dark each one is (0 lit, 1 off) at time s in seconds.
+  var speed = lightsK.breathe || 1;
+  function calls(i, s) {
+    s += rnd(i, 0) * 30;
+    var n = 0, at = 0, lit, off;
+    for (;;) {
+      lit = 3 + 6 * rnd(i, n + 1); off = 1 + 2 * rnd(i, n + 2);
+      if (s < at + lit + off) break;
+      at += lit + off; n++;
+    }
+    var u = s - at;
+    if (u < lit) return 0;
+    var back = off - (u - lit);
+    if (back < 0.45) return back > 0.3 || (back > 0.1 && back < 0.2) ? 1 : 0;
+    return smooth((u - lit) / 0.12);
+  }
+  var PATTERNS = {
+    // on for 3 to 9 s, off for 1 to 3 s, back with a double blink
+    calls: function (l, i, s) { return calls(i, s); },
+    // the lamps go out in turn across the picture every 7 s
+    wave: function (l, i, s) { var ph = ((s / 7 - l.pool[0] / W * 0.7) % 1 + 1) % 1; return ph < 0.12 ? smooth(ph / 0.03) * smooth((0.12 - ph) / 0.03) : 0; },
+    breathe: function (l, i, s) { return 0.5 + 0.5 * Math.sin(s * speed * (1.6 + 0.3 * (i % 4)) + i * 1.7); }
+  };
+  // a big lamp breathes slowly with a faint flicker
+  function big(i, s) { return 0.6 * (0.5 + 0.5 * Math.sin(s * speed * 1.1 + i * 2.3)) + 0.08 * Math.max(0, Math.sin(s * 13 + i)); }
+
+  var switches = list.light.map(function () { return { ov: null, ovAt: 0, hover: false, buttons: [] }; });
+  var clock = 0;
+  function level(i, s, fade) {
+    var st = switches[i], l = list.light[i];
+    // the wink: once the light is in, each lamp the reader can switch flickers off and on, in turn
+    var w = s - HOLD - ENTRY - 1 - i * 0.22;
+    if (w > 0 && w < 0.36) return Math.floor(w / 0.09) % 2 ? 0 : 1;
+    if (st.hover && st.ov === null) return 0;
+    var auto = (l.big ? big(i, s) : (PATTERNS[(lightsK.pattern || {})[l.kind]] || PATTERNS.calls)(l, i, s)) * fade;
+    if (st.ov === null) return Math.min(1, auto);
+    var target = st.ov === "off" ? 1 : 0, uu = s - st.ovAt;
+    if (uu < 0.36) return Math.floor(uu / 0.06) % 2 ? target : 1 - target;
+    if (st.ov === "on" && l.big) return Math.min(1, auto);
+    return target;
+  }
+  // The pendant switches off and on; a small lamp leaves its pattern for the state the
+  // reader chose, and a second click hands it back.
+  function toggle(i) {
+    // a big lamp breathes, so it is on unless the reader switched it off
+    var st = switches[i], l = list.light[i], lit = l.big ? st.ov !== "off" : level(i, clock, 1) < 0.5;
+    if (!l.big && st.ov !== null) st.ov = null;
+    else st.ov = lit ? "off" : "on";
+    st.ovAt = clock;
+    var now = st.ov === null || st.ov === "on";
+    st.buttons.forEach(function (b) { b.setAttribute("aria-pressed", now ? "true" : "false"); });
   }
 
+  // A lightning flash every [min, max] seconds: a double flicker that fades.
+  function lightning(s) {
+    var every = flashK.every || [8, 15], fd = flashK.fade || 0.38, n = 0, at = 2;
+    for (;;) { var gap = every[0] + (every[1] - every[0]) * rnd(99, n); if (s < at + gap) break; at += gap; n++; }
+    var u = s - at;
+    return (flashK.strength || 1) * (u < 0.07 ? 1 : u < 0.14 ? 0.25 : u < 0.22 ? 0.85 : u < 0.22 + fd ? 0.85 * (1 - smooth((u - 0.22) / fd)) : 0);
+  }
+
+  // ---------------------------------------------------------------------------
+  // The stage holds the canvas and the switches; it covers the cover on the page,
+  // and moves over the enlarged picture when the reader zooms.
+  var stage = document.createElement("div");
+  stage.className = "motion-stage";
+  if (img.closest("picture") && img.closest("picture").querySelector("source.night")) stage.classList.add("has-night");
   var canvas = document.createElement("canvas");
+  stage.appendChild(canvas);
   var gl = canvas.getContext("webgl", { alpha: false, antialias: false, premultipliedAlpha: false });
-  if (!gl) return state("no WebGL context");
-  canvas.className = "motion";
+  if (!gl) return release(), state("no WebGL context");
   canvas.setAttribute("aria-hidden", "true");
 
   function shader(type, src) {
@@ -178,12 +409,12 @@
   }
   var vs = shader(gl.VERTEX_SHADER, VS);
   var fs = shader(gl.FRAGMENT_SHADER, FS);
-  if (!vs || !fs) return;
+  if (!vs || !fs) return release();
   var prog = gl.createProgram();
   gl.attachShader(prog, vs);
   gl.attachShader(prog, fs);
   gl.linkProgram(prog);
-  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return state("link: " + gl.getProgramInfoLog(prog));
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return release(), state("link: " + gl.getProgramInfoLog(prog));
   gl.useProgram(prog);
 
   gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
@@ -192,50 +423,12 @@
   gl.enableVertexAttribArray(loc);
   gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
+  var uniforms = {};
   function u(name) {
-    return gl.getUniformLocation(prog, name);
+    if (!(name in uniforms)) uniforms[name] = gl.getUniformLocation(prog, name);
+    return uniforms[name];
   }
-  function flat(list, pick) {
-    var out = [];
-    list.forEach(function (item) {
-      out.push.apply(out, pick(item));
-    });
-    return out;
-  }
-  function set(kind, count, uniforms) {
-    gl.uniform1i(u("n" + kind), count);
-    if (!count) return;
-    uniforms.forEach(function (x) {
-      gl["uniform" + x[0]](u(x[1]), x[2]);
-    });
-  }
-
-  var swing = data.swing || [], glow = data.glow || [], fall = data.fall || [], twinkle = data.twinkle || [];
-  gl.uniform2f(u("size"), data.size[0], data.size[1]);
-  gl.uniform1f(u("halo"), data.halo ? 1 : 0);
-  set("Swing", swing.length, [
-    ["4fv", "swingA", flat(swing, function (s) { return [s.anchor[0], s.anchor[1], s.amp, 0]; })],
-    ["4fv", "swingBox", flat(swing, function (s) { return s.box; })]
-  ]);
-  set("Glow", glow.length, [
-    ["4fv", "glowA", flat(glow, function (g) {
-      return [g.at[0], g.at[1], g.radius, 10 * (g.swing + 1) + Math.min(g.strength, 9.99)];
-    })]
-  ]);
-  set("Fall", fall.length, [
-    ["4fv", "fallSprite", flat(fall, function (f) { return f.sprite; })],
-    ["4fv", "fallPath", flat(fall, function (f) { return [f.from[0], f.from[1], f.floor, f.drift || 20]; })]
-  ]);
-  set("Twinkle", twinkle.length, [["4fv", "twinkle", flat(twinkle, function (w) { return w; })]]);
-  var beams = data.beam || [];
-  set("Beam", beams.length, [["4fv", "beam", flat(beams, function (b) { return b; })]]);
-  var floating = data.float || [];
-  set("Float", floating.length, [
-    ["4fv", "floatA", flat(floating, function (f) { return [f.center[0], f.center[1], f.amp, 0]; })],
-    ["4fv", "floatBox", flat(floating, function (f) { return f.box; })]
-  ]);
-  gl.uniform1i(u("img"), 0);
-  gl.uniform1i(u("map"), 1);
+  var ctx = { gl: gl, u: u, night: false, ready: {} };
 
   function upload(unit, source) {
     gl.activeTexture(gl.TEXTURE0 + unit);
@@ -246,17 +439,116 @@
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   }
+  function fetchImage(src, done) {
+    var im = new Image();
+    im.onload = function () { done(im); };
+    im.onerror = function () { done(null); };
+    im.src = src;
+  }
 
-  // The canvas covers the image inside its border, at the size it is drawn.
+  gl.uniform1i(u("lit"), 0);
+  gl.uniform1i(u("map"), 1);
+  gl.uniform2f(u("size"), W, H);
+  if (list.swing.length) {
+    gl.uniform4fv(u("swingA"), flat(list.swing, function (s) { return [s.anchor[0], s.anchor[1], s.amp, s.idle ? 1 : 0]; }));
+    gl.uniform4fv(u("swingBox"), flat(list.swing, function (s) { return s.box; }));
+  }
+  var textures = [];
+  EFFECTS.forEach(function (e) {
+    if (e.setup) e.setup(ctx);
+    (e.textures || []).forEach(function (tx) {
+      gl.uniform1i(u(tx.name), tx.unit);
+      if (tx.ready) gl.uniform1f(u(tx.ready), 0);
+      textures.push(tx);
+    });
+  });
+
+  // The drawings of the current scheme: the page's own picture, then the state
+  // drawings. Those the first frame needs are loaded before it; the rest after.
+  function textureURL(tx) {
+    var url = img.getAttribute(tx.attr + (tx.scheme && ctx.night ? "-night" : ""));
+    return url || img.getAttribute(tx.attr);
+  }
+  function picture(done) {
+    var src = img.currentSrc || img.src;
+    ctx.night = /-night/.test(src);
+    gl.uniform1f(u("night"), ctx.night ? 1 : 0);
+    var first = textures.filter(function (tx) { return tx.first; });
+    var left = first.length + 1, missing = [], picture0 = null;
+    // a state drawing that cannot be loaded is replaced by the picture itself: no state, no harm
+    function one() {
+      if (--left) return;
+      missing.forEach(function (unit) { if (picture0) upload(unit, picture0); });
+      if (done) done();
+    }
+    fetchImage(src, function (im) { if (im) { picture0 = im; upload(0, im); } one(); });
+    first.forEach(function (tx) {
+      var url = textureURL(tx);
+      if (!url) { missing.push(tx.unit); return one(); }
+      fetchImage(url, function (im) { if (im) upload(tx.unit, im); else missing.push(tx.unit); one(); });
+    });
+    textures.filter(function (tx) { return !tx.first; }).forEach(function (tx) {
+      var url = textureURL(tx);
+      if (!url) return;
+      fetchImage(url, function (im) {
+        if (!im) return;
+        upload(tx.unit, im);
+        if (tx.ready) { ctx.ready[tx.ready] = true; gl.uniform1f(u(tx.ready), 1); }
+      });
+    });
+  }
+
+  // The switches: one button over each light, from the object sheet. Nothing is drawn
+  // over the picture; the lamp itself answers the pointer, and the focus ring shows
+  // only for the keyboard.
+  var layer = document.createElement("div");
+  layer.className = "motion-switches";
+  if (list.light.length) stage.appendChild(layer);
+  list.light.forEach(function (l, i) {
+    var b = l.hit, btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "switch" + (l.big ? " big" : " small");
+    btn.setAttribute("aria-label", l.label);
+    btn.setAttribute("aria-pressed", "true");
+    btn.dataset.box = b.join(",");
+    btn.addEventListener("click", function (ev) { ev.stopPropagation(); toggle(i); });
+    btn.addEventListener("pointerenter", function () { switches[i].hover = true; });
+    btn.addEventListener("pointerleave", function () { switches[i].hover = false; });
+    btn.addEventListener("focus", function () { switches[i].hover = true; });
+    btn.addEventListener("blur", function () { switches[i].hover = false; });
+    switches[i].buttons.push(btn);
+    layer.appendChild(btn);
+  });
+
+  // The stage covers the image inside its border, at the size it is drawn: the cover
+  // on the page, or the enlarged picture while the reader zooms.
+  var zoom = null;
   function place() {
-    var w = img.clientWidth, h = img.clientHeight;
-    canvas.style.left = img.offsetLeft + img.clientLeft + "px";
-    canvas.style.top = img.offsetTop + img.clientTop + "px";
-    canvas.style.width = w + "px";
-    canvas.style.height = h + "px";
+    var target = zoom ? zoom.image : img, w = target.clientWidth, h = target.clientHeight;
+    if (zoom) {
+      var r = target.getBoundingClientRect(), d = zoom.dialog.getBoundingClientRect();
+      stage.style.left = r.left - d.left - zoom.dialog.clientLeft + "px";
+      stage.style.top = r.top - d.top - zoom.dialog.clientTop + "px";
+    } else {
+      stage.style.left = img.offsetLeft + img.clientLeft + "px";
+      stage.style.top = img.offsetTop + img.clientTop + "px";
+    }
+    stage.style.width = w + "px";
+    stage.style.height = h + "px";
+    // at least 44 pixels to aim at, whatever the size of the lamp
+    var min = 44 * W / Math.max(w, 1);
+    layer.childNodes.forEach(function (btn) {
+      var b = btn.dataset.box.split(",").map(Number);
+      var px = Math.max(btn.classList.contains("big") ? 0 : 10, (min - (b[2] - b[0])) / 2);
+      var py = Math.max(btn.classList.contains("big") ? 0 : 10, (min - (b[3] - b[1])) / 2);
+      btn.style.left = (b[0] - px) / W * 100 + "%";
+      btn.style.top = (b[1] - py) / H * 100 + "%";
+      btn.style.width = (b[2] - b[0] + 2 * px) / W * 100 + "%";
+      btn.style.height = (b[3] - b[1] + 2 * py) / H * 100 + "%";
+    });
     var scale = Math.min(window.devicePixelRatio || 1, 2);
-    var bw = Math.min(Math.round(w * scale), data.size[0]);
-    var bh = Math.round(bw * data.size[1] / data.size[0]);
+    var bw = Math.min(Math.round(w * scale), W);
+    var bh = Math.round(bw * H / W);
     if (canvas.width !== bw || canvas.height !== bh) {
       canvas.width = bw;
       canvas.height = bh;
@@ -264,55 +556,64 @@
     }
   }
 
-  // The cover follows the colour scheme. When scheme.js swaps it, the canvas
-  // takes the new picture.
-  function picture(done) {
-    var copy = new Image();
-    copy.onload = function () {
-      upload(0, copy);
-      gl.uniform1f(u("night"), /-night/.test(copy.src) ? 1 : 0);
-      if (done) done();
-    };
-    copy.src = img.currentSrc || img.src;
-  }
-
-  var visible = true, running = false, t = 0, last = 0, shown = false;
+  var visible = true, running = false, last = 0, shown = false;
   function frame(now) {
-    if (!visible) {
+    if ((!visible && !zoom) || document.hidden) {
       running = false;
       return;
     }
     requestAnimationFrame(frame);
     // Thirty frames a second is plenty for this motion, and halves the work.
     if (last && now - last < 32) return;
-    t += Math.min(now - (last || now), 100) / 1000;
+    clock += Math.min(now - (last || now), 100) / 1000;
     last = now;
-    gl.uniform1f(u("t"), t);
+    gl.uniform1f(u("t"), clock);
+    EFFECTS.forEach(function (e) { if (e.frame) e.frame(ctx, clock); });
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     if (!shown) {
       shown = true;
-      canvas.classList.add("on");
+      stage.classList.add("on");
+      release();
       state("running");
     }
   }
   function start() {
-    if (running || !visible) return;
+    if (running || (!visible && !zoom) || document.hidden) return;
     running = true;
     last = 0;
     requestAnimationFrame(frame);
   }
 
   function begin() {
-    var map = new Image();
-    map.onload = function () {
+    fetchImage(img.getAttribute("data-motion-map"), function (map) {
+      if (!map) return release(), state("no motion map");
       upload(1, map);
       picture(function () {
-        img.parentNode.insertBefore(canvas, img.nextSibling);
+        img.parentNode.insertBefore(stage, img.nextSibling);
         place();
-        window.addEventListener("resize", place);
-        img.addEventListener("load", function () {
-          picture();
+        // the animation goes with the reader into the zoom, at full size, and comes back
+        img.addEventListener("zoom:open", function (ev) {
+          zoom = ev.detail;
+          zoom.dialog.appendChild(stage);
+          stage.classList.add("in-zoom");
+          fetchImage(zoom.full, function (im) { if (im && zoom) upload(0, im); });
+          zoom.image.addEventListener("load", place);
+          place();
+          requestAnimationFrame(place);
         });
+        img.addEventListener("zoom:close", function () {
+          if (zoom) zoom.image.removeEventListener("load", place);
+          zoom = null;
+          stage.classList.remove("in-zoom");
+          img.parentNode.insertBefore(stage, img.nextSibling);
+          picture();
+          place();
+        });
+        window.addEventListener("resize", place);
+        // The cover follows the colour scheme: when scheme.js swaps it, the canvas
+        // takes the new picture and its state drawings.
+        img.addEventListener("load", function () { picture(); });
+        document.addEventListener("visibilitychange", start);
         if ("IntersectionObserver" in window) {
           new IntersectionObserver(function (entries) {
             visible = entries[0].isIntersecting;
@@ -321,8 +622,7 @@
         }
         start();
       });
-    };
-    map.src = img.getAttribute("data-motion-map");
+    });
   }
 
   if (img.complete) begin();

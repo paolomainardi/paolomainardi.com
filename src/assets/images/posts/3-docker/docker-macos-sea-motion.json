@@ -1,1 +1,1 @@
-{"size":[1536,1024],"swing":[],"glow":[],"fall":[],"twinkle":[],"float":[{"center":[843,557],"box":[690,448,1005,650],"amp":1.0}],"beam":[],"halo":false}
+{"size":[1536,1024],"effects":["water","drift","float","wind","flash","rain"],"swing":[],"float":[{"center":[840,549],"box":[694,450,1000,639],"amp":1.0}],"fall":[],"lights":[],"twinkle":[],"beam":[],"entry":null,"lightsK":{},"rainK":{},"flashK":{},"states":["flash","flash-night"]}

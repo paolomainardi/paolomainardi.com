@@ -1,0 +1,43 @@
+{
+  "publish": "src/assets/images/posts/13-ai-agents/agents-print-workshop",
+  "entry": true,
+  "lights": {
+    "breathe": 0.5
+  },
+  "still": [
+    "writer-pen",
+    "rear-brush",
+    "foreground-brush"
+  ],
+  "pulse": false,
+  "twinkle": [
+    {
+      "box": [
+        60,
+        0,
+        340,
+        460
+      ]
+    }
+  ],
+  "glass": [
+    "window"
+  ],
+  "storm": {
+    "sky": "glass"
+  },
+  "drops": true,
+  "rain": {
+    "speed": 0.45,
+    "opacity": 0.4,
+    "scale": 3
+  },
+  "flash": {
+    "every": [
+      15,
+      25
+    ],
+    "strength": 0.7,
+    "fade": 1.6
+  }
+}

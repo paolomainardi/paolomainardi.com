@@ -52,14 +52,15 @@ in the post as WebP. Paolo approves every image before it is merged.
    - the metaphor you propose, in one line, and whether he has another idea;
    - the tone: calm and serious (the default) or lighter;
    - anything that must or must not be in the picture;
-   - the motion brief: in one line, what in the scene moves and how, using
-     only the motions in the table below, for example "the sea swells, the
-     container bobs, the lighthouses sweep their beams, the clouds drift".
-     Pick what would move in the real scene and carries the idea; leave the
-     rest still. The motion is ambient only: light, wind, water, a swing, a
-     light along a thread. A scene whose idea needs a story to move (a train
-     passing, a lever thrown, a signal changing) stays still; do not add a
-     motion to the table for it. Prefer a still cover to a new motion.
+   - the motion brief: in one line, what in the scene moves and how, from the
+     effects in step 8, for example "the light comes in, the pendant breathes
+     and can be switched, rain falls behind the window". Pick what would move
+     in the real scene and carries the idea; leave the rest still. The motion
+     is ambient: light, weather, water, wind, a swing, a small gesture. A scene
+     whose idea needs a story to move (a train passing, a lever thrown) stays
+     still. Decide for this scene, and say it in the brief: whether the light
+     comes in and from where, how fast the lights breathe (a quiet room slowly,
+     a switchboard briskly), which plants sway (indoor plants do not).
 
    Generate only after he answers. Use his words for the tone; a lighter or
    funnier image stays in the default style unless he asks for another one.
@@ -68,112 +69,103 @@ in the post as WebP. Paolo approves every image before it is merged.
    four parts: the subject (the post title and the idea in plain words), the
    scene (the metaphor, what is in the frame), the style (the rules above,
    including the styles to avoid) and the palette (the hex values). Ask for
-   landscape 3:2, 1536x1024, saved as a PNG in the current directory.
-
-   When the cover will move, draw each moving thing the way the map builder
-   reads it, so the mask is enough and no spec or code is needed:
-
-   - a light along a thread: the threads drawn in rose, clearly and
-     continuously, meeting at one point, touching nothing else rose;
-   - a swinging lamp: hanging on a visible cord;
-   - a glowing light: drawn lit;
-   - plants: sparse and airy, so Codex traces them instead of redrawing them;
-   - water: in desaturated blue.
+   landscape 3:2, 1536x1024, saved as a PNG in the current directory. Draw the
+   lights of the scene lit, and swinging lamps on a visible cord.
 
 4. **Generate with Codex**, which has an image generation tool:
 
    ```bash
    cd <scratch dir>
-   codex exec --skip-git-repo-check --sandbox workspace-write "$PROMPT"
+   codex exec --skip-git-repo-check --sandbox workspace-write "$PROMPT" < /dev/null
    ```
 
-   To restyle or recolour an existing image, pass it after the prompt:
-   `codex exec ... "$PROMPT" -i reference.png`. The prompt must come first,
-   because `-i` takes several values and swallows a prompt placed after it.
+   To restyle or redraw an existing image, pass it after the prompt:
+   `codex exec ... "$PROMPT" -i reference.png < /dev/null`. The prompt must
+   come first, because `-i` takes several values and swallows a prompt placed
+   after it. Without `< /dev/null` Codex waits for input and never ends.
 
 5. **Look at the result** before showing it. Regenerate when it breaks a
    rule: wrong palette, cartoon faces, text, a dark mood, or a scene that
    repeats another cover.
-6. **Convert to WebP** and add it to the post:
 
-   ```bash
-   magick image.png -resize 1536x -quality 85 \
-     src/assets/images/posts/<n>-<slug>/<name>.webp
-   ```
-
-   Use a new file name when replacing a cover, so caches do not serve the old
-   one, and delete the old file. Point `featuredImage` and `images` in the
-   post's front matter at `/images/posts/<n>-<slug>/<name>.webp`.
-
-   Keep the prompts next to the cover, in `<name>-prompt.md`: the motion
-   brief, then every prompt sent to Codex as it was sent (cover, night, mask),
-   added as you go, with the reference images named by their cover. Hugo does
-   not publish it, but the repository is public: write only the brief and the
-   prompts, never a local path, a hostname or anything else from the scratch
-   directory. Regenerate from it rather than from memory.
+6. **Keep the sources** in `covers/<name>/`, outside what Hugo serves: the
+   approved cover as `cover.webp`, lossless (`magick cover.png -define
+webp:lossless=true covers/<name>/cover.webp`), and every drawing after it
+   the same way. Every later drawing is made from these masters, so never
+   from a lossy copy. Write `covers/<name>/prompts.md` as you go: the motion
+   brief, then every prompt sent to Codex as it was sent, with the image it
+   was sent with. The repository is public: only the brief and the prompts,
+   never a local path, a hostname or anything from the scratch directory.
+   Point `featuredImage` and `images` in the post's front matter at
+   `/images/posts/<n>-<slug>/<name>.webp`; use a new name when replacing a
+   cover, so caches do not serve the old one.
 
 7. **Make the night version** once Paolo approves the cover. Run Codex again
-   with the approved PNG and a prompt asking for the same scene, unchanged,
+   with the cover attached and a prompt asking for the same scene, unchanged,
    redrawn for the dark scheme: paper `#1a1917` (never pure black), cream ink
    `#f0e9dc` and `#bcb3a6`, washes darkened and desaturated, soft rose
    `#e5a3b2` as the one accent, a calm evening rather than an eerie night, no
-   text. Pass the cover with `-i` after the prompt. Convert it like the cover,
-   to `<name>-night.webp` in the same folder: the post picks it up by that
-   name, with no front matter.
-8. **Make the motion map** once both versions are approved. The brief from
-   step 2 decides what moves; each motion has a colour in Codex's mask, or
-   lives only in the spec:
+   text. Save it as `covers/<name>/night.webp`, lossless.
 
-   | Motion                                   | Mask colour       | Spec key  |
-   | :--------------------------------------- | :---------------- | :-------- |
-   | Plants and flowers sway, rooted below    | green `#00FF00`   | `wind`    |
-   | Hanging things sway (ivy, pegged papers) | cyan `#00FFFF`    | `wind`    |
-   | Pendant lamps swing on their cord        | blue `#0000FF`    | `swing`   |
-   | A light runs along a cable or thread     | red `#FF0000`     |           |
-   | A light glows and breathes               | white `#FFFFFF`   | `glow`    |
-   | Water ripples                            | orange `#FF8000`  | `water`   |
-   | Something floating bobs and rocks        | magenta `#FF00FF` | `float`   |
-   | A lighthouse sweeps its beam             | yellow `#FFFF00`  | `beam`    |
-   | Clouds drift                             |                   | `drift`   |
-   | Leaves fall                              |                   | `fall`    |
-   | Lit windows go dark at night             |                   | `twinkle` |
+8. **Make it move**, once both versions are approved, with the effects of the
+   brief. `docs/cover-engine.md` is the reference. Each effect needs its
+   drawings, made by Codex from the cover (and from the night version for the
+   `-night` one), "exactly the same scene, unchanged, only the light changes":
 
-   Run Codex with the approved PNG and this prompt, with one line per brief
-   item that has a colour, the cover passed with `-i` after it:
+   | Effect in the brief                                                                                                                                                               | Drawings                                                 | Spec                                        |
+   | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------- | :------------------------------------------ |
+   | The light comes in; lamps breathe, switch, can be pressed                                                                                                                         | `unlit`, `unlit-night`: every lamp off, no glow          | `entry`, `light_from`, `lights`             |
+   | A storm or a distant thunder                                                                                                                                                      | `flash`, `flash-night`: the same moment lit by lightning | `storm`, `flash`                            |
+   | Rain in the sky or behind a window                                                                                                                                                | none (shared texture)                                    | `storm.sky`, `rain`                         |
+   | Drops running down a window                                                                                                                                                       | none (shared texture)                                    | `glass`, `drops`                            |
+   | Waves, bobbing, drifting clouds, swaying plants, swinging lamps and tools, small gestures, falling leaves, a light along a thread, a lighthouse beam, windows going dark at night | none                                                     | `amp`, `still`, `pulse`, `floor`, `twinkle` |
 
-   > The attached image is an illustrated blog cover, 1536x1024 pixels.
-   > Generate ONE new image: a motion mask for this cover. Same size and the
-   > exact same composition, every object in the exact same position, so the
-   > mask can be laid over the cover pixel for pixel. The mask is flat colours
-   > on pure black (#000000). No shading, no outlines, no texture, no text.
-   > Paint only these, each filled solid with its colour, following the
-   > object's real silhouette:
+   A changed weather, such as rain over a sunny scene, is a new cover: draw the
+   rainy cover first and every state from it.
+
+   Then ask Codex for the object sheet, the cover attached, with this prompt:
+
+   > The attached image is an illustrated blog cover, 1536x1024 pixels. Produce an object sheet for it: two files in the current directory.
    >
-   > - <the thing, as it appears in the picture>: <colour name> <hex>
-   >   (for a light or a lighthouse, a small dot on the lantern only)
+   > 1. objects.png: ONE new image, same size and the exact same composition, every object in the exact same position, so it can be laid over the cover pixel for pixel. Flat colours on pure black (#000000), no shading, no outlines, no texture, no text. Paint each object listed in objects.json filled solid with its own colour, following its real silhouette. Everything else stays black.
    >
-   > Everything else stays black. Save the result as mask.png in the current
-   > directory.
+   > 2. objects.json: a JSON array, one entry per object, in this form:
+   >    {"id": "desk-lamp-bulb", "kind": "light", "label": "Desk lamp", "light": "desk", "of": "desk-lamp", "motion": [], "box": [x0, y0, x1, y1], "color": "#FF0000"}
+   >
+   > Include only the things that give light or could move, one object each:
+   >
+   > - kind "light": every light source that is lit or could be lit. The painted area is the glowing part only (a bulb, a lamp's glass, a lit window pane, a lighthouse lantern). "light" says how it shines: "spot" a small lamp, "pendant" a hanging bulb that lights the area below it, "desk" a desk or wall lamp that lights a pool in front of it, "window" a window pane of daylight or a lit window far away, "lighthouse" a lighthouse lantern. "of": the id of the lamp body it belongs to, if any. "label": two or three words naming the lamp for a screen reader, such as "Pendant lamp".
+   > - kind "lamp": a lamp body that hangs on a cord and could swing, cord included; motion ["swing"].
+   > - kind "tool": something held or hanging that could swing, such as a rake in a hand or a sign on a hook; motion ["swing"]; "anchor": [x, y], the point where it is held.
+   > - kind "limb": a part of a robot or a person that could make a small movement while they work, such as an arm holding a brush or a head bent over a task; one object per limb, only the clearly visible ones, at most 6; motion ["idle"]; "anchor": [x, y], the joint it turns about (the shoulder for an arm, the neck for a head).
+   > - kind "plant": a plant or a tree that could sway, trunk and branches included, never its pot; "outdoor": true when it grows outside in the open air, false when it is indoors; motion ["sway"].
+   > - kind "leaf": a single loose or dead leaf still hanging on a plant that could fall; one object per leaf, at most 8, the most visible ones; motion ["fall"].
+   > - kind "water": water that could ripple; motion ["ripple"].
+   > - kind "float": something floating on water; motion ["bob"].
+   > - kind "sky": an open sky area, one object for each separate sky (the sky inside a screen, a picture or a window is a different object from the sky behind the scene); motion [].
+   > - kind "cloud": a cloud that could drift; motion ["drift"].
+   > - kind "thread": a cable, wire or thread a light could run along, one object for all the threads that meet; motion ["pulse"].
+   >   Never include whole people, whole robots, furniture or walls.
+   >
+   > "box" is your best estimate of the object's bounding box in cover pixels. "color" is a different colour for every object, taken in order from this list and from nothing else:
+   > #FF0000 #00FF00 #0000FF #FFFF00 #FF00FF #00FFFF #FF8000 #8000FF #00FF80 #FF0080 #80FF00 #0080FF #FFFFFF #800000 #008000 #000080 #808000 #800080 #008080 #FF8080 #80FF80 #8080FF #FFC000 #C0C0C0
+   >
+   > Use the same colours in objects.png and objects.json. Save both files in the current directory.
 
-   Save it as `<name>-motion-codex.png` next to the cover and run
-   `just motion-map <cover.webp> --overlay /site/.motion-review.png`. Look at
-   the overlay, then delete it. Where Codex painted something that must not
-   move, add an `exclude` box to `<name>-motion-spec.json`; where it missed or
-   redrew a part (it tends to redraw a dense tree instead of tracing it), add
-   that part to the spec instead, with the spec-only motions of the brief. On
-   a pale cover the lights barely show: set `glow_strength` (about 2) and a
-   `glow_radius` that fits the lamps, and `glow_halo` for lamps that shine
-   all round, such as signal lamps, rather than down onto a floor. The keys
-   are in the script's docstring. The script fails when the mask is more than 3px off the cover: generate the
-   mask again, or describe the parts in the spec. Then watch the motion on the
-   preview before sending it, in both schemes: a brief item that does not
-   move, or moves too little to notice, or something moving that is not in
-   the brief, is a mistake to fix first. Commit the mask, the spec and the
-   two outputs. On a cover with nothing that would move naturally, skip this
-   step.
+   Save the two files as `covers/<name>/objects.json` and `objects.png`. When
+   the first sheet misses something the brief needs, such as the limbs of a
+   figure, ask for a second sheet with the same form for those things only and
+   save it as `objects-<pass>.json` and `.png`. Write `covers/<name>/spec.json`
+   with `publish` and the brief's choices, then run `just cover <name>`. The
+   builder fails when a drawing is more than 2px off the cover: draw it again
+   from the cover. Watch the motion on the preview in both schemes before
+   sending it: a brief item that does not move, or moves too little to notice,
+   or something moving that is not in the brief, is a mistake to fix first.
+   Commit `covers/<name>/` and the files the builder writes. On a cover with
+   nothing that would move naturally, skip this step.
 
 9. **Check it on the page.** Build, serve the preview on the Tailscale
    address, and send Paolo both images and the preview link. The cover fills
    the text column at every width; check a phone width and the dark scheme
-   too, and watch the motion in both.
+   too, watch the motion in both, press the lamps, and open the zoom.
 10. **Open a pull request** and merge only when Paolo says so.

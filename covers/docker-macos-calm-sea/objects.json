@@ -1,0 +1,260 @@
+[
+ {
+  "id": "distant-lighthouse-lantern",
+  "kind": "light",
+  "label": "Distant lighthouse lantern",
+  "light": "lighthouse",
+  "of": "distant-lighthouse",
+  "motion": [],
+  "box": [
+   1066,
+   459,
+   1074,
+   465
+  ],
+  "color": "#FF0000"
+ },
+ {
+  "id": "middle-lighthouse-lantern",
+  "kind": "light",
+  "label": "Middle lighthouse lantern",
+  "light": "lighthouse",
+  "of": "middle-lighthouse",
+  "motion": [],
+  "box": [
+   1241,
+   397,
+   1252,
+   405
+  ],
+  "color": "#00FF00"
+ },
+ {
+  "id": "right-lighthouse-lantern",
+  "kind": "light",
+  "label": "Right lighthouse lantern",
+  "light": "lighthouse",
+  "of": "right-lighthouse",
+  "motion": [],
+  "box": [
+   1416,
+   389,
+   1435,
+   401
+  ],
+  "color": "#0000FF"
+ },
+ {
+  "id": "sea",
+  "kind": "water",
+  "label": "Sea water",
+  "motion": [
+   "ripple"
+  ],
+  "box": [
+   158,
+   496,
+   1536,
+   853
+  ],
+  "color": "#FFFF00"
+ },
+ {
+  "id": "floating-container",
+  "kind": "float",
+  "label": "Floating shipping container",
+  "motion": [
+   "bob"
+  ],
+  "box": [
+   535,
+   475,
+   869,
+   616
+  ],
+  "color": "#FF00FF"
+ },
+ {
+  "id": "hanging-lifering",
+  "kind": "tool",
+  "label": "Hanging life ring",
+  "motion": [
+   "swing"
+  ],
+  "anchor": [
+   796,
+   491
+  ],
+  "box": [
+   770,
+   489,
+   837,
+   607
+  ],
+  "color": "#00FFFF"
+ },
+ {
+  "id": "screen-sky",
+  "kind": "sky",
+  "label": "Laptop screen sky",
+  "motion": [],
+  "box": [
+   84,
+   124,
+   838,
+   496
+  ],
+  "color": "#FF8000"
+ },
+ {
+  "id": "outside-sky",
+  "kind": "sky",
+  "label": "Open coastal sky",
+  "motion": [],
+  "box": [
+   0,
+   0,
+   1536,
+   497
+  ],
+  "color": "#8000FF"
+ },
+ {
+  "id": "screen-main-cloud",
+  "kind": "cloud",
+  "label": "Large screen cloud",
+  "motion": [
+   "drift"
+  ],
+  "box": [
+   105,
+   206,
+   815,
+   465
+  ],
+  "color": "#00FF80"
+ },
+ {
+  "id": "screen-upper-cloud",
+  "kind": "cloud",
+  "label": "Upper screen cloud",
+  "motion": [
+   "drift"
+  ],
+  "box": [
+   559,
+   213,
+   791,
+   316
+  ],
+  "color": "#FF0080"
+ },
+ {
+  "id": "screen-lower-cloud",
+  "kind": "cloud",
+  "label": "Lower screen cloud",
+  "motion": [
+   "drift"
+  ],
+  "box": [
+   163,
+   437,
+   800,
+   492
+  ],
+  "color": "#80FF00"
+ },
+ {
+  "id": "coastal-left-cloud",
+  "kind": "cloud",
+  "label": "Left coastal cloud",
+  "motion": [
+   "drift"
+  ],
+  "box": [
+   850,
+   371,
+   1056,
+   446
+  ],
+  "color": "#0080FF"
+ },
+ {
+  "id": "coastal-middle-cloud",
+  "kind": "cloud",
+  "label": "Middle coastal cloud",
+  "motion": [
+   "drift"
+  ],
+  "box": [
+   1040,
+   337,
+   1248,
+   411
+  ],
+  "color": "#FFFFFF"
+ },
+ {
+  "id": "coastal-right-cloud",
+  "kind": "cloud",
+  "label": "Right coastal cloud",
+  "motion": [
+   "drift"
+  ],
+  "box": [
+   1233,
+   329,
+   1460,
+   384
+  ],
+  "color": "#800000"
+ },
+ {
+  "id": "coastal-tall-tree",
+  "kind": "plant",
+  "label": "Tall coastal tree",
+  "outdoor": true,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   1457,
+   428,
+   1492,
+   489
+  ],
+  "color": "#008000"
+ },
+ {
+  "id": "coastal-right-tree",
+  "kind": "plant",
+  "label": "Right coastal tree",
+  "outdoor": true,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   1490,
+   441,
+   1520,
+   490
+  ],
+  "color": "#000080"
+ },
+ {
+  "id": "coastal-middle-tree",
+  "kind": "plant",
+  "label": "Middle coastal tree",
+  "outdoor": true,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   1326,
+   445,
+   1353,
+   490
+  ],
+  "color": "#808000"
+ }
+]

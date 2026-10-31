@@ -455,24 +455,32 @@ dark paper and saved next to it as `<name>-night.webp`. The page shows it
 whenever the dark scheme is on, by system setting or by the toggle, and does
 not dim it.
 
-**Animated cover.** A cover can move a little: plants sway, pendant lamps swing
-on their cords and their light breathes, a light runs along a thread, a leaf
-falls, water ripples, a floating thing bobs, clouds drift, a lighthouse sweeps
-its beam, and at night the lit windows outside go dark and come back. The painted
-pixels themselves are moved, by a WebGL canvas laid over the image inside its
-border, so the watercolour stays exactly as drawn. What moves, and how, comes
-from a motion map next to the cover, `<name>-motion.webp` and
-`<name>-motion.json`, built by `just motion-map` from a mask Codex paints and a
-short spec written on review. What moves is decided with the cover, in a one
-line motion brief Paolo approves, never guessed by the pipeline. One map serves the day and the night version,
-which must line up within a pixel. The motion is slow and small, about 3px at
-most, and stays below the title in attention: a cover that pulls the eye from
-the first paragraph has too much. The image stays underneath and takes the
-clicks; the canvas only draws while the cover is on screen, at 30 frames a
-second, and is never created when the reader asks for reduced motion. A wheel
-turning in place was tried and dropped: rotating a painted wheel drags the
-wall and the machine behind it along, and a clean turn needs the wheel painted
-as its own layer.
+**Animated cover.** A cover can move a little, and its light can live: lamps
+breathe, switch on and off on a pattern and can be pressed by the reader; the
+light comes in when the cover is first shown; plants outside sway, lamps and
+tools swing, a figure makes a small gesture now and then, water rolls, a
+floating thing bobs, clouds drift, leaves fall, a light runs along a thread, a
+lighthouse sweeps its beam, rain falls behind a window or over a sea and
+lightning flashes, and at night the lit windows outside go dark and come back.
+Every pixel on screen is a drawing: Codex draws the scene in each state it
+needs (lit, unlit, during a flash), lined up with the cover, and a WebGL canvas
+over the image bends the picture and mixes those drawings with soft masks, so a
+lamp that goes out shows its own unlit drawing rather than a tint. What moves is
+decided with the cover, in a one line motion brief Paolo approves, never guessed
+by the pipeline; an object sheet Codex paints says where each thing is.
+`docs/cover-engine.md` describes the engine and its effects. The motion is slow
+and small and stays below the title in attention: a cover that pulls the eye
+from the first paragraph has too much. Indoor plants do not sway, and a scene
+whose idea needs a story to move (a train passing, a lever thrown) stays still:
+layers that move whole objects were considered and set aside. The lamps a
+reader can press show nothing over the picture: they wink once after the light
+comes in and brighten under the pointer, and a focus ring appears only for the
+keyboard. The canvas draws while the cover is on screen, at 30 frames a second,
+carries into the zoom, and is never created when the reader asks for reduced
+motion. A wheel turning in place was tried and dropped: rotating a painted wheel
+drags the wall and the machine behind it along. Faint lights tinted by the
+shader were tried and dropped too: they barely showed on paper, which is why
+lights are drawn in their states.
 
 **Image overlay.** An image that would show at least 15% wider on its own gets a
 zoom cursor, and clicking it, or pressing Enter on it, opens it in a modal

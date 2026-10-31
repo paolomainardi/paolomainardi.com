@@ -1,0 +1,13 @@
+{
+  "publish": "src/assets/images/posts/3-docker/docker-macos-sea",
+  "storm": {
+    "sky": [
+      "background-sky",
+      "storm-cloud-bank"
+    ]
+  },
+  "drift": [
+    "storm-cloud-bank"
+  ],
+  "pulse": false
+}

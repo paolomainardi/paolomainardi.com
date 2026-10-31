@@ -1845,22 +1845,92 @@ body:has(.container.home) .navigation .navigation-title {
 // underneath and takes the clicks, so the overlay still opens.
 .frontispiece-motion {
   position: relative;
+}
+
+// The animated cover's canvas and switches, over the cover on the page or over
+// the enlarged picture in the zoom (motion.js moves the stage between the two).
+.motion-stage {
+  position: absolute;
+  pointer-events: none;
 
   canvas {
     position: absolute;
-    pointer-events: none;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     border-radius: 2px;
     opacity: 0;
     transition: opacity 0.6s ease;
     filter: var(--image-dim, none);
   }
 
-  canvas.on {
+  &.on canvas {
     opacity: 1;
   }
 
-  &:has(source.night) canvas {
+  // a cover drawn for the dark scheme is not dimmed there, on the page or in the zoom
+  &.has-night canvas {
     filter: none;
+  }
+
+  // The lamps a reader can switch: one button over each, from the cover's object
+  // sheet. Nothing is drawn over the picture; the lamp itself answers the pointer
+  // (motion.js brightens it), and the focus ring shows only for the keyboard.
+  .motion-switches {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .switch {
+    position: absolute;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+
+    &.big {
+      border-radius: 12px;
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--blush);
+      outline-offset: 3px;
+    }
+  }
+
+  // a small lamp is a few pixels wide on a phone: there only the big lamps
+  // switch, except in the zoom, where every lamp is big enough
+  @media (max-width: 700px) {
+    .switch.small {
+      display: none;
+    }
+
+    &.in-zoom .switch.small {
+      display: block;
+    }
+  }
+}
+
+// A cover whose light comes in waits hidden for its unlit drawing; motion.js shows
+// it as soon as the canvas is ready, and this animation shows it after 1.2 s in
+// any case, so a failed script never hides the cover.
+.motion-wait .frontispiece-motion > picture img {
+  opacity: 0;
+  animation: motion-show 0s 1.2s forwards;
+}
+
+@keyframes motion-show {
+  to {
+    opacity: 1;
   }
 }
 
@@ -3276,7 +3346,7 @@ summary:focus-visible {
     .readbar,
     .rail,
     .toc,
-    .frontispiece-motion canvas {
+    .motion-stage {
       display: none;
     }
 

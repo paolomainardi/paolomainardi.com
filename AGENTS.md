@@ -106,15 +106,18 @@ Run `just` or `just --list` to see all recipes.
   and the steps: ask Paolo first, generate with Codex, convert to WebP. A
   generated cover also gets a night version, `<name>-night.webp` next to it,
   shown in the dark scheme; other images are dimmed there instead.
-  The prompts that made a cover are kept next to it in `<name>-prompt.md`;
-  the repository is public, so it holds the prompts only.
-- **Covers can be animated.** `just motion-map <cover.webp>` builds
-  `<name>-motion.webp` and `<name>-motion.json` from `<name>-motion-codex.png`
-  (a mask Codex paints in a fixed colour code) and `<name>-motion-spec.json`
-  (corrections and additions, see the docstring of
-  `scripts/motion-map/motion_map.py`). The post shows the motion when both
-  outputs sit next to the cover; `assets/js/motion.js` draws it. The script
-  fails when the mask or the night version does not line up with the cover.
+  The sources of a generated cover live in `covers/<name>/`, outside what Hugo
+  serves: lossless masters, the prompts that made them in `prompts.md`, and for
+  an animated cover its object sheet and spec. The repository is public, so
+  they hold the drawings and prompts only.
+- **Covers can be animated.** `just cover <name>` builds an animated cover from
+  `covers/<name>/`: Codex's drawings of the scene in each state (lit, unlit,
+  during a lightning flash), its object sheet (what is in the picture, and
+  where) and `spec.json` (the brief's choices). It writes the drawings, a motion
+  map and its data next to the published cover; `assets/js/motion.js` draws them
+  on a WebGL canvas, with lamps the reader can press. The builder fails when a
+  drawing does not line up with the cover. `docs/cover-engine.md` is the
+  reference: object kinds, spec keys, effects and how to add one.
 - **Series are data.** A post joins a series with `series = "<key>"` and
   `series_part = <n>` in its front matter. The key names an entry in
   `src/data/series.yaml` with `title`, `parts` (the planned total, for "Part 3
@@ -147,7 +150,9 @@ Run `just` or `just --list` to see all recipes.
 | `src/content/posts/<n>-<slug>/`   | One directory per post, `index.md` inside          |
 | `src/content/links/<slug>.md`     | One file per link, the note as the body            |
 | `src/assets/images/posts/`        | Post images, measured at build time                |
-| `scripts/motion-map/`             | Builds the motion maps of animated covers, in Docker |
+| `covers/<name>/`                  | Sources of generated covers: masters, prompts, object sheets, specs |
+| `scripts/cover-engine/`           | Builds animated covers from `covers/`, in Docker   |
+| `docs/cover-engine.md`            | The animated cover engine and its effects          |
 
 ## Code Style
 

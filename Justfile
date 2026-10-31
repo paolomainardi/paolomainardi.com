@@ -37,7 +37,7 @@ logs:
 open:
     $BROWSER http://paolomainardi.loc:1313
 
-# Build the motion map of an animated cover, e.g. just motion-map src/assets/images/posts/16-yadm/dotfiles-home-threads.webp
-motion-map cover *args:
-    docker build -q -t paolomainardi/motion-map scripts/motion-map >/dev/null
-    docker run --rm --user "$(id -u):$(id -g)" -v "$PWD":/site paolomainardi/motion-map {{cover}} {{args}}
+# Build an animated cover from its sources in covers/<name>, e.g. just cover dotfiles-home-threads
+cover name *args:
+    docker build -q -t paolomainardi/cover-engine scripts/cover-engine >/dev/null
+    docker run --rm --user "$(id -u):$(id -g)" -v "$PWD":/site paolomainardi/cover-engine covers/{{name}} {{args}}

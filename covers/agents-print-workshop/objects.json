@@ -1,0 +1,318 @@
+[
+ {
+  "id": "left-window",
+  "kind": "light",
+  "label": "Studio window",
+  "motion": [],
+  "light": "window",
+  "box": [
+   79,
+   0,
+   317,
+   447
+  ],
+  "color": "#FF0000"
+ },
+ {
+  "id": "rear-window",
+  "kind": "light",
+  "label": "Rear window",
+  "motion": [],
+  "light": "window",
+  "box": [
+   655,
+   100,
+   683,
+   275
+  ],
+  "color": "#00FF00"
+ },
+ {
+  "id": "desk-lamp-bulb",
+  "kind": "light",
+  "label": "Desk lamp",
+  "motion": [],
+  "light": "desk",
+  "of": "desk-lamp",
+  "box": [
+   155,
+   385,
+   197,
+   400
+  ],
+  "color": "#0000FF"
+ },
+ {
+  "id": "wall-lamp-bulb",
+  "kind": "light",
+  "label": "Wall lamp",
+  "motion": [],
+  "light": "desk",
+  "of": "wall-lamp",
+  "box": [
+   844,
+   182,
+   889,
+   193
+  ],
+  "color": "#FFFF00"
+ },
+ {
+  "id": "pendant-lamp",
+  "kind": "lamp",
+  "label": "Pendant lamp",
+  "motion": [
+   "swing"
+  ],
+  "box": [
+   1035,
+   73,
+   1112,
+   148
+  ],
+  "color": "#FF00FF"
+ },
+ {
+  "id": "pendant-lamp-bulb",
+  "kind": "light",
+  "label": "Pendant bulb",
+  "motion": [],
+  "light": "pendant",
+  "of": "pendant-lamp",
+  "box": [
+   1041,
+   141,
+   1107,
+   151
+  ],
+  "color": "#00FFFF"
+ },
+ {
+  "id": "upper-left-vine",
+  "kind": "plant",
+  "label": "Window vine",
+  "outdoor": false,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   69,
+   29,
+   216,
+   341
+  ],
+  "color": "#FF8000"
+ },
+ {
+  "id": "lower-left-vine",
+  "kind": "plant",
+  "label": "Desk vine",
+  "outdoor": false,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   0,
+   420,
+   107,
+   792
+  ],
+  "color": "#8000FF"
+ },
+ {
+  "id": "type-rack-vine",
+  "kind": "plant",
+  "label": "Rack vine",
+  "outdoor": false,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   651,
+   256,
+   718,
+   361
+  ],
+  "color": "#00FF80"
+ },
+ {
+  "id": "rear-flowers",
+  "kind": "plant",
+  "label": "Shelf flowers",
+  "outdoor": false,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   928,
+   178,
+   1026,
+   272
+  ],
+  "color": "#FF0080"
+ },
+ {
+  "id": "foreground-flowers",
+  "kind": "plant",
+  "label": "Table flowers",
+  "outdoor": false,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   1432,
+   457,
+   1536,
+   667
+  ],
+  "color": "#80FF00"
+ },
+ {
+  "id": "writer-arm",
+  "kind": "limb",
+  "label": "Writing arm",
+  "motion": [
+   "idle"
+  ],
+  "anchor": [
+   352,
+   459
+  ],
+  "box": [
+   355,
+   488,
+   426,
+   563
+  ],
+  "color": "#FFFFFF"
+ },
+ {
+  "id": "writer-pen",
+  "kind": "tool",
+  "label": "Writer pen",
+  "motion": [
+   "swing"
+  ],
+  "anchor": [
+   407,
+   495
+  ],
+  "box": [
+   403,
+   472,
+   419,
+   498
+  ],
+  "color": "#800080"
+ },
+ {
+  "id": "rear-brush",
+  "kind": "tool",
+  "label": "Raised brush",
+  "motion": [
+   "swing"
+  ],
+  "anchor": [
+   1398,
+   276
+  ],
+  "box": [
+   1410,
+   278,
+   1418,
+   285
+  ],
+  "color": "#008080"
+ },
+ {
+  "id": "foreground-brush",
+  "kind": "tool",
+  "label": "Painting brush",
+  "motion": [
+   "swing"
+  ],
+  "anchor": [
+   1242,
+   674
+  ],
+  "box": [
+   1249,
+   649,
+   1255,
+   661
+  ],
+  "color": "#FF8080"
+ },
+ {
+  "id": "drying-line",
+  "kind": "thread",
+  "label": "Print drying line",
+  "motion": [
+   "pulse"
+  ],
+  "box": [
+   1034,
+   184,
+   1475,
+   223
+  ],
+  "color": "#80FF80"
+ },
+ {
+  "id": "left-rose-print",
+  "kind": "tool",
+  "label": "Hanging rose print",
+  "motion": [
+   "swing"
+  ],
+  "anchor": [
+   1174,
+   211
+  ],
+  "box": [
+   1171,
+   218,
+   1238,
+   312
+  ],
+  "color": "#8080FF"
+ },
+ {
+  "id": "middle-blank-print",
+  "kind": "tool",
+  "label": "Hanging blank print",
+  "motion": [
+   "swing"
+  ],
+  "anchor": [
+   1233,
+   218
+  ],
+  "box": [
+   1238,
+   224,
+   1292,
+   310
+  ],
+  "color": "#FFC000"
+ },
+ {
+  "id": "right-rose-print",
+  "kind": "tool",
+  "label": "Right rose print",
+  "motion": [
+   "swing"
+  ],
+  "anchor": [
+   1466,
+   208
+  ],
+  "box": [
+   1437,
+   208,
+   1500,
+   319
+  ],
+  "color": "#C0C0C0"
+ }
+]

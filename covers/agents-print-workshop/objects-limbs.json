@@ -1,0 +1,130 @@
+[
+ {
+  "id": "sorting-robot-arm",
+  "kind": "limb",
+  "label": "the working arm of the robot at the type cabinet",
+  "anchor": [
+   826,
+   416
+  ],
+  "box": [
+   752,
+   400,
+   842,
+   450
+  ],
+  "color": "#FF0000"
+ },
+ {
+  "id": "sorting-robot-head",
+  "kind": "limb",
+  "label": "the head of the robot at the type cabinet",
+  "anchor": [
+   845,
+   389
+  ],
+  "box": [
+   807,
+   342,
+   878,
+   400
+  ],
+  "color": "#00FF00"
+ },
+ {
+  "id": "press-robot-arm",
+  "kind": "limb",
+  "label": "the working arm of the robot turning the printing press wheel",
+  "anchor": [
+   1269,
+   443
+  ],
+  "box": [
+   1164,
+   419,
+   1286,
+   485
+  ],
+  "color": "#0000FF"
+ },
+ {
+  "id": "press-robot-head",
+  "kind": "limb",
+  "label": "the head of the robot turning the printing press wheel",
+  "anchor": [
+   1247,
+   419
+  ],
+  "box": [
+   1205,
+   354,
+   1284,
+   419
+  ],
+  "color": "#FFFF00"
+ },
+ {
+  "id": "stool-robot-arm",
+  "kind": "limb",
+  "label": "the raised arm and paintbrush of the robot standing on the stool",
+  "anchor": [
+   1384,
+   320
+  ],
+  "box": [
+   1373,
+   261,
+   1418,
+   333
+  ],
+  "color": "#FF00FF"
+ },
+ {
+  "id": "stool-robot-head",
+  "kind": "limb",
+  "label": "the head of the robot standing on the stool",
+  "anchor": [
+   1353,
+   299
+  ],
+  "box": [
+   1319,
+   252,
+   1381,
+   299
+  ],
+  "color": "#00FFFF"
+ },
+ {
+  "id": "book-robot-arm",
+  "kind": "limb",
+  "label": "the working arm and paintbrush of the foreground robot painting a book",
+  "anchor": [
+   1195,
+   649
+  ],
+  "box": [
+   1176,
+   621,
+   1258,
+   695
+  ],
+  "color": "#FF8000"
+ },
+ {
+  "id": "book-robot-head",
+  "kind": "limb",
+  "label": "the head of the foreground robot painting a book",
+  "anchor": [
+   1296,
+   622
+  ],
+  "box": [
+   1242,
+   538,
+   1349,
+   622
+  ],
+  "color": "#8000FF"
+ }
+]

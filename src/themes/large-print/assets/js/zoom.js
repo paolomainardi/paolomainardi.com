@@ -7,6 +7,9 @@
 // already show at full size are left alone. On a touch screen any image with a
 // larger copy opens on tap, even when the overlay is no wider, because that is
 // where a reader expects to tap and then pinch into the detail.
+//
+// It tells the image when it opens and closes (zoom:open, zoom:close), so an
+// animated cover can carry its animation into the overlay.
 (function () {
   "use strict";
 
@@ -19,7 +22,7 @@
   // wider than the page does.
   var GAIN = 1.15;
   var touch = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-  var dialog, big, caption, pending;
+  var dialog, big, caption, pending, current;
 
   // Width the overlay would show the image at: its own width, capped by the
   // viewport, keeping the aspect ratio inside the available height.
@@ -66,6 +69,12 @@
     dialog.addEventListener("click", function () {
       dialog.close();
     });
+    dialog.addEventListener("close", function () {
+      if (current) {
+        current.dispatchEvent(new CustomEvent("zoom:close"));
+        current = null;
+      }
+    });
     document.body.appendChild(dialog);
   }
 
@@ -90,6 +99,8 @@
     var night = img.getAttribute("data-zoom-night");
     full.src = night && /-night/.test(big.src) ? night : img.getAttribute("data-zoom");
     dialog.showModal();
+    current = img;
+    img.dispatchEvent(new CustomEvent("zoom:open", { detail: { dialog: dialog, image: big, full: full.src } }));
   }
 
   document.addEventListener("click", function (event) {
