@@ -107,7 +107,7 @@ So the builder checks every drawing. It turns it and its cover into **edge maps*
 
 ## The object sheet
 
-To move a scene, the engine needs to know what is in it. Paolo asked for this at hour 5: _"can we ask Codex to generate some metadata with the image to define the objects and their bounding box?"_
+To move a scene, the engine needs to know what is in it, and at hour 5 Paolo asked _"can we ask Codex to generate some metadata with the image to define the objects and their bounding box?"_
 
 The **object sheet** is two files:
 
@@ -201,7 +201,7 @@ col = mix(col, texture2D(unlit, suv).rgb, dark);
 
 ## The reader can switch the lamps
 
-The switches come from the object sheet. The idea came from Paolo at hour 5: _"would be nice to have a sort of button inside the image that a user can click to interact with them"_.
+The switches come from the object sheet, and from an idea Paolo had at hour 5, _"would be nice to have a sort of button inside the image that a user can click to interact with them"_.
 
 Each switch is a real **`<button>`** laid over its lamp, with the **label** Codex wrote in the object sheet ("Desk lamp", "Wall lamp", "Pendant bulb") and **`aria-pressed`**, so a screen reader announces it and **Tab** reaches it from the keyboard.
 
@@ -239,6 +239,6 @@ Paolo's answer to steam from the mug on the container cover was _"yes of course 
 
 Paolo set two rules, to use **only Claude and Codex** and to have **every object drawn**. The first ruled out a segmentation model, so Codex had to say what is in its own pictures; the second meant no effect could paint over them. The result is an engine of about **1,150 lines**, a builder and a player, that makes any new cover **animated and interactive**. Eight covers run on it today, this post's theatre included, where the two spotlights and the work lamp are switches too.
 
-Two things worked better than I expected. Codex is **unreliable when it describes its own pictures in numbers** and **precise when it paints on them**, so the engine always asks it to paint. And a reviewer that has **never seen the code** finds what its author has stopped seeing. Asked what it would change, Codex said it would stop writing boxes at all and derive them from the masks.
+Codex is **unreliable when it describes its own pictures in numbers** and **precise when it paints on them**, so the engine always asks it to paint. Its reviews, run on code it had never seen, found what I had stopped seeing. Asked what it would change, Codex said it would stop writing boxes at all and derive them from the masks.
 
 If you have questions, or want to know more about how it works, just drop Paolo a message [here](https://github.com/paolomainardi/paolomainardi.com/discussions).
