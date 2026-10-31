@@ -358,12 +358,14 @@
   var clock = 0;
   function level(i, s, fade) {
     var st = switches[i], l = list.light[i];
-    // the wink: once the light is in, each lamp the reader can switch flickers off and on, in turn
-    var w = s - HOLD - ENTRY - 1 - i * 0.22;
-    if (w > 0 && w < 0.36) return Math.floor(w / 0.09) % 2 ? 0 : 1;
-    if (st.hover && st.ov === null) return 0;
     var auto = (l.big ? big(i, s) : (PATTERNS[(lightsK.pattern || {})[l.kind]] || PATTERNS.calls)(l, i, s)) * fade;
-    if (st.ov === null) return Math.min(1, auto);
+    if (st.ov === null) {
+      // the wink: once the light is in, each lamp the reader can switch flickers off and on, in turn
+      var w = s - HOLD - ENTRY - 1 - i * 0.22;
+      if (w > 0 && w < 0.36) return Math.floor(w / 0.09) % 2 ? 0 : 1;
+      return st.hover ? 0 : Math.min(1, auto);
+    }
+    // the reader's choice comes first
     var target = st.ov === "off" ? 1 : 0, uu = s - st.ovAt;
     if (uu < 0.36) return Math.floor(uu / 0.06) % 2 ? target : 1 - target;
     if (st.ov === "on" && l.big) return Math.min(1, auto);
@@ -686,10 +688,12 @@
   function begin() {
     img.addEventListener("load", function () { if (started && !gone) picture(); });
     fetchImage(img.getAttribute("data-motion-map"), function (map) {
+      if (gone) return;
       if (!map) return release(), state("no motion map");
       upload(1, map);
       var first = img.currentSrc || img.src;
       picture(function () {
+        if (gone) return;
         started = true;
         if ((img.currentSrc || img.src) !== first) picture();
         if (zoom) enterZoom();
