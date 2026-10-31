@@ -1907,20 +1907,20 @@ body:has(.container.home) .navigation .navigation-title {
     }
   }
 
-  // The pause button: a small paper disc in the lower right corner, seen while the
-  // pointer is over the cover or the button has focus, and faintly on touch screens,
-  // which have no pointer to show it.
+  // The pause button: a small mark in the lower right corner, no disc, at the 24px
+  // minimum target size; it shows while the pointer is over the cover or it has focus,
+  // and only faintly on touch screens, which have no pointer to show it.
   .motion-pause {
     position: absolute;
-    right: 8px;
-    bottom: 8px;
-    width: 32px;
-    height: 32px;
+    right: 4px;
+    bottom: 4px;
+    width: 24px;
+    height: 24px;
     padding: 0;
-    border: 1px solid var(--rule);
-    border-radius: 50%;
-    background: var(--paper);
-    color: var(--ink);
+    border: 0;
+    background: transparent;
+    color: var(--paper);
+    filter: drop-shadow(0 0 1.5px var(--ink));
     cursor: pointer;
     pointer-events: auto;
     opacity: 0;
@@ -1932,21 +1932,21 @@ body:has(.container.home) .navigation .navigation-title {
       position: absolute;
       inset: 0;
       margin: auto;
-      width: 10px;
-      height: 12px;
-      border-left: 3px solid currentcolor;
-      border-right: 3px solid currentcolor;
+      width: 8px;
+      height: 10px;
+      border-left: 2px solid currentcolor;
+      border-right: 2px solid currentcolor;
       box-sizing: border-box;
     }
 
     &[aria-pressed="true"]::before {
       width: 0;
       height: 0;
-      border-left: 10px solid currentcolor;
+      border-left: 8px solid currentcolor;
       border-right: 0;
-      border-top: 6px solid transparent;
-      border-bottom: 6px solid transparent;
-      margin-left: 12px;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      margin-left: 9px;
     }
 
     &:focus {
@@ -1956,16 +1956,16 @@ body:has(.container.home) .navigation .navigation-title {
     &:focus-visible {
       opacity: 1;
       outline: 2px solid var(--blush);
-      outline-offset: 2px;
+      outline-offset: 1px;
     }
 
     @media (hover: none) {
-      opacity: 0.6;
+      opacity: 0.35;
     }
   }
 
   .motion-pause[aria-pressed="true"] {
-    opacity: 0.85;
+    opacity: 0.7;
   }
 
   // small lamps closer to each other than a fingertip are not buttons at the
@@ -1980,7 +1980,7 @@ body:has(.container.home) .navigation .navigation-title {
 // pause button is the cover's, on the page or in the zoom.
 .frontispiece-motion:hover .motion-pause,
 .zoom:hover .motion-pause {
-  opacity: 0.85;
+  opacity: 0.6;
 }
 
 // A cover whose light comes in waits hidden for its unlit drawing; motion.js shows

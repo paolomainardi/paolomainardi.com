@@ -207,8 +207,8 @@ for i, o in ids.items():
         if hook is None:
             hook = [int(np.median(xx[m & (yy < b[1] + 4)])), b[1]]
         length = max(max(b[3] - hook[1], b[2] - b[0]), 1)
-        # a limb only makes a small movement, a lamp or a tool swings more the shorter it is
-        base = 0.25 if k == "limb" else min(1.0, 65.0 / length)
+        # a limb turns about 5 degrees at most; a lamp or a tool swings more the shorter it is
+        base = 1.6 if k == "limb" else min(1.0, 65.0 / length)
         swings.append({"id": i, "anchor": [int(hook[0]), int(hook[1])], "box": b, "amp": round(base * a, 3), "idle": k == "limb"})
         np.maximum(turn, soft(m, 4 if k == "limb" else 6, 2), out=turn)
     elif k == "thread" and pulse_spec is not False:
