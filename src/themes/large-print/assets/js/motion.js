@@ -417,6 +417,8 @@
   var vs = shader(gl.VERTEX_SHADER, VS);
   var fs = shader(gl.FRAGMENT_SHADER, FS);
   if (!vs || !fs) return release();
+  // The motion map is three times the cover's height; a GPU that cannot hold it keeps the still cover.
+  if (gl.getParameter(gl.MAX_TEXTURE_SIZE) < Math.max(W, H * 3)) return release(), state("texture too large for this GPU");
   var prog = gl.createProgram();
   gl.attachShader(prog, vs);
   gl.attachShader(prog, fs);
@@ -497,6 +499,7 @@
     function one() {
       if (gen !== generation || --left) return;
       missing.forEach(function (unit) { if (picture0) upload(unit, picture0); });
+      if (zoom && started) zoomPicture();
       redraw();
       if (done) done();
     }
@@ -658,14 +661,21 @@
   // The animation goes with the reader into the zoom, at full size, and comes back.
   // A zoom opened before the cover is ready is joined when it is.
   var zoomLoad = 0;
+  // the full-size picture of the current scheme, for the zoom
+  function zoomPicture() {
+    var z = ++zoomLoad;
+    var url = (ctx.night && img.getAttribute("data-zoom-night")) || img.getAttribute("data-zoom") || zoom.full;
+    fetchImage(url, function (im) { if (im && zoom && z === zoomLoad) { upload(0, im); redraw(); } });
+  }
   function enterZoom() {
     zoom.dialog.appendChild(stage);
     stage.classList.add("in-zoom");
-    var z = ++zoomLoad;
-    fetchImage(zoom.full, function (im) { if (im && zoom && z === zoomLoad) { upload(0, im); redraw(); } });
+    zoomPicture();
     zoom.image.addEventListener("load", place);
+    // the overlay scales in: measure again once it has settled
+    zoom.dialog.addEventListener("animationend", place, { once: true });
+    setTimeout(place, 400);
     place();
-    requestAnimationFrame(place);
     start();
   }
   img.addEventListener("zoom:open", function (ev) {
