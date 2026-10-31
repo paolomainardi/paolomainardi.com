@@ -1840,6 +1840,163 @@ body:has(.container.home) .navigation .navigation-title {
   filter: none;
 }
 
+// An animated cover: motion.js lays a canvas over the image, inside its
+// border, and fades it in once the first frame is drawn. The image stays
+// underneath and takes the clicks, so the overlay still opens.
+.frontispiece-motion {
+  position: relative;
+}
+
+// The animated cover's canvas and switches, over the cover on the page or over
+// the enlarged picture in the zoom (motion.js moves the stage between the two).
+.motion-stage {
+  position: absolute;
+  pointer-events: none;
+
+  canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    filter: var(--image-dim, none);
+  }
+
+  &.on canvas {
+    opacity: 1;
+  }
+
+  // a cover drawn for the dark scheme is not dimmed there, on the page or in the zoom
+  &.has-night canvas {
+    filter: none;
+  }
+
+  // The lamps a reader can switch: one button over each, from the cover's object
+  // sheet. Nothing is drawn over the picture; the lamp itself answers the pointer
+  // (motion.js brightens it), and the focus ring shows only for the keyboard.
+  .motion-switches {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .switch {
+    position: absolute;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+
+    &.big {
+      border-radius: 12px;
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--blush);
+      outline-offset: 3px;
+    }
+  }
+
+  // The pause button: a small paper disc in the lower right corner, seen while the
+  // pointer is over the cover or the button has focus, and faintly on touch screens,
+  // which have no pointer to show it.
+  .motion-pause {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--rule);
+    border-radius: 50%;
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    pointer-events: auto;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+
+    // two bars while it plays, a triangle once paused
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: 10px;
+      height: 12px;
+      border-left: 3px solid currentcolor;
+      border-right: 3px solid currentcolor;
+      box-sizing: border-box;
+    }
+
+    &[aria-pressed="true"]::before {
+      width: 0;
+      height: 0;
+      border-left: 10px solid currentcolor;
+      border-right: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      margin-left: 12px;
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    &:focus-visible {
+      opacity: 1;
+      outline: 2px solid var(--blush);
+      outline-offset: 2px;
+    }
+
+    @media (hover: none) {
+      opacity: 0.6;
+    }
+  }
+
+  .motion-pause[aria-pressed="true"] {
+    opacity: 0.85;
+  }
+
+  // small lamps closer to each other than a fingertip are not buttons at the
+  // size the cover is drawn (motion.js marks the layer crowded); in the zoom they
+  // usually are
+  .crowded .switch.small {
+    display: none;
+  }
+}
+
+// The stage lets the pointer through to the image, so the hover that shows the
+// pause button is the cover's, on the page or in the zoom.
+.frontispiece-motion:hover .motion-pause,
+.zoom:hover .motion-pause {
+  opacity: 0.85;
+}
+
+// A cover whose light comes in waits hidden for its unlit drawing; motion.js shows
+// it as soon as the canvas is ready, and this animation shows it after 1.2 s in
+// any case, so a failed script never hides the cover.
+.motion-wait .frontispiece-motion > picture img {
+  opacity: 0;
+  animation: motion-show 0s 1.2s forwards;
+}
+
+@keyframes motion-show {
+  to {
+    opacity: 1;
+  }
+}
+
 // The image overlay, opened by zoom.js. An image that would show larger on its
 // own gets the zoom cursor. The overlay is a dim field with the image fitted
 // inside the viewport and the caption under it, both in fixed colours so they
@@ -3251,7 +3408,8 @@ summary:focus-visible {
     .to-top,
     .readbar,
     .rail,
-    .toc {
+    .toc,
+    .motion-stage {
       display: none;
     }
 

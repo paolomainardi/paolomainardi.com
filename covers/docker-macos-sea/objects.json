@@ -1,0 +1,193 @@
+[
+ {
+  "id": "ocean",
+  "kind": "water",
+  "label": "the ocean and breaking waves across the scene and laptop",
+  "motion": [
+   "ripple"
+  ],
+  "box": [
+   0,
+   464,
+   1536,
+   859
+  ],
+  "color": "#FF0000"
+ },
+ {
+  "id": "floating-container",
+  "kind": "float",
+  "label": "the floating shipping container with its attached lifebuoy",
+  "motion": [
+   "bob"
+  ],
+  "box": [
+   694,
+   450,
+   1000,
+   646
+  ],
+  "color": "#00FF00"
+ },
+ {
+  "id": "background-sky",
+  "kind": "sky",
+  "label": "the open sky behind the laptop",
+  "motion": [],
+  "box": [
+   0,
+   0,
+   1536,
+   264
+  ],
+  "color": "#0000FF"
+ },
+ {
+  "id": "screen-sky",
+  "kind": "sky",
+  "label": "the separate open sky inside the laptop screen",
+  "motion": [],
+  "box": [
+   83,
+   123,
+   775,
+   367
+  ],
+  "color": "#FFFF00"
+ },
+ {
+  "id": "storm-cloud-bank",
+  "kind": "cloud",
+  "label": "the connected storm clouds behind the laptop",
+  "motion": [
+   "drift"
+  ],
+  "box": [
+   0,
+   7,
+   1536,
+   483
+  ],
+  "color": "#FF00FF"
+ },
+ {
+  "id": "screen-left-cloud",
+  "kind": "cloud",
+  "label": "the pale cloud bank on the left inside the screen",
+  "motion": [
+   "drift"
+  ],
+  "box": [
+   105,
+   216,
+   528,
+   428
+  ],
+  "color": "#00FFFF"
+ },
+ {
+  "id": "screen-right-cloud",
+  "kind": "cloud",
+  "label": "the pale cloud bank on the right inside the screen",
+  "motion": [
+   "drift"
+  ],
+  "box": [
+   481,
+   215,
+   831,
+   474
+  ],
+  "color": "#FF8000"
+ },
+ {
+  "id": "screen-low-cloud",
+  "kind": "cloud",
+  "label": "the low cloud bank inside the screen above the horizon",
+  "motion": [
+   "drift"
+  ],
+  "box": [
+   139,
+   370,
+   731,
+   482
+  ],
+  "color": "#8000FF"
+ },
+ {
+  "id": "lifebuoy-rope",
+  "kind": "thread",
+  "label": "the rope hanging from the container to the lifebuoy",
+  "motion": [
+   "pulse"
+  ],
+  "box": [
+   897,
+   508,
+   926,
+   559
+  ],
+  "color": "#00FF80"
+ },
+ {
+  "id": "coastal-cypress-1",
+  "kind": "plant",
+  "label": "the leftmost cypress tree on the distant right coast",
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   1452,
+   429,
+   1464,
+   461
+  ],
+  "color": "#FF0080"
+ },
+ {
+  "id": "coastal-cypress-2",
+  "kind": "plant",
+  "label": "the second cypress tree on the distant right coast",
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   1468,
+   420,
+   1482,
+   460
+  ],
+  "color": "#80FF00"
+ },
+ {
+  "id": "coastal-cypress-3",
+  "kind": "plant",
+  "label": "the tallest cypress tree on the distant right coast",
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   1484,
+   408,
+   1499,
+   460
+  ],
+  "color": "#0080FF"
+ },
+ {
+  "id": "coastal-cypress-4",
+  "kind": "plant",
+  "label": "the rightmost cypress tree on the distant right coast",
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   1503,
+   407,
+   1517,
+   458
+  ],
+  "color": "#FFFFFF"
+ }
+]

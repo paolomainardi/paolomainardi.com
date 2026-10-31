@@ -62,6 +62,29 @@
             {{ $img := partial "book/asset.html" . }}
             {{ $nightPath := replaceRE `\.webp$` "-night.webp" . }}
             {{ $night := cond (and (ne $nightPath .) (resources.Get (strings.TrimPrefix "/" $nightPath))) (partial "book/asset.html" $nightPath) dict }}
+            {{- /* A cover built by scripts/cover-engine has <name>-motion.webp and
+                   <name>-motion.json next to it, and the state drawings its effects
+                   need (<name>-unlit.webp, <name>-flash.webp and their -night
+                   versions). motion.js draws it on a canvas over the image; the
+                   attributes below give it every file, and the shared rain and
+                   drop textures when the cover uses them. */ -}}
+            {{ $motion := dict }}
+            {{ $base := replaceRE `\.webp$` "" (strings.TrimPrefix "/" .) }}
+            {{ $map := cond (ne $base (strings.TrimPrefix "/" .)) (resources.Get (printf "%s-motion.webp" $base)) nil }}
+            {{ $mapData := cond (ne $map nil) (resources.Get (printf "%s-motion.json" $base)) nil }}
+            {{ if and $map $mapData }}
+            {{ $d := $mapData.Content | transform.Unmarshal }}
+            {{ $attrs := dict "data-motion-map" $map.RelPermalink "data-motion" $mapData.Content }}
+            {{ range $d.states }}{{ $s := . }}{{ with resources.Get (printf "%s-%s.webp" $base $s) }}{{ $attrs = merge $attrs (dict (printf "data-motion-%s" $s) .RelPermalink) }}{{ end }}{{ end }}
+            {{ if in $d.effects "rain" }}{{ with resources.Get "images/motion/rain.webp" }}{{ $attrs = merge $attrs (dict "data-motion-rain" .RelPermalink) }}{{ end }}{{ end }}
+            {{ if in $d.effects "glass" }}{{ with resources.Get "images/motion/drops.webp" }}{{ $attrs = merge $attrs (dict "data-motion-drops" .RelPermalink) }}{{ end }}{{ end }}
+            {{ $motion = dict "map" $map.RelPermalink "attrs" $attrs "entry" $d.entry }}
+            {{ end }}
+            {{- /* When the cover's light comes in, the cover waits hidden for its
+                   unlit drawing, at most 1.2 s (the stylesheet shows it again),
+                   so the page never shows it lit, then dark, then lit. */ -}}
+            {{ if $motion.entry }}<script>if(window.WebGLRenderingContext&&!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches))document.documentElement.classList.add("motion-wait")</script>{{ end }}
+            {{ with $motion.map }}<div class="frontispiece-motion">{{ end }}
             <picture class="frontispiece-picture">
                 {{ with $night }}<source class="night" media="(prefers-color-scheme: dark)" srcset="{{ or .srcset .url }}"{{ if .srcset }} sizes="(min-width: 868px) 820px, 100vw"{{ end }} />{{ end }}
                 <img class="frontispiece" src="{{ $img.url | safeURL }}" alt="{{ $.Title }}"
@@ -69,8 +92,10 @@
                     {{- with $img.srcset }} srcset="{{ . }}" sizes="(min-width: 868px) 820px, 100vw"{{ end }}
                     {{- with $img.zoom }} data-zoom="{{ . }}" data-zoom-width="{{ $img.zoomWidth }}"{{ end }}
                     {{- with $night.zoom }} data-zoom-night="{{ . }}"{{ end }}
+                    {{- range $k, $v := $motion.attrs }} {{ printf "%s=\"%s\"" $k (htmlEscape $v) | safeHTMLAttr }}{{ end }}
                     loading="eager" fetchpriority="high" decoding="async" />
             </picture>
+            {{ with $motion.map }}</div>{{ end }}
             {{ end }}
             <div class="text">
                 {{ .Content }}

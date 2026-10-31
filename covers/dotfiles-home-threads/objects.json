@@ -1,0 +1,279 @@
+[
+ {
+  "id": "left-pendant",
+  "kind": "lamp",
+  "label": "Left pendant lamp",
+  "motion": [
+   "swing"
+  ],
+  "box": [
+   350,
+   404,
+   420,
+   462
+  ],
+  "color": "#FF0000"
+ },
+ {
+  "id": "left-pendant-bulb",
+  "kind": "light",
+  "label": "Left pendant bulb",
+  "light": "pendant",
+  "of": "left-pendant",
+  "motion": [],
+  "box": [
+   377,
+   462,
+   394,
+   469
+  ],
+  "color": "#00FF00"
+ },
+ {
+  "id": "center-pendant",
+  "kind": "lamp",
+  "label": "Center pendant lamp",
+  "motion": [
+   "swing"
+  ],
+  "box": [
+   638,
+   404,
+   698,
+   475
+  ],
+  "color": "#0000FF"
+ },
+ {
+  "id": "center-pendant-bulb",
+  "kind": "light",
+  "label": "Center pendant bulb",
+  "light": "pendant",
+  "of": "center-pendant",
+  "motion": [],
+  "box": [
+   659,
+   474,
+   676,
+   482
+  ],
+  "color": "#FFFF00"
+ },
+ {
+  "id": "right-pendant",
+  "kind": "lamp",
+  "label": "Right pendant lamp",
+  "motion": [
+   "swing"
+  ],
+  "box": [
+   1227,
+   404,
+   1283,
+   475
+  ],
+  "color": "#FF00FF"
+ },
+ {
+  "id": "right-pendant-bulb",
+  "kind": "light",
+  "label": "Right pendant bulb",
+  "light": "pendant",
+  "of": "right-pendant",
+  "motion": [],
+  "box": [
+   1247,
+   474,
+   1263,
+   482
+  ],
+  "color": "#00FFFF"
+ },
+ {
+  "id": "left-window",
+  "kind": "light",
+  "label": "Left window panes",
+  "light": "window",
+  "motion": [],
+  "box": [
+   168,
+   456,
+   180,
+   593
+  ],
+  "color": "#FF8000"
+ },
+ {
+  "id": "right-window",
+  "kind": "light",
+  "label": "Right window panes",
+  "light": "window",
+  "motion": [],
+  "box": [
+   1371,
+   456,
+   1382,
+   593
+  ],
+  "color": "#8000FF"
+ },
+ {
+  "id": "outdoor-left-shrub",
+  "kind": "plant",
+  "label": "Left outdoor shrub",
+  "outdoor": true,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   12,
+   556,
+   138,
+   778
+  ],
+  "color": "#00FF80"
+ },
+ {
+  "id": "floor-plant",
+  "kind": "plant",
+  "label": "Floor plant",
+  "outdoor": false,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   175,
+   590,
+   236,
+   672
+  ],
+  "color": "#FF0080"
+ },
+ {
+  "id": "desk-plant",
+  "kind": "plant",
+  "label": "Desk plant",
+  "outdoor": false,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   410,
+   528,
+   460,
+   577
+  ],
+  "color": "#80FF00"
+ },
+ {
+  "id": "shelf-plant",
+  "kind": "plant",
+  "label": "Shelf trailing plant",
+  "outdoor": false,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   702,
+   456,
+   771,
+   553
+  ],
+  "color": "#0080FF"
+ },
+ {
+  "id": "cabinet-plant",
+  "kind": "plant",
+  "label": "Cabinet trailing plant",
+  "outdoor": false,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   861,
+   584,
+   928,
+   678
+  ],
+  "color": "#FFFFFF"
+ },
+ {
+  "id": "vase-branches",
+  "kind": "plant",
+  "label": "Vase leafy branches",
+  "outdoor": false,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   1311,
+   580,
+   1366,
+   663
+  ],
+  "color": "#800000"
+ },
+ {
+  "id": "outdoor-right-shrub",
+  "kind": "plant",
+  "label": "Right outdoor shrub",
+  "outdoor": true,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   1412,
+   656,
+   1518,
+   822
+  ],
+  "color": "#008000"
+ },
+ {
+  "id": "foreground-left-plant",
+  "kind": "plant",
+  "label": "Left foreground plant",
+  "outdoor": true,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   17,
+   756,
+   78,
+   814
+  ],
+  "color": "#000080"
+ },
+ {
+  "id": "foreground-center-plant",
+  "kind": "plant",
+  "label": "Center foreground plant",
+  "outdoor": true,
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   166,
+   755,
+   282,
+   835
+  ],
+  "color": "#808000"
+ },
+ {
+  "id": "connected-threads",
+  "kind": "thread",
+  "label": "Connected pink cables",
+  "motion": [
+   "pulse"
+  ],
+  "box": [
+   335,
+   521,
+   1338,
+   810
+  ],
+  "color": "#800080"
+ }
+]

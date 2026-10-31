@@ -4,7 +4,8 @@ title = "Mastering Key Remapping on Linux: A Practical Guide with xremap"
 slug = "linux-remapping-keys-with-xremap"
 tags = ["linux", "xremap", "wayland", "keyboard"]
 draft = "false"
-images = ["images/posts/9-linux-remap-keys/featured.webp"]
+featuredImage = "/images/posts/9-linux-remap-keys/xremap-switchboard.webp"
+images = ["/images/posts/9-linux-remap-keys/xremap-switchboard.webp"]
 +++
 
 ## Introduction

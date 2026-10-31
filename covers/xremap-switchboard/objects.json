@@ -1,0 +1,245 @@
+[
+ {
+  "id": "pendant-bulb",
+  "kind": "light",
+  "label": "pendant lamp bulb",
+  "motion": [],
+  "light": "pendant",
+  "box": [
+   663,
+   169,
+   711,
+   206
+  ],
+  "color": "#FF0000",
+  "of": "pendant-shade"
+ },
+ {
+  "id": "indicator-top-1",
+  "kind": "light",
+  "label": "lit switchboard indicator, top row, column 1",
+  "motion": [],
+  "light": "spot",
+  "box": [
+   696,
+   331,
+   712,
+   347
+  ],
+  "color": "#00FF00"
+ },
+ {
+  "id": "indicator-top-3",
+  "kind": "light",
+  "label": "lit switchboard indicator, top row, column 3",
+  "motion": [],
+  "light": "spot",
+  "box": [
+   806,
+   326,
+   821,
+   343
+  ],
+  "color": "#0000FF"
+ },
+ {
+  "id": "indicator-top-6",
+  "kind": "light",
+  "label": "lit switchboard indicator, top row, column 6",
+  "motion": [],
+  "light": "spot",
+  "box": [
+   1013,
+   319,
+   1028,
+   337
+  ],
+  "color": "#FFFF00"
+ },
+ {
+  "id": "indicator-top-7",
+  "kind": "light",
+  "label": "lit switchboard indicator, top row, column 7",
+  "motion": [],
+  "light": "spot",
+  "box": [
+   1083,
+   317,
+   1099,
+   334
+  ],
+  "color": "#FF00FF"
+ },
+ {
+  "id": "indicator-top-8",
+  "kind": "light",
+  "label": "lit switchboard indicator, top row, column 8",
+  "motion": [],
+  "light": "spot",
+  "box": [
+   1153,
+   314,
+   1169,
+   332
+  ],
+  "color": "#00FFFF"
+ },
+ {
+  "id": "indicator-top-9",
+  "kind": "light",
+  "label": "lit switchboard indicator, top row, column 9",
+  "motion": [],
+  "light": "spot",
+  "box": [
+   1243,
+   311,
+   1259,
+   329
+  ],
+  "color": "#FF8000"
+ },
+ {
+  "id": "indicator-bottom-1",
+  "kind": "light",
+  "label": "lit switchboard indicator, bottom row, column 1",
+  "motion": [],
+  "light": "spot",
+  "box": [
+   696,
+   433,
+   713,
+   450
+  ],
+  "color": "#8000FF"
+ },
+ {
+  "id": "indicator-bottom-3",
+  "kind": "light",
+  "label": "lit switchboard indicator, bottom row, column 3",
+  "motion": [],
+  "light": "spot",
+  "box": [
+   806,
+   432,
+   822,
+   449
+  ],
+  "color": "#00FF80"
+ },
+ {
+  "id": "indicator-bottom-4",
+  "kind": "light",
+  "label": "lit switchboard indicator, bottom row, column 4",
+  "motion": [],
+  "light": "spot",
+  "box": [
+   874,
+   431,
+   888,
+   448
+  ],
+  "color": "#FF0080"
+ },
+ {
+  "id": "indicator-bottom-5",
+  "kind": "light",
+  "label": "lit switchboard indicator, bottom row, column 5",
+  "motion": [],
+  "light": "spot",
+  "box": [
+   943,
+   430,
+   960,
+   447
+  ],
+  "color": "#80FF00"
+ },
+ {
+  "id": "indicator-bottom-6",
+  "kind": "light",
+  "label": "lit switchboard indicator, bottom row, column 6",
+  "motion": [],
+  "light": "spot",
+  "box": [
+   1018,
+   429,
+   1030,
+   446
+  ],
+  "color": "#0080FF"
+ },
+ {
+  "id": "indicator-bottom-7",
+  "kind": "light",
+  "label": "lit switchboard indicator, bottom row, column 7",
+  "motion": [],
+  "light": "spot",
+  "box": [
+   1085,
+   428,
+   1099,
+   445
+  ],
+  "color": "#FFFFFF"
+ },
+ {
+  "id": "indicator-bottom-8",
+  "kind": "light",
+  "label": "lit switchboard indicator, bottom row, column 8",
+  "motion": [],
+  "light": "spot",
+  "box": [
+   1154,
+   427,
+   1170,
+   444
+  ],
+  "color": "#800000"
+ },
+ {
+  "id": "indicator-bottom-9",
+  "kind": "light",
+  "label": "lit switchboard indicator, bottom row, column 9",
+  "motion": [],
+  "light": "spot",
+  "box": [
+   1243,
+   425,
+   1260,
+   443
+  ],
+  "color": "#008000"
+ },
+ {
+  "id": "pendant-shade",
+  "kind": "lamp",
+  "label": "pendant lamp shade with its cord",
+  "motion": [
+   "swing"
+  ],
+  "light": null,
+  "box": [
+   589,
+   0,
+   783,
+   200
+  ],
+  "color": "#000080"
+ },
+ {
+  "id": "patch-cables",
+  "kind": "thread",
+  "label": "rose patch cables from keyboard to switchboard sockets",
+  "motion": [
+   "pulse"
+  ],
+  "light": null,
+  "box": [
+   732,
+   363,
+   1167,
+   658
+  ],
+  "color": "#808000"
+ }
+]

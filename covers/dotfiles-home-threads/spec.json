@@ -1,0 +1,13 @@
+{
+  "publish": "src/assets/images/posts/16-yadm/dotfiles-home-threads",
+  "entry": true,
+  "lights": {
+    "breathe": 0.7
+  },
+  "pulse": {
+    "from": [
+      1352,
+      806
+    ]
+  }
+}

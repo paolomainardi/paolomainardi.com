@@ -36,3 +36,8 @@ logs:
 # Open local site in browser
 open:
     $BROWSER http://paolomainardi.loc:1313
+
+# Build an animated cover from its sources in covers/<name>, e.g. just cover dotfiles-home-threads
+cover name *args:
+    docker build -q -t paolomainardi/cover-engine scripts/cover-engine >/dev/null
+    docker run --rm --user "$(id -u):$(id -g)" -v "$PWD":/site paolomainardi/cover-engine covers/{{name}} {{args}}

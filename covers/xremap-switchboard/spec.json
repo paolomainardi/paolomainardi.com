@@ -1,0 +1,12 @@
+{
+  "publish": "src/assets/images/posts/9-linux-remap-keys/xremap-switchboard",
+  "entry": true,
+  "lights": {
+    "pattern": {
+      "spot": "calls"
+    }
+  },
+  "pulse": {
+    "from": "bottom"
+  }
+}

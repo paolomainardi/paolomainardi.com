@@ -1,0 +1,156 @@
+[
+ {
+  "id": "tree",
+  "kind": "plant",
+  "label": "the tree, including its foliage, branches and trunk, without the pot",
+  "motion": [
+   "sway"
+  ],
+  "box": [
+   355,
+   245,
+   976,
+   647
+  ],
+  "color": "#FF0000"
+ },
+ {
+  "id": "rake",
+  "kind": "tool",
+  "label": "the rake held by the gardener",
+  "motion": [
+   "swing"
+  ],
+  "anchor": [
+   1008,
+   615
+  ],
+  "box": [
+   897,
+   611,
+   1013,
+   743
+  ],
+  "color": "#00FF00"
+ },
+ {
+  "id": "dead-leaf-far-left",
+  "kind": "leaf",
+  "label": "the hanging dead leaf at the far left of the tree",
+  "motion": [
+   "fall"
+  ],
+  "box": [
+   381,
+   507,
+   405,
+   550
+  ],
+  "color": "#0000FF"
+ },
+ {
+  "id": "dead-leaf-lower-left",
+  "kind": "leaf",
+  "label": "the hanging dead leaf below the left branch",
+  "motion": [
+   "fall"
+  ],
+  "box": [
+   430,
+   529,
+   453,
+   572
+  ],
+  "color": "#FFFF00"
+ },
+ {
+  "id": "dead-leaf-bottom-left",
+  "kind": "leaf",
+  "label": "the lowest hanging dead leaf on the left",
+  "motion": [
+   "fall"
+  ],
+  "box": [
+   479,
+   571,
+   503,
+   613
+  ],
+  "color": "#FF00FF"
+ },
+ {
+  "id": "dead-leaf-inner-right",
+  "kind": "leaf",
+  "label": "the hanging dead leaf just right of the trunk",
+  "motion": [
+   "fall"
+  ],
+  "box": [
+   741,
+   542,
+   766,
+   583
+  ],
+  "color": "#00FFFF"
+ },
+ {
+  "id": "dead-leaf-bottom-right",
+  "kind": "leaf",
+  "label": "the lowest hanging dead leaf on the right",
+  "motion": [
+   "fall"
+  ],
+  "box": [
+   818,
+   583,
+   843,
+   626
+  ],
+  "color": "#FF8000"
+ },
+ {
+  "id": "dead-leaf-lower-right",
+  "kind": "leaf",
+  "label": "the hanging dead leaf above and right of the lowest right leaf",
+  "motion": [
+   "fall"
+  ],
+  "box": [
+   852,
+   540,
+   877,
+   580
+  ],
+  "color": "#8000FF"
+ },
+ {
+  "id": "dead-leaf-outer-right",
+  "kind": "leaf",
+  "label": "the hanging dead leaf at the end of the lower right branch",
+  "motion": [
+   "fall"
+  ],
+  "box": [
+   899,
+   534,
+   925,
+   573
+  ],
+  "color": "#00FF80"
+ },
+ {
+  "id": "dead-leaf-tip-right",
+  "kind": "leaf",
+  "label": "the curled dead leaf at the far right tip of the tree",
+  "motion": [
+   "fall"
+  ],
+  "box": [
+   951,
+   391,
+   976,
+   428
+  ],
+  "color": "#FF0080"
+ }
+]
