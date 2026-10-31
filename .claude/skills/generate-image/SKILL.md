@@ -138,6 +138,10 @@ webp:lossless=true covers/<name>/cover.webp`), and every drawing after it
    one stride seen from the side, facing right, then the pose it ends in. A
    character that only flies is one drawing, `grid` `[1, 1]`. Look at every
    cell: the head, the size and the colours must not change between frames.
+   An actor the reader can interact with once it rests (pet a cat, wave at a
+   robot) needs a second sheet of the poses it answers with, drawn from the
+   first sheet attached, plus one cell with what rises over it, such as a
+   heart; ask Paolo what the interaction is.
 
    Then ask Codex for the object sheet, the cover attached, with this prompt:
 

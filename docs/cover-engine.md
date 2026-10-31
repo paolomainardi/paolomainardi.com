@@ -115,12 +115,31 @@ builder keys out), and the spec says where it goes:
 | `delay`  | Seconds after the cover is shown before it sets off                                             |
 | `bob`    | Pixels it rises and falls while it moves, for something flying                                  |
 | `tilt`   | `true`: it leans with the slope of its path, by 17 degrees at most                              |
+| `interact` | What the reader can do with it once it rests, below                                            |
 
 The builder stands every frame on the same feet, the bottom of the drawing under the
 middle of its upper body, so the cycle does not jump. It packs the frames of every
 actor, the shooting star and the glyphs of the terminals in one atlas, `<name>-sprites.webp`, at twice the size
 they are shown. An actor moves once each time the cover is shown; it faces the way
 it goes, and the sheet is drawn facing right.
+
+An actor that rests at the end of its path (it has an `end` frame) can answer the
+reader. `interact` adds a button over it, shown once it is there, named by `label`
+("Pet the cat"). Pressing it plays a few poses from a second sheet, then the actor
+goes back to its resting pose, and a small sprite can rise over its head and fade,
+such as a heart. A sound can play with it, only because the reader pressed it:
+
+| Key      | What                                                                        |
+| :------- | :-------------------------------------------------------------------------- |
+| `sheet`  | The sheet of its poses, drawn like the actor's own                          |
+| `grid`   | `[columns, rows]` of that sheet                                             |
+| `frames` | The cells played in turn, a cell may repeat                                 |
+| `fps`    | Frames a second                                                             |
+| `rise`   | Optional: the cell that holds what rises, such as a heart or a note         |
+| `label`  | The button's name for a screen reader, what the reader does                 |
+| `sound`  | Optional: `purr`, a purr made in the browser, or the address of a sound file |
+
+The builder scales the second sheet so its poses are as tall as the resting pose.
 
 ## Effects
 

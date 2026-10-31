@@ -48,7 +48,8 @@ Spec keys, all optional except publish:
   meteor      {every: [min, max] s, length}: a shooting star crosses the sky objects now and then
   terminal    {speed, columns}: how fast the characters fall down a terminal screen, how many columns
   actors      [{id, sheet, grid, walk, fps, end, height, path, speed, delay, bob, tilt}]:
-              characters drawn apart from the scene that move along a path (see docs)
+              characters drawn apart from the scene that move along a path, and that the reader
+              may interact with once they stop: interact {sheet, grid, frames, fps, rise, label, sound} (see docs)
 """
 import json
 import os
@@ -385,10 +386,31 @@ for a in spec.get("actors", []):
     cols, rows = a.get("grid", [1, 1])
     cw, ch = sheet.width // cols, sheet.height // rows
     cells = [sheet.crop((c * cw, r * ch, (c + 1) * cw, (r + 1) * ch)) for r in range(rows) for c in range(cols)]
+    # the poses it takes when the reader interacts with it, from a second sheet; they stand on
+    # the same feet as the others, and what rises over it (a heart, a note) is a sprite of its own
+    act, pcells, rise = a.get("interact"), [], None
+    if act:
+        psheet = key_out(Image.open(path(act["sheet"])).convert("RGBA"))
+        pc, pr = act.get("grid", [1, 1])
+        pw, ph = psheet.width // pc, psheet.height // pr
+        allp = [psheet.crop((c * pw, r * ph, (c + 1) * pw, (r + 1) * ph)) for r in range(pr) for c in range(pc)]
+        # a second sheet is drawn at its own scale: its poses take the height of the pose the
+        # actor rests in
+        def tall(im):
+            b = Image.fromarray((np.asarray(im)[..., 3] > 32).astype(np.uint8) * 255).getbbox()
+            return b[3] - b[1] if b else 1
+        f = tall(cells[a.get("end", -1)]) / np.median([tall(allp[i]) for i in act["frames"]])
+        pcells = [allp[i].resize((round(pw * f), round(ph * f)), Image.LANCZOS) for i in act["frames"]]
+        if "rise" in act:
+            hc = allp[act["rise"]]
+            hb = hc.getbbox()
+            if not hb:
+                fail(f"actor {a['id']}: the rise cell is empty")
+            rise = hc.crop(hb)
     # every frame stands on the same feet: the bottom of the drawing, under the middle of
     # its upper body, which does not move when the legs do
     feet = []
-    for cell in cells:
+    for cell in cells + pcells:
         al = np.asarray(cell)[..., 3] > 32
         if not al.any():
             fail(f"actor {a['id']}: a cell of {a['sheet']} is empty")
@@ -402,13 +424,22 @@ for a in spec.get("actors", []):
     # stored at twice the size it is shown in the cover, for screens at two pixels a pixel
     k = min(1.0, 2 * a["height"] / up)
     frames = []
-    for cell, f in zip(cells, feet):
+    for cell, f in zip(cells + pcells, feet):
         fr = cell.crop((f[0] - left, f[1] - up, f[0] + right, f[1] + 2))
         frames.append(add_sprite(fr.resize((max(1, round(fr.width * k)), max(1, round(fr.height * k))), Image.LANCZOS)))
+    interact = None
+    if act:
+        interact = {"frames": frames[len(cells):], "fps": act.get("fps", 4), "label": act.get("label", a["id"]),
+                    "sound": act.get("sound")}
+        if rise:
+            hk = min(1.0, 2 * a["height"] * 0.45 / rise.height)
+            interact["rise"] = add_sprite(rise.resize((round(rise.width * hk), round(rise.height * hk)), Image.LANCZOS))
+            interact["riseK"] = round(a["height"] * 0.45 / (rise.height * hk), 4)
+        del frames[len(cells):]
     walk = a.get("walk", [0, len(cells) - 1])
     actors.append({"id": a["id"], "frames": frames, "anchor": [round(left * k), round(up * k)], "k": round(1 / k * a["height"] / up, 4),
                    "path": a["path"], "speed": a.get("speed", 60), "delay": a.get("delay", 0), "fps": a.get("fps", 8),
-                   "walk": walk, "end": a.get("end", -1), "bob": a.get("bob", 0), "tilt": bool(a.get("tilt"))})
+                   "walk": walk, "end": a.get("end", -1), "bob": a.get("bob", 0), "tilt": bool(a.get("tilt")), "interact": interact})
 
 glyphs = None
 if terminals:

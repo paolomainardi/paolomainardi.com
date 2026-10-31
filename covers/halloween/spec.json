@@ -32,7 +32,16 @@
       "height": 62,
       "path": [[-90, 612], [300, 606], [620, 600], [880, 592]],
       "speed": 46,
-      "delay": 3
+      "delay": 3,
+      "interact": {
+        "sheet": "cat-pet.webp",
+        "grid": [4, 2],
+        "frames": [0, 1, 2, 1, 2, 3, 3, 4, 4, 4],
+        "fps": 4,
+        "rise": 5,
+        "label": "Pet the cat",
+        "sound": "purr"
+      }
     }
   ]
 }

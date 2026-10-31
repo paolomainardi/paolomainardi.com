@@ -48,6 +48,10 @@
       twinkle: data.twinkle || [], beam: data.beam || [], steam: data.steam || [], actor: data.actors || [],
       terminal: data.terminal || []
     };
+    // the actors' slots in the shader: each actor, then what rises over each one the reader
+    // can interact with
+    var risers = list.actor.filter(function (a) { return a.interact && a.interact.rise !== undefined; });
+    list.slot = new Array(list.actor.length + risers.length);
     // GLSL arrays need a size of at least one; the counts below say how many are used.
     function size(name) { return Math.max(list[name].length, 1); }
     function flat(items, pick) {
@@ -382,10 +386,10 @@
       {
         name: "actors",
         // characters drawn apart from the scene walk or fly along their path, frame by frame
-        decl: function () { return "uniform vec4 actorA[" + size("actor") + "], actorB[" + size("actor") + "], actorC[" + size("actor") + "];"; },
+        decl: function () { return "uniform vec4 actorA[" + size("slot") + "], actorB[" + size("slot") + "], actorC[" + size("slot") + "];"; },
         color: [
           "if (spritesOn > 0.5) {",
-          "  for (int i = 0; i < " + size("actor") + "; i++) {",
+          "  for (int i = 0; i < " + size("slot") + "; i++) {",
           "    vec4 A = actorA[i];",
           "    if (A.w > 0.0) {",
           "      vec4 B = actorB[i], C = actorC[i];",
@@ -405,8 +409,17 @@
           list.actor.forEach(function (a, i) {
             var st = actorAt(i, s);
             A.push(st.x, st.y, st.ang, st.alpha);
-            B.push.apply(B, rects[a.frames[st.frame]]);
+            B.push.apply(B, rects[st.sprite]);
             C.push(a.anchor[0], a.anchor[1], a.k, st.flip);
+            if (actBtn[i]) actBtn[i].style.visibility = st.done ? "" : "hidden";
+          });
+          // a heart or a note rises over the actor's head and fades
+          risers.forEach(function (a) {
+            var i = list.actor.indexOf(a), u = actAt[i] === undefined ? -1 : s - actAt[i], r = rects[a.interact.rise];
+            var end = a.path[a.path.length - 1], top = end[1] - a.anchor[1] * a.k;
+            A.push(end[0] + 6, top - 4 - 36 * smooth(u / 2.2), 0, u >= 0 && u < 2.2 ? smooth(u / 0.2) * (1 - smooth((u - 1.4) / 0.8)) : 0);
+            B.push.apply(B, r);
+            C.push(r[2] / 2, r[3], a.interact.riseK, 1);
           });
           c.gl.uniform4fv(c.u("actorA"), A);
           c.gl.uniform4fv(c.u("actorB"), B);
@@ -587,9 +600,42 @@
       for (var i = 1; i < pts.length; i++) len.push(len[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
       return { pts: pts, len: len };
     });
+    // when the reader last interacted with each actor, in seconds of the clock, and its button
+    var actAt = [], actBtn = [];
+
+    // The sound of an interaction, played only because the reader pressed it: the address of
+    // a sound file, or "purr", a purr made in the browser (a rumble of soft noise, about 25
+    // breaths a second, rising and falling with each breath in and out).
+    var audio = null;
+    function play(sound) {
+      try {
+        if (sound !== "purr") return void new Audio(sound).play().catch(function () {});
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        audio = audio || new AC();
+        var ac = audio, now = ac.currentTime, len = 2.6;
+        var buf = ac.createBuffer(1, Math.floor(ac.sampleRate * len), ac.sampleRate), d = buf.getChannelData(0), last = 0;
+        for (var n = 0; n < d.length; n++) { last = (last + 0.04 * (Math.random() * 2 - 1)) / 1.04; d[n] = last * 3.5; }
+        var src = ac.createBufferSource(), low = ac.createBiquadFilter(), g = ac.createGain(), rumble = ac.createGain(), lfo = ac.createOscillator();
+        src.buffer = buf;
+        low.type = "lowpass"; low.frequency.value = 320;
+        lfo.frequency.value = 24; rumble.gain.value = 0.5;
+        lfo.connect(rumble.gain);
+        g.gain.setValueAtTime(0, now);
+        // two breaths: in, louder, then out
+        [0, 1.3].forEach(function (b) {
+          g.gain.linearRampToValueAtTime(0.22, now + b + 0.25);
+          g.gain.linearRampToValueAtTime(0.1, now + b + 0.7);
+          g.gain.linearRampToValueAtTime(0.16, now + b + 0.9);
+          g.gain.linearRampToValueAtTime(0.02, now + b + 1.25);
+        });
+        src.connect(low); low.connect(rumble); rumble.connect(g); g.connect(ac.destination);
+        src.start(now); lfo.start(now); src.stop(now + len); lfo.stop(now + len);
+      } catch (e) {}
+    }
     function actorAt(i, s) {
       var a = list.actor[i], r = routes[i], u = s - a.delay;
-      var hidden = { x: 0, y: 0, ang: 0, alpha: 0, frame: 0, flip: 1 };
+      var hidden = { x: 0, y: 0, ang: 0, alpha: 0, sprite: a.frames[0], flip: 1, done: false };
       if (u < 0) return hidden;
       var d = u * a.speed, total = r.len[r.len.length - 1], done = d >= total;
       if (done && a.end < 0) return hidden;
@@ -606,9 +652,17 @@
         y: p0[1] + dy * f + (done ? 0 : a.bob * Math.sin(u * 2.4)),
         ang: a.tilt && !done ? Math.max(-0.3, Math.min(0.3, Math.atan2(dy * flip, dx * flip))) : 0,
         alpha: a.end < 0 ? smooth(left / 0.5) : 1,
-        frame: done ? a.end : a.walk[0] + Math.floor(u * a.fps) % walk,
-        flip: flip
+        sprite: done ? resting(a, i, s) : a.frames[a.walk[0] + Math.floor(u * a.fps) % walk],
+        flip: flip,
+        done: done && a.end >= 0
       };
+    }
+    // the frame of an actor at the end of its path: the poses of its interaction for a moment
+    // after the reader presses it, its last pose otherwise
+    function resting(a, i, s) {
+      var p = a.interact, u = actAt[i] === undefined ? -1 : s - actAt[i];
+      if (p && u >= 0 && u < p.frames.length / p.fps) return p.frames[Math.floor(u * p.fps)];
+      return a.frames[a.end];
     }
 
     // ---------------------------------------------------------------------------
@@ -756,7 +810,7 @@
     // only for the keyboard.
     var layer = document.createElement("div");
     layer.className = "motion-switches";
-    if (list.light.some(function (l) { return !l.led; })) stage.appendChild(layer);
+    if (list.light.some(function (l) { return !l.led; }) || list.actor.some(function (a) { return a.interact; })) stage.appendChild(layer);
     list.light.forEach(function (l, i) {
       if (l.led) return;
       var b = l.hit, btn = document.createElement("button");
@@ -773,6 +827,29 @@
       btn.addEventListener("focus", hover(true));
       btn.addEventListener("blur", hover(false));
       switches[i].buttons.push(btn);
+      layer.appendChild(btn);
+    });
+
+    // An actor the reader can interact with has a button where it stops, shown once it is there.
+    list.actor.forEach(function (a, i) {
+      if (!a.interact || a.end < 0) return;
+      var end = a.path[a.path.length - 1], r = rects[a.frames[a.end]];
+      var x0 = end[0] - a.anchor[0] * a.k, y0 = end[1] - a.anchor[1] * a.k;
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "switch big";
+      btn.setAttribute("aria-label", a.interact.label);
+      btn.dataset.box = [x0, y0, x0 + r[2] * a.k, y0 + r[3] * a.k].map(Math.round).join(",");
+      btn.style.visibility = "hidden";
+      btn.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        actAt[i] = clock;
+        if (a.interact.sound) play(a.interact.sound);
+        // a pointer or a tap leaves no focus ring behind; the keyboard keeps it
+        if (ev.detail > 0) btn.blur();
+        redraw();
+      });
+      actBtn[i] = btn;
       layer.appendChild(btn);
     });
 

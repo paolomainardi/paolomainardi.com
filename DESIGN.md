@@ -501,7 +501,8 @@ turn cream over a navy shade. An old engineer lives there: a rusty container
 sleeps under ivy, a server rack blinks its status lights and green code falls
 down an old computer's screen. The stars breathe, a shooting star passes now and
 then, a witch with her cats flies across the sky above the roof, and a tuxedo cat
-walks home and sits by the steps. With reduced motion the scene stays still,
+walks home and sits by the steps, where the reader can pet it: it purrs, eyes
+closed, and a small heart rises. With reduced motion the scene stays still,
 lit, without the two actors. It is the one day the site leaves its palette and
 its watercolour hand, chosen by Paolo.
 

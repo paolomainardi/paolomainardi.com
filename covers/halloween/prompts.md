@@ -2,7 +2,7 @@
 
 The header of the site on 31 October. Paolo chose the style from a reference: a naive gouache night scene, a cute young witch with her cats, a white cottage with lit windows. Codex drew a scene of its own in that style, not a copy of the reference.
 
-**Motion brief:** the light comes in from above; the windows, the two carved pumpkins and the lantern switch on their own and can be switched; the status lights of the server rack blink; green code falls down the old computer's screen; the two bare trees sway; the stars breathe and a shooting star passes now and then. Two actors play once each time the header is shown: a witch on a broom with five cats flies across the sky, above the roof, and out on the right, and a tuxedo cat walks along the path and sits down, looking at the reader.
+**Motion brief:** the light comes in from above; the windows, the two carved pumpkins and the lantern switch on their own and can be switched; the status lights of the server rack blink; green code falls down the old computer's screen; the two bare trees sway; the stars breathe and a shooting star passes now and then. Two actors play once each time the header is shown: a witch on a broom with five cats flies across the sky, above the roof, and out on the right, and a tuxedo cat walks along the path and sits down, looking at the reader. The reader can pet the cat: it purrs with its eyes closed and a small heart rises.
 
 The drawings were made at 1536x1024 and cropped to the band, 1536x620 from y=255. The first scene below was redrawn with old computer equipment (the nerdy redraw), and every state and sheet was made again from the redraw. The scene is a night scene in both colour schemes, so `night.webp` and `unlit-night.webp` are copies of `cover.webp` and `unlit.webp`.
 
@@ -151,3 +151,36 @@ Sent with the nerdy redraw attached.
 >
 > 2. objects-sky.json: a JSON array with one entry:
 >    [{"id": "night-sky", "kind": "sky", "motion": [], "box": [x0, y0, x1, y1], "color": "#0000FF"}]
+
+## Petting the cat
+
+Sent with the cat's sprite sheet attached. A first version, whose poses did not move like a cat, was replaced by the second below.
+
+> Generate one image with your image generation tool and save it as pet.png in the current directory, 1536x1024, with a TRANSPARENT background (PNG with alpha). If transparency is impossible, use a flat pure green #00FF00 background with nothing else on it. Do not ask questions; decide.
+>
+> The attached image is the sprite sheet of a tuxedo cat. Draw MORE poses of exactly the SAME cat (same size, same colours, same white chest, muzzle and paws, same green eyes, same naive gouache picture book style, matte paint, soft edges, no black ink outlines, no 3D), as a new sprite sheet: a grid of 4 columns and 2 rows, 8 equal cells of 384x512 pixels, the cat centred in its cell with its paws on the same line near the bottom of the cell, exactly as big as the sitting cat in the attached sheet. No grid lines, no numbers, no text.
+>
+> Cells, read left to right, top row first:
+> 1: the cat sitting facing the viewer, eyes closed in a happy smile, head tilted a little to the left as if a hand were scratching its head.
+> 2: the same, head tilted a little to the right, eyes closed, purring.
+> 3: the same, chin raised, eyes closed, very content.
+> 4: the same sitting cat facing the viewer, eyes open, a tiny happy blink.
+> 5: a single small soft pink heart, painted in gouache, centred, about a quarter of the cell wide. Nothing else in the cell.
+> 6, 7, 8: empty, fully transparent.
+
+## Petting the cat, like a cat
+
+Sent with the cat's sprite sheet attached. It made `cat-pet.webp`, the poses the cat answers with when the reader pets it, and the heart that rises.
+
+> Generate one image with your image generation tool and save it as pet.png in the current directory, 1536x1024, with a TRANSPARENT background (PNG with alpha). If transparency is impossible, use a flat pure green #00FF00 background with nothing else on it. Do not ask questions; decide.
+>
+> The attached image is the sprite sheet of a tuxedo cat; its cell 8 shows the cat sitting and facing the viewer. Draw MORE poses of exactly the SAME cat (same size as in cell 8, same colours, same white chest, muzzle and paws, same green eyes, same naive gouache picture book style, matte paint, soft edges, no black ink outlines, no 3D), as a new sprite sheet: a grid of 4 columns and 2 rows, 8 equal cells of 384x512 pixels, the cat centred in its cell with its paws on the same line near the bottom of the cell. No grid lines, no numbers, no text, no hand, no person.
+>
+> The cat is being stroked by an invisible hand above its head and answers like a real cat:
+> 1: sitting, it pushes its head up and forward into the hand (a head bunt), ears slightly flattened back, eyes half closed.
+> 2: it rubs its cheek against the hand, head turned and tilted to the right, eyes closed, tail starting to rise.
+> 3: it rubs the other cheek, head turned and tilted to the left, eyes closed, tail up with a curl at the tip.
+> 4: it leans its whole body up and arches a little into the hand, chin raised, eyes closed, tail up and curled, blissful.
+> 5: it settles back sitting facing the viewer and gives a slow blink: eyes half closed, a tiny content smile, tail curled around its paws.
+> 6: a single small soft pink heart, painted in gouache, centred, about a quarter of the cell wide. Nothing else in the cell.
+> 7 and 8: empty, fully transparent.
