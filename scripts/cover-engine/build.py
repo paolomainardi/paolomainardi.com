@@ -207,10 +207,14 @@ for i, o in ids.items():
         if hook is None:
             hook = [int(np.median(xx[m & (yy < b[1] + 4)])), b[1]]
         length = max(max(b[3] - hook[1], b[2] - b[0]), 1)
-        # a limb turns about 5 degrees at most; a lamp or a tool swings more the shorter it is
-        base = 1.6 if k == "limb" else min(1.0, 65.0 / length)
+        # an arm turns about 10 degrees at most, a head about 5; a lamp or a tool swings
+        # more the shorter it is
+        base = (1.6 if "head" in i else 3.2) if k == "limb" else min(1.0, 65.0 / length)
         swings.append({"id": i, "anchor": [int(hook[0]), int(hook[1])], "box": b, "amp": round(base * a, 3), "idle": k == "limb"})
-        np.maximum(turn, soft(m, 4 if k == "limb" else 6, 2), out=turn)
+        # the area that turns reaches past the shape by as much as its far end travels,
+        # so a turning arm is never clipped at the edge of where it was drawn
+        reach = int(np.clip(length * 0.055 * base * 1.2, 4, 24))
+        np.maximum(turn, soft(m, max(reach, 6 if k != "limb" else 4), 2), out=turn)
     elif k == "thread" and pulse_spec is not False:
         frm = pulse_spec.get("from", "bottom") if isinstance(pulse_spec, dict) else "bottom"
         ys, xs = np.where(m)
