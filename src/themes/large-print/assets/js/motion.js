@@ -513,6 +513,10 @@
         one();
       });
     });
+    // a drawing of the old scheme is not used until the new one arrives
+    textures.forEach(function (tx) {
+      if (tx.scheme && tx.ready) { ctx.ready[tx.ready] = false; gl.uniform1f(u(tx.ready), 0); }
+    });
     // the drawings the first frame does not need; a texture shared by both schemes loads once
     textures.filter(function (tx) { return !tx.first && !(tx.loaded && !tx.scheme); }).forEach(function (tx) {
       var url = textureURL(tx);
@@ -522,6 +526,7 @@
         if (!im || (tx.scheme && gen !== generation)) return;
         upload(tx.unit, im);
         if (tx.ready) { ctx.ready[tx.ready] = true; gl.uniform1f(u(tx.ready), 1); }
+        redraw();
       });
     });
   }
