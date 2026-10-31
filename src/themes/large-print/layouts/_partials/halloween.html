@@ -1,0 +1,38 @@
+{{- /*
+  Halloween header, on 31 October only (or with ?halloween in the address).
+
+  A night scene built by scripts/cover-engine sits behind the site header: the
+  cottage lights come on, then switch on their own and under the reader's
+  click, and a witch with her cats flies across the sky once. The markup is a
+  template, so on any other day nothing is downloaded.
+*/ -}}
+{{ $img := resources.Get "images/halloween/halloween.webp" }}
+{{ $map := resources.Get "images/halloween/halloween-motion.webp" }}
+{{ $data := resources.Get "images/halloween/halloween-motion.json" }}
+{{ $broom := resources.Get "images/halloween/broom.webp" }}
+{{ $night := resources.Get "images/halloween/halloween-night.webp" }}
+{{ if and $img $map $data $broom }}
+{{ $d := $data.Content | transform.Unmarshal }}
+{{ $attrs := dict "data-motion-map" $map.RelPermalink "data-motion" $data.Content }}
+{{ range $d.states }}{{ $s := . }}{{ with resources.Get (printf "images/halloween/halloween-%s.webp" $s) }}{{ $attrs = merge $attrs (dict (printf "data-motion-%s" $s) .RelPermalink) }}{{ end }}{{ end }}
+<template id="halloween">
+  <div class="halloween-band frontispiece-motion">
+    <picture>
+      {{ with $night }}<source class="night" media="(prefers-color-scheme: dark)" srcset="{{ .RelPermalink }}" />{{ end }}
+      <img src="{{ $img.RelPermalink }}" alt="" width="{{ $img.Width }}" height="{{ $img.Height }}"
+        {{- range $k, $v := $attrs }} {{ printf "%s=\"%s\"" $k (htmlEscape $v) | safeHTMLAttr }}{{ end }} />
+    </picture>
+    <img class="halloween-broom" src="{{ $broom.RelPermalink }}" alt="" width="{{ $broom.Width }}" height="{{ $broom.Height }}" />
+  </div>
+</template>
+<script>
+  (function () {
+    var d = new Date();
+    if (!((d.getMonth() === 9 && d.getDate() === 31) || /[?&]halloween\b/.test(location.search))) return;
+    var t = document.getElementById("halloween");
+    t.parentNode.insertBefore(t.content.cloneNode(true), t);
+    if (window.WebGLRenderingContext && !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches))
+      document.documentElement.classList.add("motion-wait");
+  })();
+</script>
+{{ end }}

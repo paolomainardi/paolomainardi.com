@@ -490,6 +490,13 @@ drags the wall and the machine behind it along. Faint lights tinted by the
 shader were tried and dropped too: they barely showed on paper, which is why
 lights are drawn in their states.
 
+**Halloween header.** On 31 October only, the header sits over a wide night
+scene in naive gouache, built with the animated cover engine: the cottage lights
+come in and switch, and the reader can press them. The wordmark and the links
+turn cream over a navy shade, and a witch with her cats crosses the sky once,
+above the roof. With reduced motion she waits still in the sky. It is the one
+day the site leaves its palette and its watercolour hand, chosen by Paolo.
+
 **Image overlay.** An image that would show at least 15% wider on its own gets a
 zoom cursor, and clicking it, or pressing Enter on it, opens it in a modal
 overlay: a near black field with the image fitted to the viewport and the caption
@@ -716,8 +723,9 @@ a label, a weight or a hairline would say the same thing first.
 a quiet label on the home page precisely because the masthead below it already
 says the name.
 
-**Don't** animate anything but a cover. Motion inside the text competes with
-reading; the cover is the one place where a little life is welcome.
+**Don't** animate anything but a cover, and the Halloween header on its one day.
+Motion inside the text competes with reading; the cover is the one place where a
+little life is welcome.
 
 **Don't** use `!important`. The theme ships one stylesheet, so order and scoping
 are enough.

@@ -1,0 +1,174 @@
+[
+  {
+    "id": "window-upper-left",
+    "kind": "light",
+    "label": "Upper left window",
+    "light": "spot",
+    "motion": [],
+    "box": [
+      958,
+      272,
+      994,
+      337
+    ],
+    "color": "#FF0000"
+  },
+  {
+    "id": "window-upper-right",
+    "kind": "light",
+    "label": "Upper right window",
+    "light": "spot",
+    "motion": [],
+    "box": [
+      1174,
+      287,
+      1208,
+      348
+    ],
+    "color": "#00FF00"
+  },
+  {
+    "id": "window-lower-left",
+    "kind": "light",
+    "label": "Lower left window",
+    "light": "spot",
+    "motion": [],
+    "box": [
+      889,
+      421,
+      936,
+      492
+    ],
+    "color": "#0000FF"
+  },
+  {
+    "id": "window-lower-right",
+    "kind": "light",
+    "label": "Lower right window",
+    "light": "spot",
+    "motion": [],
+    "box": [
+      1157,
+      422,
+      1251,
+      492
+    ],
+    "color": "#FFFF00"
+  },
+  {
+    "id": "window-side-upper",
+    "kind": "light",
+    "label": "Upper side window",
+    "light": "spot",
+    "motion": [],
+    "box": [
+      1329,
+      355,
+      1349,
+      401
+    ],
+    "color": "#FF00FF"
+  },
+  {
+    "id": "window-side-lower",
+    "kind": "light",
+    "label": "Lower side window",
+    "light": "spot",
+    "motion": [],
+    "box": [
+      1329,
+      442,
+      1348,
+      488
+    ],
+    "color": "#00FFFF"
+  },
+  {
+    "id": "window-door",
+    "kind": "light",
+    "label": "Front door window",
+    "light": "spot",
+    "motion": [],
+    "box": [
+      1018,
+      430,
+      1043,
+      461
+    ],
+    "color": "#FF8000"
+  },
+  {
+    "id": "lantern-door",
+    "kind": "light",
+    "label": "Door wall lantern",
+    "light": "spot",
+    "motion": [],
+    "box": [
+      975,
+      439,
+      988,
+      453
+    ],
+    "color": "#8000FF"
+  },
+  {
+    "id": "pumpkin-large",
+    "kind": "light",
+    "label": "Large pumpkin lantern",
+    "light": "spot",
+    "motion": [],
+    "box": [
+      1122,
+      508,
+      1219,
+      609
+    ],
+    "color": "#00FF80"
+  },
+  {
+    "id": "pumpkin-small",
+    "kind": "light",
+    "label": "Small pumpkin lantern",
+    "light": "spot",
+    "motion": [],
+    "box": [
+      1213,
+      547,
+      1280,
+      614
+    ],
+    "color": "#0080FF"
+  },
+  {
+    "id": "tree-left",
+    "kind": "plant",
+    "label": "Left bare tree",
+    "outdoor": true,
+    "motion": [
+      "sway"
+    ],
+    "box": [
+      0,
+      76,
+      157,
+      584
+    ],
+    "color": "#FF0080"
+  },
+  {
+    "id": "tree-right",
+    "kind": "plant",
+    "label": "Right bare tree",
+    "outdoor": true,
+    "motion": [
+      "sway"
+    ],
+    "box": [
+      1325,
+      0,
+      1536,
+      550
+    ],
+    "color": "#80FF00"
+  }
+]

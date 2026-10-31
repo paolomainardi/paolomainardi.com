@@ -150,6 +150,17 @@ overlap another, the small lamps are not buttons at the size the cover is drawn;
 two big lights' targets would, the one with the smaller lamp is not. On a wider
 screen, or in the zoom when it is wide enough, they are buttons again.
 
+## The Halloween header
+
+On 31 October the site header sits over a night scene built with the engine from
+`covers/halloween/`: the cottage windows, the pumpkins and the lantern switch, and
+the trees sway. `layouts/_partials/halloween.html` keeps it in a template that a
+small script adds to the page only on that day, or with `?halloween` in the
+address, so no other day downloads it. A witch on a broom, a separate drawing,
+crosses the sky once, moved by the stylesheet rather than the shader. The player
+runs on every image with a motion map, so the header and a post's cover move
+together.
+
 ## Zoom
 
 When the reader opens the zoom, `zoom.js` sends `zoom:open` to the cover, and the

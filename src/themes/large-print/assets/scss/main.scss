@@ -596,6 +596,106 @@ body:has(.container.home) .navigation .navigation-title {
   color: var(--ink-3);
 }
 
+// Halloween, 31 October only (layouts/_partials/halloween.html): the header
+// sits over a night scene, in cream type, and a witch on a broom crosses the
+// sky once. The scene is a night drawing in both schemes, so it is never dimmed.
+.wrapper:has(> .halloween-band) {
+  position: relative;
+}
+
+.halloween-band {
+  position: relative;
+  z-index: 3; // over the section rail, which is fixed at the left edge
+  overflow: hidden;
+  margin-bottom: 5.6rem;
+  background: #1d2a3a;
+
+  picture img {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: none;
+  }
+
+  .motion-stage canvas {
+    filter: none;
+  }
+
+  ~ .navigation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 4;
+    margin: 0;
+    border-bottom: 0;
+    background: linear-gradient(rgba(29, 42, 58, 0.8), rgba(29, 42, 58, 0));
+    pointer-events: none;
+
+    .container {
+      pointer-events: auto;
+    }
+
+    .navigation-title,
+    .navigation-link,
+    .colorscheme-toggle {
+      color: #efe4c8;
+
+      &:hover,
+      &:focus {
+        color: #f2c35b;
+      }
+    }
+  }
+
+  @media only screen and (max-width: 768px) {
+    margin-bottom: 3.2rem;
+  }
+}
+
+body:has(.container.home) .halloween-band ~ .navigation .navigation-title {
+  color: #efe4c8;
+}
+
+// The witch flies in from the left, above the roof, and out on the right, once.
+.halloween-broom {
+  position: absolute;
+  top: 15%;
+  left: 0;
+  width: 15%;
+  height: auto;
+  z-index: 1;
+  pointer-events: none;
+  transform: translateX(-110%);
+  animation: halloween-fly 11s cubic-bezier(0.45, 0.05, 0.55, 0.95) 1.6s forwards;
+}
+
+@keyframes halloween-fly {
+  0% {
+    transform: translate(-110%, 40%) rotate(-4deg);
+  }
+  25% {
+    transform: translate(150%, 0) rotate(-2deg);
+  }
+  50% {
+    transform: translate(330%, 20%) rotate(1deg);
+  }
+  75% {
+    transform: translate(510%, -20%) rotate(-3deg);
+  }
+  100% {
+    transform: translate(700%, -60%) rotate(-6deg);
+  }
+}
+
+// Without motion, the witch waits in the sky, in the middle of the band.
+@media (prefers-reduced-motion: reduce) {
+  .halloween-broom {
+    animation: none;
+    transform: translate(250%, 10%);
+  }
+}
+
 // -----------------------------------------------------------------------------
 // 5. Footer
 // -----------------------------------------------------------------------------

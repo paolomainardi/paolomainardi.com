@@ -1,0 +1,10 @@
+{
+  "publish": "src/assets/images/halloween/halloween",
+  "entry": true,
+  "light_from": 90,
+  "lights": {
+    "pattern": {
+      "spot": "calls"
+    }
+  }
+}
