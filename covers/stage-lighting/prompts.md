@@ -1,6 +1,6 @@
 # Prompts for stage-lighting
 
-**Motion brief:** the light comes in from above; the two spotlights breathe slowly and can be switched; the work lamp over the lighting desk swings on its cord and can be switched; a light runs along the cables from the desk up the wall; the painter robot turns its head and the operator robot moves its head and its reaching arm. The painted scenery, the clouds, the ropes and the painter's arms (they hold the brush and the bucket) stay still.
+**Motion brief:** the light comes in from above; the two spotlights breathe slowly and can be switched; the work lamp over the lighting desk swings on its cord and can be switched; a light runs along the cables from the desk up the wall; the painter robot turns its head and moves the arm that holds its palette, and the operator robot moves its head and its reaching arm. The painted scenery, the clouds, the ropes and the painter's arms (they hold the brush and the bucket) stay still.
 
 ## Cover
 
@@ -94,3 +94,92 @@ Sent with the cover attached. Made objects-cables.json and objects-cables.png.
 >    {"id": "desk-cables", "kind": "thread", "label": "Cables", "motion": ["pulse"], "box": [x0, y0, x1, y1], "color": "#FF0000"}
 >
 > "box" is your best estimate of the cables' bounding box in cover pixels. Save both files in the current directory.
+
+## Third arm with a palette
+
+The painter robot has three arms. In the first drawings the third one hung limp at its side and read as a mistake; it now holds a small paint palette. The arm with the brush and the arm with the bucket are unchanged. Each edited drawing was laid over its master only where the arm and the palette are, so the rest of every drawing is the original, pixel for pixel. The palette arm is a limb in its own sheet and makes small moves about its shoulder.
+
+### Cover
+
+Sent with the cover attached. Kept.
+
+> The attached image is an illustrated blog cover: a small theatre stage seen from the wings, two robots, two lit spotlights on a batten, a work lamp over a lighting desk, 1536x1024 pixels. On the left, a small robot on a wooden stepladder paints the backdrop: one arm raises a long brush to the backdrop, another arm holds a bucket. The robot has a third arm, on the left side of its body as we look at it, that hangs limp at its side doing nothing.
+>
+> Redraw exactly the same picture, pixel for pixel: same composition, framing, every object, curtain, cable, rope, light and line in the exact same position and size, same colours, same light, same loose ink line and soft watercolour hand. Change ONLY that hanging third arm: it now bends at the elbow and holds a small wooden painter's palette out at its side, at about waist height, tilted so we see its top, with a few small dabs of paint on it in the colours of the picture (the rose, a beige, a muted sage and a dusty blue of the backdrop). The palette is small, drawn with the same ink line and watercolour wash as the rest of the robot. The arm stays the same jointed robot arm, same material and colour as the other two arms, and joins the body at the same shoulder. The arm with the brush and the arm with the bucket stay exactly as they are. Nothing else changes.
+>
+> No text, letters, numbers, logos or watermarks. Do not ask questions; decide. Landscape 3:2, 1536x1024. Save the result as cover-edit.png in the current directory.
+
+### First pass on the other drawings
+
+The same prompt, with the description of each drawing, sent with the night, unlit and unlit night drawings attached. The three results did not agree with the cover on the arm and the palette, and were discarded.
+
+Night:
+
+> The attached image is the night version of an illustrated blog cover: a small theatre stage seen from the wings, two robots, two lit spotlights on a batten, a work lamp over a lighting desk, on dark charcoal paper with cream ink, 1536x1024 pixels. On the left, a small robot on a wooden stepladder paints the backdrop: one arm raises a long brush to the backdrop, another arm holds a bucket. The robot has a third arm, on the left side of its body as we look at it, that hangs limp at its side doing nothing.
+>
+> Redraw exactly the same picture, pixel for pixel: same composition, framing, every object, curtain, cable, rope, light and line in the exact same position and size, same colours, same light, same loose ink line and soft watercolour hand. Change ONLY that hanging third arm: it now bends at the elbow and holds a small wooden painter's palette out at its side, at about waist height, tilted so we see its top, with a few small dabs of paint on it in the colours of the picture (the rose, a beige, a muted sage and a dusty blue of the backdrop). The palette is small, drawn with the same ink line and watercolour wash as the rest of the robot. The arm stays the same jointed robot arm, same material and colour as the other two arms, and joins the body at the same shoulder. The arm with the brush and the arm with the bucket stay exactly as they are. Nothing else changes.
+>
+> No text, letters, numbers, logos or watermarks. Do not ask questions; decide. Landscape 3:2, 1536x1024. Save the result as night-edit.png in the current directory.
+
+Unlit:
+
+> The attached image is an illustrated blog cover at the moment before the show, every light off: a small theatre stage seen from the wings, two robots, two unlit spotlights on a batten, an unlit work lamp over a lighting desk, 1536x1024 pixels. On the left, a small robot on a wooden stepladder paints the backdrop: one arm raises a long brush to the backdrop, another arm holds a bucket. The robot has a third arm, on the left side of its body as we look at it, that hangs limp at its side doing nothing.
+>
+> Redraw exactly the same picture, pixel for pixel: same composition, framing, every object, curtain, cable, rope, light and line in the exact same position and size, same colours, same light, same loose ink line and soft watercolour hand. Change ONLY that hanging third arm: it now bends at the elbow and holds a small wooden painter's palette out at its side, at about waist height, tilted so we see its top, with a few small dabs of paint on it in the colours of the picture (the rose, a beige, a muted sage and a dusty blue of the backdrop). The palette is small, drawn with the same ink line and watercolour wash as the rest of the robot. The arm stays the same jointed robot arm, same material and colour as the other two arms, and joins the body at the same shoulder. The arm with the brush and the arm with the bucket stay exactly as they are. Nothing else changes.
+>
+> No text, letters, numbers, logos or watermarks. Do not ask questions; decide. Landscape 3:2, 1536x1024. Save the result as unlit-edit.png in the current directory.
+
+Unlit night:
+
+> The attached image is the night version of an illustrated blog cover at the moment before the show, every light off: a small theatre stage seen from the wings, two robots, two unlit spotlights on a batten, an unlit work lamp over a lighting desk, on dark charcoal paper with cream ink, 1536x1024 pixels. On the left, a small robot on a wooden stepladder paints the backdrop: one arm raises a long brush to the backdrop, another arm holds a bucket. The robot has a third arm, on the left side of its body as we look at it, that hangs limp at its side doing nothing.
+>
+> Redraw exactly the same picture, pixel for pixel: same composition, framing, every object, curtain, cable, rope, light and line in the exact same position and size, same colours, same light, same loose ink line and soft watercolour hand. Change ONLY that hanging third arm: it now bends at the elbow and holds a small wooden painter's palette out at its side, at about waist height, tilted so we see its top, with a few small dabs of paint on it in the colours of the picture (the rose, a beige, a muted sage and a dusty blue of the backdrop). The palette is small, drawn with the same ink line and watercolour wash as the rest of the robot. The arm stays the same jointed robot arm, same material and colour as the other two arms, and joins the body at the same shoulder. The arm with the brush and the arm with the bucket stay exactly as they are. Nothing else changes.
+>
+> No text, letters, numbers, logos or watermarks. Do not ask questions; decide. Landscape 3:2, 1536x1024. Save the result as unlit-night-edit.png in the current directory.
+
+### Unlit and unlit night
+
+Sent with the unlit (or unlit night) drawing first and the new cover second, as the reference for the arm. Kept.
+
+> Two images are attached. The first, drawing.png, is an illustrated blog cover at the moment before the show, with every light off, 1536x1024 pixels: a small theatre stage seen from the wings. On the left, a small robot on a wooden stepladder paints the backdrop; it has three arms: one raises a long brush, one holds a bucket, and the third hangs limp at its side doing nothing. The second, reference.png, is the day version of the same cover, where that third arm has already been redrawn: it is bent and holds out a small wooden painter's palette with a few dabs of paint.
+>
+> Redraw the first image exactly, pixel for pixel: same composition, framing, every object, curtain, cable, rope, light and line in the exact same position and size, same colours, same light, same paper, same loose ink line and soft watercolour hand. Change ONLY the robot's hanging third arm: draw it exactly as in reference.png, the same pose, the same shoulder, the same palette of the same size and shape at the same position, with the same dabs of paint, but in the light and palette of the first image. Remove the old hanging arm completely. The arm with the brush and the arm with the bucket stay exactly as they are. Nothing else changes.
+>
+> No text, letters, numbers, logos or watermarks. Do not ask questions; decide. Landscape 3:2, 1536x1024. Save the result as unlit-edit.png in the current directory.
+
+> Two images are attached. The first, drawing.png, is the night version of an illustrated blog cover at the moment before the show, with every light off, on dark charcoal paper with cream ink, 1536x1024 pixels: a small theatre stage seen from the wings. On the left, a small robot on a wooden stepladder paints the backdrop; it has three arms: one raises a long brush, one holds a bucket, and the third hangs limp at its side doing nothing. The second, reference.png, is the day version of the same cover, where that third arm has already been redrawn: it is bent and holds out a small wooden painter's palette with a few dabs of paint.
+>
+> Redraw the first image exactly, pixel for pixel: same composition, framing, every object, curtain, cable, rope, light and line in the exact same position and size, same colours, same light, same paper, same loose ink line and soft watercolour hand. Change ONLY the robot's hanging third arm: draw it exactly as in reference.png, the same pose, the same shoulder, the same palette of the same size and shape at the same position, with the same dabs of paint, but in the light and palette of the first image. Remove the old hanging arm completely. The arm with the brush and the arm with the bucket stay exactly as they are. Nothing else changes.
+>
+> No text, letters, numbers, logos or watermarks. Do not ask questions; decide. Landscape 3:2, 1536x1024. Save the result as unlit-night-edit.png in the current directory.
+
+### Night
+
+Sent the same way, with the night version first. The first attempt left a faint trace of the old hand by the hip and was discarded:
+
+> Two images are attached. The first, drawing.png, is the night version of an illustrated blog cover, on dark charcoal paper with cream ink, 1536x1024 pixels: a small theatre stage seen from the wings. On the left, a small robot on a wooden stepladder paints the backdrop; it has three arms: one raises a long brush, one holds a bucket, and the third hangs limp at its side doing nothing. The second, reference.png, is the day version of the same cover, where that third arm has already been redrawn: it is bent and holds out a small wooden painter's palette with a few dabs of paint.
+>
+> Redraw the first image exactly, pixel for pixel: same composition, framing, every object, curtain, cable, rope, light and line in the exact same position and size, same colours, same light, same paper, same loose ink line and soft watercolour hand. Change ONLY the robot's hanging third arm: draw it exactly as in reference.png, the same pose, the same shoulder, the same palette of the same size and shape at the same position, with the same dabs of paint, but in the light and palette of the first image. Remove the old hanging arm completely. The arm with the brush and the arm with the bucket stay exactly as they are. Nothing else changes.
+>
+> No text, letters, numbers, logos or watermarks. Do not ask questions; decide. Landscape 3:2, 1536x1024. Save the result as night-edit.png in the current directory.
+
+The second attempt, kept:
+
+> Two images are attached. The first, drawing.png, is the night version of an illustrated blog cover, on dark charcoal paper with cream ink, 1536x1024 pixels: a small theatre stage seen from the wings. On the left, a small robot on a wooden stepladder paints the backdrop; it has three arms: one raises a long brush, one holds a bucket, and the third hangs limp at its side doing nothing. The second, reference.png, is the day version of the same cover, where that third arm has already been redrawn: it is bent and holds out a small wooden painter's palette with a few dabs of paint.
+>
+> Redraw the first image exactly, pixel for pixel: same composition, framing, every object, curtain, cable, rope, light and line in the exact same position and size, same colours, same light, same paper, same loose ink line and soft watercolour hand. Change ONLY the robot's hanging third arm: draw it exactly as in reference.png, the same pose, the same shoulder, the same palette of the same size and shape at the same position, with the same dabs of paint, but in the light and palette of the first image. Remove the old hanging arm completely, with no trace of it left: where its forearm and hand hung beside the hip, paint the plain wall and curtain behind, as in reference.png. The arm with the brush and the arm with the bucket stay exactly as they are. Nothing else changes.
+>
+> No text, letters, numbers, logos or watermarks. Do not ask questions; decide. Landscape 3:2, 1536x1024. Save the result as night-edit.png in the current directory.
+
+## Palette arm sheet
+
+Sent with the new cover attached. Made objects-palette.json and objects-palette.png.
+
+> The attached image is an illustrated blog cover, 1536x1024 pixels. Produce a further object sheet for it, for one object only: two files in the current directory.
+>
+> 1. objects-palette.png: ONE new image, same size and the exact same composition, so it can be laid over the cover pixel for pixel. Flat colour on pure black (#000000), no shading, no outlines, no texture, no text. On the left, a small robot on a wooden stepladder paints the backdrop with three arms: one raises a brush, one holds a bucket, and the third, on the left side of its body as we look at it, holds out a small wooden painter's palette. Paint that third arm, from its shoulder to its hand, together with the palette it holds, filled solid with #FF0000, following their real silhouette. Paint nothing else: not the robot's body or head, not the arm with the brush, not the arm with the bucket, not the stepladder, not the curtains. Everything else stays black.
+>
+> 2. objects-palette.json: a JSON array with one entry:
+>    {"id": "painter-palette-arm", "kind": "limb", "label": "Palette arm", "motion": ["idle"], "box": [x0, y0, x1, y1], "anchor": [x, y], "color": "#FF0000"}
+>
+> "box" is your best estimate of the arm and palette's bounding box in cover pixels. "anchor" is the shoulder joint the arm turns about, in cover pixels. Do not ask questions; decide. Save both files in the current directory.
