@@ -376,9 +376,11 @@
     var st = switches[i], l = list.light[i], lit = l.big ? st.ov !== "off" : level(i, clock, 1) < 0.5;
     if (!l.big && st.ov !== null) st.ov = null;
     else st.ov = lit ? "off" : "on";
-    st.ovAt = clock;
+    // paused, the lamp takes its new state at once, without the flicker
+    st.ovAt = paused ? clock - 1 : clock;
     var now = st.ov === null || st.ov === "on";
     st.buttons.forEach(function (b) { b.setAttribute("aria-pressed", now ? "true" : "false"); });
+    redraw();
   }
 
   // A lightning flash every [min, max] seconds: a double flicker that fades.
@@ -650,6 +652,37 @@
   // The cover follows the colour scheme: when scheme.js swaps it, the canvas takes
   // the new picture and its state drawings, also while the first ones still load.
   var started = false;
+
+  // The animation goes with the reader into the zoom, at full size, and comes back.
+  // A zoom opened before the cover is ready is joined when it is.
+  var zoomLoad = 0;
+  function enterZoom() {
+    zoom.dialog.appendChild(stage);
+    stage.classList.add("in-zoom");
+    var z = ++zoomLoad;
+    fetchImage(zoom.full, function (im) { if (im && zoom && z === zoomLoad) { upload(0, im); redraw(); } });
+    zoom.image.addEventListener("load", place);
+    place();
+    requestAnimationFrame(place);
+    start();
+  }
+  img.addEventListener("zoom:open", function (ev) {
+    if (gone) return;
+    zoom = ev.detail;
+    if (started) enterZoom();
+  });
+  img.addEventListener("zoom:close", function () {
+    if (gone || !zoom) return;
+    zoom.image.removeEventListener("load", place);
+    zoom = null;
+    zoomLoad++;
+    stage.classList.remove("in-zoom");
+    if (!started) return;
+    img.parentNode.insertBefore(stage, img.nextSibling);
+    picture();
+    place();
+  });
+
   function begin() {
     img.addEventListener("load", function () { if (started && !gone) picture(); });
     fetchImage(img.getAttribute("data-motion-map"), function (map) {
@@ -659,29 +692,9 @@
       picture(function () {
         started = true;
         if ((img.currentSrc || img.src) !== first) picture();
-        img.parentNode.insertBefore(stage, img.nextSibling);
+        if (zoom) enterZoom();
+        else img.parentNode.insertBefore(stage, img.nextSibling);
         place();
-        // the animation goes with the reader into the zoom, at full size, and comes back
-        img.addEventListener("zoom:open", function (ev) {
-          if (gone) return;
-          zoom = ev.detail;
-          zoom.dialog.appendChild(stage);
-          stage.classList.add("in-zoom");
-          var zgen = ++generation;
-          fetchImage(zoom.full, function (im) { if (im && zoom && zgen === generation) { upload(0, im); redraw(); } });
-          zoom.image.addEventListener("load", place);
-          place();
-          requestAnimationFrame(place);
-        });
-        img.addEventListener("zoom:close", function () {
-          if (gone) return;
-          if (zoom) zoom.image.removeEventListener("load", place);
-          zoom = null;
-          stage.classList.remove("in-zoom");
-          img.parentNode.insertBefore(stage, img.nextSibling);
-          picture();
-          place();
-        });
         window.addEventListener("resize", place);
         document.addEventListener("visibilitychange", start);
         if ("IntersectionObserver" in window) {
