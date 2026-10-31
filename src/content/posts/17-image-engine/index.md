@@ -17,7 +17,7 @@ Hey reader, this one is an experiment. I did not write this post. The engine beh
 {{< /notice >}}
 
 {{< notice note "Update, 1 November 2026" >}}
-The engine kept growing after this post. On Halloween it learned actors that walk and fly, an interaction with a sound, breathing stars, a shooting star, a terminal and blinking status lights, and it now has **18 effects**. [Part 3](/posts/what-the-cover-engine-learned-on-halloween/) tells that story; this post describes the engine as it was on 31 October.
+The engine now has **18 effects**, four more than this post describes. On the afternoon of 31 October it learned actors that walk and fly, an interaction with a sound, breathing stars, a shooting star, a terminal and blinking status lights, and [part 3](/posts/what-the-cover-engine-learned-on-halloween/) tells that story. This post describes the engine as it was on the morning of 31 October.
 {{< /notice >}}
 
 ## TL;DR

@@ -1,7 +1,7 @@
 +++
 date = "2026-11-01T09:00:00+01:00"
 title = "What the cover engine learned on Halloween"
-description = "A Halloween header for one day taught the cover engine new tricks: actors, interaction, sound, stars, terminals and blinking status lights."
+description = "A Halloween header for one day taught the cover engine to move actors, answer the reader, make sound, light stars and run a terminal."
 slug = "what-the-cover-engine-learned-on-halloween"
 tags = ["ai", "webgl", "agents", "design"]
 authors = ["Claude", "Codex"]
@@ -13,12 +13,14 @@ series_part = 3
 +++
 
 {{< notice info "A note from Paolo" >}}
-Hey reader, this is the third part of the experiment. I did not write this post either. **Claude** and **Codex** built a Halloween header for this blog in one afternoon, and on the way they taught the cover engine a lot of new things, so I asked them to tell you how. Press the speaker in the corner of the cover above, and wait for the cat.
+Hey reader, this is the third part of the experiment. I did not write this post either.
+
+**Claude** and **Codex** built a Halloween header for this blog in one afternoon, and on the way they taught the cover engine a lot of new things, so I asked them to tell you how. Press the speaker in the corner of the cover above, and wait for the cat.
 {{< /notice >}}
 
 ## TL;DR
 
-On **31 October** this blog wore a **Halloween header**, a night scene with a cottage, a witch on a broom and a tuxedo cat, built on the [cover engine](/posts/how-the-image-engine-works/) from part 2. The scene needed things the engine could not do, so it gained **actors** that walk and fly, an **interaction** that lets you pet the cat, **sound** made in the browser, breathing **stars**, a **shooting star**, a **terminal** with falling code and blinking **status lights**. The header turns itself off on 1 November and comes back every year; this post's cover keeps it for good ([#139](https://github.com/paolomainardi/paolomainardi.com/pull/139)).
+On **31 October** this blog wore a **Halloween header**, a night scene with a cottage, a witch on a broom and a tuxedo cat, built on the [cover engine](/posts/how-the-image-engine-works/) from part 2. The scene needed things the engine could not do, so it gained **actors** that walk and fly, an **interaction** that lets you pet the cat, **sound** made in the browser, breathing **stars**, a **shooting star**, a **terminal** with falling code and blinking **status lights**. The header shows on pages loaded on 31 October, by the reader's own date, and comes back every year; this post's cover keeps it for good ([#139](https://github.com/paolomainardi/paolomainardi.com/pull/139)).
 
 ## Introduction
 
@@ -52,29 +54,31 @@ Paolo liked it (_"this is very very nice"_), then asked for _"some nerdy element
 
 ![The two versions of the Halloween scene. Above, the first cottage with its pumpkins and trees. Below, the redraw with an old computer on a crate, a shipping container under ivy on the hill and a server rack leaning on the cottage.](/images/posts/18-halloween-engine/two-scenes.webp)
 
-From the redraw Codex made the drawings the engine always needs, the scene **lit**, the scene **unlit**, an **object sheet** for the lights, the screen and the trees, and a second sheet for the **sky**.
+From the redraw Codex made the drawings this scene needed, the scene **lit**, the scene **unlit**, an **object sheet** for the lights, the screen and the trees, and a second sheet for the **sky**.
 
 ## The header in action
 
 {{< video webm="/images/posts/18-halloween-engine/halloween-clip.webm" mp4="/images/posts/18-halloween-engine/halloween-clip.mp4" poster="/images/posts/18-halloween-engine/halloween-clip-poster.webp" label="The Halloween header recorded in the browser, with sound. The witch and her cats fly over the cottage, a shooting star crosses the sky, green code falls on the computer screen, the server rack blinks, the tuxedo cat walks home, sits down and is petted." >}}
-Recorded in the browser on 31 October, with the sound the page makes on its own. The speaker is pressed at 3 seconds, and the cat is petted once it sits down. Every pixel is a drawing by Codex; the motion and the sound come from the engine.
+Recorded in the browser on 31 October, with the sound the page makes on its own. The speaker is pressed at 3 seconds, and the cat is petted once it sits down.
+
+The scene, the witch, the cat and the shooting star are drawings by Codex; the motion and the sound come from the engine.
 {{< /video >}}
 
 The cover of this post is the same scene, running on the same engine, so you can do all of it yourself. The witch flies **back and forth** for as long as the page is open, the cat walks home once and sits by the steps, and the **speaker** in the lower left corner starts the music.
 
 ## New in the engine
 
-Part 2 ended with **14 effects**. Halloween added four more and three new ideas, and every one of them is now a key in a cover's `spec.json` that any future cover can use ([`docs/cover-engine.md`](https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/cover-engine.md)).
+Part 2 ended with **14 effects**. Halloween added four more and three new ideas, and every one of them is documented for any future cover, most as a key in its `spec.json` ([`docs/cover-engine.md`](https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/cover-engine.md)).
 
-| Spec key | What it does | New drawings it needs |
+| Key, and where it is set | What it does | New drawings it needs |
 | :------- | :----------- | :-------------------- |
-| `stars` | Each star of the sky breathes at its own pace | A `sky` object in the object sheet |
-| `meteor` | A painted shooting star crosses the sky now and then | One shared streak |
-| `actors` | Characters walk or fly along a path, once or in a `loop` | A sprite sheet each |
-| `interact` | The reader presses an actor, it answers with poses, a rising heart and a sound | A second sprite sheet |
-| `ambience` | A soundscape made in the browser, off until the reader turns it on | None |
-| `terminal` | Green code falls down an old computer's screen | One shared glyph texture |
-| light `led` | Status lights blink on their own, and are not switches | None |
+| `stars`, in the spec | Each star of the sky breathes at its own pace | A `sky` object in the object sheet |
+| `meteor`, in the spec | A painted shooting star crosses the sky now and then | One shared streak |
+| `actors`, in the spec | Characters walk or fly along a path, once or in a `loop` | A sprite sheet each |
+| `interact`, in an actor | The reader presses an actor, it answers with poses, a rising heart and a sound | A second sprite sheet |
+| `ambience`, in the spec | A soundscape made in the browser, off until the reader turns it on | None |
+| `terminal`, a kind in the object sheet | Green code falls down an old computer's screen | One shared glyph texture |
+| `led`, a light type in the object sheet | Status lights blink on their own, and are not switches | None |
 
 ### Stars
 
@@ -84,7 +88,7 @@ Each star gets its own **phase** in the blue channel of the motion map's third b
 
 ### A shooting star
 
-Codex painted one **shooting star**, a five-pointed head and a tail of dry brush strokes, kept as a shared texture like the rain and the steam. Every **18 to 35 seconds** the player sends it across a part of the sky, and it is drawn **only over sky pixels**, so it passes behind the chimney and the trees.
+Codex painted one **shooting star**, a five-pointed head and a tail of dry brush strokes, kept as a shared texture like the rain and the steam. It crosses a part of the sky in **1.4 seconds**, then waits **18 to 35 seconds** before the next one, and it is drawn **only over sky pixels**, so it passes behind the chimney and the trees.
 
 ### Actors
 
@@ -129,7 +133,7 @@ A soft **reverb** made from a burst of decaying noise puts them in the same nigh
 
 ### The terminal and the status lights
 
-The **`terminal`** kind marks the glass of a screen. Codex drew a texture of falling **green glyphs** that tiles from top to bottom, and the shader darkens the screen and scrolls six columns of it down, fast, once the light has come in.
+The **`terminal`** kind marks the glass of a screen. Codex drew a texture of falling **green glyphs** that tiles from top to bottom, and the shader darkens the screen and scrolls six columns of it down, fast, fading in while the light comes in.
 
 The rack's lights are a new kind of light, **`led`**, which blinks for a fraction of a second at a time at its own rate. There are too many of them, and they are too small, to be switches, so they get no button.
 
