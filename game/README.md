@@ -31,6 +31,14 @@ Paths follow [CONTRACT.md](CONTRACT.md), including reader URLs relative to `cont
 - `tools/make_placeholders.py`: regenerates demo data and `src/reader-frame.png` using Pillow and NumPy.
 - `tests/`: logic, asset, shader, simulated interaction, and browser checks.
 
+## Replace the character
+
+Point `world.json`'s `character` at a new `character.json`, or replace the existing character files. The `sheet` path resolves relative to `character.json`. Keep sprite colours in the world's palette, with a transparent background.
+
+Set `frame` to the cell width and height, `anchor` to the feet inside each cell, and `lantern` to the light offset from the feet at scale 1. The engine mirrors both the anchor and lantern when facing left. Supply the animation names from [CONTRACT.md](CONTRACT.md), with each animation's `row`, `frames`, and `fps`. Dimensions, offsets, and animation timing come from this file; no engine edits are needed.
+
+Preview the supplied real assets at <http://localhost:8000/dev/?data=real>.
+
 Regenerate assets:
 
 ```sh
@@ -42,6 +50,7 @@ Checks:
 ```sh
 node tests/logic.mjs
 node tests/shaders.mjs # requires glslangValidator
+node tests/rendering.mjs # sprite geometry and UI placement with a mock GPU
 node --experimental-vm-modules tests/integration.mjs
 /home/paolo/webapps/sparkfabrik/agents/site-redesign/adventure-art/.venv/bin/python tests/assets.py
 ```
@@ -58,4 +67,4 @@ playwright-cli -s=adventure close
 
 The browser check covers walking, lamp switching, readers, iframe Escape, hashes, integer scaling, overflow, and WebGL errors. It saves dusk/night screenshots at four widths under `.playwright-cli/`.
 
-The current sandbox blocks server sockets and browser launches, so the browser check and visual review remain unrun. Logic, assets, interaction simulation, and shader compilation pass. Art is deliberately placeholder. Exits show a line instead of changing rooms, as specified. The embedded font covers ASCII; cross-origin readers need the close button when iframe focus owns Escape.
+The current sandbox blocks server sockets and browser cache writes, so the browser check and visual review remain unrun. Logic, assets, interaction simulation, renderer placement, and shader compilation pass. Both placeholder and real assets load in the integration check. Exits show a line instead of changing rooms, as specified. The embedded font covers ASCII; cross-origin readers need the close button when iframe focus owns Escape.

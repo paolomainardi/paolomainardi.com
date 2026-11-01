@@ -191,6 +191,19 @@ assert.equal(location.hash, "#stone-house");
 assert.equal(rendered.objects.length, 6);
 assert.equal(rendered.objects[0].label, "A room of one's own");
 assert.deepEqual(Array.from(controller.state.position), [60, 160]);
+assert.equal(rendered.verbTop, 168, "Verb strip must occupy only 12 pixels");
+assert(
+  rendered.verbRects.every((v) => v.y === 170),
+  "Verbs stay in one row",
+);
+click(75, 160);
+step(10);
+const expectedTravel = 60 * rendered.depth() * 0.16;
+assert(
+  Math.abs(controller.state.position[0] - 60 - expectedTravel) < 0.001,
+  "Walk at 60 pixels per second scaled by depth",
+);
+settle();
 click(140, 150);
 assert(controller.state.walking);
 settle();
@@ -267,6 +280,24 @@ event(secondContainer.children[0].children[1].children[3], "click");
 step();
 assert.equal(second.state.reader, "workstation-2");
 second.destroy();
+// The reviewed art must load through exactly the same contract as placeholders.
+location.hash = "";
+const realContainer = new Element("main");
+const real = await module.namespace.boot({
+  world: "./real/world.json",
+  content: "./data/content.json",
+  element: realContainer,
+});
+event(realContainer.children[0].children[1].children[3], "click");
+step();
+assert.equal(real.state.room, "stone-house");
+assert.equal(rendered.objects.length, 6);
+assert.equal(real.state.lamps.length, 2);
+assert.deepEqual(Array.from(real.state.position), [41, 152]);
+assert.deepEqual(Array.from(rendered.lanternPosition()), [49.7725, 141.6325]);
+rendered.actor.mirror = true;
+assert.deepEqual(Array.from(rendered.lanternPosition()), [32.2275, 141.6325]);
+real.destroy();
 console.log(
   "Real asset loading, start, movement, walk-before-act, readers, Esc, input pause, lamp fade, time, lantern, descriptions, exits, hashes, and cleanup passed (mock DOM/GPU).",
 );

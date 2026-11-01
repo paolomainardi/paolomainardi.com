@@ -17,7 +17,12 @@ uniform int uCount;
 uniform vec3 uLantern;
 const float bayer[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
 float threshold(vec2 p){ivec2 q=ivec2(floor(p))%4;return (bayer[q.y*4+q.x]+.5)/16.;}
-float band(float value,vec2 p){return floor(clamp(value,0.,1.)*3.+threshold(p))/3.;}
+float band(float value,vec2 p){
+ float scaled=clamp(value,0.,1.)*5., lower=floor(scaled);
+ // Dither only the middle fifth of each interval between the six levels.
+ float transition=clamp((fract(scaled)-.4)/.2,0.,1.);
+ return min(5.,lower+step(threshold(p),transition))/5.;
+}
 float lantern(vec2 p){return pow(max(0.,1.-distance(p,uLantern.xy)/70.),1.5)*uLantern.z;}
 float roomLight(vec2 p){
  float value=0.;
@@ -83,9 +88,10 @@ void main(){
     this.programs.shadow = this.program(`#version 300 es
 ${common}
 uniform vec4 uShadow;
+uniform vec2 uShadowSize;
 void main(){vec2 p=vec2(uv.x,1.-uv.y)*vec2(320,180);vec2 d=p-uShadow.xy;
  float t=clamp(dot(d,uShadow.zw)/max(dot(uShadow.zw,uShadow.zw),1.),0.,1.);
- float r=length((d-uShadow.zw*t)/vec2(9.,3.));
+ float r=length((d-uShadow.zw*t)/uShadowSize);
  float a=max(0.,1.-r)*(.28-.16*t);if(a<threshold(p)*.5)discard;color=vec4(0.,0.,0.,.26);
 }`);
     this.programs.glow = this.program(`#version 300 es
@@ -414,18 +420,18 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
   rect(x, y, w, h, tint) {
     this.sprite(this.white, [1, 1], [x, y, w, h], undefined, tint);
   }
-  text(text, x, y, tint = [0.96, 0.89, 0.72, 1]) {
+  text(text, x, y, tint = [0.96, 0.89, 0.72, 1], scale = 1) {
     for (const char of String(text)) {
       const code = char.charCodeAt(0),
         c = code >= 32 && code < 128 ? code : 63;
       this.sprite(
         this.font,
         [96, 48],
-        [Math.round(x), Math.round(y), 6, 8],
+        [Math.round(x), Math.round(y), 6 * scale, 8 * scale],
         [((c - 32) % 16) * 6, Math.floor((c - 32) / 16) * 8, 6, 8],
         tint,
       );
-      x += 6;
+      x += 6 * scale;
     }
   }
   resize(width, height) {
@@ -482,15 +488,25 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
     this.uniform("uShadow", [
       actor.x,
       actor.y,
-      (dx / len) * 22 * scale,
-      (dy / len) * 10 * scale,
+      (dx / len) * game.character.frame[0] * 0.7 * scale,
+      (dy / len) * game.character.frame[1] * 0.2 * scale,
+    ]);
+    this.uniform("uShadowSize", [
+      game.character.frame[0] * 0.28 * scale,
+      game.character.frame[1] * 0.06 * scale,
     ]);
     this.draw();
     const animation = game.character.animations[actor.animation],
       frame = Math.floor(actor.clock * animation.fps) % animation.frames;
     const light = game.lightAt(actor.x, actor.y),
       rect = [
-        Math.round(actor.x - game.character.anchor[0] * scale),
+        Math.round(
+          actor.x -
+            (actor.mirror
+              ? game.character.frame[0] - game.character.anchor[0]
+              : game.character.anchor[0]) *
+              scale,
+        ),
         Math.round(actor.y - game.character.anchor[1] * scale),
         Math.round(game.character.frame[0] * scale),
         Math.round(game.character.frame[1] * scale),
@@ -512,22 +528,26 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
     this.lighting(game);
     this.integer("uFront", 1);
     this.draw();
-    this.rect(0, 0, 320, 20, [0.025, 0.03, 0.05, 0.82]);
-    this.text(game.sentence().slice(0, 52), 4, 6);
+    const sentence = game.sentence().slice(0, 52);
+    for (let y = -1; y <= 1; y++)
+      for (let x = -1; x <= 1; x++)
+        if (x || y) this.text(sentence, 4 + x, 6 + y, [0.025, 0.03, 0.05, 1]);
+    this.text(sentence, 4, 6);
     this.rect(
       0,
       game.verbTop,
       320,
       180 - game.verbTop,
-      [0.025, 0.03, 0.05, 0.84],
+      [0.025, 0.03, 0.05, 0.55],
     );
     for (const verb of game.verbRects) {
       const selected = game.verb === verb.label;
       this.text(
-        verb.label.slice(0, 50),
+        verb.label,
         verb.x,
         verb.y,
         selected ? [1, 0.72, 0.35, 1] : [0.82, 0.83, 0.84, 1],
+        game.verbScale,
       );
     }
     if (game.speech && game.speechUntil > game.elapsed) {

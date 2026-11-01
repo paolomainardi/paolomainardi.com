@@ -159,22 +159,19 @@ export async function boot({ world, content, element }) {
       "Walk to",
       ...game.world.verbs.filter((v) => v !== "Walk to"),
     ];
-    let verbX = 4,
-      row = 0;
+    const verbWidth = labels.reduce(
+      (sum, label) => sum + label.length * 6 + 10,
+      0,
+    );
+    game.verbScale = Math.min(1, 312 / verbWidth);
+    let verbX = 4;
     game.verbRects = labels.map((label) => {
-      const width = Math.min(312, label.length * 6 + 10);
-      if (verbX + width > 316) {
-        verbX = 4;
-        row++;
-      }
-      const rect = { label, x: verbX, row, width };
+      const width = (label.length * 6 + 10) * game.verbScale;
+      const rect = { label, x: verbX, y: 170, width };
       verbX += width;
       return rect;
     });
-    game.verbTop = 180 - (row + 1) * 12 - 4;
-    game.verbRects.forEach((rect) => {
-      rect.y = game.verbTop + rect.row * 12 + 5;
-    });
+    game.verbTop = 168;
     function say(text) {
       game.speech = String(text);
       game.speechLines = wrap(text, 42);
@@ -317,7 +314,7 @@ export async function boot({ world, content, element }) {
       () => frameSubscriptions.forEach((remove) => remove()),
     );
     function hit(px, py) {
-      if (px < 0 || py < 20 || px >= 320 || py >= game.verbTop) return null;
+      if (px < 0 || py < 0 || px >= 320 || py >= game.verbTop) return null;
       for (const object of game.objects) {
         const [x0, y0, x1, y1] = object.bounds;
         const sprite = game.objectSprite.size,
@@ -385,12 +382,11 @@ export async function boot({ world, content, element }) {
       const [x, y] = point(event);
       if (y >= game.verbTop) {
         const cell = game.verbRects.find(
-          (v) => x >= v.x && x < v.x + v.width && y >= v.y - 4 && y < v.y + 8,
+          (v) => x >= v.x && x < v.x + v.width && y >= game.verbTop && y < 180,
         );
         if (cell) game.verb = cell.label;
         return;
       }
-      if (y < 20) return;
       const target = hit(x, y);
       game.hover = target;
       if (target) {
@@ -493,12 +489,14 @@ export async function boot({ world, content, element }) {
               : 0.98 + 0.02 * Math.sin(t * 0.43);
             lamp.strength = lamp.level * variation;
           }
-          let remaining = 43 * dt;
+          let remaining = dt;
           while (game.path.length && remaining > 0) {
             const next = game.path[0],
               dx = next[0] - game.actor.x,
               dy = next[1] - game.actor.y,
-              distance = Math.hypot(dx, dy);
+              distance = Math.hypot(dx, dy),
+              speed = 60 * game.depth(),
+              travel = speed * remaining;
             if (distance > 0) {
               game.actor.mirror = dx < 0;
               game.actor.animation =
@@ -508,14 +506,14 @@ export async function boot({ world, content, element }) {
                     ? "walk-back"
                     : "walk-front";
             }
-            if (distance <= remaining) {
+            if (distance <= travel) {
               game.actor.x = next[0];
               game.actor.y = next[1];
               game.path.shift();
-              remaining -= distance;
+              remaining -= distance / speed;
             } else {
-              game.actor.x += (dx / distance) * remaining;
-              game.actor.y += (dy / distance) * remaining;
+              game.actor.x += (dx / distance) * travel;
+              game.actor.y += (dy / distance) * travel;
               remaining = 0;
             }
           }
