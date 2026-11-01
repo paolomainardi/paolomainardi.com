@@ -1,0 +1,32 @@
+{{- /* Isolated game host. Keep CSS and its frame image beside the ESM bundle,
+       because the engine resolves its stylesheet against import.meta.url. */ -}}
+{{- $game := resources.Get "game/main.js" | js.Build (dict "format" "esm" "targetPath" "play/game/main.js" "minify" hugo.IsProduction) -}}
+{{- $css := resources.Get "game/style.css" | resources.Copy "play/game/style.css" -}}
+{{- $frame := resources.Get "game/reader-frame.png" | resources.Copy "play/game/reader-frame.png" -}}
+{{- $publishFrame := $frame.RelPermalink -}}
+<!DOCTYPE html>
+<html lang="{{ site.Language.Locale | default site.Language.Lang }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{{ .Title }} · {{ site.Title }}</title>
+    <link rel="stylesheet" href="{{ $css.RelPermalink }}">
+    <style>
+        html, body { margin: 0; width: 100%; height: 100%; background: #000; }
+        #game { width: 100%; height: 100%; height: 100dvh; }
+    </style>
+</head>
+<body>
+    <main id="game"></main>
+    <script type="module">
+        import { boot } from {{ $game.RelPermalink }};
+        boot({
+            world: "/play/data/world.json",
+            content: {{ (.OutputFormats.Get "json").RelPermalink }},
+            element: document.getElementById("game")
+        });
+    </script>
+</body>
+</html>

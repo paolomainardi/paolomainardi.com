@@ -187,7 +187,7 @@ export async function boot({ world, content, element }) {
     game.sentence = () => {
       const target = game.hover;
       return target
-        ? `${game.verb} ${target.content ? "Book: " : ""}${target.label || target.id}`
+        ? `${game.verb} ${target.kind === "content" ? "Book: " : ""}${target.label || target.id}`
         : game.verb;
     };
     const labels = [
@@ -323,6 +323,19 @@ export async function boot({ world, content, element }) {
       game.pending = null;
       game.hover = null;
       game.speech = null;
+      for (const hotspot of room.items.filter(
+        (item) => item.kind === "hotspot",
+      )) {
+        const binding = room.config.hotspots?.[hotspot.id];
+        if (!binding) continue;
+        const item = matchingItems(game.items, binding.content).sort((a, b) =>
+          (b.date || "").localeCompare(a.date || ""),
+        )[0];
+        if (item) {
+          hotspot.content = item;
+          hotspot.label = `${hotspot.label || hotspot.id}: ${item.title}`;
+        }
+      }
       const matching = matchingItems(game.items, room.config.content);
       for (const sprite of game.objectSprites || [])
         renderer.gl.deleteTexture(sprite.texture);
@@ -401,8 +414,27 @@ export async function boot({ world, content, element }) {
         say(`That way lies ${target.to}.`);
         return;
       }
-      if (verb === "Look at")
+      if (verb === "Look at" && target.kind === "hotspot" && target.content) {
+        const width = Math.max(
+          1,
+          Math.floor((game.room.size[0] * 0.8) / (6 * game.uiScale)),
+        );
+        const lines = wrap(
+          `${target.content.title}. ${target.content.description || ""}`,
+          width,
+        );
+        if (lines.length > 2)
+          lines[1] =
+            lines[1].slice(0, Math.max(0, width - 3)).trimEnd() + "...";
+        say(lines.slice(0, 2).join("\n"));
+      } else if (verb === "Look at")
         say(target.content?.description || target.look || "Nothing unusual.");
+      else if (verb === "Open" && target.kind === "hotspot" && target.content)
+        say(
+          target.content.link || target.content.url
+            ? "Let's see what's out there."
+            : "There is nothing to open here.",
+        );
       else if (verb === "Open" && target.content) openReader(target.content);
       else if (verb === "Use" && target.kind === "light") {
         const lamp = game.room.lights.find((light) => light.id === target.id);
@@ -442,6 +474,10 @@ export async function boot({ world, content, element }) {
       game.hover = target;
       if (target) {
         const verb = game.verb;
+        if (verb === "Open" && target.kind === "hotspot" && target.content) {
+          const url = target.content.link || target.content.url;
+          if (url) window.open(url, "_blank", "noopener,noreferrer");
+        }
         walk(
           target.position,
           verb === "Walk to" && target.kind !== "exit"

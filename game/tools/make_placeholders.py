@@ -188,7 +188,8 @@ def generate():
     frame.save(ROOT.parent / 'src/reader-frame.png')
     save_json(DATA / 'world.json', dict(title='The engineer\'s study', palette='palette.png', start='stone-house',
         character='character/character.json', verbs=['Look at', 'Open', 'Use', 'Talk to'], objects=dict(book=books),
-        rooms={'stone-house': dict(src='rooms/stone-house/room.json', content=dict(series='workstation'), object='book')}))
+        rooms={'stone-house': dict(src='rooms/stone-house/room.json', content=dict(series='workstation'), object='book',
+            hotspots=dict(window=dict(content=dict(type='link'))))}))
     titles = ['A room of one\'s own', 'Choosing the hardware', 'Linux on the desk', 'Containers at home', 'A quieter workstation', 'The finished build']
     content = []
     for i, title in enumerate(titles, 1):
@@ -206,8 +207,16 @@ def generate():
 <h2>Start with what you need</h2><p>Measure the work you do each day before choosing parts. A useful system is one you understand and can repair.</p>
 <pre><code>$ uname -s\nLinux\n$ printf 'hello, workstation\\n'\nhello, workstation</code></pre>
 <p>Close this reader with Escape or the close button to return to the study.</p></html>''')
+    content.extend([
+        dict(id='web-platform', type='link', title='The web platform',
+             description='Standards and tools for building on the web.', date='2026-10-20',
+             tags=['web'], link='https://www.w3.org/', url='/links/web-platform/'),
+        dict(id='linux-kernel', type='link', title='The Linux kernel',
+             description='Follow kernel releases and development.', date='2026-10-25',
+             tags=['linux'], link='https://www.kernel.org/', url='/links/linux-kernel/'),
+    ])
     save_json(DATA / 'content.json', dict(items=content))
-    print(f'Generated placeholder assets and six articles in {ROOT}')
+    print(f'Generated placeholder assets and six articles plus two links in {ROOT}')
 
 if __name__ == '__main__':
     generate()

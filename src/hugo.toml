@@ -16,6 +16,40 @@ pagerSize = 20
 limit = 50
 
 [module]
+# Explicit mounts preserve the project directories alongside the game assets.
+[[module.mounts]]
+source = "archetypes"
+target = "archetypes"
+[[module.mounts]]
+source = "assets"
+target = "assets"
+[[module.mounts]]
+source = "content"
+target = "content"
+[[module.mounts]]
+source = "data"
+target = "data"
+[[module.mounts]]
+source = "i18n"
+target = "i18n"
+[[module.mounts]]
+source = "layouts"
+target = "layouts"
+[[module.mounts]]
+source = "static"
+target = "static"
+[[module.mounts]]
+source = "../game/src"
+target = "assets/game"
+[[module.mounts]]
+source = "../game/dev/real"
+target = "static/play/data"
+# Earlier mounts take precedence, so leave the world to the site mount below.
+files = ["! world.json", "**"]
+[[module.mounts]]
+source = "../adventure/world.json"
+target = "static/play/data/world.json"
+
 [[module.imports]]
 path = "cj.rs/gohugo-asciinema"
 
@@ -140,8 +174,19 @@ baseName = "index"
 isPlainText = true
 rel = "alternate"
 
+# A script-free reader for the adventure. Keep the normal HTML URL canonical.
+[outputFormats.reader]
+mediaType = "text/html"
+baseName = "reader"
+isHTML = true
+permalinkable = false
+notAlternative = true
+
+[outputFormats.json]
+baseName = "content"
+
 [[cascade]]
-outputs = ["html", "markdown"]
+outputs = ["html", "markdown", "reader"]
 [cascade.target]
 path = "/posts/**"
 kind = "page"

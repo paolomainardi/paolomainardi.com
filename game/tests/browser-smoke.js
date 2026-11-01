@@ -46,6 +46,64 @@ async (page) => {
   await page.frameLocator("iframe").locator("body").click();
   await page.keyboard.press("Escape");
   await page.waitForFunction(() => window.game.state.reader === null);
+  await click(145, 255); // Look at
+  await click(135, 90);
+  await settle();
+  const description = await page.locator(".adventure-live").textContent();
+  if (
+    !description.includes("The Linux kernel") ||
+    !description.replace(/\s+/g, " ").includes("Follow kernel releases")
+  )
+    throw new Error("Content-bound hotspot description failed");
+  await click(400, 230);
+  await settle();
+  await click(230, 255); // Open
+  await page.context().route("https://www.kernel.org/", (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: "<title>Sample external link</title>",
+    }),
+  );
+  await page.evaluate(() => {
+    const open = window.open;
+    window.open = function (...args) {
+      window.hotspotOpen = {
+        args,
+        activation: navigator.userActivation.isActive,
+        walking: window.game.state.walking,
+      };
+      return open.apply(window, args);
+    };
+  });
+  const popupPromise = page.waitForEvent("popup");
+  await click(135, 90);
+  const popup = await popupPromise;
+  await popup.waitForLoadState();
+  const opened = await page.evaluate(() => window.hotspotOpen);
+  if (
+    JSON.stringify(opened.args) !==
+      JSON.stringify([
+        "https://www.kernel.org/",
+        "_blank",
+        "noopener,noreferrer",
+      ]) ||
+    !opened.activation ||
+    opened.walking
+  )
+    throw new Error(
+      "External tab must open directly from the click before walking",
+    );
+  if (await popup.evaluate(() => window.opener !== null))
+    throw new Error("External tab must have no opener");
+  await popup.close();
+  await settle();
+  if (
+    (await page.locator(".adventure-live").textContent()) !==
+    "Let's see what's out there."
+  )
+    throw new Error("Hotspot arrival dialogue failed");
+  if ((await page.evaluate(() => window.game.state.reader)) !== null)
+    throw new Error("Hotspots must not open the article reader");
   const initial = await page.evaluate(() => window.game.state.time);
   await page.keyboard.press("t");
   if ((await page.evaluate(() => window.game.state.time)) === initial)

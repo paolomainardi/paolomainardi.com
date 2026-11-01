@@ -1,0 +1,40 @@
+{
+  "title": "The engineer's study",
+  "palette": "palette.png",
+  "start": "stone-house",
+  "character": "character/character.json",
+  "verbs": [
+    "Look at",
+    "Open",
+    "Use",
+    "Talk to"
+  ],
+  "objects": {
+    "book": [
+      "objects/book-1.png",
+      "objects/book-2.png",
+      "objects/book-3.png",
+      "objects/book-4.png",
+      "objects/book-5.png",
+      "objects/book-6.png"
+    ]
+  },
+  "rooms": {
+    "stone-house": {
+      "src": "rooms/stone-house/room.json",
+      "content": {
+        "tags": [
+          "linux"
+        ]
+      },
+      "object": "book",
+      "hotspots": {
+        "window": {
+          "content": {
+            "type": "link"
+          }
+        }
+      }
+    }
+  }
+}

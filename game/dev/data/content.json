@@ -89,6 +89,30 @@
       "part": 6,
       "url": "../reader/workstation-6.html",
       "reader": "../reader/workstation-6.html"
+    },
+    {
+      "id": "web-platform",
+      "type": "link",
+      "title": "The web platform",
+      "description": "Standards and tools for building on the web.",
+      "date": "2026-10-20",
+      "tags": [
+        "web"
+      ],
+      "link": "https://www.w3.org/",
+      "url": "/links/web-platform/"
+    },
+    {
+      "id": "linux-kernel",
+      "type": "link",
+      "title": "The Linux kernel",
+      "description": "Follow kernel releases and development.",
+      "date": "2026-10-25",
+      "tags": [
+        "linux"
+      ],
+      "link": "https://www.kernel.org/",
+      "url": "/links/linux-kernel/"
     }
   ]
 }

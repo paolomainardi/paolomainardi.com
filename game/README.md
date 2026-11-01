@@ -27,6 +27,23 @@ Paths follow [CONTRACT.md](CONTRACT.md), including reader URLs relative to `cont
 
 In `world.json`, each `objects` value accepts a single sprite path or a non-empty list, such as `"book": ["objects/book.png", "objects/book-green.png", "objects/book-blue.png"]`. Content objects cycle through that list in occupied slot order, starting from the first sprite in each room. Drawing and hit areas use each sprite's own dimensions. The placeholders show six books cycling through red, green and blue.
 
+Bind room hotspots to content in `world.json`:
+
+```json
+"hotspots": { "window": { "content": { "type": "link" } } }
+```
+
+The id refers to a hotspot in that room's `room.json`. Filters follow slot rules,
+but hotspots select the newest matching item by `date`, regardless of `part`.
+The label includes the item's title. **Look at** gives the title and note in at
+most two lines. **Open** opens `link`, or `url` when `link` is absent, in a new tab
+directly from the click with `noopener,noreferrer`. The character then walks to
+the hotspot and says "Let's see what's out there." Article books still use the
+embedded reader. Unbound hotspots and filters without matches keep their original
+behavior. Link items carry the external URL in `link` and their note in
+`description`; content URLs resolve relative to `content.json` and require HTTP(S).
+The placeholder and real-art demo worlds bind the window to two sample links.
+
 Frame dimensions come from each room's `size`, shared by every room in a world. The placeholders use 480×270 room images and 72×128 character cells. Masks, paths, pointer coordinates, and render targets use the room dimensions.
 
 Room light adds each lamp's drawing minus the unlit drawing in linear colour, then clamps the result. Each lamp fades over 0.4 seconds. Oil and candle lamps flicker irregularly between 0.85 and 1.0 with slight pool drift; other lamps breathe slowly. There are no lighting bands. The final OKLab palette lookup stays. Set `"dither": true` in `world.json` for a subtle ordered palette dither; it defaults to false.
@@ -36,7 +53,7 @@ At night the lantern adds warm light coloured by the room's `albedo`, with a smo
 The renderer uses the largest whole pixel scale that fits, centred with black bars. On a viewport smaller than one frame, the canvas fits the available space while keeping its native render resolution.
 
 - `src/`: WebGL2 renderer, OKLab palette lookup, mask loader, A\*, bitmap font, interaction, and reader frame.
-- `dev/data/`: generated per-lamp drawings, albedo, masks, palette, sprites, world, and six sample posts.
+- `dev/data/`: generated per-lamp drawings, albedo, masks, palette, sprites, world, six sample posts, and two sample links.
 - `dev/reader/`: readable sample articles.
 - `tools/make_placeholders.py`: regenerates demo data and `src/reader-frame.png` using Pillow and NumPy.
 - `tests/`: logic, asset, shader, simulated interaction, and browser checks.
@@ -69,6 +86,11 @@ node --experimental-vm-modules tests/integration.mjs
 ```
 
 The object checks cover single paths, lists, cycling across slots and rooms, relative URLs, invalid lists, distinct book colours, and sprite-specific drawing and hit areas.
+
+Hotspot checks cover newest-date selection independent of part, combined filters,
+labels, short descriptions, direct-click tab opening, URL preference and fallback,
+missing URLs, unmatched filters, and preservation of article readers. The browser
+smoke check also checks a real popup, user activation, and its missing opener.
 
 The integration check uses real data and PNGs with simulated DOM/GPU interfaces. Set `ART_PYTHON` to another Pillow-enabled Python if needed. It does not verify rendered output.
 

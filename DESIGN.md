@@ -405,16 +405,16 @@ and every one of those labels falls back inline, above the block it belongs to.
 
 Breakpoints, and what each one is for:
 
-| Width  | What changes                                                |
-| :----- | :---------------------------------------------------------- |
-| 560px  | Contents rows stack, the dotted leader is dropped            |
-| 640px  | Post navigation goes to one column                           |
-| 768px  | Phone type scale, the header stacks into two rows            |
-| 900px  | The contents block opens, and goes to two columns            |
-| 1200px | The apparatus margin opens, the section rail replaces the bar|
-| 1280px | Body type steps up to 21px                                   |
-| 1560px | The section rail shows the current section name              |
-| 1700px | Body type steps up to 22px                                   |
+| Width  | What changes                                                  |
+| :----- | :------------------------------------------------------------ |
+| 560px  | Contents rows stack, the dotted leader is dropped             |
+| 640px  | Post navigation goes to one column                            |
+| 768px  | Phone type scale, the header stacks into two rows             |
+| 900px  | The contents block opens, and goes to two columns             |
+| 1200px | The apparatus margin opens, the section rail replaces the bar |
+| 1280px | Body type steps up to 21px                                    |
+| 1560px | The section rail shows the current section name               |
+| 1700px | Body type steps up to 22px                                    |
 
 The page has one header. There is no second running head inside the page.
 
@@ -702,6 +702,12 @@ in the outer margin level with its line above 1200px, floated so that two notes
 on one line stack rather than overlap. Below that it follows the
 sentence as a short indented block. Numbers come from a CSS counter, so they
 never need maintaining.
+
+**Adventure.** `/play/` is an isolated, full-viewport game on black, with its
+own engine styles and no site chrome. It is not linked from the site yet.
+Articles opened inside the game use the existing post typography and stylesheet
+in a standalone reader: title, meta line and content, without site chrome or
+scripts. Reader links open in a new tab. Both views stay out of the sitemap.
 
 ## Do's and Don'ts
 

@@ -64,9 +64,16 @@ assert len({book.tobytes() for book in books}) == 3
 assert all(book.getchannel('A').tobytes() == books[0].getchannel('A').tobytes() for book in books)
 content_path = data / 'content.json'
 items = load(content_path)['items']
-assert len(items) == 6
-assert [item['part'] for item in items] == list(range(1, 7))
-for item in items:
+posts = [item for item in items if item['type'] == 'post']
+links = [item for item in items if item['type'] == 'link']
+assert len(posts) == 6 and len(links) == 2
+assert [item['part'] for item in posts] == list(range(1, 7))
+assert world['rooms']['stone-house']['hotspots']['window']['content'] == {'type': 'link'}
+for item in links:
+    assert all(item.get(key) for key in ['id', 'title', 'description', 'date', 'tags', 'link'])
+    assert item['link'].startswith('https://')
+assert len({item['date'] for item in links}) == 2
+for item in posts:
     reader = (content_path.parent / item['reader']).resolve()
     assert reader.is_relative_to(root)
     text = reader.read_text()

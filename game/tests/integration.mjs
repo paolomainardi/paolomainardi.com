@@ -44,9 +44,15 @@ const document = new EventTarget();
 document.baseURI = "https://adventure.test/dev/";
 document.head = new Element("head");
 document.createElement = (tag) => new Element(tag);
-const window = new EventTarget(),
-  location = { hash: "" };
+const window = new EventTarget();
+const opened = [];
+window.open = (...args) => {
+  opened.push({ args, position: [rendered.actor.x, rendered.actor.y] });
+  return null; // noopener may return null even when the browser opens the tab.
+};
+const location = { hash: "" };
 let objectPaths,
+  contentOverride,
   legacyRoom = false;
 let nextFrame,
   time = 1000,
@@ -109,6 +115,8 @@ const context = vm.createContext({
         const data = JSON.parse(readFileSync(path, "utf8"));
         if (path.endsWith("/data/world.json") && objectPaths !== undefined)
           data.objects.book = objectPaths;
+        if (path.endsWith("/content.json") && contentOverride)
+          data.items = contentOverride;
         if (path.endsWith("/room.json") && legacyRoom)
           for (const state of Object.values(data.states)) {
             state.lit = state.unlit;
@@ -363,7 +371,51 @@ const look = rendered.verbRects.find((v) => v.label === "Look at");
 click((look.x + 2) / 1.5, 170);
 click(90, 60);
 settle();
-assert.equal(rendered.speech, "The sea, calm tonight.");
+const hotspot = rendered.room.items.find((item) => item.id === "window");
+assert.equal(hotspot.label, "Window: The Linux kernel");
+assert.equal(hotspot.content.id, "linux-kernel");
+assert(rendered.speech.includes("The Linux kernel"));
+assert(rendered.speech.replace(/\s+/g, " ").includes("Follow kernel releases"));
+assert(rendered.speechLines.length <= 2);
+assert.equal(opened.length, 0, "Look at must not open a tab");
+assert.equal(rendered.sentence(), "Look at Window: The Linux kernel");
+const originalDescription = hotspot.content.description;
+hotspot.content.description = "A long note about the kernel. ".repeat(30);
+click(90, 60);
+settle();
+assert.equal(rendered.speechLines.length, 2);
+assert(rendered.speech.endsWith("..."));
+hotspot.content.description = originalDescription;
+// Move away so the click can prove opening happens before movement.
+click(300, 150);
+settle();
+click((open.x + 2) / 1.5, 170);
+const beforeOpen = Array.from(controller.state.position);
+click(90, 60);
+assert.equal(opened.length, 1, "Tab must open synchronously during the click");
+assert.deepEqual(Array.from(opened[0].args), [
+  "https://www.kernel.org/",
+  "_blank",
+  "noopener,noreferrer",
+]);
+assert.deepEqual(opened[0].position, beforeOpen);
+assert.deepEqual(Array.from(controller.state.position), beforeOpen);
+assert(controller.state.walking);
+assert.equal(controller.state.reader, null);
+settle();
+assert.equal(opened.length, 1, "Arrival must not open a second tab");
+assert.equal(rendered.speech, "Let's see what's out there.");
+assert.equal(location.hash, "#stone-house");
+const originalLink = hotspot.content.link;
+hotspot.content.link = null;
+click(90, 60);
+assert.equal(
+  opened.at(-1).args[0],
+  "https://adventure.test/links/linux-kernel/",
+);
+settle();
+hotspot.content.link = originalLink;
+click((look.x + 2) / 1.5, 170);
 click(40, 80);
 settle();
 assert.equal(rendered.speech, "That way lies harbour.");
@@ -376,12 +428,51 @@ event(window, "hashchange");
 await Promise.resolve();
 assert.equal(controller.state.reader, null);
 const retiredSprites = rendered.objectSprites;
-rendered.world.rooms.second = { ...rendered.world.rooms["stone-house"] };
+// Date ordering must override part ordering and filters must exclude newer non-matches.
+rendered.items.push(
+  {
+    id: "new-link",
+    type: "link",
+    title: "New link",
+    date: "2026-10-30",
+    part: 99,
+    tags: ["linux"],
+  },
+  {
+    id: "wrong-tag",
+    type: "link",
+    title: "Wrong tag",
+    date: "2026-10-31",
+    tags: ["web"],
+  },
+  {
+    id: "wrong-type",
+    type: "post",
+    title: "Wrong type",
+    date: "2026-11-01",
+    tags: ["linux"],
+  },
+);
+rendered.world.rooms.second = {
+  ...rendered.world.rooms["stone-house"],
+  hotspots: {
+    window: { content: { type: "link", tags: ["linux", "hardware"] } },
+  },
+};
 location.hash = "#second";
 event(window, "hashchange");
 await new Promise(setImmediate);
 step();
 assert.equal(controller.state.room, "second");
+const rebound = rendered.room.items.find((item) => item.id === "window");
+assert.equal(rebound.label, "Window: New link");
+assert.equal(rebound.content.id, "new-link");
+assert.equal(opened.length, 2, "Changing rooms must not open tabs");
+click((open.x + 2) / 1.5, 170);
+click(90, 60);
+settle();
+assert.equal(rendered.speech, "There is nothing to open here.");
+assert.equal(opened.length, 2);
 assert.deepEqual(
   Array.from(rendered.objects, (object) =>
     rendered.objectSprites.indexOf(object.sprite),
@@ -418,6 +509,23 @@ assert(
     (object) => object.sprite === rendered.objectSprites[0],
   ),
 );
+// No matching content preserves the original room hotspot.
+rendered.world.rooms.empty = {
+  ...rendered.world.rooms["stone-house"],
+  hotspots: { window: { content: { type: "missing" } } },
+};
+location.hash = "#empty";
+event(window, "hashchange");
+await new Promise(setImmediate);
+step();
+const unbound = rendered.room.items.find((item) => item.id === "window");
+assert.equal(unbound.label, "Window");
+assert.equal(unbound.content, undefined);
+const secondLook = rendered.verbRects.find((v) => v.label === "Look at");
+event(rendered.canvas, "click", { clientX: secondLook.x + 2, clientY: 255 });
+event(rendered.canvas, "click", { clientX: 135, clientY: 90 });
+step(300);
+assert.equal(rendered.speech, "The sea, calm tonight.");
 second.destroy();
 // Both accepted forms resolve relative to the world file, and empty lists fail clearly.
 const assetsModule = await moduleAt("https://adventure.test/src/assets.js");
@@ -447,6 +555,20 @@ for (const value of [[], [null], ""]) {
     /requires a sprite path or a non-empty list/,
   );
 }
+objectPaths = "objects/book.png";
+for (const field of ["link", "url"]) {
+  for (const value of ["javascript:alert(1)", "data:text/html,test"]) {
+    contentOverride = [{ id: "unsafe", type: "link", [field]: value }];
+    await assert.rejects(
+      assetsModule.namespace.loadWorld(
+        "https://adventure.test/dev/data/world.json",
+        "https://adventure.test/dev/data/content.json",
+      ),
+      /require HTTP\(S\) URLs/,
+    );
+  }
+}
+contentOverride = undefined;
 // Build an explicit legacy fixture; real artwork may already follow the current contract.
 legacyRoom = true;
 // Legacy shared-lit drawings must fail clearly rather than silently lighting incorrectly.
@@ -460,5 +582,5 @@ await assert.rejects(
   /one drawing per lamp/,
 );
 console.log(
-  "New asset loading, start, movement, readers, lamp fade, drift, time, lantern, descriptions, exits, hashes, and cleanup passed (mock DOM/GPU).",
+  "New asset loading, start, movement, readers, lamp fade, drift, time, lantern, descriptions, content-bound hotspots, click-time tabs, safe URLs, exits, hashes, and cleanup passed (mock DOM/GPU).",
 );

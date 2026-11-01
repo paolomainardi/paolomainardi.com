@@ -74,6 +74,8 @@ export async function loadWorld(worldURL, contentURL) {
     world,
     items: content.items.map((item) => ({
       ...item,
+      link: item.link ? resolve(item.link, contentURL) : null,
+      url: item.url ? resolve(item.url, contentURL) : null,
       reader: item.reader ? resolve(item.reader, contentURL) : null,
     })),
     character: { ...character, sheet, glow },

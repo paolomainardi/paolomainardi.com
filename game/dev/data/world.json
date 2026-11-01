@@ -22,7 +22,14 @@
       "content": {
         "series": "workstation"
       },
-      "object": "book"
+      "object": "book",
+      "hotspots": {
+        "window": {
+          "content": {
+            "type": "link"
+          }
+        }
+      }
     }
   }
 }

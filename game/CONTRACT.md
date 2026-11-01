@@ -35,6 +35,23 @@ these colours, or fully transparent.
 ```
 
 `type` is `post`, `link`, `about` or `talk`. Optional fields may be missing.
+Items of type `link` carry `link`, the external URL of the linked page, plus
+`title`, `date`, `tags`, and the note as `description`. `url` may point to the
+site's own link entry. `link`, `url`, and `reader` resolve relative to `content.json`
+and must use HTTP(S).
+
+```json
+{
+  "id": "linux-kernel",
+  "type": "link",
+  "title": "The Linux kernel",
+  "description": "Follow kernel releases and development.",
+  "date": "2026-10-25",
+  "tags": ["linux"],
+  "link": "https://www.kernel.org/",
+  "url": "/links/linux-kernel/"
+}
+```
 
 ## world.json (written by hand)
 
@@ -50,7 +67,8 @@ these colours, or fully transparent.
     "stone-house": {
       "src": "rooms/stone-house/room.json",
       "content": { "series": "workstation" },
-      "object": "book"
+      "object": "book",
+      "hotspots": { "window": { "content": { "type": "link" } } }
     }
   }
 }
@@ -61,6 +79,21 @@ these colours, or fully transparent.
 `content` is a filter on content items: every key must match (`tags` matches when
 any tag is shared). Matching items fill the room's slots in order: `part`
 ascending, then `date` descending.
+
+A room's optional `hotspots` map binds a `room.json` hotspot id to a `content`
+filter. Filters use the same rules as slots, but choose only the newest matching
+item by `date`, ignoring `part`. A missing binding or no matching item leaves the
+hotspot's original label and actions unchanged.
+
+A bound hotspot's label becomes `<hotspot label>: <item title>`. **Look at** says
+the item's title and description, shortened to at most two lines with `...` when
+truncated. **Open** calls `window.open(url, "_blank", "noopener,noreferrer")`
+directly during the click, using `link` if present, otherwise `url`. The tab opens
+before the character walks, so the browser retains user activation. After walking
+to the hotspot, the character says "Let's see what's out there." Opening a hotspot
+does not open the article reader or change its hash. Without either URL, the
+character walks over and says there is nothing to open. Loading a room or looking
+at a hotspot never opens a tab.
 
 ## rooms/<name>/room.json (written by the asset builder)
 
