@@ -97,6 +97,11 @@ heading each, and end with the data and references.
   pixel", "That is harder than it sounds", "Here is the trick", "This is the
   part that matters", "The answer is simple". Headings name the topic ("From
   drawings to screen", "The object sheet"); sentences state the fact.
+- **Clever headings.** A heading that teases, dramatizes or reads like a
+  story beat instead of naming its topic: "Where alternates stop", "When the
+  local value did not apply", "Where it breaks down". Name the topic or state
+  the point plainly: "Native includes over alternates", "The Alacritty font
+  size".
 - **Colon setups.** A sentence that stops at a colon to deliver a punchline,
   a bold phrase or an inline list reads like a slide. Examples to avoid are
   "Paolo set two rules: **only Claude and Codex**, and **every object
