@@ -171,3 +171,97 @@ assert.equal(uniforms.uBloom, 0, "G comparison removes both halo and core");
 console.log(
   "Character brightness floor, warm lighting, strongest rim, and bloom toggle passed (mock GPU).",
 );
+
+// Validate uploaded 64-cube contents against an independent exhaustive OKLab
+// reference at grid samples, including endpoints and both palette sizes.
+function referenceLab(rgb) {
+  const [r, g, b] = rgb.map((v) => {
+    v /= 255;
+    return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  return [
+    0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+  ];
+}
+const { readFileSync } = await import("node:fs");
+const paletteColors = JSON.parse(
+  readFileSync(new URL("../dev/data/palette.json", import.meta.url)),
+);
+for (const count of [1, 17, 32, 256]) {
+  const colors = paletteColors.slice(0, count).map((c) =>
+    c
+      .slice(1)
+      .match(/../g)
+      .map((v) => parseInt(v, 16)),
+  );
+  assert.equal(
+    colors.length,
+    count,
+    "Fixture contains the requested palette size",
+  );
+  const data = new Uint8Array(colors.flatMap((c) => [...c, 255]));
+  let uploaded;
+  const paletteRenderer = Object.create(Renderer.prototype);
+  Object.assign(paletteRenderer, {
+    pixels: () => data,
+    gl: {
+      createTexture: () => ({}),
+      bindTexture() {},
+      texParameteri() {},
+      texImage3D(...args) {
+        uploaded = args;
+      },
+    },
+  });
+  const start = performance.now();
+  paletteRenderer.palette({ width: count, height: 1 });
+  console.log(
+    `${count}-colour 64³ lookup build and mock upload: ${(performance.now() - start).toFixed(1)} ms`,
+  );
+  assert.deepEqual(uploaded.slice(3, 6), [64, 64, 64]);
+  const lut = uploaded[9];
+  assert.equal(lut.length, 64 ** 3 * 4);
+  const allowed = new Set(colors.map((c) => c.join(",")));
+  for (let i = 0; i < lut.length; i += 4) {
+    assert.equal(lut[i + 3], 255);
+    assert(allowed.has(`${lut[i]},${lut[i + 1]},${lut[i + 2]}`));
+  }
+  const labs = colors.map(referenceLab);
+  const samples = [0, 64 ** 3 - 1];
+  for (let i = 0; i < 64 ** 3; i += 101) samples.push(i);
+  for (const index of samples) {
+    const lab = referenceLab(
+      [index % 64, Math.floor(index / 64) % 64, Math.floor(index / 4096)].map(
+        (v) => (v * 255) / 63,
+      ),
+    );
+    let best = Infinity,
+      nearest = 0;
+    labs.forEach((p, i) => {
+      const d = p.reduce((sum, v, c) => sum + (v - lab[c]) ** 2, 0);
+      if (d < best) {
+        best = d;
+        nearest = i;
+      }
+    });
+    assert.deepEqual(
+      Array.from(lut.slice(index * 4, index * 4 + 3)),
+      colors[nearest],
+    );
+  }
+  for (const [width, height] of [
+    [0, 1],
+    [257, 1],
+    [32, 2],
+  ]) {
+    assert.throws(() => paletteRenderer.palette({ width, height }), /1 to 256/);
+  }
+}
+console.log(
+  "Palette sizes, 64³ uploads, palette membership, and exact OKLab reference samples passed.",
+);

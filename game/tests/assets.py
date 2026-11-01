@@ -9,10 +9,10 @@ data = root / 'dev/data'
 load = lambda p: json.loads(p.read_text())
 world = load(data / 'world.json')
 colors = load(data / 'palette.json')
-assert len(colors) == 32
+assert 1 <= len(colors) <= 256
 palette = {tuple(bytes.fromhex(c[1:])) for c in colors}
 image_palette = Image.open(data / world['palette']).convert('RGB')
-assert image_palette.size == (32, 1)
+assert image_palette.size == (len(colors), 1)
 assert list(image_palette.getdata()) == [tuple(bytes.fromhex(c[1:])) for c in colors]
 for room_id, config in world['rooms'].items():
     room_path = data / config['src']

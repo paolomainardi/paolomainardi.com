@@ -1,4 +1,5 @@
 import { fontPixels } from "./font.js";
+import { buildPaletteLookup, PALETTE_STEPS } from "./palette.js";
 
 const vertex = `#version 300 es
 out vec2 uv;
@@ -37,20 +38,6 @@ vec3 drawing(vec2 p){
  vec3 base=mix(texture(uUnlit,p/uSize).rgb,texture(uLit,p/uSize).rgb,total);
  return base+vec3(.2,.095,.015)*band(hand,p);
 }`;
-
-function oklab(rgb) {
-  const [r, g, b] = rgb.map((v) =>
-    v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4,
-  );
-  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
-  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
-  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
-  return [
-    0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
-    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
-    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
-  ];
-}
 
 export class Renderer {
   constructor(canvas) {
@@ -112,7 +99,7 @@ void main(){color=texture(uImage,uv)*.227027;for(int i=1;i<=4;i++){float w=i==1?
     this.programs.present = this.program(`#version 300 es
 precision highp float;precision highp sampler3D;in vec2 uv;out vec4 color;
 uniform sampler2D uImage,uGlow,uGlowCore;uniform sampler3D uPalette;uniform float uBloom;
-void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPalette,(floor(c*31.+.5)+.5)/32.).rgb;color=vec4(mapped+(texture(uGlow,uv).rgb*.45+texture(uGlowCore,uv).rgb*.12)*uBloom,1.);}`);
+void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPalette,(floor(c*${PALETTE_STEPS - 1}.+.5)+.5)/${PALETTE_STEPS}.).rgb;color=vec4(mapped+(texture(uGlow,uv).rgb*.45+texture(uGlowCore,uv).rgb*.12)*uBloom,1.);}`);
 
     this.white = this.texture(new Uint8Array([255, 255, 255, 255]), 1, 1);
     this.font = this.texture(fontPixels(), 96, 48);
@@ -259,29 +246,9 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
     return result;
   }
   palette(image) {
-    if (image.width !== 32 || image.height !== 1)
-      throw new Error("Palette must be 32 by 1.");
-    const data = this.pixels(image),
-      colors = Array.from({ length: 32 }, (_, i) =>
-        Array.from(data.slice(i * 4, i * 4 + 3)),
-      ),
-      labs = colors.map((c) => oklab(c.map((v) => v / 255)));
-    const lut = new Uint8Array(32 * 32 * 32 * 4);
-    for (let b = 0; b < 32; b++)
-      for (let g = 0; g < 32; g++)
-        for (let r = 0; r < 32; r++) {
-          const lab = oklab([r / 31, g / 31, b / 31]);
-          let nearest = 0,
-            best = Infinity;
-          for (let i = 0; i < 32; i++) {
-            const d = labs[i].reduce((sum, v, j) => sum + (v - lab[j]) ** 2, 0);
-            if (d < best) {
-              best = d;
-              nearest = i;
-            }
-          }
-          lut.set([...colors[nearest], 255], ((b * 32 + g) * 32 + r) * 4);
-        }
+    if (image.width < 1 || image.width > 256 || image.height !== 1)
+      throw new Error("Palette must be N by 1, with 1 to 256 colours.");
+    const lut = buildPaletteLookup(this.pixels(image));
     const gl = this.gl,
       t = (this.lut = gl.createTexture());
     gl.bindTexture(gl.TEXTURE_3D, t);
@@ -293,9 +260,9 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
       gl.TEXTURE_3D,
       0,
       gl.RGBA8,
-      32,
-      32,
-      32,
+      PALETTE_STEPS,
+      PALETTE_STEPS,
+      PALETTE_STEPS,
       0,
       gl.RGBA,
       gl.UNSIGNED_BYTE,

@@ -8,8 +8,8 @@ The engine reads only these files. Paths inside a file are relative to that file
 
 ## palette.png and palette.json
 
-`palette.png` is 32×1 pixels, one colour per pixel. `palette.json` is the same list
-as `["#rrggbb", ...]`. Every pixel of every room and character image is one of
+`palette.png` is N×1 pixels, one colour per pixel, with N up to 256 (VGA style).
+`palette.json` is the same list as `["#rrggbb", ...]`. Every pixel of every room and character image is one of
 these colours, or fully transparent.
 
 ## content.json (written by the site)

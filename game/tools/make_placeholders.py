@@ -11,6 +11,10 @@ COLORS = ['#11121d','#1d202f','#292c3b','#383a45','#4b4650','#60545a','#76645f',
           '#af9678','#c9b18a','#e0cda1','#f5e3b8','#fff1ce','#2a3742','#354b52','#486568',
           '#63817a','#8b9b82','#aabb98','#493438','#694444','#8a5650','#b57058','#d69266',
           '#edb87b','#ffd08a','#f8dca0','#30384e','#465276','#647497','#95a0ba','#d0d5d9']
+# Keep the drawing's original swatches, then add a VGA-style RGB cube and greys.
+COLORS += [f'#{r:02x}{g:02x}{b:02x}'
+           for r in range(0, 256, 51) for g in range(0, 256, 51) for b in range(0, 256, 51)]
+COLORS += [f'#{v:02x}{v:02x}{v:02x}' for v in range(16, 256, 32)]
 ROOM_SIZE = (480, 270)
 CHARACTER_FRAME = (72, 128)
 RGB = np.array([tuple(bytes.fromhex(c[1:])) for c in COLORS], dtype=np.uint8)
@@ -22,8 +26,11 @@ def save_json(path, data):
 def quantize(array):
     # Squared RGB distance suffices for placeholder asset generation.
     flat = np.asarray(array, dtype=np.int32)[..., :3]
-    dist = ((flat[:, :, None, :] - RGB.astype(np.int32)) ** 2).sum(axis=3)
-    return Image.fromarray(RGB[dist.argmin(axis=2)])
+    output = np.empty(flat.shape, dtype=np.uint8)
+    for y in range(flat.shape[0]):
+        dist = ((flat[y, :, None, :] - RGB.astype(np.int32)) ** 2).sum(axis=2)
+        output[y] = RGB[dist.argmin(axis=1)]
+    return Image.fromarray(output)
 
 def generate():
     room_dir = DATA / 'rooms/stone-house'
@@ -31,7 +38,7 @@ def generate():
     (room_dir / 'pools').mkdir(parents=True, exist_ok=True)
     char_dir.mkdir(parents=True, exist_ok=True)
     (DATA / 'objects').mkdir(parents=True, exist_ok=True)
-    Image.fromarray(RGB.reshape(1, 32, 3)).save(DATA / 'palette.png')
+    Image.fromarray(RGB.reshape(1, len(COLORS), 3)).save(DATA / 'palette.png')
     save_json(DATA / 'palette.json', COLORS)
     base = Image.new('RGB', ROOM_SIZE, COLORS[3])
     d = ImageDraw.Draw(base)
