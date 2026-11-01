@@ -195,8 +195,8 @@ function step(frames = 1) {
     frame(time);
   }
 }
-function click(x, y) {
-  event(canvas, "click", { clientX: x * 1.5, clientY: y * 1.5 });
+function click(x, y, detail = 1) {
+  event(canvas, "click", { clientX: x * 1.5, clientY: y * 1.5, detail });
 }
 function key(key) {
   event(root, "keydown", { key });
@@ -208,7 +208,27 @@ function settle() {
 assert.equal(cover.children[2].textContent, "Start");
 assert.equal(cover.children[2].disabled, false);
 assert.equal(reader.hidden, true);
+assert.equal(close.textContent, "×");
+assert.equal(close.attributes["aria-label"], "Close");
 event(cover.children[3], "click");
+step();
+// Speed is 90 pixels per second at depth scale 1, and doubles for one walk only.
+const depth = rendered.room.depth;
+rendered.room.depth = { far: [150, 1], near: [265, 1] };
+rendered.actor.x = 200;
+event(canvas, "click", { clientX: 400, clientY: 240, detail: 1 });
+step(10);
+assert(Math.abs(rendered.actor.x - 214.4) < 1e-8);
+rendered.actor.x = 200;
+event(canvas, "click", { clientX: 400, clientY: 240, detail: 2 });
+step(10);
+assert(Math.abs(rendered.actor.x - 228.8) < 1e-8);
+event(canvas, "click", { clientX: 400, clientY: 240, detail: 1 });
+step(10);
+assert(Math.abs(rendered.actor.x - 243.2) < 1e-8);
+rendered.actor.x = 90;
+rendered.path = [];
+rendered.room.depth = depth;
 step();
 assert.equal(location.hash, "#stone-house");
 assert.equal(rendered.objects.length, 6);
@@ -322,7 +342,8 @@ rendered.actor.mirror = false;
 assert(rendered.character.glowTexture);
 const open = rendered.verbRects.find((v) => v.label === "Open");
 click((open.x + 2) / 1.5, 170);
-click(235, 70);
+click(235, 70, 2);
+assert.equal(rendered.running, true, "Double-clicking an object runs to it");
 assert.equal(controller.state.reader, null, "Opening must wait for the walk");
 settle();
 assert.equal(controller.state.reader, "workstation-1");
@@ -384,7 +405,7 @@ hotspot.content.description = "A long note about the kernel. ".repeat(30);
 click(90, 60);
 settle();
 assert.equal(rendered.speechLines.length, 2);
-assert(rendered.speech.endsWith("..."));
+assert(rendered.speechLines[1].endsWith("…"));
 hotspot.content.description = originalDescription;
 // Move away so the click can prove opening happens before movement.
 click(300, 150);
@@ -393,6 +414,9 @@ click((open.x + 2) / 1.5, 170);
 const beforeOpen = Array.from(controller.state.position);
 click(90, 60);
 assert.equal(opened.length, 1, "Tab must open synchronously during the click");
+click(90, 60, 2);
+assert.equal(opened.length, 1, "The second click must not open another tab");
+assert.equal(rendered.running, true);
 assert.deepEqual(Array.from(opened[0].args), [
   "https://www.kernel.org/",
   "_blank",

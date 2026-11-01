@@ -111,6 +111,35 @@ for (const item of game.objects) {
 }
 game.objects = [];
 
+// Long labels use two outlined rows and truncate only when a third is needed.
+for (const [text, expected] of [
+  [
+    "Walk to a book with a title that fits on two lines",
+    ["Walk to a book with a title that fits", "on two lines"],
+  ],
+  [
+    "word ".repeat(40),
+    ["word word word word word word word word", "word word word word word word word…"],
+  ],
+]) {
+  const sentence = game.sentence;
+  game.sentence = () => text;
+  calls.length = 0;
+  renderer.render(game);
+  const rows = calls.filter(
+    (call) => call.type === "text" && call.args[3] === undefined,
+  );
+  assert.deepEqual(rows.map((call) => call.args[0]), expected);
+  assert.deepEqual(rows.map((call) => call.args[2]), [9, 27]);
+  assert(rows.every((call) => call.args[1] + call.args[0].length * 12 <= 474));
+  game.sentence = sentence;
+}
+
+// Ellipsis has its own bitmap cell rather than the unsupported-character glyph.
+calls.length = 0;
+Renderer.prototype.text.call(renderer, "…", 0, 0);
+assert.deepEqual(calls[0].args[3], [90, 40, 6, 8]);
+
 // Non-contract dimensions catch fixed frame assumptions in integer upscaling.
 const sizing = Object.create(Renderer.prototype);
 Object.assign(sizing, {

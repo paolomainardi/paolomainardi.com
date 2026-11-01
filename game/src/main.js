@@ -21,7 +21,7 @@ export async function boot({ world, content, element }) {
   const canvas = document.createElement("canvas");
   canvas.setAttribute(
     "aria-label",
-    "Adventure scene. Click floor to walk. Select a verb, then an object. T changes time. L toggles lantern. G toggles bloom.",
+    "Adventure scene. Click floor to walk. Double click floor or objects to run. Select a verb, then an object. T changes time. L toggles lantern. G toggles bloom.",
   );
   const cover = document.createElement("div");
   cover.className = "adventure-start";
@@ -29,7 +29,7 @@ export async function boot({ world, content, element }) {
   heading.textContent = "The engineer’s study";
   const help = document.createElement("p");
   help.textContent =
-    "Click to walk. Choose a verb, then an object. T: dusk / night. L: lantern. G: bloom.";
+    "Click to walk. Double click to run. Choose a verb, then an object. T: dusk / night. L: lantern. G: bloom.";
   const start = document.createElement("button");
   start.textContent = "Loading…";
   start.disabled = true;
@@ -46,7 +46,8 @@ export async function boot({ world, content, element }) {
   reader.setAttribute("aria-modal", "true");
   const close = document.createElement("button");
   close.className = "adventure-close";
-  close.textContent = "Close [Esc]";
+  close.textContent = "×";
+  close.setAttribute("aria-label", "Close");
   const iframe = document.createElement("iframe");
   iframe.title = "Article reader";
   iframe.setAttribute("sandbox", "allow-same-origin");
@@ -90,6 +91,7 @@ export async function boot({ world, content, element }) {
       verb: "Walk to",
       hover: null,
       path: [],
+      running: false,
       pending: null,
       speech: null,
       speechLines: [],
@@ -199,6 +201,7 @@ export async function boot({ world, content, element }) {
       game.speechLines = wrap(
         text,
         Math.max(1, Math.floor((game.room.size[0] * 0.8) / (6 * game.uiScale))),
+        2,
       );
       game.speechUntil =
         game.elapsed + Math.max(3.5, String(text).length * 0.055);
@@ -415,18 +418,7 @@ export async function boot({ world, content, element }) {
         return;
       }
       if (verb === "Look at" && target.kind === "hotspot" && target.content) {
-        const width = Math.max(
-          1,
-          Math.floor((game.room.size[0] * 0.8) / (6 * game.uiScale)),
-        );
-        const lines = wrap(
-          `${target.content.title}. ${target.content.description || ""}`,
-          width,
-        );
-        if (lines.length > 2)
-          lines[1] =
-            lines[1].slice(0, Math.max(0, width - 3)).trimEnd() + "...";
-        say(lines.slice(0, 2).join("\n"));
+        say(`${target.content.title}. ${target.content.description || ""}`);
       } else if (verb === "Look at")
         say(target.content?.description || target.look || "Nothing unusual.");
       else if (verb === "Open" && target.kind === "hotspot" && target.content)
@@ -442,8 +434,9 @@ export async function boot({ world, content, element }) {
         say(lamp.on ? "Let there be light." : "A little less light.");
       } else say("I can't do that.");
     }
-    function walk(destination, pending = null) {
+    function walk(destination, pending = null, running = false) {
       game.pending = pending;
+      game.running = running;
       game.path = findPath(
         game.room.walkable,
         [game.actor.x, game.actor.y],
@@ -476,13 +469,15 @@ export async function boot({ world, content, element }) {
         const verb = game.verb;
         if (verb === "Open" && target.kind === "hotspot" && target.content) {
           const url = target.content.link || target.content.url;
-          if (url) window.open(url, "_blank", "noopener,noreferrer");
+          if (url && !(event.detail >= 2))
+            window.open(url, "_blank", "noopener,noreferrer");
         }
         walk(
           target.position,
           verb === "Walk to" && target.kind !== "exit"
             ? null
             : { target, verb },
+          event.detail >= 2,
         );
       } else if (
         x >= 0 &&
@@ -491,7 +486,7 @@ export async function boot({ world, content, element }) {
         y < game.room.size[1] &&
         game.room.walkable[Math.floor(y) * game.room.size[0] + Math.floor(x)]
       )
-        walk([x, y]);
+        walk([x, y], null, event.detail >= 2);
     });
     on(root, "keydown", (event) => {
       if (
@@ -584,7 +579,7 @@ export async function boot({ world, content, element }) {
               dx = next[0] - game.actor.x,
               dy = next[1] - game.actor.y,
               distance = Math.hypot(dx, dy),
-              speed = (game.room.size[1] / 3) * game.depth(),
+              speed = 90 * game.depth() * (game.running ? 2 : 1),
               travel = speed * remaining;
             if (distance > 0) {
               game.actor.mirror = dx < 0;

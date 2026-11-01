@@ -1,4 +1,4 @@
-import { fontPixels } from "./font.js";
+import { fontPixels, wrap } from "./font.js";
 import { buildPaletteLookup, PALETTE_STEPS } from "./palette.js";
 
 const vertex = `#version 300 es
@@ -440,7 +440,7 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
   text(text, x, y, tint = [0.96, 0.89, 0.72, 1], scale = 1) {
     for (const char of String(text)) {
       const code = char.charCodeAt(0),
-        c = code >= 32 && code < 128 ? code : 63;
+        c = char === "…" ? 127 : code >= 32 && code < 128 ? code : 63;
       this.sprite(
         this.font,
         [96, 48],
@@ -579,20 +579,24 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
     const ui = game.uiScale,
       margin = width / 80,
       sentenceY = height / 30;
-    const sentence = game
-      .sentence()
-      .slice(0, Math.floor((width - margin * 2) / (6 * ui)));
-    for (let y = -1; y <= 1; y++)
-      for (let x = -1; x <= 1; x++)
-        if (x || y)
-          this.text(
-            sentence,
-            margin + x * ui,
-            sentenceY + y * ui,
-            [0.025, 0.03, 0.05, 1],
-            ui,
-          );
-    this.text(sentence, margin, sentenceY, undefined, ui);
+    const sentences = wrap(
+      game.sentence(),
+      Math.max(1, Math.floor((width - margin * 2) / (6 * ui))),
+      2,
+    );
+    sentences.forEach((sentence, i) => {
+      for (let y = -1; y <= 1; y++)
+        for (let x = -1; x <= 1; x++)
+          if (x || y)
+            this.text(
+              sentence,
+              margin + x * ui,
+              sentenceY + (i * 9 + y) * ui,
+              [0.025, 0.03, 0.05, 1],
+              ui,
+            );
+      this.text(sentence, margin, sentenceY + i * 9 * ui, undefined, ui);
+    });
     this.rect(
       0,
       game.verbTop,
@@ -613,7 +617,7 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
     if (game.speech && game.speechUntil > game.elapsed) {
       const lines = game.speechLines,
         top = Math.max(
-          sentenceY + 17 * ui,
+          sentenceY + (sentences.length * 9 + 8) * ui,
           rect[1] - (lines.length * 9 + 8) * ui,
         );
       lines.forEach((line, i) => {

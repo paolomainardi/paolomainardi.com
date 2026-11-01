@@ -81,10 +81,16 @@
   border-image: url("./reader-frame.png") 4 / 12px / 0 stretch;
   box-shadow: 0 0 0 100vmax #0009;
 }
-.adventure-close {
-  flex: none;
-  align-self: flex-end;
-  margin: 4px;
+.adventure .adventure-close {
+  position: absolute;
+  z-index: 1;
+  top: 4px;
+  right: 4px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 24px;
+  line-height: 1;
 }
 .adventure-reader iframe {
   flex: 1;

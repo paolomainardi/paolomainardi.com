@@ -54,12 +54,15 @@ const glyphs = {
   _: "0000000000001f",
   "=": "00001f001f0000",
   " ": "00000000000000",
+  "…": "00000000001515",
 };
 
 export function fontPixels() {
   const pixels = new Uint8Array(96 * 48 * 4);
   for (let code = 32; code < 128; code++) {
-    const bits = glyphs[String.fromCharCode(code).toUpperCase()] || glyphs["?"];
+    const bits =
+      glyphs[code === 127 ? "…" : String.fromCharCode(code).toUpperCase()] ||
+      glyphs["?"];
     const ox = ((code - 32) % 16) * 6,
       oy = Math.floor((code - 32) / 16) * 8;
     for (let y = 0; y < 7; y++)
@@ -72,7 +75,7 @@ export function fontPixels() {
   return pixels;
 }
 
-export function wrap(text, width = 42) {
+export function wrap(text, width = 42, maxLines = Infinity) {
   const lines = [];
   for (const paragraph of String(text).split("\n")) {
     let line = "";
@@ -92,6 +95,15 @@ export function wrap(text, width = 42) {
       line += (line ? " " : "") + word;
     }
     if (line) lines.push(line);
+  }
+  if (lines.length > maxLines) {
+    let end = lines[maxLines - 1];
+    if (end.length >= width) {
+      end = end.slice(0, width - 1);
+      const space = end.lastIndexOf(" ");
+      if (space > 0) end = end.slice(0, space);
+    }
+    return [...lines.slice(0, maxLines - 1), end.trimEnd() + "…"];
   }
   return lines;
 }

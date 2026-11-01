@@ -43,6 +43,24 @@ async (page) => {
     .frameLocator("iframe")
     .getByRole("heading", { name: "A room of one's own", exact: true })
     .waitFor();
+  const readerLayout = await page.evaluate(() => {
+    const reader = document.querySelector(".adventure-reader");
+    const frame = reader.querySelector("iframe").getBoundingClientRect();
+    const close = reader.querySelector("button").getBoundingClientRect();
+    const box = reader.getBoundingClientRect();
+    return {
+      fills:
+        Math.abs(frame.top - box.top - reader.clientTop) < 1 &&
+        Math.abs(frame.height - reader.clientHeight) < 1,
+      overlay:
+        close.top >= frame.top &&
+        close.bottom <= frame.bottom &&
+        close.right <= frame.right &&
+        frame.right - close.right <= 8,
+    };
+  });
+  if (!readerLayout.fills || !readerLayout.overlay)
+    throw new Error("Reader iframe must fill the frame beneath the close overlay");
   await page.frameLocator("iframe").locator("body").click();
   await page.keyboard.press("Escape");
   await page.waitForFunction(() => window.game.state.reader === null);
@@ -144,7 +162,7 @@ async (page) => {
   await page.waitForFunction(
     () => window.game.state.reader === "workstation-6",
   );
-  await page.getByRole("button", { name: "Close [Esc]", exact: true }).click();
+  await page.getByRole("button", { name: "Close", exact: true }).click();
   if (errors.length) throw new Error(errors.join("\n"));
   return { passed: true, views, errors };
 };
