@@ -1,0 +1,4 @@
+.playwright-cli/
+traces/
+__pycache__/
+codex.log

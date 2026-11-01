@@ -1,0 +1,42 @@
+{
+  "sheet": "sheet.png",
+  "frame": [
+    32,
+    48
+  ],
+  "anchor": [
+    16,
+    47
+  ],
+  "animations": {
+    "idle-front": {
+      "row": 0,
+      "frames": 1,
+      "fps": 1
+    },
+    "walk-side": {
+      "row": 1,
+      "frames": 6,
+      "fps": 8
+    },
+    "walk-front": {
+      "row": 2,
+      "frames": 4,
+      "fps": 8
+    },
+    "walk-back": {
+      "row": 3,
+      "frames": 4,
+      "fps": 8
+    },
+    "talk-front": {
+      "row": 4,
+      "frames": 2,
+      "fps": 4
+    }
+  },
+  "lantern": [
+    11,
+    -13
+  ]
+}

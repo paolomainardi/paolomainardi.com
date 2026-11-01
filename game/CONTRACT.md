@@ -94,6 +94,7 @@ ascending, then `date` descending.
   "sheet": "sheet.png",
   "frame": [32, 48],
   "anchor": [16, 47],
+  "lantern": [11, -13],
   "animations": {
     "idle-front": { "row": 0, "frames": 1, "fps": 1 },
     "walk-side":  { "row": 1, "frames": 6, "fps": 8 },
@@ -103,6 +104,9 @@ ascending, then `date` descending.
   }
 }
 ```
+
+`lantern` is where the light the character carries sits, in pixels from the feet
+at scale 1, for the side view facing right; the engine mirrors it for left.
 
 `sheet.png` is a grid of `frame`-sized cells on a transparent background, one row per
 animation. `anchor` is the feet point inside a cell. `walk-side` faces right; the

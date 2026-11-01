@@ -1,0 +1,581 @@
+import { fontPixels } from "./font.js";
+
+const vertex = `#version 300 es
+out vec2 uv;
+void main(){
+  vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);
+  uv=p; gl_Position=vec4(p*2.-1.,0.,1.);
+}`;
+const common = `
+precision highp float;
+precision highp sampler2DArray;
+in vec2 uv;
+out vec4 color;
+uniform sampler2D uLit,uUnlit,uForeground,uData;
+uniform sampler2DArray uPools;
+uniform int uCount;
+uniform vec3 uLantern;
+const float bayer[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
+float threshold(vec2 p){ivec2 q=ivec2(floor(p))%4;return (bayer[q.y*4+q.x]+.5)/16.;}
+float band(float value,vec2 p){return floor(clamp(value,0.,1.)*3.+threshold(p))/3.;}
+float lantern(vec2 p){return pow(max(0.,1.-distance(p,uLantern.xy)/70.),1.5)*uLantern.z;}
+float roomLight(vec2 p){
+ float value=0.;
+ for(int i=0;i<uCount;i++) value+=texture(uPools,vec3(p/vec2(320,180),float(i))).r*texelFetch(uData,ivec2(i,0),0).z;
+ return value;
+}
+vec3 drawing(vec2 p){
+ float hand=lantern(p), total=band(roomLight(p)+hand,p);
+ vec3 base=mix(texture(uUnlit,p/vec2(320,180)).rgb,texture(uLit,p/vec2(320,180)).rgb,total);
+ return base+vec3(.14,.065,.008)*band(hand,p);
+}`;
+
+function oklab(rgb) {
+  const [r, g, b] = rgb.map((v) =>
+    v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4,
+  );
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  return [
+    0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+  ];
+}
+
+export class Renderer {
+  constructor(canvas) {
+    this.canvas = canvas;
+    const gl = (this.gl = canvas.getContext("webgl2", {
+      alpha: false,
+      antialias: false,
+      depth: false,
+      preserveDrawingBuffer: true,
+    }));
+    if (!gl)
+      throw new Error(
+        "This game needs WebGL2. Try a browser with hardware acceleration enabled.",
+      );
+    gl.bindVertexArray(gl.createVertexArray());
+    this.programs = {};
+    this.programs.room = this.program(
+      common +
+        `uniform bool uFront;void main(){vec2 p=vec2(uv.x,1.-uv.y)*vec2(320,180);if(uFront&&texture(uForeground,p/vec2(320,180)).a<.5)discard;color=vec4(drawing(p),1.);}`,
+    );
+    this.programs.sprite = this.program(`#version 300 es
+precision highp float;
+in vec2 uv;out vec4 color;
+uniform sampler2D uImage;
+uniform vec4 uRect,uSource,uTint;
+uniform vec2 uImageSize;
+uniform float uMirror,uRim;
+void main(){
+ vec2 p=vec2(uv.x,1.-uv.y)*vec2(320,180),q=(p-uRect.xy)/uRect.zw;
+ if(any(lessThan(q,vec2(0)))||any(greaterThanEqual(q,vec2(1))))discard;
+ if(uMirror>.5)q.x=1.-q.x;
+ vec2 tex=(uSource.xy+floor(q*uSource.zw)+.5)/uImageSize;
+ vec4 c=texture(uImage,tex);if(c.a<.01)discard;
+ vec2 delta=vec2(sign(uRim)*(uMirror>.5?-1.:1.)/uImageSize.x,0);
+ float edge=1.-texture(uImage,tex+delta).a;
+ color=vec4(c.rgb*uTint.rgb+vec3(.24,.14,.045)*edge*abs(uRim),c.a*uTint.a);
+}`);
+    this.programs.shadow = this.program(`#version 300 es
+${common}
+uniform vec4 uShadow;
+void main(){vec2 p=vec2(uv.x,1.-uv.y)*vec2(320,180);vec2 d=p-uShadow.xy;
+ float t=clamp(dot(d,uShadow.zw)/max(dot(uShadow.zw,uShadow.zw),1.),0.,1.);
+ float r=length((d-uShadow.zw*t)/vec2(9.,3.));
+ float a=max(0.,1.-r)*(.28-.16*t);if(a<threshold(p)*.5)discard;color=vec4(0.,0.,0.,.26);
+}`);
+    this.programs.glow = this.program(`#version 300 es
+${common}
+void main(){vec2 p=vec2(uv.x,1.-uv.y)*vec2(320,180);vec3 c=vec3(0);
+ for(int i=0;i<uCount;i++){vec4 info=texelFetch(uData,ivec2(i,0),0);vec3 tint=texelFetch(uData,ivec2(i,1),0).rgb;
+ c+=texture(uPools,vec3(p/vec2(320,180),float(i))).g*info.z*tint;}
+ c+=vec3(1.,.64,.24)*max(0.,1.-distance(p,uLantern.xy)/3.)*uLantern.z;
+ color=vec4(c,1.);
+}`);
+    this.programs.blur = this.program(`#version 300 es
+precision highp float;in vec2 uv;out vec4 color;uniform sampler2D uImage;uniform vec2 uStep;
+void main(){color=texture(uImage,uv)*.227027;for(int i=1;i<=4;i++){float w=i==1?.1945946:i==2?.1216216:i==3?.054054:.016216;color+=(texture(uImage,uv+uStep*float(i))+texture(uImage,uv-uStep*float(i)))*w;}}`);
+    this.programs.present = this.program(`#version 300 es
+precision highp float;precision highp sampler3D;in vec2 uv;out vec4 color;
+uniform sampler2D uImage,uGlow;uniform sampler3D uPalette;
+void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPalette,(floor(c*31.+.5)+.5)/32.).rgb;color=vec4(mapped+texture(uGlow,uv).rgb*.23,1.);}`);
+    this.scene = this.target(320, 180);
+    this.white = this.texture(new Uint8Array([255, 255, 255, 255]), 1, 1);
+    this.font = this.texture(fontPixels(), 96, 48);
+  }
+  program(fragment) {
+    const gl = this.gl;
+    const compile = (type, source) => {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, source);
+      gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
+        throw new Error(gl.getShaderInfoLog(s));
+      return s;
+    };
+    const p = gl.createProgram(),
+      v = compile(gl.VERTEX_SHADER, vertex),
+      f = compile(
+        gl.FRAGMENT_SHADER,
+        fragment.startsWith("#version")
+          ? fragment
+          : "#version 300 es\n" + fragment,
+      );
+    gl.attachShader(p, v);
+    gl.attachShader(p, f);
+    gl.linkProgram(p);
+    gl.deleteShader(v);
+    gl.deleteShader(f);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS))
+      throw new Error(gl.getProgramInfoLog(p));
+    const uniforms = {};
+    for (let i = 0; i < gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS); i++) {
+      const u = gl.getActiveUniform(p, i);
+      uniforms[u.name] = gl.getUniformLocation(p, u.name);
+    }
+    return { p, uniforms };
+  }
+  use(program) {
+    this.active = program;
+    this.gl.useProgram(program.p);
+  }
+  uniform(name, value) {
+    const gl = this.gl,
+      loc = this.active.uniforms[name];
+    if (loc === undefined) return;
+    if (Array.isArray(value) || ArrayBuffer.isView(value))
+      gl[`uniform${value.length}fv`](loc, value);
+    else gl.uniform1f(loc, value);
+  }
+  integer(name, value) {
+    const loc = this.active.uniforms[name];
+    if (loc !== undefined) this.gl.uniform1i(loc, value);
+  }
+  bind(name, texture, unit = 0, target = this.gl.TEXTURE_2D) {
+    const gl = this.gl;
+    gl.activeTexture(gl.TEXTURE0 + unit);
+    gl.bindTexture(target, texture);
+    this.integer(name, unit);
+  }
+  draw() {
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+  }
+  texture(source, width, height) {
+    const gl = this.gl,
+      t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    if (width)
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        width,
+        height,
+        0,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        source,
+      );
+    else
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        source,
+      );
+    return t;
+  }
+  target(width, height) {
+    const gl = this.gl,
+      texture = this.texture(null, width, height),
+      fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
+      texture,
+      0,
+    );
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE)
+      throw new Error("Incomplete render target");
+    return { texture, fbo, width, height };
+  }
+  into(target) {
+    const gl = this.gl;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target?.fbo || null);
+    gl.viewport(
+      0,
+      0,
+      target?.width || this.canvas.width,
+      target?.height || this.canvas.height,
+    );
+  }
+  pixels(image) {
+    const gl = this.gl,
+      t = this.texture(image),
+      fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
+      t,
+      0,
+    );
+    const result = new Uint8Array(image.width * image.height * 4);
+    gl.readPixels(
+      0,
+      0,
+      image.width,
+      image.height,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      result,
+    );
+    gl.deleteFramebuffer(fbo);
+    gl.deleteTexture(t);
+    return result;
+  }
+  palette(image) {
+    if (image.width !== 32 || image.height !== 1)
+      throw new Error("Palette must be 32 by 1.");
+    const data = this.pixels(image),
+      colors = Array.from({ length: 32 }, (_, i) =>
+        Array.from(data.slice(i * 4, i * 4 + 3)),
+      ),
+      labs = colors.map((c) => oklab(c.map((v) => v / 255)));
+    const lut = new Uint8Array(32 * 32 * 32 * 4);
+    for (let b = 0; b < 32; b++)
+      for (let g = 0; g < 32; g++)
+        for (let r = 0; r < 32; r++) {
+          const lab = oklab([r / 31, g / 31, b / 31]);
+          let nearest = 0,
+            best = Infinity;
+          for (let i = 0; i < 32; i++) {
+            const d = labs[i].reduce((sum, v, j) => sum + (v - lab[j]) ** 2, 0);
+            if (d < best) {
+              best = d;
+              nearest = i;
+            }
+          }
+          lut.set([...colors[nearest], 255], ((b * 32 + g) * 32 + r) * 4);
+        }
+    const gl = this.gl,
+      t = (this.lut = gl.createTexture());
+    gl.bindTexture(gl.TEXTURE_3D, t);
+    for (const key of [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER])
+      gl.texParameteri(gl.TEXTURE_3D, key, gl.NEAREST);
+    for (const key of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T, gl.TEXTURE_WRAP_R])
+      gl.texParameteri(gl.TEXTURE_3D, key, gl.CLAMP_TO_EDGE);
+    gl.texImage3D(
+      gl.TEXTURE_3D,
+      0,
+      gl.RGBA8,
+      32,
+      32,
+      32,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      lut,
+    );
+  }
+  setRoom(room) {
+    const gl = this.gl;
+    if (this.roomTextures) {
+      this.roomTextures.forEach((t) => gl.deleteTexture(t));
+    }
+    this.roomTextures = [];
+    const keep = (t) => {
+      this.roomTextures.push(t);
+      return t;
+    };
+    this.states = Object.fromEntries(
+      Object.entries(room.states).map(([key, s]) => [
+        key,
+        { lit: keep(this.texture(s.lit)), unlit: keep(this.texture(s.unlit)) },
+      ]),
+    );
+    this.foreground = keep(this.texture(room.foreground, 320, 180));
+    const count = Math.max(1, room.lights.length);
+    if (count > gl.getParameter(gl.MAX_ARRAY_TEXTURE_LAYERS))
+      throw new Error("Too many lamp pools for this GPU.");
+    const pixels = new Uint8Array(320 * 180 * 4 * count);
+    room.lights.forEach((light, layer) => {
+      const id = room.items.findIndex((item) => item.id === light.id);
+      for (let i = 0; i < 320 * 180; i++) {
+        const offset = (layer * 320 * 180 + i) * 4;
+        pixels[offset] = light.pixels[i * 4];
+        pixels[offset + 1] = room.ids[i] === id ? 255 : 0;
+        pixels[offset + 3] = 255;
+      }
+    });
+    this.pools = keep(gl.createTexture());
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.pools);
+    for (const key of [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER])
+      gl.texParameteri(gl.TEXTURE_2D_ARRAY, key, gl.NEAREST);
+    for (const key of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T])
+      gl.texParameteri(gl.TEXTURE_2D_ARRAY, key, gl.CLAMP_TO_EDGE);
+    gl.texImage3D(
+      gl.TEXTURE_2D_ARRAY,
+      0,
+      gl.RGBA8,
+      320,
+      180,
+      count,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      pixels,
+    );
+    this.data = keep(gl.createTexture());
+    gl.bindTexture(gl.TEXTURE_2D, this.data);
+    for (const key of [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER])
+      gl.texParameteri(gl.TEXTURE_2D, key, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    this.lightData = new Float32Array(count * 2 * 4);
+  }
+  lights(game) {
+    const gl = this.gl,
+      room = game.room,
+      count = Math.max(1, room.lights.length);
+    room.lights.forEach((light, i) => {
+      this.lightData.set([...light.position, light.strength, 0], i * 4);
+      this.lightData.set(
+        [
+          ...light.tint
+            .slice(1)
+            .match(/../g)
+            .map((v) => parseInt(v, 16) / 255),
+          1,
+        ],
+        (count + i) * 4,
+      );
+    });
+    gl.activeTexture(gl.TEXTURE0 + 7);
+    gl.bindTexture(gl.TEXTURE_2D, this.data);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA32F,
+      count,
+      2,
+      0,
+      gl.RGBA,
+      gl.FLOAT,
+      this.lightData,
+    );
+  }
+  lighting(game) {
+    const gl = this.gl,
+      state = this.states[game.time];
+    this.bind("uLit", state.lit, 0);
+    this.bind("uUnlit", state.unlit, 1);
+    this.bind("uForeground", this.foreground, 2);
+    this.bind("uPools", this.pools, 3, gl.TEXTURE_2D_ARRAY);
+    this.bind("uData", this.data, 4);
+    this.integer("uCount", game.room.lights.length);
+    this.uniform("uLantern", [
+      ...game.lanternPosition(),
+      game.lantern && game.time === "night" ? 1 : 0,
+    ]);
+  }
+  sprite(
+    texture,
+    size,
+    rect,
+    source = [0, 0, ...size],
+    tint = [1, 1, 1, 1],
+    mirror = false,
+    rim = 0,
+  ) {
+    this.use(this.programs.sprite);
+    this.bind("uImage", texture);
+    this.uniform("uRect", rect);
+    this.uniform("uSource", source);
+    this.uniform("uImageSize", size);
+    this.uniform("uTint", tint);
+    this.uniform("uMirror", mirror ? 1 : 0);
+    this.uniform("uRim", rim);
+    this.draw();
+  }
+  rect(x, y, w, h, tint) {
+    this.sprite(this.white, [1, 1], [x, y, w, h], undefined, tint);
+  }
+  text(text, x, y, tint = [0.96, 0.89, 0.72, 1]) {
+    for (const char of String(text)) {
+      const code = char.charCodeAt(0),
+        c = code >= 32 && code < 128 ? code : 63;
+      this.sprite(
+        this.font,
+        [96, 48],
+        [Math.round(x), Math.round(y), 6, 8],
+        [((c - 32) % 16) * 6, Math.floor((c - 32) / 16) * 8, 6, 8],
+        tint,
+      );
+      x += 6;
+    }
+  }
+  resize(width, height) {
+    const scale = Math.max(1, Math.floor(Math.min(width / 320, height / 180))),
+      w = 320 * scale,
+      h = 180 * scale;
+    this.canvas.style.width = `${w}px`;
+    this.canvas.style.height = `${h}px`;
+    if (this.canvas.width === w && this.canvas.height === h && this.glow)
+      return;
+    this.canvas.width = w;
+    this.canvas.height = h;
+    if (this.glow)
+      for (const target of this.glow) {
+        this.gl.deleteTexture(target.texture);
+        this.gl.deleteFramebuffer(target.fbo);
+      }
+    this.glow = [this.target(w, h), this.target(w, h)];
+    this.scale = scale;
+  }
+  render(game) {
+    const gl = this.gl;
+    gl.disable(gl.BLEND);
+    this.lights(game);
+    this.into(this.scene);
+    this.use(this.programs.room);
+    this.lighting(game);
+    this.integer("uFront", 0);
+    this.draw();
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    for (const item of game.objects) {
+      const object = game.objectSprite,
+        light = game.lightAt(...item.position);
+      this.sprite(
+        object.texture,
+        object.size,
+        [
+          item.position[0] - object.size[0] / 2,
+          item.position[1] - object.size[1] + 1,
+          ...object.size,
+        ],
+        undefined,
+        [0.5 + light * 0.5, 0.48 + light * 0.52, 0.48 + light * 0.5, 1],
+      );
+    }
+    const actor = game.actor,
+      scale = game.depth(),
+      lamp = game.nearestLamp();
+    const dx = lamp ? actor.x - lamp.position[0] : 10,
+      dy = lamp ? actor.y - lamp.position[1] : 8,
+      len = Math.hypot(dx, dy) || 1;
+    this.use(this.programs.shadow);
+    this.uniform("uShadow", [
+      actor.x,
+      actor.y,
+      (dx / len) * 22 * scale,
+      (dy / len) * 10 * scale,
+    ]);
+    this.draw();
+    const animation = game.character.animations[actor.animation],
+      frame = Math.floor(actor.clock * animation.fps) % animation.frames;
+    const light = game.lightAt(actor.x, actor.y),
+      rect = [
+        Math.round(actor.x - game.character.anchor[0] * scale),
+        Math.round(actor.y - game.character.anchor[1] * scale),
+        Math.round(game.character.frame[0] * scale),
+        Math.round(game.character.frame[1] * scale),
+      ];
+    this.sprite(
+      game.character.texture,
+      game.character.size,
+      rect,
+      [
+        frame * game.character.frame[0],
+        animation.row * game.character.frame[1],
+        ...game.character.frame,
+      ],
+      [0.42 + light * 0.58, 0.43 + light * 0.54, 0.48 + light * 0.45, 1],
+      actor.mirror,
+      lamp ? Math.sign(lamp.position[0] - actor.x) * lamp.strength : 0,
+    );
+    this.use(this.programs.room);
+    this.lighting(game);
+    this.integer("uFront", 1);
+    this.draw();
+    this.rect(0, 0, 320, 20, [0.025, 0.03, 0.05, 0.82]);
+    this.text(game.sentence().slice(0, 52), 4, 6);
+    this.rect(
+      0,
+      game.verbTop,
+      320,
+      180 - game.verbTop,
+      [0.025, 0.03, 0.05, 0.84],
+    );
+    for (const verb of game.verbRects) {
+      const selected = game.verb === verb.label;
+      this.text(
+        verb.label.slice(0, 50),
+        verb.x,
+        verb.y,
+        selected ? [1, 0.72, 0.35, 1] : [0.82, 0.83, 0.84, 1],
+      );
+    }
+    if (game.speech && game.speechUntil > game.elapsed) {
+      const lines = game.speechLines,
+        top = Math.max(23, rect[1] - lines.length * 9 - 8);
+      lines.forEach((line, i) => {
+        const x = Math.max(
+          3,
+          Math.min(317 - line.length * 6, actor.x - line.length * 3),
+        );
+        this.rect(
+          x - 2,
+          top + i * 9 - 1,
+          line.length * 6 + 4,
+          9,
+          [0.025, 0.03, 0.05, 0.85],
+        );
+        this.text(line, x, top + i * 9);
+      });
+    }
+    gl.disable(gl.BLEND);
+    this.into(this.glow[0]);
+    this.use(this.programs.glow);
+    this.lighting(game);
+    this.draw();
+    this.use(this.programs.blur);
+    for (let i = 0; i < 4; i++) {
+      this.into(this.glow[(i + 1) % 2]);
+      this.bind("uImage", this.glow[i % 2].texture);
+      const radius = (i < 2 ? 2 : 5) * this.scale;
+      this.uniform(
+        "uStep",
+        i % 2
+          ? [0, radius / this.canvas.height]
+          : [radius / this.canvas.width, 0],
+      );
+      this.draw();
+    }
+    this.into(null);
+    this.use(this.programs.present);
+    this.bind("uImage", this.scene.texture);
+    this.bind("uGlow", this.glow[0].texture, 1);
+    this.bind("uPalette", this.lut, 2, gl.TEXTURE_3D);
+    this.draw();
+  }
+  destroy() {
+    const gl = this.gl;
+    const extension = gl.getExtension("WEBGL_lose_context");
+    extension?.loseContext();
+  }
+}
