@@ -3,37 +3,58 @@ import { findPath, nearestWalkable } from "../src/pathfinding.js";
 import { matchingItems, resolve } from "../src/assets.js";
 import { fontPixels, wrap } from "../src/font.js";
 
-const mask = new Uint8Array(320 * 180);
-for (let y = 100; y < 180; y++)
-  for (let x = 0; x < 320; x++) mask[y * 320 + x] = 1;
-for (let y = 100; y < 166; y++)
-  for (let x = 90; x < 116; x++) mask[y * 320 + x] = 0;
-const path = findPath(mask, [60, 150], [140, 150]);
-assert(path.length > 1, "Must route around the obstacle");
-let previous = [60, 150];
-for (const next of path) {
-  const count = Math.ceil(
-    Math.hypot(next[0] - previous[0], next[1] - previous[1]) * 3,
-  );
-  for (let i = 0; i <= count; i++) {
-    const x = Math.round(previous[0] + ((next[0] - previous[0]) * i) / count),
-      y = Math.round(previous[1] + ((next[1] - previous[1]) * i) / count);
-    assert(mask[y * 320 + x], `Smoothed path entered obstacle at ${x},${y}`);
+for (const size of [
+  [320, 180],
+  [480, 270],
+  [640, 400],
+]) {
+  const [width, height] = size;
+  const mask = new Uint8Array(width * height);
+  for (let y = 100; y < height; y++)
+    for (let x = 0; x < width; x++) mask[y * width + x] = 1;
+  for (let y = 100; y < 166; y++)
+    for (let x = 90; x < 116; x++) mask[y * width + x] = 0;
+  const path = findPath(mask, [60, 150], [140, 150], size);
+  assert(path.length > 1, "Must route around the obstacle");
+  let previous = [60, 150];
+  for (const next of path) {
+    const count = Math.ceil(
+      Math.hypot(next[0] - previous[0], next[1] - previous[1]) * 3,
+    );
+    for (let i = 0; i <= count; i++) {
+      const x = Math.round(previous[0] + ((next[0] - previous[0]) * i) / count),
+        y = Math.round(previous[1] + ((next[1] - previous[1]) * i) / count);
+      assert(
+        mask[y * width + x],
+        `Smoothed path entered obstacle at ${x},${y}`,
+      );
+    }
+    previous = next;
   }
-  previous = next;
+  assert.deepEqual(path.at(-1), [140, 150]);
+  assert.deepEqual(findPath(mask, [60, 150], [60, 150], size), [[60, 150]]);
+  assert.deepEqual(nearestWalkable(mask, 20, 30, size), [20, 100]);
+  assert.deepEqual(nearestWalkable(mask, width + 20, height + 20, size), [
+    width - 1,
+    height - 1,
+  ]);
+  assert.deepEqual(
+    findPath(mask, [width - 20, height - 10], [width - 1, height - 1], size),
+    [[width - 1, height - 1]],
+  );
+  const isolated = new Uint8Array(width * height);
+  isolated[101 * width + 101] = 1;
+  isolated[102 * width + 102] = 1;
+  assert.deepEqual(
+    findPath(isolated, [101, 101], [102, 102], size),
+    [],
+    "No diagonal corner cutting",
+  );
+  assert.deepEqual(
+    findPath(new Uint8Array(width * height), [0, 0], [1, 1], size),
+    [],
+  );
 }
-assert.deepEqual(path.at(-1), [140, 150]);
-assert.deepEqual(findPath(mask, [60, 150], [60, 150]), [[60, 150]]);
-assert.deepEqual(nearestWalkable(mask, 20, 30), [20, 100]);
-const isolated = new Uint8Array(320 * 180);
-isolated[101 * 320 + 101] = 1;
-isolated[102 * 320 + 102] = 1;
-assert.deepEqual(
-  findPath(isolated, [101, 101], [102, 102]),
-  [],
-  "No diagonal corner cutting",
-);
-assert.deepEqual(findPath(new Uint8Array(320 * 180), [0, 0], [1, 1]), []);
 const items = [
   { id: "b", part: 2, series: "x", tags: ["linux"], date: "2026-01-01" },
   { id: "c", series: "x", tags: ["linux"], date: "2026-04-01" },

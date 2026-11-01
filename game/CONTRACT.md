@@ -4,7 +4,7 @@ The engine reads only these files. Paths inside a file are relative to that file
 
 ## Frame
 
-320×180 pixels. Every room image is exactly 320×180.
+480×270 pixels. Every room image is exactly 480×270.
 
 ## palette.png and palette.json
 
@@ -54,7 +54,7 @@ ascending, then `date` descending.
 ```json
 {
   "name": "stone-house",
-  "size": [320, 180],
+  "size": [480, 270],
   "states": {
     "dusk":  { "lit": "dusk-lit.png",  "unlit": "dusk-unlit.png" },
     "night": { "lit": "night-lit.png", "unlit": "night-unlit.png" }
@@ -70,19 +70,19 @@ ascending, then `date` descending.
     { "id": "window", "kind": "hotspot", "label": "Window", "look": "The sea, calm tonight.",
       "color": "#00ffff" }
   ],
-  "depth": { "far": [96, 0.7], "near": [176, 1.0] },
-  "spawn": [60, 160]
+  "depth": { "far": [150, 0.8], "near": [265, 1.0] },
+  "spawn": [90, 240]
 }
 ```
 
 - `states`: `lit` has every lamp on, `unlit` every lamp off, same drawing otherwise.
-- `objects.png`: 320×180, each item painted in its flat `color` on black (#000000).
+- `objects.png`: 480×270, each item painted in its flat `color` on black (#000000).
   A pixel belongs to at most one item.
 - `slot`: a free place for one content object. The object stands on the bottom
   centre of the painted area.
 - `light`: the painted area is the lamp itself (bulb, flame, glass). `light` is
   `pendant`, `wall`, `oil`, `desk` or `candle`; oil and candle flicker. `pool` is a
-  320×180 greyscale image: how far that lamp's light reaches (white full, black none).
+  480×270 greyscale image: how far that lamp's light reaches (white full, black none).
 - `depth`: at screen y `far[0]` the character is drawn at scale `far[1]`, at y
   `near[0]` at scale `near[1]`, linear in between.
 - `spawn`: where the character's feet start.
@@ -92,9 +92,9 @@ ascending, then `date` descending.
 ```json
 {
   "sheet": "sheet.png",
-  "frame": [32, 48],
-  "anchor": [16, 47],
-  "lantern": [11, -13],
+  "frame": [72, 128],
+  "anchor": [36, 127],
+  "lantern": [26, -40],
   "animations": {
     "idle-front": { "row": 0, "frames": 1, "fps": 1 },
     "walk-side":  { "row": 1, "frames": 6, "fps": 8 },
@@ -110,4 +110,4 @@ at scale 1, for the side view facing right; the engine mirrors it for left.
 
 `sheet.png` is a grid of `frame`-sized cells on a transparent background, one row per
 animation. `anchor` is the feet point inside a cell. `walk-side` faces right; the
-engine mirrors it for left. The figure is about 44 pixels tall at scale 1.
+engine mirrors it for left. The figure is about 120 pixels tall at scale 1, the height of a person at the front of the room.

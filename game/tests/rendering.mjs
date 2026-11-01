@@ -11,7 +11,7 @@ Object.assign(renderer, {
   programs: {},
   scene: {},
   glow: [{ texture: {} }, { texture: {} }],
-  canvas: { width: 320, height: 180 },
+  canvas: { width: 480, height: 270 },
   scale: 1,
   lights() {},
   into() {},
@@ -36,6 +36,8 @@ Object.assign(renderer, {
 const texture = {};
 const game = {
   objects: [],
+  room: { size: [480, 270] },
+  uiScale: 2,
   character: {
     texture,
     size: [120, 420],
@@ -48,7 +50,7 @@ const game = {
   nearestLamp: () => null,
   lightAt: () => 0.5,
   sentence: () => "Walk to Window",
-  verbTop: 168,
+  verbTop: 252,
   verbScale: 1,
   verb: "Open",
   verbRects: [{ label: "Open", x: 4, y: 170 }],
@@ -63,7 +65,7 @@ for (const mirror of [false, true]) {
   assert.equal(actor.args[5], mirror);
   const strips = calls.filter((c) => c.type === "rect");
   assert.equal(strips.length, 1, "No background strip under the sentence");
-  assert.deepEqual(strips[0].args.slice(0, 4), [0, 168, 320, 12]);
+  assert.deepEqual(strips[0].args.slice(0, 4), [0, 252, 480, 18]);
   assert(strips[0].args[4][3] > 0 && strips[0].args[4][3] < 1);
   const sentence = calls.filter(
     (c) => c.type === "text" && c.args[0] === game.sentence(),
@@ -73,10 +75,68 @@ for (const mirror of [false, true]) {
     sentence
       .slice(0, 8)
       .every(
-        (c) => Math.abs(c.args[1] - 4) <= 1 && Math.abs(c.args[2] - 6) <= 1,
+        (c) => Math.abs(c.args[1] - 6) <= 2 && Math.abs(c.args[2] - 9) <= 2,
       ),
   );
 }
 console.log(
   "Swappable frame, anchor, animation, mirroring, sentence outline, and compact translucent UI passed (mock GPU).",
+);
+
+// Non-contract dimensions catch fixed frame assumptions in integer upscaling.
+const sizing = Object.create(Renderer.prototype);
+Object.assign(sizing, {
+  size: [640, 400],
+  canvas: { style: {} },
+  target: (width, height) => ({ width, height }),
+  gl: { deleteTexture() {}, deleteFramebuffer() {} },
+});
+sizing.resize(1500, 1000);
+assert.equal(sizing.canvas.width, 1280);
+assert.equal(sizing.canvas.height, 800);
+sizing.resize(375, 667);
+assert.equal(sizing.canvas.width, 640);
+assert.equal(sizing.canvas.style.width, "375px");
+assert.equal(sizing.canvas.style.height, "234.375px");
+
+// Room upload dimensions and pool packing must follow data, including edge pixels.
+const uploads = [];
+const width = 513,
+  height = 287;
+const pixels = new Uint8Array(width * height * 4);
+pixels[pixels.length - 4] = 123;
+const ids = new Int16Array(width * height).fill(-1);
+ids[ids.length - 1] = 0;
+const upload = Object.create(Renderer.prototype);
+Object.assign(upload, {
+  gl: {
+    createTexture: () => ({}),
+    getParameter: () => 256,
+    bindTexture() {},
+    texParameteri() {},
+    texImage3D(...args) {
+      uploads.push(args);
+    },
+  },
+  target: (w, h) => ({ width: w, height: h }),
+  texture: (_pixels, w, h) => ({ width: w, height: h }),
+});
+upload.setRoom({
+  size: [width, height],
+  states: {},
+  foreground: new Uint8Array(width * height * 4),
+  items: [{ id: "lamp" }],
+  ids,
+  lights: [{ id: "lamp", pixels }],
+});
+assert.deepEqual([upload.scene.width, upload.scene.height], [width, height]);
+assert.deepEqual(
+  [upload.foreground.width, upload.foreground.height],
+  [width, height],
+);
+assert.deepEqual(uploads[0].slice(3, 6), [width, height, 1]);
+assert.equal(uploads[0][9].length, width * height * 4);
+assert.deepEqual(Array.from(uploads[0][9].slice(-4)), [123, 255, 0, 255]);
+console.log(
+  "Data-driven render sizing, small viewport fitting, and pool edge uploads passed.",
 );

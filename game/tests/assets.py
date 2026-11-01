@@ -17,28 +17,31 @@ assert list(image_palette.getdata()) == [tuple(bytes.fromhex(c[1:])) for c in co
 for room_id, config in world['rooms'].items():
     room_path = data / config['src']
     room = load(room_path)
-    assert room['size'] == [320, 180]
+    assert room['size'] == [480, 270]
     mask = np.array(Image.open(room_path.parent / room['objects']).convert('RGB'))
-    assert mask.shape == (180, 320, 3)
+    assert mask.shape == (270, 480, 3)
     known = {tuple(bytes.fromhex(i['color'][1:])) for i in room['items']} | {(0, 0, 0)}
     assert set(map(tuple, mask.reshape(-1, 3))) <= known
     for state in room['states'].values():
         for file in state.values():
             image = Image.open(room_path.parent / file).convert('RGBA')
-            assert image.size == (320, 180)
+            assert image.size == (480, 270)
             assert all(pixel[3] == 0 or pixel[:3] in palette for pixel in image.getdata())
     for item in room['items']:
         color = tuple(bytes.fromhex(item['color'][1:]))
         assert np.any(np.all(mask == color, axis=2)), item['id']
         if item['kind'] == 'light':
             pool = Image.open(room_path.parent / item['pool']).convert('RGB')
-            assert pool.size == (320, 180)
+            assert pool.size == (480, 270)
             assert all(r == g == b for r, g, b in pool.getdata())
     assert sum(i['kind'] == 'slot' for i in room['items']) == 6
 character_path = data / world['character']
 character = load(character_path)
 sheet = Image.open(character_path.parent / character['sheet']).convert('RGBA')
-assert sheet.size == (192, 240)
+assert character['frame'] == [72, 128]
+assert character['anchor'] == [36, 127]
+assert character['lantern'] == [26, -40]
+assert sheet.size == (432, 640)
 assert all(pixel[3] == 0 or pixel[:3] in palette for pixel in sheet.getdata())
 for animation in character['animations'].values():
     assert (animation['row'] + 1) * character['frame'][1] <= sheet.height

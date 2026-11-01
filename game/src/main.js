@@ -115,8 +115,9 @@ export async function boot({ world, content, element }) {
     ];
     game.lightAt = (x, y) => {
       const index =
-        (Math.max(0, Math.min(179, Math.floor(y))) * 320 +
-          Math.max(0, Math.min(319, Math.floor(x)))) *
+        (Math.max(0, Math.min(game.room.size[1] - 1, Math.floor(y))) *
+          game.room.size[0] +
+          Math.max(0, Math.min(game.room.size[0] - 1, Math.floor(x)))) *
         4;
       let total = game.room.lights.reduce(
         (sum, light) => sum + (light.pixels[index] / 255) * light.strength,
@@ -131,7 +132,7 @@ export async function boot({ world, content, element }) {
                 x - game.lanternPosition()[0],
                 y - game.lanternPosition()[1],
               ) /
-                70,
+                game.lanternRadius,
           ) ** 1.5;
       return Math.max(0, Math.min(1, total));
     };
@@ -159,22 +160,12 @@ export async function boot({ world, content, element }) {
       "Walk to",
       ...game.world.verbs.filter((v) => v !== "Walk to"),
     ];
-    const verbWidth = labels.reduce(
-      (sum, label) => sum + label.length * 6 + 10,
-      0,
-    );
-    game.verbScale = Math.min(1, 312 / verbWidth);
-    let verbX = 4;
-    game.verbRects = labels.map((label) => {
-      const width = (label.length * 6 + 10) * game.verbScale;
-      const rect = { label, x: verbX, y: 170, width };
-      verbX += width;
-      return rect;
-    });
-    game.verbTop = 168;
     function say(text) {
       game.speech = String(text);
-      game.speechLines = wrap(text, 42);
+      game.speechLines = wrap(
+        text,
+        Math.max(1, Math.floor((game.room.size[0] * 0.8) / (6 * game.uiScale))),
+      );
       game.speechUntil =
         game.elapsed + Math.max(3.5, String(text).length * 0.055);
       live.textContent = String(text);
@@ -263,7 +254,29 @@ export async function boot({ world, content, element }) {
       if (request !== roomRequest || disposed) return;
       game.room = room;
       renderer.setRoom(room);
-      const spawn = nearestWalkable(room.walkable, ...room.spawn);
+      const [width, height] = room.size;
+      game.uiScale = Math.max(1, Math.round(height / 135));
+      game.lanternRadius = (height * 7) / 18;
+      game.verbTop = height - Math.round(height / 15);
+      const margin = width / 80;
+      const verbWidth = labels.reduce(
+        (sum, label) => sum + label.length * 6 + 10,
+        0,
+      );
+      game.verbScale = Math.min(game.uiScale, (width - margin * 2) / verbWidth);
+      let verbX = margin;
+      game.verbRects = labels.map((label) => {
+        const cellWidth = (label.length * 6 + 10) * game.verbScale;
+        const rect = {
+          label,
+          x: verbX,
+          y: game.verbTop + (height - game.verbTop - 8 * game.verbScale) / 2,
+          width: cellWidth,
+        };
+        verbX += cellWidth;
+        return rect;
+      });
+      const spawn = nearestWalkable(room.walkable, ...room.spawn, room.size);
       if (!spawn) throw new Error(`Room ${id} has no walkable floor.`);
       game.actor = {
         x: spawn[0],
@@ -314,7 +327,8 @@ export async function boot({ world, content, element }) {
       () => frameSubscriptions.forEach((remove) => remove()),
     );
     function hit(px, py) {
-      if (px < 0 || py < 0 || px >= 320 || py >= game.verbTop) return null;
+      if (px < 0 || py < 0 || px >= game.room.size[0] || py >= game.verbTop)
+        return null;
       for (const object of game.objects) {
         const [x0, y0, x1, y1] = object.bounds;
         const sprite = game.objectSprite.size,
@@ -328,7 +342,8 @@ export async function boot({ world, content, element }) {
         )
           return object;
       }
-      const id = game.room.ids[Math.floor(py) * 320 + Math.floor(px)],
+      const id =
+          game.room.ids[Math.floor(py) * game.room.size[0] + Math.floor(px)],
         item = game.room.items[id];
       return item && !["walkable", "foreground", "slot"].includes(item.kind)
         ? item
@@ -337,8 +352,8 @@ export async function boot({ world, content, element }) {
     function point(event) {
       const rect = canvas.getBoundingClientRect();
       return [
-        ((event.clientX - rect.left) * 320) / rect.width,
-        ((event.clientY - rect.top) * 180) / rect.height,
+        ((event.clientX - rect.left) * game.room.size[0]) / rect.width,
+        ((event.clientY - rect.top) * game.room.size[1]) / rect.height,
       ];
     }
     on(canvas, "pointermove", (event) => {
@@ -370,6 +385,7 @@ export async function boot({ world, content, element }) {
         game.room.walkable,
         [game.actor.x, game.actor.y],
         destination,
+        game.room.size,
       );
       if (!game.path.length) {
         game.pending = null;
@@ -382,7 +398,11 @@ export async function boot({ world, content, element }) {
       const [x, y] = point(event);
       if (y >= game.verbTop) {
         const cell = game.verbRects.find(
-          (v) => x >= v.x && x < v.x + v.width && y >= game.verbTop && y < 180,
+          (v) =>
+            x >= v.x &&
+            x < v.x + v.width &&
+            y >= game.verbTop &&
+            y < game.room.size[1],
         );
         if (cell) game.verb = cell.label;
         return;
@@ -399,10 +419,10 @@ export async function boot({ world, content, element }) {
         );
       } else if (
         x >= 0 &&
-        x < 320 &&
+        x < game.room.size[0] &&
         y >= 0 &&
-        y < 180 &&
-        game.room.walkable[Math.floor(y) * 320 + Math.floor(x)]
+        y < game.room.size[1] &&
+        game.room.walkable[Math.floor(y) * game.room.size[0] + Math.floor(x)]
       )
         walk([x, y]);
     });
@@ -495,7 +515,7 @@ export async function boot({ world, content, element }) {
               dx = next[0] - game.actor.x,
               dy = next[1] - game.actor.y,
               distance = Math.hypot(dx, dy),
-              speed = 60 * game.depth(),
+              speed = (game.room.size[1] / 3) * game.depth(),
               travel = speed * remaining;
             if (distance > 0) {
               game.actor.mirror = dx < 0;

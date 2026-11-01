@@ -25,6 +25,10 @@ const game = await boot({
 
 Paths follow [CONTRACT.md](CONTRACT.md), including reader URLs relative to `content.json`. Hashes restore the room and reader after Start.
 
+Frame dimensions come from each room's `size`, shared by every room in a world. The placeholders use 480×270 room images and 72×128 character cells, with a figure about 120 pixels tall. Masks, paths, lighting, pointer coordinates, and render targets use the room dimensions. The font is 2× at 480×270; the verb strip occupies one fifteenth of the frame height. Lantern reach and bloom scale with frame height.
+
+The renderer uses the largest whole pixel scale that fits, centred with black bars. On a viewport smaller than one frame, the canvas fits the available space while keeping its native render resolution.
+
 - `src/`: WebGL2 renderer, OKLab palette lookup, mask loader, A\*, bitmap font, interaction, and reader frame.
 - `dev/data/`: generated room drawings, masks, light pools, palette, sprites, world, and six sample posts.
 - `dev/reader/`: readable sample articles.

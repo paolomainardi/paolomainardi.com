@@ -37,7 +37,7 @@ class Element extends EventTarget {
     this.removed = true;
   }
   getBoundingClientRect() {
-    return { left: 0, top: 0, width: 320, height: 180 };
+    return { left: 0, top: 0, width: 480, height: 270 };
   }
 }
 const document = new EventTarget();
@@ -173,7 +173,7 @@ function step(frames = 1) {
   }
 }
 function click(x, y) {
-  event(canvas, "click", { clientX: x, clientY: y });
+  event(canvas, "click", { clientX: x * 1.5, clientY: y * 1.5 });
 }
 function key(key) {
   event(root, "keydown", { key });
@@ -189,27 +189,52 @@ event(cover.children[3], "click");
 step();
 assert.equal(location.hash, "#stone-house");
 assert.equal(rendered.objects.length, 6);
+assert.equal(
+  rendered.room.walkable.length,
+  rendered.room.size[0] * rendered.room.size[1],
+);
 assert.equal(rendered.objects[0].label, "A room of one's own");
-assert.deepEqual(Array.from(controller.state.position), [60, 160]);
-assert.equal(rendered.verbTop, 168, "Verb strip must occupy only 12 pixels");
+assert.deepEqual(Array.from(controller.state.position), [90, 240]);
+assert.equal(
+  rendered.verbTop,
+  252,
+  "Verb strip must occupy one fifteenth of the frame",
+);
 assert(
-  rendered.verbRects.every((v) => v.y === 170),
+  rendered.verbRects.every((v) => v.y === 253),
   "Verbs stay in one row",
 );
 click(75, 160);
 step(10);
-const expectedTravel = 60 * rendered.depth() * 0.16;
+const expectedTravel = 90 * rendered.depth() * 0.16;
 assert(
-  Math.abs(controller.state.position[0] - 60 - expectedTravel) < 0.001,
-  "Walk at 60 pixels per second scaled by depth",
+  Math.abs(controller.state.position[0] - 90 - expectedTravel) < 0.001,
+  "Walk at 90 pixels per second scaled by depth",
 );
 settle();
 click(140, 150);
 assert(controller.state.walking);
 settle();
-assert.deepEqual(Array.from(controller.state.position), [140, 150]);
+assert.deepEqual(Array.from(controller.state.position), [210, 225]);
+// CPU light sampling must reach the last pixel and match the shader's radius.
+const savedLights = rendered.room.lights;
+rendered.room.lights = [{ pixels: new Uint8Array(480 * 270 * 4), strength: 1 }];
+rendered.room.lights[0].pixels[(480 * 270 - 1) * 4] = 255;
+const savedTime = rendered.time;
+rendered.time = "dusk";
+assert.equal(rendered.lightAt(479, 269), 1);
+assert.equal(rendered.lightAt(1000, 1000), 1);
+assert.equal(rendered.lightAt(478, 269), 0);
+rendered.room.lights = [];
+rendered.time = "night";
+const lanternPoint = rendered.lanternPosition();
+assert.equal(rendered.lanternRadius, 105);
+assert.equal(rendered.lightAt(...lanternPoint), 1);
+assert.equal(rendered.lightAt(lanternPoint[0] + 105, lanternPoint[1]), 0);
+rendered.room.lights = savedLights;
+rendered.time = savedTime;
 const open = rendered.verbRects.find((v) => v.label === "Open");
-click(open.x + 2, 170);
+click((open.x + 2) / 1.5, 170);
 click(235, 70);
 assert.equal(controller.state.reader, null, "Opening must wait for the walk");
 settle();
@@ -235,7 +260,7 @@ assert.equal(controller.state.reader, null);
 assert.equal(location.hash, "#stone-house");
 assert.equal(document.activeElement, root);
 const use = rendered.verbRects.find((v) => v.label === "Use");
-click(use.x + 2, 170);
+click((use.x + 2) / 1.5, 170);
 click(177, 93);
 settle();
 step(90);
@@ -250,7 +275,7 @@ const lantern = controller.state.lantern;
 key("l");
 assert.notEqual(controller.state.lantern, lantern);
 const look = rendered.verbRects.find((v) => v.label === "Look at");
-click(look.x + 2, 170);
+click((look.x + 2) / 1.5, 170);
 click(90, 60);
 settle();
 assert.equal(rendered.speech, "The sea, calm tonight.");

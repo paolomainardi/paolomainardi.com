@@ -14,27 +14,27 @@ async (page) => {
   async function click(x, y) {
     const box = await canvas.boundingBox();
     await page.mouse.click(
-      box.x + (x * box.width) / 320,
-      box.y + (y * box.height) / 180,
+      box.x + (x * box.width) / 480,
+      box.y + (y * box.height) / 270,
     );
   }
   async function settle() {
     await page.waitForFunction(() => !window.game.state.walking);
   }
-  await click(140, 150);
+  await click(210, 225);
   await settle();
   const walked = await page.evaluate(() => window.game.state.position);
-  if (Math.hypot(walked[0] - 140, walked[1] - 150) > 0.5)
+  if (Math.hypot(walked[0] - 210, walked[1] - 225) > 0.5)
     throw new Error("Walking failed");
-  // The default verb widths are Walk to 52, Look at 52, Open 34, Use 28.
-  await click(145, 170); // Use
-  await click(177, 93);
+  // The default verbs use the 2x bitmap font at this frame size.
+  await click(300, 255); // Use
+  await click(265, 140);
   await settle();
   await page.waitForFunction(
     () => window.game.state.lamps.find((l) => l.id === "oil").level < 0.01,
   );
-  await click(112, 170); // Open
-  await click(235, 70);
+  await click(230, 255); // Open
+  await click(352, 105);
   await settle();
   await page.waitForFunction(
     () => window.game.state.reader === "workstation-1",
@@ -69,7 +69,7 @@ async (page) => {
         const canvas = document.querySelector("canvas");
         return {
           overflow: document.documentElement.scrollWidth > innerWidth,
-          scale: canvas.width / 320,
+          scale: canvas.width / 480,
           error: canvas.getContext("webgl2").getError(),
         };
       });

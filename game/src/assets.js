@@ -72,8 +72,13 @@ export async function loadRoom(world, worldURL, id, renderer) {
   if (!config) throw new Error(`Unknown room: ${id}`);
   const url = resolve(config.src, worldURL),
     room = await json(url);
-  if (room.size[0] !== 320 || room.size[1] !== 180)
-    throw new Error("Rooms must be 320 by 180.");
+  if (
+    !Array.isArray(room.size) ||
+    room.size.length !== 2 ||
+    !room.size.every((value) => Number.isInteger(value) && value > 0)
+  )
+    throw new Error("Room size must contain two positive integers.");
+  const [width, height] = room.size;
   const [maskImage, states, pools] = await Promise.all([
     image(resolve(room.objects, url)),
     Promise.all(
@@ -97,14 +102,22 @@ export async function loadRoom(world, worldURL, id, renderer) {
         })),
     ),
   ]);
+  for (const bitmap of [
+    maskImage,
+    ...states.flatMap(([, state]) => [state.lit, state.unlit]),
+    ...pools.map((pool) => pool.image),
+  ]) {
+    if (bitmap.width !== width || bitmap.height !== height)
+      throw new Error(`Room ${id} images must match its size.`);
+  }
   const pixels = renderer.pixels(maskImage);
-  const walkable = new Uint8Array(320 * 180),
-    foreground = new Uint8Array(320 * 180 * 4);
-  const ids = new Int16Array(320 * 180).fill(-1);
+  const walkable = new Uint8Array(width * height),
+    foreground = new Uint8Array(width * height * 4);
+  const ids = new Int16Array(width * height).fill(-1);
   const colorMap = new Map(
     room.items.map((item, i) => [parseInt(item.color.slice(1), 16), i]),
   );
-  const bounds = room.items.map(() => [320, 180, -1, -1]);
+  const bounds = room.items.map(() => [width, height, -1, -1]);
   for (let i = 0; i < ids.length; i++) {
     const color =
       (pixels[i * 4] << 16) | (pixels[i * 4 + 1] << 8) | pixels[i * 4 + 2];
@@ -112,8 +125,8 @@ export async function loadRoom(world, worldURL, id, renderer) {
     if (id === undefined) continue;
     ids[i] = id;
     const item = room.items[id],
-      x = i % 320,
-      y = Math.floor(i / 320),
+      x = i % width,
+      y = Math.floor(i / width),
       b = bounds[id];
     b[0] = Math.min(b[0], x);
     b[1] = Math.min(b[1], y);

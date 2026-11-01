@@ -15,6 +15,8 @@ uniform sampler2D uLit,uUnlit,uForeground,uData;
 uniform sampler2DArray uPools;
 uniform int uCount;
 uniform vec3 uLantern;
+uniform vec2 uSize;
+uniform float uLanternRadius;
 const float bayer[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
 float threshold(vec2 p){ivec2 q=ivec2(floor(p))%4;return (bayer[q.y*4+q.x]+.5)/16.;}
 float band(float value,vec2 p){
@@ -23,15 +25,15 @@ float band(float value,vec2 p){
  float transition=clamp((fract(scaled)-.4)/.2,0.,1.);
  return min(5.,lower+step(threshold(p),transition))/5.;
 }
-float lantern(vec2 p){return pow(max(0.,1.-distance(p,uLantern.xy)/70.),1.5)*uLantern.z;}
+float lantern(vec2 p){return pow(max(0.,1.-distance(p,uLantern.xy)/uLanternRadius),1.5)*uLantern.z;}
 float roomLight(vec2 p){
  float value=0.;
- for(int i=0;i<uCount;i++) value+=texture(uPools,vec3(p/vec2(320,180),float(i))).r*texelFetch(uData,ivec2(i,0),0).z;
+ for(int i=0;i<uCount;i++) value+=texture(uPools,vec3(p/uSize,float(i))).r*texelFetch(uData,ivec2(i,0),0).z;
  return value;
 }
 vec3 drawing(vec2 p){
  float hand=lantern(p), total=band(roomLight(p)+hand,p);
- vec3 base=mix(texture(uUnlit,p/vec2(320,180)).rgb,texture(uLit,p/vec2(320,180)).rgb,total);
+ vec3 base=mix(texture(uUnlit,p/uSize).rgb,texture(uLit,p/uSize).rgb,total);
  return base+vec3(.14,.065,.008)*band(hand,p);
 }`;
 
@@ -66,17 +68,17 @@ export class Renderer {
     this.programs = {};
     this.programs.room = this.program(
       common +
-        `uniform bool uFront;void main(){vec2 p=vec2(uv.x,1.-uv.y)*vec2(320,180);if(uFront&&texture(uForeground,p/vec2(320,180)).a<.5)discard;color=vec4(drawing(p),1.);}`,
+        `uniform bool uFront;void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;if(uFront&&texture(uForeground,p/uSize).a<.5)discard;color=vec4(drawing(p),1.);}`,
     );
     this.programs.sprite = this.program(`#version 300 es
 precision highp float;
 in vec2 uv;out vec4 color;
 uniform sampler2D uImage;
 uniform vec4 uRect,uSource,uTint;
-uniform vec2 uImageSize;
+uniform vec2 uImageSize,uSize;
 uniform float uMirror,uRim;
 void main(){
- vec2 p=vec2(uv.x,1.-uv.y)*vec2(320,180),q=(p-uRect.xy)/uRect.zw;
+ vec2 p=vec2(uv.x,1.-uv.y)*uSize,q=(p-uRect.xy)/uRect.zw;
  if(any(lessThan(q,vec2(0)))||any(greaterThanEqual(q,vec2(1))))discard;
  if(uMirror>.5)q.x=1.-q.x;
  vec2 tex=(uSource.xy+floor(q*uSource.zw)+.5)/uImageSize;
@@ -89,17 +91,17 @@ void main(){
 ${common}
 uniform vec4 uShadow;
 uniform vec2 uShadowSize;
-void main(){vec2 p=vec2(uv.x,1.-uv.y)*vec2(320,180);vec2 d=p-uShadow.xy;
+void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;vec2 d=p-uShadow.xy;
  float t=clamp(dot(d,uShadow.zw)/max(dot(uShadow.zw,uShadow.zw),1.),0.,1.);
  float r=length((d-uShadow.zw*t)/uShadowSize);
  float a=max(0.,1.-r)*(.28-.16*t);if(a<threshold(p)*.5)discard;color=vec4(0.,0.,0.,.26);
 }`);
     this.programs.glow = this.program(`#version 300 es
 ${common}
-void main(){vec2 p=vec2(uv.x,1.-uv.y)*vec2(320,180);vec3 c=vec3(0);
+void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;vec3 c=vec3(0);
  for(int i=0;i<uCount;i++){vec4 info=texelFetch(uData,ivec2(i,0),0);vec3 tint=texelFetch(uData,ivec2(i,1),0).rgb;
- c+=texture(uPools,vec3(p/vec2(320,180),float(i))).g*info.z*tint;}
- c+=vec3(1.,.64,.24)*max(0.,1.-distance(p,uLantern.xy)/3.)*uLantern.z;
+ c+=texture(uPools,vec3(p/uSize,float(i))).g*info.z*tint;}
+ c+=vec3(1.,.64,.24)*max(0.,1.-distance(p,uLantern.xy)/(uSize.y/60.))*uLantern.z;
  color=vec4(c,1.);
 }`);
     this.programs.blur = this.program(`#version 300 es
@@ -109,7 +111,7 @@ void main(){color=texture(uImage,uv)*.227027;for(int i=1;i<=4;i++){float w=i==1?
 precision highp float;precision highp sampler3D;in vec2 uv;out vec4 color;
 uniform sampler2D uImage,uGlow;uniform sampler3D uPalette;
 void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPalette,(floor(c*31.+.5)+.5)/32.).rgb;color=vec4(mapped+texture(uGlow,uv).rgb*.23,1.);}`);
-    this.scene = this.target(320, 180);
+
     this.white = this.texture(new Uint8Array([255, 255, 255, 255]), 1, 1);
     this.font = this.texture(fontPixels(), 96, 48);
   }
@@ -148,6 +150,7 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
   use(program) {
     this.active = program;
     this.gl.useProgram(program.p);
+    if (this.size) this.uniform("uSize", this.size);
   }
   uniform(name, value) {
     const gl = this.gl,
@@ -299,6 +302,13 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
   }
   setRoom(room) {
     const gl = this.gl;
+    const [width, height] = room.size;
+    this.size = room.size;
+    if (this.scene) {
+      gl.deleteTexture(this.scene.texture);
+      gl.deleteFramebuffer(this.scene.fbo);
+    }
+    this.scene = this.target(width, height);
     if (this.roomTextures) {
       this.roomTextures.forEach((t) => gl.deleteTexture(t));
     }
@@ -313,15 +323,15 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
         { lit: keep(this.texture(s.lit)), unlit: keep(this.texture(s.unlit)) },
       ]),
     );
-    this.foreground = keep(this.texture(room.foreground, 320, 180));
+    this.foreground = keep(this.texture(room.foreground, width, height));
     const count = Math.max(1, room.lights.length);
     if (count > gl.getParameter(gl.MAX_ARRAY_TEXTURE_LAYERS))
       throw new Error("Too many lamp pools for this GPU.");
-    const pixels = new Uint8Array(320 * 180 * 4 * count);
+    const pixels = new Uint8Array(width * height * 4 * count);
     room.lights.forEach((light, layer) => {
       const id = room.items.findIndex((item) => item.id === light.id);
-      for (let i = 0; i < 320 * 180; i++) {
-        const offset = (layer * 320 * 180 + i) * 4;
+      for (let i = 0; i < width * height; i++) {
+        const offset = (layer * width * height + i) * 4;
         pixels[offset] = light.pixels[i * 4];
         pixels[offset + 1] = room.ids[i] === id ? 255 : 0;
         pixels[offset + 3] = 255;
@@ -337,8 +347,8 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
       gl.TEXTURE_2D_ARRAY,
       0,
       gl.RGBA8,
-      320,
-      180,
+      width,
+      height,
       count,
       0,
       gl.RGBA,
@@ -393,6 +403,7 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
     this.bind("uPools", this.pools, 3, gl.TEXTURE_2D_ARRAY);
     this.bind("uData", this.data, 4);
     this.integer("uCount", game.room.lights.length);
+    this.uniform("uLanternRadius", game.lanternRadius);
     this.uniform("uLantern", [
       ...game.lanternPosition(),
       game.lantern && game.time === "night" ? 1 : 0,
@@ -435,11 +446,17 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
     }
   }
   resize(width, height) {
-    const scale = Math.max(1, Math.floor(Math.min(width / 320, height / 180))),
-      w = 320 * scale,
-      h = 180 * scale;
-    this.canvas.style.width = `${w}px`;
-    this.canvas.style.height = `${h}px`;
+    const [frameWidth, frameHeight] = this.size;
+    const scale = Math.max(
+        1,
+        Math.floor(Math.min(width / frameWidth, height / frameHeight)),
+      ),
+      w = frameWidth * scale,
+      h = frameHeight * scale;
+    // Keep integer render pixels; fit the canvas on displays smaller than a frame.
+    const fit = Math.min(1, width / w, height / h);
+    this.canvas.style.width = `${w * fit}px`;
+    this.canvas.style.height = `${h * fit}px`;
     if (this.canvas.width === w && this.canvas.height === h && this.glow)
       return;
     this.canvas.width = w;
@@ -528,16 +545,29 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
     this.lighting(game);
     this.integer("uFront", 1);
     this.draw();
-    const sentence = game.sentence().slice(0, 52);
+    const [width, height] = game.room.size;
+    const ui = game.uiScale,
+      margin = width / 80,
+      sentenceY = height / 30;
+    const sentence = game
+      .sentence()
+      .slice(0, Math.floor((width - margin * 2) / (6 * ui)));
     for (let y = -1; y <= 1; y++)
       for (let x = -1; x <= 1; x++)
-        if (x || y) this.text(sentence, 4 + x, 6 + y, [0.025, 0.03, 0.05, 1]);
-    this.text(sentence, 4, 6);
+        if (x || y)
+          this.text(
+            sentence,
+            margin + x * ui,
+            sentenceY + y * ui,
+            [0.025, 0.03, 0.05, 1],
+            ui,
+          );
+    this.text(sentence, margin, sentenceY, undefined, ui);
     this.rect(
       0,
       game.verbTop,
-      320,
-      180 - game.verbTop,
+      width,
+      height - game.verbTop,
       [0.025, 0.03, 0.05, 0.55],
     );
     for (const verb of game.verbRects) {
@@ -552,20 +582,26 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
     }
     if (game.speech && game.speechUntil > game.elapsed) {
       const lines = game.speechLines,
-        top = Math.max(23, rect[1] - lines.length * 9 - 8);
+        top = Math.max(
+          sentenceY + 17 * ui,
+          rect[1] - (lines.length * 9 + 8) * ui,
+        );
       lines.forEach((line, i) => {
         const x = Math.max(
-          3,
-          Math.min(317 - line.length * 6, actor.x - line.length * 3),
+          margin,
+          Math.min(
+            width - margin - line.length * 6 * ui,
+            actor.x - line.length * 3 * ui,
+          ),
         );
         this.rect(
-          x - 2,
-          top + i * 9 - 1,
-          line.length * 6 + 4,
-          9,
+          x - 2 * ui,
+          top + (i * 9 - 1) * ui,
+          (line.length * 6 + 4) * ui,
+          9 * ui,
           [0.025, 0.03, 0.05, 0.85],
         );
-        this.text(line, x, top + i * 9);
+        this.text(line, x, top + i * 9 * ui, undefined, ui);
       });
     }
     gl.disable(gl.BLEND);
@@ -577,7 +613,7 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
     for (let i = 0; i < 4; i++) {
       this.into(this.glow[(i + 1) % 2]);
       this.bind("uImage", this.glow[i % 2].texture);
-      const radius = (i < 2 ? 2 : 5) * this.scale;
+      const radius = (i < 2 ? height / 90 : height / 36) * this.scale;
       this.uniform(
         "uStep",
         i % 2

@@ -1,11 +1,9 @@
-const W = 320,
-  H = 180;
-const index = (x, y) => y * W + x;
+const index = (x, y, width) => y * width + x;
 
-export function nearestWalkable(mask, x, y) {
+export function nearestWalkable(mask, x, y, [W, H]) {
   x = Math.max(0, Math.min(W - 1, Math.round(x)));
   y = Math.max(0, Math.min(H - 1, Math.round(y)));
-  if (mask[index(x, y)]) return [x, y];
+  if (mask[index(x, y, W)]) return [x, y];
   let best = Infinity,
     result = null;
   for (let i = 0; i < mask.length; i++) {
@@ -21,7 +19,7 @@ export function nearestWalkable(mask, x, y) {
   return result;
 }
 
-function visible(mask, a, b) {
+function visible(mask, a, b, W) {
   const steps = Math.ceil(
     Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])) * 2,
   );
@@ -31,9 +29,9 @@ function visible(mask, a, b) {
     const x = Math.round(a[0] + (b[0] - a[0]) * t);
     const y = Math.round(a[1] + (b[1] - a[1]) * t);
     if (
-      !mask[index(x, y)] ||
-      !mask[index(previous[0], y)] ||
-      !mask[index(x, previous[1])]
+      !mask[index(x, y, W)] ||
+      !mask[index(previous[0], y, W)] ||
+      !mask[index(x, previous[1], W)]
     )
       return false;
     previous = [x, y];
@@ -41,13 +39,14 @@ function visible(mask, a, b) {
   return true;
 }
 
-export function findPath(mask, from, to) {
-  const start = nearestWalkable(mask, ...from),
-    end = nearestWalkable(mask, ...to);
+export function findPath(mask, from, to, size) {
+  const [W, H] = size;
+  const start = nearestWalkable(mask, ...from, size),
+    end = nearestWalkable(mask, ...to, size);
   if (!start || !end) return [];
-  if (visible(mask, start, end)) return [end];
-  const origin = index(...start),
-    goal = index(...end);
+  if (visible(mask, start, end, W)) return [end];
+  const origin = index(...start, W),
+    goal = index(...end, W);
   const cost = new Float64Array(W * H).fill(Infinity);
   const parent = new Int32Array(W * H).fill(-1);
   const closed = new Uint8Array(W * H);
@@ -98,7 +97,7 @@ export function findPath(mask, from, to) {
       let a = 0;
       while (a < raw.length - 1) {
         let b = raw.length - 1;
-        while (b > a + 1 && !visible(mask, raw[a], raw[b])) b--;
+        while (b > a + 1 && !visible(mask, raw[a], raw[b], W)) b--;
         smooth.push(raw[b]);
         a = b;
       }
@@ -113,9 +112,10 @@ export function findPath(mask, from, to) {
         const nx = x + dx,
           ny = y + dy;
         if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
-        const n = index(nx, ny);
+        const n = index(nx, ny, W);
         if (!mask[n] || closed[n]) continue;
-        if (dx && dy && (!mask[index(nx, y)] || !mask[index(x, ny)])) continue;
+        if (dx && dy && (!mask[index(nx, y, W)] || !mask[index(x, ny, W)]))
+          continue;
         const next = cost[current] + (dx && dy ? Math.SQRT2 : 1);
         if (next < cost[n]) {
           cost[n] = next;
