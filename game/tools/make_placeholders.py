@@ -35,7 +35,7 @@ def quantize(array):
 def generate():
     room_dir = DATA / 'rooms/stone-house'
     char_dir = DATA / 'character'
-    (room_dir / 'pools').mkdir(parents=True, exist_ok=True)
+    room_dir.mkdir(parents=True, exist_ok=True)
     char_dir.mkdir(parents=True, exist_ok=True)
     (DATA / 'objects').mkdir(parents=True, exist_ok=True)
     Image.fromarray(RGB.reshape(1, len(COLORS), 3)).save(DATA / 'palette.png')
@@ -106,26 +106,29 @@ def generate():
         m.rectangle(bounds, fill=color)
         pool = np.clip(1 - np.sqrt((xx-center[0])**2 + ((yy-center[1])*0.88)**2)/radius, 0, 1) ** 1.25
         pools.append(pool)
-        Image.fromarray((pool * 255).astype('uint8')).save(room_dir / f'pools/{name}.png')
         items.append(dict(id=name, kind='light', label=f'{name.title()} lamp', light=kind,
-                          color=color, pool=f'pools/{name}.png', tint='#ffd08a'))
+                          color=color, tint='#ffd08a'))
     m.rectangle((28, 70, 87, 166), fill='#ff8000')
     items.append(dict(id='door', kind='exit', label='Door', to='harbour', color='#ff8000'))
     m.rectangle((116, 63, 176, 123), fill='#00ffff')
     items.append(dict(id='window', kind='hotspot', label='Window', look='The sea, calm tonight.', color='#00ffff'))
     objects.save(room_dir / 'objects.png')
     raw = np.array(base).astype(float)
-    light = np.clip(sum(pools), 0, 1)[..., None]
+    quantize(raw * 1.35).save(room_dir / 'albedo.png')
     for state, ambient in [('dusk', 0.72), ('night', 0.34)]:
         unlit = raw * ambient
-        lit = raw * (ambient + (1.18 - ambient) * light) + np.array([28, 13, 0]) * light
         quantize(unlit).save(room_dir / f'{state}-unlit.png')
-        quantize(lit).save(room_dir / f'{state}-lit.png')
-    save_json(room_dir / 'room.json', dict(name='stone-house', size=list(ROOM_SIZE),
-        states={s: dict(lit=f'{s}-lit.png', unlit=f'{s}-unlit.png') for s in ('dusk', 'night')},
+        for name, pool in zip(('pendant', 'oil'), pools):
+            light = pool[..., None]
+            lit = unlit + (raw * (1.18 - ambient) + np.array([28, 13, 0])) * light
+            quantize(lit).save(room_dir / f'{state}-{name}.png')
+    save_json(room_dir / 'room.json', dict(name='stone-house', size=list(ROOM_SIZE), albedo='albedo.png',
+        states={s: dict(unlit=f'{s}-unlit.png', lights={name: f'{s}-{name}.png' for name in ('pendant', 'oil')}) for s in ('dusk', 'night')},
         objects='objects.png', items=items, depth=dict(far=[144, 0.7], near=[264, 1.0]), spawn=[90, 240]))
     sheet = Image.new('RGBA', (192, 240))
     s = ImageDraw.Draw(sheet)
+    glow = Image.new('RGBA', sheet.size)
+    g = ImageDraw.Draw(glow)
     for row, count in enumerate([1, 6, 4, 4, 2]):
         for frame in range(count):
             x, y = frame * 32, row * 48
@@ -149,32 +152,42 @@ def generate():
             s.rectangle((x+23, y+18-bob, x+25, y+29-bob), fill=COLORS[15])
             s.rectangle((x+24, y+30-bob, x+29, y+37-bob), fill=COLORS[8])
             s.rectangle((x+25, y+31-bob, x+28, y+35-bob), fill=COLORS[25])
+            g.rectangle((x+25, y+31-bob, x+28, y+35-bob), fill='white')
     # Resize each cell separately so nearest sampling cannot cross animation cells.
     expanded = Image.new('RGBA', (CHARACTER_FRAME[0] * 6, CHARACTER_FRAME[1] * 5))
+    expanded_glow = Image.new('RGBA', expanded.size)
     for row in range(5):
         for column in range(6):
             cell = sheet.crop((column * 32, row * 48, (column + 1) * 32, (row + 1) * 48))
             expanded.paste(cell.resize(CHARACTER_FRAME, Image.Resampling.NEAREST),
                            (column * CHARACTER_FRAME[0], row * CHARACTER_FRAME[1]))
+            glow_cell = glow.crop((column * 32, row * 48, (column + 1) * 32, (row + 1) * 48))
+            expanded_glow.paste(glow_cell.resize(CHARACTER_FRAME, Image.Resampling.NEAREST),
+                                (column * CHARACTER_FRAME[0], row * CHARACTER_FRAME[1]))
     expanded.save(char_dir / 'sheet.png')
-    save_json(char_dir / 'character.json', dict(sheet='sheet.png', frame=list(CHARACTER_FRAME), anchor=[36, 127], lantern=[26, -40], animations={
+    expanded_glow.save(char_dir / 'glow.png')
+    save_json(char_dir / 'character.json', dict(sheet='sheet.png', glow='glow.png', frame=list(CHARACTER_FRAME), anchor=[36, 127], lantern=[26, -40], animations={
         name: dict(row=i, frames=n, fps=fps) for i, (name, n, fps) in enumerate([
             ('idle-front', 1, 1), ('walk-side', 6, 8), ('walk-front', 4, 8), ('walk-back', 4, 8), ('talk-front', 2, 4)])}))
-    book = Image.new('RGBA', (12, 18))
-    b = ImageDraw.Draw(book)
-    b.rectangle((1, 0, 10, 17), fill=COLORS[20])
-    b.rectangle((3, 1, 9, 16), fill=COLORS[22])
-    b.line((4, 4, 8, 4), fill=COLORS[10])
-    b.line((4, 12, 8, 12), fill=COLORS[10])
-    book = book.resize((18, 27), Image.Resampling.NEAREST)
-    book.save(DATA / 'objects/book.png')
+    books = []
+    for name, dark, light in [('book', 20, 22), ('book-green', 14, 16), ('book-blue', 28, 29)]:
+        book = Image.new('RGBA', (12, 18))
+        b = ImageDraw.Draw(book)
+        b.rectangle((1, 0, 10, 17), fill=COLORS[dark])
+        b.rectangle((3, 1, 9, 16), fill=COLORS[light])
+        b.line((4, 4, 8, 4), fill=COLORS[10])
+        b.line((4, 12, 8, 12), fill=COLORS[10])
+        book = book.resize((18, 27), Image.Resampling.NEAREST)
+        path = f'objects/{name}.png'
+        book.save(DATA / path)
+        books.append(path)
     frame = Image.new('RGBA', (12, 12), COLORS[6])
     f = ImageDraw.Draw(frame)
     for inset, color in [(0, 0), (1, 9), (2, 7), (3, 2)]:
         f.rectangle((inset, inset, 11-inset, 11-inset), outline=COLORS[color])
     frame.save(ROOT.parent / 'src/reader-frame.png')
     save_json(DATA / 'world.json', dict(title='The engineer\'s study', palette='palette.png', start='stone-house',
-        character='character/character.json', verbs=['Look at', 'Open', 'Use', 'Talk to'], objects=dict(book='objects/book.png'),
+        character='character/character.json', verbs=['Look at', 'Open', 'Use', 'Talk to'], objects=dict(book=books),
         rooms={'stone-house': dict(src='rooms/stone-house/room.json', content=dict(series='workstation'), object='book')}))
     titles = ['A room of one\'s own', 'Choosing the hardware', 'Linux on the desk', 'Containers at home', 'A quieter workstation', 'The finished build']
     content = []

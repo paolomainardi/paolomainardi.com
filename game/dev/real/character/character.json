@@ -1,5 +1,6 @@
 {
   "sheet": "sheet.png",
+  "glow": "glow.png",
   "frame": [
     96,
     176
@@ -36,7 +37,7 @@
     }
   },
   "lantern": [
-    25,
-    -64
+    20,
+    -62
   ]
 }

@@ -4,14 +4,21 @@
     480,
     270
   ],
+  "albedo": "albedo.png",
   "states": {
     "dusk": {
-      "lit": "dusk-lit.png",
-      "unlit": "dusk-unlit.png"
+      "unlit": "dusk-unlit.png",
+      "lights": {
+        "pendant": "dusk-pendant.png",
+        "oil-lamp": "dusk-oil-lamp.png"
+      }
     },
     "night": {
-      "lit": "night-lit.png",
-      "unlit": "night-unlit.png"
+      "unlit": "night-unlit.png",
+      "lights": {
+        "pendant": "night-pendant.png",
+        "oil-lamp": "night-oil-lamp.png"
+      }
     }
   },
   "objects": "objects.png",
@@ -62,8 +69,7 @@
       "color": "#ffff00",
       "label": "Pendant lamp",
       "light": "pendant",
-      "pool": "pools/pendant.png",
-      "tint": "#351f01"
+      "tint": "#ff9613"
     },
     {
       "id": "oil-lamp",
@@ -71,8 +77,7 @@
       "color": "#ffc000",
       "label": "Oil lamp",
       "light": "oil",
-      "pool": "pools/oil-lamp.png",
-      "tint": "#3d2608"
+      "tint": "#ff950e"
     },
     {
       "id": "door",

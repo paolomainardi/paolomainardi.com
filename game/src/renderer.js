@@ -12,31 +12,27 @@ precision highp float;
 precision highp sampler2DArray;
 in vec2 uv;
 out vec4 color;
-uniform sampler2D uLit,uUnlit,uForeground,uData;
-uniform sampler2DArray uPools;
+uniform sampler2D uUnlit,uAlbedo,uForeground,uData;
+uniform sampler2DArray uLights,uMasks;
 uniform int uCount;
 uniform vec3 uLantern;
 uniform vec2 uSize;
 uniform float uLanternRadius;
 const float bayer[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
 float threshold(vec2 p){ivec2 q=ivec2(floor(p))%4;return (bayer[q.y*4+q.x]+.5)/16.;}
-float band(float value,vec2 p){
- float scaled=clamp(value,0.,1.)*5., lower=floor(scaled);
- // Convert a 2.5 scene-pixel transition to light units, even on shallow pools.
- float halfWidth=min(.49,max(.00001,length(vec2(dFdx(scaled),dFdy(scaled)))*1.25));
- float transition=clamp((fract(scaled)-.5+halfWidth)/(2.*halfWidth),0.,1.);
- return min(5.,lower+step(threshold(p),transition))/5.;
-}
-float lantern(vec2 p){return (1.-smoothstep(.35,1.,distance(p,uLantern.xy)/uLanternRadius))*1.5*uLantern.z;}
-float roomLight(vec2 p){
- float value=0.;
- for(int i=0;i<uCount;i++) value+=texture(uPools,vec3(p/uSize,float(i))).r*texelFetch(uData,ivec2(i,0),0).z;
- return value;
-}
+vec3 linearColour(vec3 c){return mix(c/12.92,pow((c+.055)/1.055,vec3(2.4)),step(vec3(.04045),c));}
+vec3 screenColour(vec3 c){c=clamp(c,0.,1.);return mix(c*12.92,1.055*pow(c,vec3(1./2.4))-.055,step(vec3(.0031308),c));}
+float lantern(vec2 p){return (1.-smoothstep(0.,1.,distance(p,uLantern.xy)/uLanternRadius))*uLantern.z;}
 vec3 drawing(vec2 p){
- float hand=lantern(p), total=band(roomLight(p)+hand,p);
- vec3 base=mix(texture(uUnlit,p/uSize).rgb,texture(uLit,p/uSize).rgb,total);
- return base+vec3(.2,.095,.015)*band(hand,p);
+ vec3 base=linearColour(texture(uUnlit,p/uSize).rgb);
+ for(int i=0;i<uCount;i++){
+   vec4 info=texelFetch(uData,ivec2(i,0),0);
+   vec2 drift=texelFetch(uData,ivec2(i,2),0).xy;
+   vec2 at=(p+drift)/uSize;
+   base+=info.z*(linearColour(texture(uLights,vec3(at,float(i))).rgb)-linearColour(texture(uUnlit,at).rgb));
+ }
+ base+=linearColour(texture(uAlbedo,p/uSize).rgb)*vec3(1.,.7,.32)*lantern(p);
+ return screenColour(base);
 }`;
 
 export class Renderer {
@@ -61,10 +57,12 @@ export class Renderer {
     this.programs.sprite = this.program(`#version 300 es
 precision highp float;
 in vec2 uv;out vec4 color;
-uniform sampler2D uImage;
+uniform sampler2D uImage,uSpriteGlow,uForeground;
 uniform vec4 uRect,uSource,uTint;
 uniform vec2 uImageSize,uSize;
-uniform float uMirror,uRim;
+uniform float uMirror,uRim,uFlame,uHandRadius;
+uniform vec2 uHand;
+uniform bool uCharacter,uEmission;
 void main(){
  vec2 p=vec2(uv.x,1.-uv.y)*uSize,q=(p-uRect.xy)/uRect.zw;
  if(any(lessThan(q,vec2(0)))||any(greaterThanEqual(q,vec2(1))))discard;
@@ -73,7 +71,15 @@ void main(){
  vec4 c=texture(uImage,tex);if(c.a<.01)discard;
  vec2 delta=vec2(sign(uRim)*(uMirror>.5?-1.:1.)/uImageSize.x,0);
  float edge=1.-texture(uImage,tex+delta).a;
- color=vec4(c.rgb*uTint.rgb+vec3(.42,.24,.07)*edge*abs(uRim),c.a*uTint.a);
+ vec3 rgb=c.rgb*uTint.rgb+vec3(.42,.24,.07)*edge*abs(uRim);
+ if(uCharacter){
+   float glow=texture(uSpriteGlow,tex).r*texture(uSpriteGlow,tex).a;
+   float hand=(1.-smoothstep(0.,uHandRadius,distance(p,uHand)))*uFlame;
+   rgb+=c.rgb*vec3(.18,.10,.025)*hand;
+   rgb=mix(rgb,mix(c.rgb*.25,vec3(1.,.8,.4)*(1.+uFlame*.35),step(.01,uFlame)),glow);
+   if(uEmission){if(texture(uForeground,p/uSize).a>.5)discard; color=vec4(vec3(1.,.7,.32)*glow*uFlame,c.a);return;}
+ }
+ color=vec4(rgb,c.a*uTint.a);
 }`);
     this.programs.shadow = this.program(`#version 300 es
 ${common}
@@ -89,7 +95,7 @@ ${common}
 void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;vec3 c=vec3(0);
  for(int i=0;i<uCount;i++){vec4 info=texelFetch(uData,ivec2(i,0),0);vec3 tint=texelFetch(uData,ivec2(i,1),0).rgb;
  vec3 warm=mix(tint/max(max(tint.r,tint.g),max(tint.b,.001)),vec3(1.,.7,.32),.25);
- c+=texture(uPools,vec3(p/uSize,float(i))).g*info.z*warm;}
+ c+=texture(uMasks,vec3(p/uSize,float(i))).r*info.z*warm;}
  c+=vec3(1.,.7,.32)*max(0.,1.-distance(p,uLantern.xy)/(uSize.y/45.))*uLantern.z;
  color=vec4(c,1.);
 }`);
@@ -98,9 +104,11 @@ precision highp float;in vec2 uv;out vec4 color;uniform sampler2D uImage;uniform
 void main(){color=texture(uImage,uv)*.227027;for(int i=1;i<=4;i++){float w=i==1?.1945946:i==2?.1216216:i==3?.054054:.016216;color+=(texture(uImage,uv+uStep*float(i))+texture(uImage,uv-uStep*float(i)))*w;}}`);
     this.programs.present = this.program(`#version 300 es
 precision highp float;precision highp sampler3D;in vec2 uv;out vec4 color;
-uniform sampler2D uImage,uGlow,uGlowCore;uniform sampler3D uPalette;uniform float uBloom;
-void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPalette,(floor(c*${PALETTE_STEPS - 1}.+.5)+.5)/${PALETTE_STEPS}.).rgb;color=vec4(mapped+(texture(uGlow,uv).rgb*.45+texture(uGlowCore,uv).rgb*.12)*uBloom,1.);}`);
+uniform sampler2D uImage,uGlow,uGlowCore;uniform sampler3D uPalette;uniform float uBloom,uDither,uScale;
+const float bayer[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
+void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(uImage,uv).rgb+uDither*((bayer[q.y*4+q.x]+.5)/16.-.5)/255.,0.,1.);vec3 mapped=texture(uPalette,(floor(c*${PALETTE_STEPS - 1}.+.5)+.5)/${PALETTE_STEPS}.).rgb;color=vec4(mapped+(texture(uGlow,uv).rgb*.45+texture(uGlowCore,uv).rgb*.12)*uBloom,1.);}`);
 
+    this.black = this.texture(new Uint8Array([0, 0, 0, 0]), 1, 1);
     this.white = this.texture(new Uint8Array([255, 255, 255, 255]), 1, 1);
     this.font = this.texture(fontPixels(), 96, 48);
   }
@@ -286,51 +294,61 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
       this.roomTextures.push(t);
       return t;
     };
-    this.states = Object.fromEntries(
-      Object.entries(room.states).map(([key, s]) => [
-        key,
-        { lit: keep(this.texture(s.lit)), unlit: keep(this.texture(s.unlit)) },
-      ]),
-    );
-    this.foreground = keep(this.texture(room.foreground, width, height));
     const count = Math.max(1, room.lights.length);
     if (count > gl.getParameter(gl.MAX_ARRAY_TEXTURE_LAYERS))
-      throw new Error("Too many lamp pools for this GPU.");
-    const pixels = new Uint8Array(width * height * 4 * count);
+      throw new Error("Too many lamp drawings for this GPU.");
+    const array = (pixels) => {
+      const texture = keep(gl.createTexture());
+      gl.bindTexture(gl.TEXTURE_2D_ARRAY, texture);
+      for (const key of [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER])
+        gl.texParameteri(gl.TEXTURE_2D_ARRAY, key, gl.NEAREST);
+      for (const key of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T])
+        gl.texParameteri(gl.TEXTURE_2D_ARRAY, key, gl.CLAMP_TO_EDGE);
+      gl.texImage3D(
+        gl.TEXTURE_2D_ARRAY,
+        0,
+        gl.RGBA8,
+        width,
+        height,
+        count,
+        0,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        pixels,
+      );
+      return texture;
+    };
+    this.states = Object.fromEntries(
+      Object.entries(room.states).map(([key, state]) => {
+        const pixels = new Uint8Array(width * height * 4 * count);
+        room.lights.forEach((light, layer) =>
+          pixels.set(state.lightPixels[light.id], layer * width * height * 4),
+        );
+        return [
+          key,
+          { unlit: keep(this.texture(state.unlit)), lights: array(pixels) },
+        ];
+      }),
+    );
+    this.albedo = keep(this.texture(room.albedo));
+    this.foreground = keep(this.texture(room.foreground, width, height));
+    const masks = new Uint8Array(width * height * 4 * count);
     room.lights.forEach((light, layer) => {
       const id = room.items.findIndex((item) => item.id === light.id);
       for (let i = 0; i < width * height; i++) {
         const offset = (layer * width * height + i) * 4;
-        pixels[offset] = light.pixels[i * 4];
-        pixels[offset + 1] = room.ids[i] === id ? 255 : 0;
-        pixels[offset + 3] = 255;
+        masks[offset] = room.ids[i] === id ? 255 : 0;
+        masks[offset + 3] = 255;
       }
     });
-    this.pools = keep(gl.createTexture());
-    gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.pools);
-    for (const key of [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER])
-      gl.texParameteri(gl.TEXTURE_2D_ARRAY, key, gl.NEAREST);
-    for (const key of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T])
-      gl.texParameteri(gl.TEXTURE_2D_ARRAY, key, gl.CLAMP_TO_EDGE);
-    gl.texImage3D(
-      gl.TEXTURE_2D_ARRAY,
-      0,
-      gl.RGBA8,
-      width,
-      height,
-      count,
-      0,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      pixels,
-    );
+    this.masks = array(masks);
     this.data = keep(gl.createTexture());
     gl.bindTexture(gl.TEXTURE_2D, this.data);
     for (const key of [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER])
       gl.texParameteri(gl.TEXTURE_2D, key, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    this.lightData = new Float32Array(count * 2 * 4);
+    this.lightData = new Float32Array(count * 3 * 4);
   }
   lights(game) {
     const gl = this.gl,
@@ -338,6 +356,10 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
       count = Math.max(1, room.lights.length);
     room.lights.forEach((light, i) => {
       this.lightData.set([...light.position, light.strength, 0], i * 4);
+      this.lightData.set(
+        [...(light.drift || [0, 0]), 0, 0],
+        (count * 2 + i) * 4,
+      );
       this.lightData.set(
         [
           ...light.tint
@@ -356,7 +378,7 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
       0,
       gl.RGBA32F,
       count,
-      2,
+      3,
       0,
       gl.RGBA,
       gl.FLOAT,
@@ -366,10 +388,11 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
   lighting(game) {
     const gl = this.gl,
       state = this.states[game.time];
-    this.bind("uLit", state.lit, 0);
+    this.bind("uAlbedo", this.albedo, 0);
     this.bind("uUnlit", state.unlit, 1);
     this.bind("uForeground", this.foreground, 2);
-    this.bind("uPools", this.pools, 3, gl.TEXTURE_2D_ARRAY);
+    this.bind("uLights", state.lights, 3, gl.TEXTURE_2D_ARRAY);
+    this.bind("uMasks", this.masks, 5, gl.TEXTURE_2D_ARRAY);
     this.bind("uData", this.data, 4);
     this.integer("uCount", game.room.lights.length);
     this.uniform("uLanternRadius", game.lanternRadius);
@@ -386,9 +409,23 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
     tint = [1, 1, 1, 1],
     mirror = false,
     rim = 0,
+    character = null,
   ) {
     this.use(this.programs.sprite);
     this.bind("uImage", texture);
+    this.integer("uCharacter", character ? 1 : 0);
+    this.integer("uEmission", character?.emission ? 1 : 0);
+    if (character) {
+      this.bind(
+        "uSpriteGlow",
+        character.game.character.glowTexture || this.black,
+        1,
+      );
+      this.bind("uForeground", this.foreground, 2);
+      this.uniform("uFlame", character.game.lanternStrength());
+      this.uniform("uHand", character.game.lanternPosition());
+      this.uniform("uHandRadius", character.game.lanternRadius);
+    }
     this.uniform("uRect", rect);
     this.uniform("uSource", source);
     this.uniform("uImageSize", size);
@@ -450,7 +487,7 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     for (const item of game.objects) {
-      const object = game.objectSprite,
+      const object = item.sprite,
         light = game.lightAt(...item.position);
       this.sprite(
         object.texture,
@@ -532,6 +569,7 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
         ? Math.sign(brightest.position[0] - actor.x) *
             Math.min(1, brightest.strength * 1.5)
         : 0,
+      { game },
     );
     this.use(this.programs.room);
     this.lighting(game);
@@ -601,6 +639,25 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
     this.use(this.programs.glow);
     this.lighting(game);
     this.draw();
+    if (game.character.glowTexture) {
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.ONE, gl.ONE);
+      this.sprite(
+        game.character.texture,
+        game.character.size,
+        rect,
+        [
+          frame * game.character.frame[0],
+          animation.row * game.character.frame[1],
+          ...game.character.frame,
+        ],
+        [1, 1, 1, 1],
+        actor.mirror,
+        0,
+        { game, emission: true },
+      );
+      gl.disable(gl.BLEND);
+    }
     this.use(this.programs.blur);
     for (let i = 0; i < 4; i++) {
       this.into(this.glow[(i + 1) % 2]);
@@ -621,6 +678,8 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
     this.bind("uPalette", this.lut, 2, gl.TEXTURE_3D);
     this.bind("uGlowCore", this.glow[2].texture, 3);
     this.uniform("uBloom", game.bloom ? 1 : 0);
+    this.uniform("uDither", game.world?.dither === true ? 1 : 0);
+    this.uniform("uScale", this.scale);
     this.draw();
   }
   destroy() {

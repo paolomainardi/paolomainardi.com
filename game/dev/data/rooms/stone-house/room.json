@@ -4,14 +4,21 @@
     480,
     270
   ],
+  "albedo": "albedo.png",
   "states": {
     "dusk": {
-      "lit": "dusk-lit.png",
-      "unlit": "dusk-unlit.png"
+      "unlit": "dusk-unlit.png",
+      "lights": {
+        "pendant": "dusk-pendant.png",
+        "oil": "dusk-oil.png"
+      }
     },
     "night": {
-      "lit": "night-lit.png",
-      "unlit": "night-unlit.png"
+      "unlit": "night-unlit.png",
+      "lights": {
+        "pendant": "night-pendant.png",
+        "oil": "night-oil.png"
+      }
     }
   },
   "objects": "objects.png",
@@ -62,7 +69,6 @@
       "label": "Pendant lamp",
       "light": "pendant",
       "color": "#ffff00",
-      "pool": "pools/pendant.png",
       "tint": "#ffd08a"
     },
     {
@@ -71,7 +77,6 @@
       "label": "Oil lamp",
       "light": "oil",
       "color": "#ff0000",
-      "pool": "pools/oil.png",
       "tint": "#ffd08a"
     },
     {

@@ -45,23 +45,38 @@ export async function loadWorld(worldURL, contentURL) {
   ]);
   const characterURL = resolve(world.character, worldURL);
   const character = await json(characterURL);
-  const [palette, sheet, objects] = await Promise.all([
+  const [palette, sheet, glow, objects] = await Promise.all([
     image(resolve(world.palette, worldURL)),
     image(resolve(character.sheet, characterURL)),
+    character.glow ? image(resolve(character.glow, characterURL)) : null,
     Promise.all(
-      Object.entries(world.objects || {}).map(async ([key, path]) => [
-        key,
-        await image(resolve(path, worldURL)),
-      ]),
+      Object.entries(world.objects || {}).map(async ([key, value]) => {
+        const paths = Array.isArray(value) ? value : [value];
+        if (
+          !paths.length ||
+          paths.some((path) => typeof path !== "string" || !path)
+        )
+          throw new Error(
+            `Object ${key} requires a sprite path or a non-empty list of sprite paths.`,
+          );
+        return [
+          key,
+          await Promise.all(
+            paths.map((path) => image(resolve(path, worldURL))),
+          ),
+        ];
+      }),
     ),
   ]);
+  if (glow && (glow.width !== sheet.width || glow.height !== sheet.height))
+    throw new Error("Character glow must match the sheet grid.");
   return {
     world,
     items: content.items.map((item) => ({
       ...item,
       reader: item.reader ? resolve(item.reader, contentURL) : null,
     })),
-    character: { ...character, sheet },
+    character: { ...character, sheet, glow },
     palette,
     objects: Object.fromEntries(objects),
   };
@@ -79,36 +94,64 @@ export async function loadRoom(world, worldURL, id, renderer) {
   )
     throw new Error("Room size must contain two positive integers.");
   const [width, height] = room.size;
-  const [maskImage, states, pools] = await Promise.all([
+  const lights = room.items
+    .filter((item) => item.kind === "light")
+    .map((item) => ({
+      ...item,
+      on: true,
+      level: 1,
+      strength: 1,
+      drift: [0, 0],
+    }));
+  if (
+    !room.albedo ||
+    Object.values(room.states).some(
+      (state) =>
+        !state.unlit || lights.some((light) => !state.lights?.[light.id]),
+    )
+  )
+    throw new Error(
+      "Room requires albedo, unlit, and one drawing per lamp in every state.",
+    );
+  const [maskImage, albedo, states] = await Promise.all([
     image(resolve(room.objects, url)),
+    image(resolve(room.albedo, url)),
     Promise.all(
       Object.entries(room.states).map(async ([key, state]) => [
         key,
         {
-          lit: await image(resolve(state.lit, url)),
           unlit: await image(resolve(state.unlit, url)),
+          lights: Object.fromEntries(
+            await Promise.all(
+              lights.map(async (light) => [
+                light.id,
+                await image(resolve(state.lights[light.id], url)),
+              ]),
+            ),
+          ),
         },
       ]),
-    ),
-    Promise.all(
-      room.items
-        .filter((item) => item.kind === "light")
-        .map(async (item) => ({
-          ...item,
-          image: await image(resolve(item.pool, url)),
-          on: true,
-          level: 1,
-          strength: 1,
-        })),
     ),
   ]);
   for (const bitmap of [
     maskImage,
-    ...states.flatMap(([, state]) => [state.lit, state.unlit]),
-    ...pools.map((pool) => pool.image),
+    albedo,
+    ...states.flatMap(([, state]) => [
+      state.unlit,
+      ...Object.values(state.lights),
+    ]),
   ]) {
     if (bitmap.width !== width || bitmap.height !== height)
       throw new Error(`Room ${id} images must match its size.`);
+  }
+  for (const [, state] of states) {
+    state.unlitPixels = renderer.pixels(state.unlit);
+    state.lightPixels = Object.fromEntries(
+      Object.entries(state.lights).map(([id, drawing]) => [
+        id,
+        renderer.pixels(drawing),
+      ]),
+    );
   }
   const pixels = renderer.pixels(maskImage);
   const walkable = new Uint8Array(width * height),
@@ -139,16 +182,16 @@ export async function loadRoom(world, worldURL, id, renderer) {
     item.bounds = bounds[i];
     item.position = [(bounds[i][0] + bounds[i][2]) / 2, bounds[i][3]];
   });
-  for (const light of pools) {
+  for (const light of lights) {
     light.position = room.items.find((item) => item.id === light.id).position;
-    light.pixels = renderer.pixels(light.image);
   }
   return {
     ...room,
     id,
     config,
     states: Object.fromEntries(states),
-    lights: pools,
+    albedo,
+    lights,
     ids,
     walkable,
     foreground,

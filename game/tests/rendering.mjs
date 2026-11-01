@@ -91,6 +91,26 @@ console.log(
   "Swappable frame, anchor, animation, mirroring, sentence outline, and compact translucent UI passed (mock GPU).",
 );
 
+// Each object draws its assigned texture at its own size, bottom-centred on the slot.
+game.objects = [
+  { position: [200, 100], sprite: { texture: {}, size: [18, 27] } },
+  { position: [240, 120], sprite: { texture: {}, size: [30, 40] } },
+];
+calls.length = 0;
+renderer.render(game);
+for (const item of game.objects) {
+  const draw = calls.find(
+    (call) => call.type === "sprite" && call.args[0] === item.sprite.texture,
+  );
+  assert.deepEqual(draw.args[1], item.sprite.size);
+  assert.deepEqual(draw.args[2], [
+    item.position[0] - item.sprite.size[0] / 2,
+    item.position[1] - item.sprite.size[1] + 1,
+    ...item.sprite.size,
+  ]);
+}
+game.objects = [];
+
 // Non-contract dimensions catch fixed frame assumptions in integer upscaling.
 const sizing = Object.create(Renderer.prototype);
 Object.assign(sizing, {
@@ -107,7 +127,7 @@ assert.equal(sizing.canvas.width, 640);
 assert.equal(sizing.canvas.style.width, "375px");
 assert.equal(sizing.canvas.style.height, "234.375px");
 
-// Room upload dimensions and pool packing must follow data, including edge pixels.
+// Room upload dimensions and lamp drawing packing must follow data, including edge pixels.
 const uploads = [];
 const width = 513,
   height = 287;
@@ -131,7 +151,8 @@ Object.assign(upload, {
 });
 upload.setRoom({
   size: [width, height],
-  states: {},
+  states: { night: { unlit: {}, lightPixels: { lamp: pixels } } },
+  albedo: {},
   foreground: new Uint8Array(width * height * 4),
   items: [{ id: "lamp" }],
   ids,
@@ -144,9 +165,10 @@ assert.deepEqual(
 );
 assert.deepEqual(uploads[0].slice(3, 6), [width, height, 1]);
 assert.equal(uploads[0][9].length, width * height * 4);
-assert.deepEqual(Array.from(uploads[0][9].slice(-4)), [123, 255, 0, 255]);
+assert.deepEqual(Array.from(uploads[0][9].slice(-4)), [123, 0, 0, 0]);
+assert.deepEqual(Array.from(uploads[1][9].slice(-4)), [255, 0, 0, 255]);
 console.log(
-  "Data-driven render sizing, small viewport fitting, and pool edge uploads passed.",
+  "Data-driven render sizing, small viewport fitting, and lamp drawing and emission mask edge uploads passed.",
 );
 
 // A dark warm source still tints the actor; the strongest pool chooses the rim.
@@ -170,6 +192,30 @@ assert(
 assert.equal(uniforms.uBloom, 0, "G comparison removes both halo and core");
 console.log(
   "Character brightness floor, warm lighting, strongest rim, and bloom toggle passed (mock GPU).",
+);
+
+// Palette dither defaults off and only follows an explicit world opt-in.
+for (const dither of [undefined, false, true]) {
+  game.world = { dither };
+  renderer.render(game);
+  assert.equal(uniforms.uDither, dither === true ? 1 : 0);
+}
+// The flame uses the same sprite cell and mirror in the scene and bloom source.
+game.character.glowTexture = {};
+calls.length = 0;
+renderer.render(game);
+const characterCalls = calls.filter(
+  (c) => c.type === "sprite" && c.args[0] === texture,
+);
+assert.equal(characterCalls.length, 2);
+assert.deepEqual(
+  characterCalls[0].args.slice(1, 4),
+  characterCalls[1].args.slice(1, 4),
+);
+assert.equal(characterCalls[1].args[7].emission, true);
+game.character.glowTexture = null;
+console.log(
+  "Optional palette dither and character flame bloom alignment passed (mock GPU).",
 );
 
 // Validate uploaded 64-cube contents against an independent exhaustive OKLab

@@ -2,6 +2,7 @@ import { Renderer } from "./renderer.js";
 import { loadWorld, loadRoom, matchingItems, resolve } from "./assets.js";
 import { findPath, nearestWalkable } from "./pathfinding.js";
 import { wrap } from "./font.js";
+import { flame, lightSourcesAt } from "./lighting.js";
 
 /** Boot an isolated game in a supplied container. URLs resolve against the document. */
 export async function boot({ world, content, element }) {
@@ -109,43 +110,59 @@ export async function boot({ world, content, element }) {
         );
       return far[1] + (near[1] - far[1]) * t;
     };
-    game.lanternPosition = () => [
-      game.actor.x +
-        (game.actor.mirror ? -1 : 1) * game.character.lantern[0] * game.depth(),
-      game.actor.y + game.character.lantern[1] * game.depth(),
-    ];
-    game.lanternStrength = () =>
-      game.lantern && game.time === "night"
-        ? 0.96 +
-          0.025 * Math.sin(game.elapsed * 7.17) +
-          0.012 * Math.sin(game.elapsed * 13.73) +
-          0.007 * Math.sin(game.elapsed * 23.11)
-        : 0;
-    game.lightSourcesAt = (x, y) => {
-      const index =
-        (Math.max(0, Math.min(game.room.size[1] - 1, Math.floor(y))) *
-          game.room.size[0] +
-          Math.max(0, Math.min(game.room.size[0] - 1, Math.floor(x)))) *
-        4;
-      const sources = game.room.lights.map((light) => ({
-        position: light.position,
-        strength: (light.pixels[index] / 255) * light.strength,
-        tint: light.tint
-          .slice(1)
-          .match(/../g)
-          .map((v) => parseInt(v, 16) / 255),
-      }));
-      const position = game.lanternPosition(),
-        distance =
-          Math.hypot(x - position[0], y - position[1]) / game.lanternRadius,
-        t = Math.max(0, Math.min(1, (distance - 0.35) / 0.65));
-      sources.push({
-        position,
-        strength: (1 - t * t * (3 - 2 * t)) * 1.5 * game.lanternStrength(),
-        tint: [1, 0.7, 0.32],
-      });
-      return sources;
+    game.character.glowTexture = game.character.glow
+      ? renderer.texture(game.character.glow)
+      : null;
+    if (game.character.glow) {
+      const pixels = renderer.pixels(game.character.glow);
+      game.character.flames = {};
+      for (const [name, animation] of Object.entries(
+        game.character.animations,
+      )) {
+        game.character.flames[name] = [];
+        for (let frame = 0; frame < animation.frames; frame++) {
+          let sx = 0,
+            sy = 0,
+            weight = 0;
+          for (let y = 0; y < game.character.frame[1]; y++)
+            for (let x = 0; x < game.character.frame[0]; x++) {
+              const i =
+                ((animation.row * game.character.frame[1] + y) *
+                  game.character.size[0] +
+                  frame * game.character.frame[0] +
+                  x) *
+                4;
+              const w = ((pixels[i] / 255) * pixels[i + 3]) / 255;
+              sx += (x + 0.5) * w;
+              sy += (y + 0.5) * w;
+              weight += w;
+            }
+          game.character.flames[name].push(
+            weight
+              ? [
+                  sx / weight - game.character.anchor[0],
+                  sy / weight - game.character.anchor[1],
+                ]
+              : game.character.lantern,
+          );
+        }
+      }
+    }
+    game.lanternPosition = () => {
+      const animation = game.character.animations[game.actor.animation];
+      const frame =
+        Math.floor(game.actor.clock * animation.fps) % animation.frames;
+      const offset =
+        game.character.flames?.[game.actor.animation][frame] ||
+        game.character.lantern;
+      return [
+        game.actor.x + (game.actor.mirror ? -1 : 1) * offset[0] * game.depth(),
+        game.actor.y + offset[1] * game.depth(),
+      ];
     };
+    game.lanternStrength = () =>
+      game.lantern && game.time === "night" ? flame(game.elapsed) : 0;
+    game.lightSourcesAt = (x, y) => lightSourcesAt(game, x, y);
     game.lightAt = (x, y) =>
       Math.min(
         1,
@@ -307,6 +324,14 @@ export async function boot({ world, content, element }) {
       game.hover = null;
       game.speech = null;
       const matching = matchingItems(game.items, room.config.content);
+      for (const sprite of game.objectSprites || [])
+        renderer.gl.deleteTexture(sprite.texture);
+      game.objectSprites = (assets.objects[room.config.object] || []).map(
+        (bitmap) => ({
+          texture: renderer.texture(bitmap),
+          size: [bitmap.width, bitmap.height],
+        }),
+      );
       game.objects = room.items
         .filter((item) => item.kind === "slot" && item.bounds[2] >= 0)
         .slice(0, matching.length)
@@ -315,21 +340,10 @@ export async function boot({ world, content, element }) {
           kind: "content",
           label: matching[i].title,
           content: matching[i],
+          sprite: game.objectSprites[i % game.objectSprites.length],
         }));
-      if (game.objectSprite)
-        renderer.gl.deleteTexture(game.objectSprite.texture);
-      const sprite = game.objects.length
-        ? game.world.objects[room.config.object]
-        : null;
-      if (game.objects.length && !sprite)
+      if (game.objects.length && !game.objectSprites.length)
         throw new Error(`Missing object sprite: ${room.config.object}`);
-      const bitmap = assets.objects[room.config.object];
-      game.objectSprite = bitmap
-        ? {
-            texture: renderer.texture(bitmap),
-            size: [bitmap.width, bitmap.height],
-          }
-        : null;
     }
     let initial = hashState();
     if (!game.world.rooms[initial.room])
@@ -348,7 +362,7 @@ export async function boot({ world, content, element }) {
         return null;
       for (const object of game.objects) {
         const [x0, y0, x1, y1] = object.bounds;
-        const sprite = game.objectSprite.size,
+        const sprite = object.sprite.size,
           p = object.position;
         if (
           (px >= x0 && px <= x1 && py >= y0 && py <= y1) ||
@@ -515,17 +529,18 @@ export async function boot({ world, content, element }) {
           game.elapsed += dt;
           game.actor.clock += dt;
           for (const lamp of game.room.lights) {
-            lamp.level += (Number(lamp.on) - lamp.level) * Math.min(1, dt * 7);
+            lamp.level +=
+              Math.sign(Number(lamp.on) - lamp.level) *
+              Math.min(Math.abs(Number(lamp.on) - lamp.level), dt / 0.4);
             const index = game.room.lights.indexOf(lamp),
               t = game.elapsed + index * 7.31;
-            const flame = ["oil", "candle"].includes(lamp.light);
-            const variation = flame
-              ? 0.955 +
-                0.024 * Math.sin(t * 7.17) +
-                0.014 * Math.sin(t * 13.73) +
-                0.008 * Math.sin(t * 23.11)
-              : 0.98 + 0.02 * Math.sin(t * 0.43);
-            lamp.strength = lamp.level * variation;
+            const burning = ["oil", "candle"].includes(lamp.light);
+            lamp.strength =
+              lamp.level *
+              (burning ? flame(t) : 0.98 + 0.02 * Math.sin(t * 0.2));
+            lamp.drift = burning
+              ? [0.65 * Math.sin(t * 1.13), 0.45 * Math.sin(t * 0.79)]
+              : [0, 0];
           }
           let remaining = dt;
           while (game.path.length && remaining > 0) {

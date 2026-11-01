@@ -10,7 +10,11 @@
     "Talk to"
   ],
   "objects": {
-    "book": "objects/book.png"
+    "book": [
+      "objects/book.png",
+      "objects/book-green.png",
+      "objects/book-blue.png"
+    ]
   },
   "rooms": {
     "stone-house": {

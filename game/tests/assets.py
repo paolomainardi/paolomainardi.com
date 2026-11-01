@@ -22,18 +22,20 @@ for room_id, config in world['rooms'].items():
     assert mask.shape == (270, 480, 3)
     known = {tuple(bytes.fromhex(i['color'][1:])) for i in room['items']} | {(0, 0, 0)}
     assert set(map(tuple, mask.reshape(-1, 3))) <= known
+    files = [room['albedo']]
+    light_ids = {i['id'] for i in room['items'] if i['kind'] == 'light'}
     for state in room['states'].values():
-        for file in state.values():
-            image = Image.open(room_path.parent / file).convert('RGBA')
-            assert image.size == (480, 270)
-            assert all(pixel[3] == 0 or pixel[:3] in palette for pixel in image.getdata())
+        assert set(state) == {'unlit', 'lights'}
+        assert set(state['lights']) == light_ids
+        files += [state['unlit'], *state['lights'].values()]
+    for file in files:
+        image = Image.open(room_path.parent / file).convert('RGBA')
+        assert image.size == (480, 270)
+        assert all(pixel[3] == 0 or pixel[:3] in palette for pixel in image.getdata())
     for item in room['items']:
         color = tuple(bytes.fromhex(item['color'][1:]))
         assert np.any(np.all(mask == color, axis=2)), item['id']
-        if item['kind'] == 'light':
-            pool = Image.open(room_path.parent / item['pool']).convert('RGB')
-            assert pool.size == (480, 270)
-            assert all(r == g == b for r, g, b in pool.getdata())
+        assert 'pool' not in item
     assert sum(i['kind'] == 'slot' for i in room['items']) == 6
 character_path = data / world['character']
 character = load(character_path)
@@ -42,13 +44,24 @@ assert character['frame'] == [72, 128]
 assert character['anchor'] == [36, 127]
 assert character['lantern'] == [26, -40]
 assert sheet.size == (432, 640)
+glow = Image.open(character_path.parent / character['glow']).convert('RGBA')
+assert glow.size == sheet.size
+assert any(p[3] for p in glow.getdata())
+assert all(p[3] == 0 or p[:3] == (255, 255, 255) for p in glow.getdata())
+assert np.all(np.array(sheet)[..., 3][np.array(glow)[..., 3] > 0] > 0)
 assert all(pixel[3] == 0 or pixel[:3] in palette for pixel in sheet.getdata())
 for animation in character['animations'].values():
     assert (animation['row'] + 1) * character['frame'][1] <= sheet.height
     assert animation['frames'] * character['frame'][0] <= sheet.width
-for file in world['objects'].values():
-    image = Image.open(data / file).convert('RGBA')
-    assert all(pixel[3] == 0 or pixel[:3] in palette for pixel in image.getdata())
+for value in world['objects'].values():
+    for file in value if isinstance(value, list) else [value]:
+        image = Image.open(data / file).convert('RGBA')
+        assert all(pixel[3] == 0 or pixel[:3] in palette for pixel in image.getdata())
+books = [Image.open(data / file).convert('RGBA') for file in world['objects']['book']]
+assert len(books) == 3
+assert all(book.size == (18, 27) for book in books)
+assert len({book.tobytes() for book in books}) == 3
+assert all(book.getchannel('A').tobytes() == books[0].getchannel('A').tobytes() for book in books)
 content_path = data / 'content.json'
 items = load(content_path)['items']
 assert len(items) == 6
@@ -58,4 +71,4 @@ for item in items:
     assert reader.is_relative_to(root)
     text = reader.read_text()
     assert '<h1>' in text and '<p>' in text and '<code>' in text
-print('Placeholder dimensions, palette membership, masks, pools, animations, slots, and six reader URLs passed.')
+print('Placeholder dimensions, palette membership, masks, lamp drawings, albedo, glow, animations, slots, and six reader URLs passed.')

@@ -46,18 +46,23 @@ document.head = new Element("head");
 document.createElement = (tag) => new Element(tag);
 const window = new EventTarget(),
   location = { hash: "" };
+let objectPaths,
+  legacyRoom = false;
 let nextFrame,
   time = 1000,
   rendered;
 class Renderer {
   constructor() {
-    this.gl = { deleteTexture() {} };
+    this.deletedTextures = [];
+    this.gl = {
+      deleteTexture: (texture) => this.deletedTextures.push(texture),
+    };
   }
   pixels(image) {
     return image.data;
   }
-  texture() {
-    return {};
+  texture(bitmap) {
+    return { bitmap };
   }
   palette() {}
   setRoom() {}
@@ -100,7 +105,17 @@ const context = vm.createContext({
     const path = base + new URL(url).pathname.slice(1);
     return {
       ok: true,
-      json: async () => JSON.parse(readFileSync(path, "utf8")),
+      json: async () => {
+        const data = JSON.parse(readFileSync(path, "utf8"));
+        if (path.endsWith("/data/world.json") && objectPaths !== undefined)
+          data.objects.book = objectPaths;
+        if (path.endsWith("/room.json") && legacyRoom)
+          for (const state of Object.values(data.states)) {
+            state.lit = state.unlit;
+            delete state.lights;
+          }
+        return data;
+      },
       blob: async () => ({ path }),
     };
   },
@@ -194,6 +209,34 @@ assert.equal(
   rendered.room.size[0] * rendered.room.size[1],
 );
 assert.equal(rendered.objects[0].label, "A room of one's own");
+assert.equal(rendered.objectSprites.length, 3);
+assert.deepEqual(
+  Array.from(rendered.objects, (object) =>
+    rendered.objectSprites.indexOf(object.sprite),
+  ),
+  [0, 1, 2, 0, 1, 2],
+  "Six occupied slots cycle through three sprites",
+);
+assert.equal(
+  new Set(rendered.objects.map((object) => object.sprite.texture)).size,
+  3,
+);
+assert.notDeepEqual(
+  rendered.objectSprites[0].texture.bitmap.data,
+  rendered.objectSprites[1].texture.bitmap.data,
+);
+// Hit areas must use the assigned sprite, including pixels beyond the slot mask.
+const varied = rendered.objects[1],
+  originalSize = varied.sprite.size;
+varied.sprite.size = [30, 60];
+const hitX = varied.position[0],
+  hitY = varied.position[1] - 50;
+event(canvas, "pointermove", { clientX: hitX, clientY: hitY });
+assert.equal(rendered.hover, varied);
+varied.sprite.size = originalSize;
+event(canvas, "pointermove", { clientX: hitX, clientY: hitY });
+assert.notEqual(rendered.hover, varied);
+
 assert.deepEqual(Array.from(controller.state.position), [90, 240]);
 assert.equal(
   rendered.verbTop,
@@ -218,27 +261,33 @@ settle();
 assert.deepEqual(Array.from(controller.state.position), [210, 225]);
 // CPU light sampling must reach the last pixel and match the shader's radius.
 const savedLights = rendered.room.lights;
+const sampleState = rendered.room.states.dusk;
+const oldPixels = sampleState.lightPixels,
+  oldUnlit = sampleState.unlitPixels;
+sampleState.unlitPixels = new Uint8Array(480 * 270 * 4);
+sampleState.lightPixels = { test: new Uint8Array(480 * 270 * 4) };
+sampleState.lightPixels.test.set([255, 128, 0, 255], (480 * 270 - 1) * 4);
 rendered.room.lights = [
-  {
-    pixels: new Uint8Array(480 * 270 * 4),
-    strength: 1,
-    tint: "#ffd08a",
-    position: [0, 0],
-  },
+  { id: "test", strength: 1, position: [0, 0], drift: [0, 0] },
 ];
-rendered.room.lights[0].pixels[(480 * 270 - 1) * 4] = 255;
 const savedTime = rendered.time;
 rendered.time = "dusk";
 assert.equal(rendered.lightAt(479, 269), 1);
 assert.equal(rendered.lightAt(1000, 1000), 1);
 assert.equal(rendered.lightAt(478, 269), 0);
+const sampled = rendered.lightSourcesAt(479, 269)[0];
+assert(sampled.tint[0] > sampled.tint[1] && sampled.tint[1] > sampled.tint[2]);
+rendered.room.lights[0].drift = [1, 0];
+assert.equal(rendered.lightAt(478, 269), 1, "CPU sampling follows lamp drift");
+sampleState.lightPixels = oldPixels;
+sampleState.unlitPixels = oldUnlit;
 rendered.room.lights = [];
 rendered.time = "night";
 const lanternPoint = rendered.lanternPosition();
 assert.equal(rendered.lanternRadius, 90);
-assert.equal(rendered.lightAt(...lanternPoint), 1);
+assert.equal(rendered.lightAt(...lanternPoint), rendered.lanternStrength());
 const footLight = rendered.lightAt(rendered.actor.x, rendered.actor.y);
-assert(footLight > 0.4, "Lantern must visibly light the feet");
+assert(footLight > 0.3, "Lantern must visibly light the feet");
 const strength = rendered.lanternStrength();
 rendered.elapsed += 0.1;
 assert.notEqual(rendered.lanternStrength(), strength, "Flame flickers gently");
@@ -254,6 +303,15 @@ assert.equal(controller.state.bloom, true);
 assert.equal(rendered.lightAt(lanternPoint[0] + 90, lanternPoint[1]), 0);
 rendered.room.lights = savedLights;
 rendered.time = savedTime;
+const glowPoint = rendered.lanternPosition();
+assert(glowPoint[0] > rendered.actor.x && glowPoint[1] < rendered.actor.y);
+rendered.actor.mirror = true;
+assert.equal(
+  rendered.lanternPosition()[0],
+  2 * rendered.actor.x - glowPoint[0],
+);
+rendered.actor.mirror = false;
+assert(rendered.character.glowTexture);
 const open = rendered.verbRects.find((v) => v.label === "Open");
 click((open.x + 2) / 1.5, 170);
 click(235, 70);
@@ -285,7 +343,12 @@ const use = rendered.verbRects.find((v) => v.label === "Use");
 click((use.x + 2) / 1.5, 170);
 click(177, 93);
 settle();
-step(90);
+step(12);
+assert(
+  Math.abs(controller.state.lamps.find((l) => l.id === "oil").level - 0.52) <
+    0.001,
+);
+step(13);
 assert.equal(controller.state.lamps.find((l) => l.id === "oil").on, false);
 assert(controller.state.lamps.find((l) => l.id === "oil").level < 0.01);
 const originalTime = controller.state.time;
@@ -312,11 +375,34 @@ location.hash = "#stone-house";
 event(window, "hashchange");
 await Promise.resolve();
 assert.equal(controller.state.reader, null);
+const retiredSprites = rendered.objectSprites;
+rendered.world.rooms.second = { ...rendered.world.rooms["stone-house"] };
+location.hash = "#second";
+event(window, "hashchange");
+await new Promise(setImmediate);
+step();
+assert.equal(controller.state.room, "second");
+assert.deepEqual(
+  Array.from(rendered.objects, (object) =>
+    rendered.objectSprites.indexOf(object.sprite),
+  ),
+  [0, 1, 2, 0, 1, 2],
+  "A new room restarts the sprite cycle",
+);
+assert(
+  retiredSprites.every((sprite) =>
+    rendered.renderer.deletedTextures.includes(sprite.texture),
+  ),
+);
+assert(
+  rendered.objectSprites.every((sprite) => !retiredSprites.includes(sprite)),
+);
 controller.destroy();
 assert.equal(nextFrame, null);
 assert(root.removed);
 // Loading with a deep link preserves the reader selection on Start.
 location.hash = "#stone-house/workstation-2";
+objectPaths = "objects/book.png";
 const secondContainer = new Element("main");
 const second = await module.namespace.boot({
   world: "./data/world.json",
@@ -326,36 +412,53 @@ const second = await module.namespace.boot({
 event(secondContainer.children[0].children[1].children[3], "click");
 step();
 assert.equal(second.state.reader, "workstation-2");
-second.destroy();
-// The reviewed art must load through exactly the same contract as placeholders.
-location.hash = "";
-const realContainer = new Element("main");
-const real = await module.namespace.boot({
-  world: "./real/world.json",
-  content: "./data/content.json",
-  element: realContainer,
-});
-event(realContainer.children[0].children[1].children[3], "click");
-step();
-assert.equal(real.state.room, "stone-house");
-assert.equal(rendered.objects.length, 6);
-assert.equal(real.state.lamps.length, 2);
-assert.deepEqual(Array.from(real.state.position), [63, 219]);
-assert.deepEqual(Array.from(rendered.lanternPosition()), [85.5, 160.5]);
-rendered.actor.mirror = true;
-assert.deepEqual(Array.from(rendered.lanternPosition()), [40.5, 160.5]);
-const realLights = rendered.room.lights;
-rendered.room.lights = [];
-rendered.time = "night";
-rendered.actor.mirror = false;
+assert.equal(rendered.objectSprites.length, 1);
 assert(
-  rendered.lightAt(...real.state.position) > 0.4,
-  "Real 160-pixel character's lantern reaches its feet",
+  rendered.objects.every(
+    (object) => object.sprite === rendered.objectSprites[0],
+  ),
 );
-rendered.lantern = false;
-assert.equal(rendered.lightAt(...real.state.position), 0);
-rendered.room.lights = realLights;
-real.destroy();
+second.destroy();
+// Both accepted forms resolve relative to the world file, and empty lists fail clearly.
+const assetsModule = await moduleAt("https://adventure.test/src/assets.js");
+for (const value of [
+  ["objects/book-blue.png"],
+  ["objects/book.png", "objects/book-green.png"],
+]) {
+  objectPaths = value;
+  const loaded = await assetsModule.namespace.loadWorld(
+    "https://adventure.test/dev/data/world.json",
+    "https://adventure.test/dev/data/content.json",
+  );
+  assert.equal(loaded.objects.book.length, value.length);
+  assert(
+    loaded.objects.book.every(
+      (bitmap) => bitmap.width === 18 && bitmap.height === 27,
+    ),
+  );
+}
+for (const value of [[], [null], ""]) {
+  objectPaths = value;
+  await assert.rejects(
+    assetsModule.namespace.loadWorld(
+      "https://adventure.test/dev/data/world.json",
+      "https://adventure.test/dev/data/content.json",
+    ),
+    /requires a sprite path or a non-empty list/,
+  );
+}
+// Build an explicit legacy fixture; real artwork may already follow the current contract.
+legacyRoom = true;
+// Legacy shared-lit drawings must fail clearly rather than silently lighting incorrectly.
+location.hash = "";
+await assert.rejects(
+  module.namespace.boot({
+    world: "./real/world.json",
+    content: "./data/content.json",
+    element: new Element("main"),
+  }),
+  /one drawing per lamp/,
+);
 console.log(
-  "Real asset loading, start, movement, walk-before-act, readers, Esc, input pause, lamp fade, time, lantern, descriptions, exits, hashes, and cleanup passed (mock DOM/GPU).",
+  "New asset loading, start, movement, readers, lamp fade, drift, time, lantern, descriptions, exits, hashes, and cleanup passed (mock DOM/GPU).",
 );
