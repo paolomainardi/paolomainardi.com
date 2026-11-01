@@ -20,7 +20,7 @@ export async function boot({ world, content, element }) {
   const canvas = document.createElement("canvas");
   canvas.setAttribute(
     "aria-label",
-    "Adventure scene. Click floor to walk. Select a verb, then an object. T changes time. L toggles lantern.",
+    "Adventure scene. Click floor to walk. Select a verb, then an object. T changes time. L toggles lantern. G toggles bloom.",
   );
   const cover = document.createElement("div");
   cover.className = "adventure-start";
@@ -28,7 +28,7 @@ export async function boot({ world, content, element }) {
   heading.textContent = "The engineer’s study";
   const help = document.createElement("p");
   help.textContent =
-    "Click to walk. Choose a verb, then an object. T: dusk / night. L: lantern.";
+    "Click to walk. Choose a verb, then an object. T: dusk / night. L: lantern. G: bloom.";
   const start = document.createElement("button");
   start.textContent = "Loading…";
   start.disabled = true;
@@ -83,6 +83,7 @@ export async function boot({ world, content, element }) {
           ? "dusk"
           : "night",
       lantern: true,
+      bloom: true,
       timeOverride: false,
       elapsed: 0,
       verb: "Walk to",
@@ -113,29 +114,45 @@ export async function boot({ world, content, element }) {
         (game.actor.mirror ? -1 : 1) * game.character.lantern[0] * game.depth(),
       game.actor.y + game.character.lantern[1] * game.depth(),
     ];
-    game.lightAt = (x, y) => {
+    game.lanternStrength = () =>
+      game.lantern && game.time === "night"
+        ? 0.96 +
+          0.025 * Math.sin(game.elapsed * 7.17) +
+          0.012 * Math.sin(game.elapsed * 13.73) +
+          0.007 * Math.sin(game.elapsed * 23.11)
+        : 0;
+    game.lightSourcesAt = (x, y) => {
       const index =
         (Math.max(0, Math.min(game.room.size[1] - 1, Math.floor(y))) *
           game.room.size[0] +
           Math.max(0, Math.min(game.room.size[0] - 1, Math.floor(x)))) *
         4;
-      let total = game.room.lights.reduce(
-        (sum, light) => sum + (light.pixels[index] / 255) * light.strength,
-        0,
-      );
-      if (game.lantern && game.time === "night")
-        total +=
-          Math.max(
-            0,
-            1 -
-              Math.hypot(
-                x - game.lanternPosition()[0],
-                y - game.lanternPosition()[1],
-              ) /
-                game.lanternRadius,
-          ) ** 1.5;
-      return Math.max(0, Math.min(1, total));
+      const sources = game.room.lights.map((light) => ({
+        position: light.position,
+        strength: (light.pixels[index] / 255) * light.strength,
+        tint: light.tint
+          .slice(1)
+          .match(/../g)
+          .map((v) => parseInt(v, 16) / 255),
+      }));
+      const position = game.lanternPosition(),
+        distance =
+          Math.hypot(x - position[0], y - position[1]) / game.lanternRadius,
+        t = Math.max(0, Math.min(1, (distance - 0.35) / 0.65));
+      sources.push({
+        position,
+        strength: (1 - t * t * (3 - 2 * t)) * 1.5 * game.lanternStrength(),
+        tint: [1, 0.7, 0.32],
+      });
+      return sources;
     };
+    game.lightAt = (x, y) =>
+      Math.min(
+        1,
+        game
+          .lightSourcesAt(x, y)
+          .reduce((sum, light) => sum + light.strength, 0),
+      );
     game.nearestLamp = () =>
       game.room.lights
         .filter((l) => l.strength > 0.05)
@@ -256,7 +273,7 @@ export async function boot({ world, content, element }) {
       renderer.setRoom(room);
       const [width, height] = room.size;
       game.uiScale = Math.max(1, Math.round(height / 135));
-      game.lanternRadius = (height * 7) / 18;
+      game.lanternRadius = height / 3;
       game.verbTop = height - Math.round(height / 15);
       const margin = width / 80;
       const verbWidth = labels.reduce(
@@ -439,6 +456,7 @@ export async function boot({ world, content, element }) {
         game.time = game.time === "night" ? "dusk" : "night";
       }
       if (event.key.toLowerCase() === "l") game.lantern = !game.lantern;
+      if (event.key.toLowerCase() === "g") game.bloom = !game.bloom;
     });
     async function restoreHash() {
       if (disposed) return;
@@ -566,6 +584,7 @@ export async function boot({ world, content, element }) {
           room: game.room.id,
           time: game.time,
           lantern: game.lantern,
+          bloom: game.bloom,
           reader: game.readerItem?.id || null,
           position: [game.actor.x, game.actor.y],
           walking: game.path.length > 0,

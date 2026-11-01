@@ -21,11 +21,12 @@ const float bayer[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,1
 float threshold(vec2 p){ivec2 q=ivec2(floor(p))%4;return (bayer[q.y*4+q.x]+.5)/16.;}
 float band(float value,vec2 p){
  float scaled=clamp(value,0.,1.)*5., lower=floor(scaled);
- // Dither only the middle fifth of each interval between the six levels.
- float transition=clamp((fract(scaled)-.4)/.2,0.,1.);
+ // Convert a 2.5 scene-pixel transition to light units, even on shallow pools.
+ float halfWidth=min(.49,max(.00001,length(vec2(dFdx(scaled),dFdy(scaled)))*1.25));
+ float transition=clamp((fract(scaled)-.5+halfWidth)/(2.*halfWidth),0.,1.);
  return min(5.,lower+step(threshold(p),transition))/5.;
 }
-float lantern(vec2 p){return pow(max(0.,1.-distance(p,uLantern.xy)/uLanternRadius),1.5)*uLantern.z;}
+float lantern(vec2 p){return (1.-smoothstep(.35,1.,distance(p,uLantern.xy)/uLanternRadius))*1.5*uLantern.z;}
 float roomLight(vec2 p){
  float value=0.;
  for(int i=0;i<uCount;i++) value+=texture(uPools,vec3(p/uSize,float(i))).r*texelFetch(uData,ivec2(i,0),0).z;
@@ -34,7 +35,7 @@ float roomLight(vec2 p){
 vec3 drawing(vec2 p){
  float hand=lantern(p), total=band(roomLight(p)+hand,p);
  vec3 base=mix(texture(uUnlit,p/uSize).rgb,texture(uLit,p/uSize).rgb,total);
- return base+vec3(.14,.065,.008)*band(hand,p);
+ return base+vec3(.2,.095,.015)*band(hand,p);
 }`;
 
 function oklab(rgb) {
@@ -85,7 +86,7 @@ void main(){
  vec4 c=texture(uImage,tex);if(c.a<.01)discard;
  vec2 delta=vec2(sign(uRim)*(uMirror>.5?-1.:1.)/uImageSize.x,0);
  float edge=1.-texture(uImage,tex+delta).a;
- color=vec4(c.rgb*uTint.rgb+vec3(.24,.14,.045)*edge*abs(uRim),c.a*uTint.a);
+ color=vec4(c.rgb*uTint.rgb+vec3(.42,.24,.07)*edge*abs(uRim),c.a*uTint.a);
 }`);
     this.programs.shadow = this.program(`#version 300 es
 ${common}
@@ -100,8 +101,9 @@ void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;vec2 d=p-uShadow.xy;
 ${common}
 void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;vec3 c=vec3(0);
  for(int i=0;i<uCount;i++){vec4 info=texelFetch(uData,ivec2(i,0),0);vec3 tint=texelFetch(uData,ivec2(i,1),0).rgb;
- c+=texture(uPools,vec3(p/uSize,float(i))).g*info.z*tint;}
- c+=vec3(1.,.64,.24)*max(0.,1.-distance(p,uLantern.xy)/(uSize.y/60.))*uLantern.z;
+ vec3 warm=mix(tint/max(max(tint.r,tint.g),max(tint.b,.001)),vec3(1.,.7,.32),.25);
+ c+=texture(uPools,vec3(p/uSize,float(i))).g*info.z*warm;}
+ c+=vec3(1.,.7,.32)*max(0.,1.-distance(p,uLantern.xy)/(uSize.y/45.))*uLantern.z;
  color=vec4(c,1.);
 }`);
     this.programs.blur = this.program(`#version 300 es
@@ -109,8 +111,8 @@ precision highp float;in vec2 uv;out vec4 color;uniform sampler2D uImage;uniform
 void main(){color=texture(uImage,uv)*.227027;for(int i=1;i<=4;i++){float w=i==1?.1945946:i==2?.1216216:i==3?.054054:.016216;color+=(texture(uImage,uv+uStep*float(i))+texture(uImage,uv-uStep*float(i)))*w;}}`);
     this.programs.present = this.program(`#version 300 es
 precision highp float;precision highp sampler3D;in vec2 uv;out vec4 color;
-uniform sampler2D uImage,uGlow;uniform sampler3D uPalette;
-void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPalette,(floor(c*31.+.5)+.5)/32.).rgb;color=vec4(mapped+texture(uGlow,uv).rgb*.23,1.);}`);
+uniform sampler2D uImage,uGlow,uGlowCore;uniform sampler3D uPalette;uniform float uBloom;
+void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPalette,(floor(c*31.+.5)+.5)/32.).rgb;color=vec4(mapped+(texture(uGlow,uv).rgb*.45+texture(uGlowCore,uv).rgb*.12)*uBloom,1.);}`);
 
     this.white = this.texture(new Uint8Array([255, 255, 255, 255]), 1, 1);
     this.font = this.texture(fontPixels(), 96, 48);
@@ -406,7 +408,7 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
     this.uniform("uLanternRadius", game.lanternRadius);
     this.uniform("uLantern", [
       ...game.lanternPosition(),
-      game.lantern && game.time === "night" ? 1 : 0,
+      game.lanternStrength(),
     ]);
   }
   sprite(
@@ -466,7 +468,7 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
         this.gl.deleteTexture(target.texture);
         this.gl.deleteFramebuffer(target.fbo);
       }
-    this.glow = [this.target(w, h), this.target(w, h)];
+    this.glow = [this.target(w, h), this.target(w, h), this.target(w, h)];
     this.scale = scale;
   }
   render(game) {
@@ -515,7 +517,27 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
     this.draw();
     const animation = game.character.animations[actor.animation],
       frame = Math.floor(actor.clock * animation.fps) % animation.frames;
-    const light = game.lightAt(actor.x, actor.y),
+    const sources = game.lightSourcesAt(actor.x, actor.y),
+      brightest = sources.reduce(
+        (best, light) =>
+          light.strength > (best?.strength || 0) ? light : best,
+        null,
+      ),
+      tint = [0, 1, 2].map(
+        (channel) =>
+          0.7 +
+          0.3 *
+            Math.min(
+              1,
+              sources.reduce(
+                (sum, light) =>
+                  sum +
+                  (light.strength * light.tint[channel]) /
+                    Math.max(...light.tint, 0.001),
+                0,
+              ),
+            ),
+      ),
       rect = [
         Math.round(
           actor.x -
@@ -537,9 +559,12 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
         animation.row * game.character.frame[1],
         ...game.character.frame,
       ],
-      [0.42 + light * 0.58, 0.43 + light * 0.54, 0.48 + light * 0.45, 1],
+      [...tint, 1],
       actor.mirror,
-      lamp ? Math.sign(lamp.position[0] - actor.x) * lamp.strength : 0,
+      brightest
+        ? Math.sign(brightest.position[0] - actor.x) *
+            Math.min(1, brightest.strength * 1.5)
+        : 0,
     );
     this.use(this.programs.room);
     this.lighting(game);
@@ -605,14 +630,14 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
       });
     }
     gl.disable(gl.BLEND);
-    this.into(this.glow[0]);
+    this.into(this.glow[2]);
     this.use(this.programs.glow);
     this.lighting(game);
     this.draw();
     this.use(this.programs.blur);
     for (let i = 0; i < 4; i++) {
       this.into(this.glow[(i + 1) % 2]);
-      this.bind("uImage", this.glow[i % 2].texture);
+      this.bind("uImage", this.glow[i === 0 ? 2 : i % 2].texture);
       const radius = (i < 2 ? height / 90 : height / 36) * this.scale;
       this.uniform(
         "uStep",
@@ -627,6 +652,8 @@ void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPale
     this.bind("uImage", this.scene.texture);
     this.bind("uGlow", this.glow[0].texture, 1);
     this.bind("uPalette", this.lut, 2, gl.TEXTURE_3D);
+    this.bind("uGlowCore", this.glow[2].texture, 3);
+    this.uniform("uBloom", game.bloom ? 1 : 0);
     this.draw();
   }
   destroy() {

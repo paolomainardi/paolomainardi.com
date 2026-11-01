@@ -8,7 +8,7 @@ From this folder:
 python3 -m http.server 8000
 ```
 
-Open <http://localhost:8000/dev/>. **Start** requests fullscreen; **Start in window** stays windowed. Click the floor to walk. Select a verb, then a lamp, book, window, or door. `T` switches dusk/night, `L` toggles the lantern, and `Esc` closes the reader.
+Open <http://localhost:8000/dev/>. **Start** requests fullscreen; **Start in window** stays windowed. Click the floor to walk. Select a verb, then a lamp, book, window, or door. `T` switches dusk/night, `L` toggles the lantern, `G` toggles bloom for comparison, and `Esc` closes the reader.
 
 Embed the engine in a container with a defined width and height:
 
@@ -25,7 +25,7 @@ const game = await boot({
 
 Paths follow [CONTRACT.md](CONTRACT.md), including reader URLs relative to `content.json`. Hashes restore the room and reader after Start.
 
-Frame dimensions come from each room's `size`, shared by every room in a world. The placeholders use 480×270 room images and 72×128 character cells, with a figure about 120 pixels tall. Masks, paths, lighting, pointer coordinates, and render targets use the room dimensions. The font is 2× at 480×270; the verb strip occupies one fifteenth of the frame height. Lantern reach and bloom scale with frame height.
+Frame dimensions come from each room's `size`, shared by every room in a world. The placeholders use 480×270 room images and 72×128 character cells, with a figure about 120 pixels tall. Masks, paths, lighting, pointer coordinates, and render targets use the room dimensions. The font is 2× at 480×270; the verb strip occupies one fifteenth of the frame height. Lantern reach is one third of the frame height. At night its gently flickering warm pool reveals the lit drawing around the character, including the floor. Light steps use six levels with a 2 to 3 scene-pixel dither transition. The character keeps at least 70% of its source colours before palette mapping, receives the room and lantern tint, and has a warm rim facing the strongest light at its feet. Bloom combines a small bright core with a soft warm halo, follows lamp fades, and disappears with `G`. Lantern reach and bloom scale with frame height.
 
 The renderer uses the largest whole pixel scale that fits, centred with black bars. On a viewport smaller than one frame, the canvas fits the available space while keeping its native render resolution.
 
@@ -71,4 +71,4 @@ playwright-cli -s=adventure close
 
 The browser check covers walking, lamp switching, readers, iframe Escape, hashes, integer scaling, overflow, and WebGL errors. It saves dusk/night screenshots at four widths under `.playwright-cli/`.
 
-The current sandbox blocks server sockets and browser cache writes, so the browser check and visual review remain unrun. Logic, assets, interaction simulation, renderer placement, and shader compilation pass. Both placeholder and real assets load in the integration check. Exits show a line instead of changing rooms, as specified. The embedded font covers ASCII; cross-origin readers need the close button when iframe focus owns Escape.
+The current sandbox blocks server sockets and browser startup, so the browser check and visual review remain unrun. Logic, assets, interaction simulation, renderer placement, lighting controls, character tint, and shader compilation pass. Both placeholder and real assets load in the integration check. Exits show a line instead of changing rooms, as specified. The embedded font covers ASCII; cross-origin readers need the close button when iframe focus owns Escape.

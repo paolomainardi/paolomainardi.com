@@ -10,7 +10,7 @@ Object.assign(renderer, {
   gl: { disable() {}, enable() {}, blendFunc() {} },
   programs: {},
   scene: {},
-  glow: [{ texture: {} }, { texture: {} }],
+  glow: [{ texture: {} }, { texture: {} }, { texture: {} }],
   canvas: { width: 480, height: 270 },
   scale: 1,
   lights() {},
@@ -49,6 +49,8 @@ const game = {
   depth: () => 0.8,
   nearestLamp: () => null,
   lightAt: () => 0.5,
+  lightSourcesAt: () => [],
+  bloom: true,
   sentence: () => "Walk to Window",
   verbTop: 252,
   verbScale: 1,
@@ -63,6 +65,12 @@ for (const mirror of [false, true]) {
   assert.deepEqual(actor.args[2], [mirror ? 85 : 96, 104, 19, 48]);
   assert.deepEqual(actor.args[3], [72, 360, 24, 60]);
   assert.equal(actor.args[5], mirror);
+  assert.deepEqual(
+    actor.args[4],
+    [0.7, 0.7, 0.7, 1],
+    "Unlit sprite keeps 70% of its colours",
+  );
+  assert.equal(uniforms.uBloom, 1);
   const strips = calls.filter((c) => c.type === "rect");
   assert.equal(strips.length, 1, "No background strip under the sentence");
   assert.deepEqual(strips[0].args.slice(0, 4), [0, 252, 480, 18]);
@@ -139,4 +147,27 @@ assert.equal(uploads[0][9].length, width * height * 4);
 assert.deepEqual(Array.from(uploads[0][9].slice(-4)), [123, 255, 0, 255]);
 console.log(
   "Data-driven render sizing, small viewport fitting, and pool edge uploads passed.",
+);
+
+// A dark warm source still tints the actor; the strongest pool chooses the rim.
+game.lightSourcesAt = () => [
+  { position: [10, 50], strength: 0.2, tint: [1, 1, 1] },
+  { position: [130, 100], strength: 0.6, tint: [0.2, 0.12, 0.04] },
+];
+game.bloom = false;
+calls.length = 0;
+renderer.render(game);
+const litActor = calls.find(
+  (c) => c.type === "sprite" && c.args[0] === texture,
+);
+const tint = litActor.args[4];
+assert(tint[0] > tint[1] && tint[1] > tint[2]);
+assert(tint.slice(0, 3).every((v) => v >= 0.7 && v <= 1));
+assert(
+  Math.abs(litActor.args[6] - 0.9) < 1e-10,
+  "Rim faces the strongest source",
+);
+assert.equal(uniforms.uBloom, 0, "G comparison removes both halo and core");
+console.log(
+  "Character brightness floor, warm lighting, strongest rim, and bloom toggle passed (mock GPU).",
 );

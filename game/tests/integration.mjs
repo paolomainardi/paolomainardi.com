@@ -218,7 +218,14 @@ settle();
 assert.deepEqual(Array.from(controller.state.position), [210, 225]);
 // CPU light sampling must reach the last pixel and match the shader's radius.
 const savedLights = rendered.room.lights;
-rendered.room.lights = [{ pixels: new Uint8Array(480 * 270 * 4), strength: 1 }];
+rendered.room.lights = [
+  {
+    pixels: new Uint8Array(480 * 270 * 4),
+    strength: 1,
+    tint: "#ffd08a",
+    position: [0, 0],
+  },
+];
 rendered.room.lights[0].pixels[(480 * 270 - 1) * 4] = 255;
 const savedTime = rendered.time;
 rendered.time = "dusk";
@@ -228,9 +235,23 @@ assert.equal(rendered.lightAt(478, 269), 0);
 rendered.room.lights = [];
 rendered.time = "night";
 const lanternPoint = rendered.lanternPosition();
-assert.equal(rendered.lanternRadius, 105);
+assert.equal(rendered.lanternRadius, 90);
 assert.equal(rendered.lightAt(...lanternPoint), 1);
-assert.equal(rendered.lightAt(lanternPoint[0] + 105, lanternPoint[1]), 0);
+const footLight = rendered.lightAt(rendered.actor.x, rendered.actor.y);
+assert(footLight > 0.4, "Lantern must visibly light the feet");
+const strength = rendered.lanternStrength();
+rendered.elapsed += 0.1;
+assert.notEqual(rendered.lanternStrength(), strength, "Flame flickers gently");
+assert(Math.abs(rendered.lanternStrength() - strength) < 0.1);
+key("l");
+assert.equal(rendered.lightAt(...lanternPoint), 0);
+key("l");
+assert.equal(controller.state.bloom, true);
+key("g");
+assert.equal(controller.state.bloom, false);
+key("G");
+assert.equal(controller.state.bloom, true);
+assert.equal(rendered.lightAt(lanternPoint[0] + 90, lanternPoint[1]), 0);
 rendered.room.lights = savedLights;
 rendered.time = savedTime;
 const open = rendered.verbRects.find((v) => v.label === "Open");
@@ -248,6 +269,7 @@ assert.equal(
 const frozen = JSON.stringify(controller.state);
 click(20, 150);
 key("t");
+key("g");
 step(20);
 assert.equal(
   JSON.stringify(controller.state),
@@ -318,10 +340,21 @@ step();
 assert.equal(real.state.room, "stone-house");
 assert.equal(rendered.objects.length, 6);
 assert.equal(real.state.lamps.length, 2);
-assert.deepEqual(Array.from(real.state.position), [41, 152]);
-assert.deepEqual(Array.from(rendered.lanternPosition()), [49.7725, 141.6325]);
+assert.deepEqual(Array.from(real.state.position), [63, 219]);
+assert.deepEqual(Array.from(rendered.lanternPosition()), [85.5, 160.5]);
 rendered.actor.mirror = true;
-assert.deepEqual(Array.from(rendered.lanternPosition()), [32.2275, 141.6325]);
+assert.deepEqual(Array.from(rendered.lanternPosition()), [40.5, 160.5]);
+const realLights = rendered.room.lights;
+rendered.room.lights = [];
+rendered.time = "night";
+rendered.actor.mirror = false;
+assert(
+  rendered.lightAt(...real.state.position) > 0.4,
+  "Real 160-pixel character's lantern reaches its feet",
+);
+rendered.lantern = false;
+assert.equal(rendered.lightAt(...real.state.position), 0);
+rendered.room.lights = realLights;
 real.destroy();
 console.log(
   "Real asset loading, start, movement, walk-before-act, readers, Esc, input pause, lamp fade, time, lantern, descriptions, exits, hashes, and cleanup passed (mock DOM/GPU).",
