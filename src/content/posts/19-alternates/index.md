@@ -70,7 +70,7 @@ The modules are defined once, in `modules.json`. `config.local` holds only the l
 
 **Alacritty** works the same way, with the font size in `alacritty.local.toml`, 16 by default and 13 on the small, high density screen of the Framework 12.
 
-### When the local value did not apply
+### The Alacritty font size
 
 I wanted to change the font size on the Framework 12, and nothing happened, even though the configuration looked valid. An agent found the reason in seconds, instead of the minutes I would have spent between man pages and searches.
 
@@ -78,7 +78,7 @@ Alacritty loads the importing file _after_ its imports. The size set in `alacrit
 
 Models today know operating systems and configuration files very well, so a valid file that does not apply is quick work for them.
 
-## Where alternates stop
+## Native includes over alternates
 
 Alternates multiply with every host. Waybar has one bar with a configuration for sway and one for Hyprland, each with a local file per host, and that is **10 files** for a single bar. Every new machine adds a file in several places.
 
