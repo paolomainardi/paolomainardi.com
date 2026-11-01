@@ -1,12 +1,12 @@
 {
   "sheet": "sheet.png",
   "frame": [
-    32,
-    48
+    96,
+    176
   ],
   "anchor": [
-    16,
-    47
+    48,
+    175
   ],
   "animations": {
     "idle-front": {
@@ -36,7 +36,7 @@
     }
   },
   "lantern": [
-    11,
-    -13
+    25,
+    -65
   ]
 }

@@ -1,8 +1,8 @@
 {
   "name": "stone-house",
   "size": [
-    320,
-    180
+    480,
+    270
   ],
   "states": {
     "dusk": {
@@ -63,7 +63,7 @@
       "label": "Pendant lamp",
       "light": "pendant",
       "pool": "pools/pendant.png",
-      "tint": "#602200"
+      "tint": "#351f01"
     },
     {
       "id": "oil-lamp",
@@ -72,7 +72,7 @@
       "label": "Oil lamp",
       "light": "oil",
       "pool": "pools/oil-lamp.png",
-      "tint": "#662d00"
+      "tint": "#3d2608"
     },
     {
       "id": "door",
@@ -105,16 +105,16 @@
   ],
   "depth": {
     "far": [
-      139,
-      0.7
+      209,
+      0.88
     ],
     "near": [
-      179,
+      269,
       1.0
     ]
   },
   "spawn": [
-    41,
-    152
+    63,
+    219
   ]
 }
