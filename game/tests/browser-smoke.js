@@ -14,27 +14,27 @@ async (page) => {
   async function click(x, y) {
     const box = await canvas.boundingBox();
     await page.mouse.click(
-      box.x + (x * box.width) / 480,
-      box.y + (y * box.height) / 270,
+      box.x + (x * box.width) / 640,
+      box.y + (y * box.height) / 360,
     );
   }
   async function settle() {
     await page.waitForFunction(() => !window.game.state.walking);
   }
-  await click(210, 225);
+  await click(280, 300);
   await settle();
   const walked = await page.evaluate(() => window.game.state.position);
-  if (Math.hypot(walked[0] - 210, walked[1] - 225) > 0.5)
+  if (Math.hypot(walked[0] - 280, walked[1] - 300) > 0.5)
     throw new Error("Walking failed");
-  // The default verbs use the 2x bitmap font at this frame size.
-  await click(300, 255); // Use
-  await click(265, 140);
+  // Font pixels remain native; verb padding follows the frame scale.
+  await click(170, 340); // Use
+  await click(353, 187);
   await settle();
   await page.waitForFunction(
     () => window.game.state.lamps.find((l) => l.id === "oil").level < 0.01,
   );
-  await click(230, 255); // Open
-  await click(352, 105);
+  await click(135, 340); // Open
+  await click(469, 140);
   await settle();
   await page.waitForFunction(
     () => window.game.state.reader === "workstation-1",
@@ -60,12 +60,14 @@ async (page) => {
     };
   });
   if (!readerLayout.fills || !readerLayout.overlay)
-    throw new Error("Reader iframe must fill the frame beneath the close overlay");
+    throw new Error(
+      "Reader iframe must fill the frame beneath the close overlay",
+    );
   await page.frameLocator("iframe").locator("body").click();
   await page.keyboard.press("Escape");
   await page.waitForFunction(() => window.game.state.reader === null);
-  await click(145, 255); // Look at
-  await click(135, 90);
+  await click(85, 340); // Look at
+  await click(180, 120);
   await settle();
   const description = await page.locator(".adventure-live").textContent();
   if (
@@ -73,9 +75,9 @@ async (page) => {
     !description.replace(/\s+/g, " ").includes("Follow kernel releases")
   )
     throw new Error("Content-bound hotspot description failed");
-  await click(400, 230);
+  await click(533, 307);
   await settle();
-  await click(230, 255); // Open
+  await click(135, 340); // Open
   await page.context().route("https://www.kernel.org/", (route) =>
     route.fulfill({
       contentType: "text/html",
@@ -94,7 +96,7 @@ async (page) => {
     };
   });
   const popupPromise = page.waitForEvent("popup");
-  await click(135, 90);
+  await click(180, 120);
   const popup = await popupPromise;
   await popup.waitForLoadState();
   const opened = await page.evaluate(() => window.hotspotOpen);
@@ -145,7 +147,7 @@ async (page) => {
         const canvas = document.querySelector("canvas");
         return {
           overflow: document.documentElement.scrollWidth > innerWidth,
-          scale: canvas.width / 480,
+          scale: canvas.width / 640,
           error: canvas.getContext("webgl2").getError(),
         };
       });

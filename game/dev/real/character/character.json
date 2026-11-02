@@ -2,12 +2,12 @@
   "sheet": "sheet.png",
   "glow": "glow.png",
   "frame": [
-    96,
-    176
+    128,
+    234
   ],
   "anchor": [
-    48,
-    175
+    64,
+    233
   ],
   "animations": {
     "idle-front": {
@@ -37,7 +37,7 @@
     }
   },
   "lantern": [
-    20,
-    -62
+    27,
+    -83
   ]
 }

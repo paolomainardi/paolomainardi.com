@@ -6,6 +6,7 @@ import { fontPixels, wrap } from "../src/font.js";
 for (const size of [
   [320, 180],
   [480, 270],
+  [640, 360],
   [640, 400],
 ]) {
   const [width, height] = size;

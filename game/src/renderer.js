@@ -60,7 +60,7 @@ in vec2 uv;out vec4 color;
 uniform sampler2D uImage,uSpriteGlow,uForeground;
 uniform vec4 uRect,uSource,uTint;
 uniform vec2 uImageSize,uSize;
-uniform float uMirror,uRim,uFlame,uHandRadius;
+uniform float uMirror,uRim,uFlame,uHandRadius,uRimOffset;
 uniform vec2 uHand;
 uniform bool uCharacter,uEmission;
 void main(){
@@ -69,7 +69,7 @@ void main(){
  if(uMirror>.5)q.x=1.-q.x;
  vec2 tex=(uSource.xy+floor(q*uSource.zw)+.5)/uImageSize;
  vec4 c=texture(uImage,tex);if(c.a<.01)discard;
- vec2 delta=vec2(sign(uRim)*(uMirror>.5?-1.:1.)/uImageSize.x,0);
+ vec2 delta=vec2(sign(uRim)*(uMirror>.5?-1.:1.)*uRimOffset/uImageSize.x,0);
  float edge=1.-texture(uImage,tex+delta).a;
  vec3 rgb=c.rgb*uTint.rgb+vec3(.42,.24,.07)*edge*abs(uRim);
  if(uCharacter){
@@ -96,7 +96,7 @@ void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;vec3 c=vec3(0);
  for(int i=0;i<uCount;i++){vec4 info=texelFetch(uData,ivec2(i,0),0);vec3 tint=texelFetch(uData,ivec2(i,1),0).rgb;
  vec3 warm=mix(tint/max(max(tint.r,tint.g),max(tint.b,.001)),vec3(1.,.7,.32),.25);
  c+=texture(uMasks,vec3(p/uSize,float(i))).r*info.z*warm;}
- c+=vec3(1.,.7,.32)*max(0.,1.-distance(p,uLantern.xy)/(uSize.y/45.))*uLantern.z;
+ c+=vec3(1.,.7,.32)*max(0.,1.-distance(p,uLantern.xy)/(uSize.x/80.))*uLantern.z;
  color=vec4(c,1.);
 }`);
     this.programs.blur = this.program(`#version 300 es
@@ -432,6 +432,7 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
     this.uniform("uTint", tint);
     this.uniform("uMirror", mirror ? 1 : 0);
     this.uniform("uRim", rim);
+    this.uniform("uRimOffset", ((this.size[0] / 480) * source[2]) / rect[2]);
     this.draw();
   }
   rect(x, y, w, h, tint) {
@@ -494,7 +495,7 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
         object.size,
         [
           item.position[0] - object.size[0] / 2,
-          item.position[1] - object.size[1] + 1,
+          item.position[1] - object.size[1] + game.room.size[0] / 480,
           ...object.size,
         ],
         undefined,
@@ -576,9 +577,10 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
     this.integer("uFront", 1);
     this.draw();
     const [width, height] = game.room.size;
-    const ui = game.uiScale,
+    const pixelScale = width / 480,
+      ui = game.uiScale,
       margin = width / 80,
-      sentenceY = height / 30;
+      sentenceY = 9 * pixelScale;
     const sentences = wrap(
       game.sentence(),
       Math.max(1, Math.floor((width - margin * 2) / (6 * ui))),
@@ -590,12 +592,18 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
           if (x || y)
             this.text(
               sentence,
-              margin + x * ui,
-              sentenceY + (i * 9 + y) * ui,
+              margin + x * pixelScale,
+              sentenceY + i * 9 * pixelScale + y * pixelScale,
               [0.025, 0.03, 0.05, 1],
               ui,
             );
-      this.text(sentence, margin, sentenceY + i * 9 * ui, undefined, ui);
+      this.text(
+        sentence,
+        margin,
+        sentenceY + i * 9 * pixelScale,
+        undefined,
+        ui,
+      );
     });
     this.rect(
       0,
@@ -617,8 +625,8 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
     if (game.speech && game.speechUntil > game.elapsed) {
       const lines = game.speechLines,
         top = Math.max(
-          sentenceY + (sentences.length * 9 + 8) * ui,
-          rect[1] - (lines.length * 9 + 8) * ui,
+          sentenceY + sentences.length * 9 * pixelScale + 8 * pixelScale,
+          rect[1] - (lines.length * 9 + 8) * pixelScale,
         );
       lines.forEach((line, i) => {
         const x = Math.max(
@@ -629,13 +637,13 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
           ),
         );
         this.rect(
-          x - 2 * ui,
-          top + (i * 9 - 1) * ui,
-          (line.length * 6 + 4) * ui,
-          9 * ui,
+          x - 2 * pixelScale,
+          top + i * 9 * pixelScale - pixelScale,
+          line.length * 6 * ui + 4 * pixelScale,
+          9 * pixelScale,
           [0.025, 0.03, 0.05, 0.85],
         );
-        this.text(line, x, top + i * 9 * ui, undefined, ui);
+        this.text(line, x, top + i * 9 * pixelScale, undefined, ui);
       });
     }
     gl.disable(gl.BLEND);
@@ -666,7 +674,7 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
     for (let i = 0; i < 4; i++) {
       this.into(this.glow[(i + 1) % 2]);
       this.bind("uImage", this.glow[i === 0 ? 2 : i % 2].texture);
-      const radius = (i < 2 ? height / 90 : height / 36) * this.scale;
+      const radius = (i < 2 ? 3 : 7.5) * pixelScale * this.scale;
       this.uniform(
         "uStep",
         i % 2

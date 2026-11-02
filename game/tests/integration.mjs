@@ -37,7 +37,7 @@ class Element extends EventTarget {
     this.removed = true;
   }
   getBoundingClientRect() {
-    return { left: 0, top: 0, width: 480, height: 270 };
+    return { left: 0, top: 0, width: 640, height: 360 };
   }
 }
 const document = new EventTarget();
@@ -196,7 +196,7 @@ function step(frames = 1) {
   }
 }
 function click(x, y, detail = 1) {
-  event(canvas, "click", { clientX: x * 1.5, clientY: y * 1.5, detail });
+  event(canvas, "click", { clientX: x, clientY: y, detail });
 }
 function key(key) {
   event(root, "keydown", { key });
@@ -212,21 +212,28 @@ assert.equal(close.textContent, "×");
 assert.equal(close.attributes["aria-label"], "Close");
 event(cover.children[3], "click");
 step();
-// Speed is 90 pixels per second at depth scale 1, and doubles for one walk only.
+// Speed is 120 pixels per second at depth scale 1, and doubles for one walk only.
 const depth = rendered.room.depth;
 rendered.room.depth = { far: [150, 1], near: [265, 1] };
-rendered.actor.x = 200;
-event(canvas, "click", { clientX: 400, clientY: 240, detail: 1 });
+rendered.actor.x = 320;
+event(canvas, "click", { clientX: 533.333, clientY: 320, detail: 1 });
 step(10);
-assert(Math.abs(rendered.actor.x - 214.4) < 1e-8);
-rendered.actor.x = 200;
-event(canvas, "click", { clientX: 400, clientY: 240, detail: 2 });
+assert(
+  Math.abs(rendered.actor.x - 339.2) < 1e-8,
+  JSON.stringify({
+    actor: rendered.actor,
+    path: rendered.path,
+    size: rendered.room.size,
+  }),
+);
+rendered.actor.x = 320;
+event(canvas, "click", { clientX: 533.333, clientY: 320, detail: 2 });
 step(10);
-assert(Math.abs(rendered.actor.x - 228.8) < 1e-8);
-event(canvas, "click", { clientX: 400, clientY: 240, detail: 1 });
+assert(Math.abs(rendered.actor.x - 358.4) < 1e-8);
+event(canvas, "click", { clientX: 533.333, clientY: 320, detail: 1 });
 step(10);
-assert(Math.abs(rendered.actor.x - 243.2) < 1e-8);
-rendered.actor.x = 90;
+assert(Math.abs(rendered.actor.x - 377.6) < 1e-8);
+rendered.actor.x = 120;
 rendered.path = [];
 rendered.room.depth = depth;
 step();
@@ -259,60 +266,66 @@ const varied = rendered.objects[1],
 varied.sprite.size = [30, 60];
 const hitX = varied.position[0],
   hitY = varied.position[1] - 50;
-event(canvas, "pointermove", { clientX: hitX, clientY: hitY });
+event(canvas, "pointermove", {
+  clientX: hitX,
+  clientY: hitY,
+});
 assert.equal(rendered.hover, varied);
 varied.sprite.size = originalSize;
-event(canvas, "pointermove", { clientX: hitX, clientY: hitY });
+event(canvas, "pointermove", {
+  clientX: hitX,
+  clientY: hitY,
+});
 assert.notEqual(rendered.hover, varied);
 
-assert.deepEqual(Array.from(controller.state.position), [90, 240]);
+assert.deepEqual(Array.from(controller.state.position), [120, 320]);
 assert.equal(
   rendered.verbTop,
-  252,
+  336,
   "Verb strip must occupy one fifteenth of the frame",
 );
 assert(
-  rendered.verbRects.every((v) => v.y === 253),
+  rendered.verbRects.every((v) => v.y === 344),
   "Verbs stay in one row",
 );
-click(75, 160);
+click(150, 320);
 step(10);
-const expectedTravel = 90 * rendered.depth() * 0.16;
+const expectedTravel = 120 * rendered.depth() * 0.16;
 assert(
-  Math.abs(controller.state.position[0] - 90 - expectedTravel) < 0.001,
-  "Walk at 90 pixels per second scaled by depth",
+  Math.abs(controller.state.position[0] - 120 - expectedTravel) < 0.001,
+  "Walk at 120 pixels per second scaled by depth",
 );
 settle();
-click(140, 150);
+click(280, 300);
 assert(controller.state.walking);
 settle();
-assert.deepEqual(Array.from(controller.state.position), [210, 225]);
+assert.deepEqual(Array.from(controller.state.position), [280, 300]);
 // CPU light sampling must reach the last pixel and match the shader's radius.
 const savedLights = rendered.room.lights;
 const sampleState = rendered.room.states.dusk;
 const oldPixels = sampleState.lightPixels,
   oldUnlit = sampleState.unlitPixels;
-sampleState.unlitPixels = new Uint8Array(480 * 270 * 4);
-sampleState.lightPixels = { test: new Uint8Array(480 * 270 * 4) };
-sampleState.lightPixels.test.set([255, 128, 0, 255], (480 * 270 - 1) * 4);
+sampleState.unlitPixels = new Uint8Array(640 * 360 * 4);
+sampleState.lightPixels = { test: new Uint8Array(640 * 360 * 4) };
+sampleState.lightPixels.test.set([255, 128, 0, 255], (640 * 360 - 1) * 4);
 rendered.room.lights = [
   { id: "test", strength: 1, position: [0, 0], drift: [0, 0] },
 ];
 const savedTime = rendered.time;
 rendered.time = "dusk";
-assert.equal(rendered.lightAt(479, 269), 1);
+assert.equal(rendered.lightAt(639, 359), 1);
 assert.equal(rendered.lightAt(1000, 1000), 1);
-assert.equal(rendered.lightAt(478, 269), 0);
-const sampled = rendered.lightSourcesAt(479, 269)[0];
+assert.equal(rendered.lightAt(638, 359), 0);
+const sampled = rendered.lightSourcesAt(639, 359)[0];
 assert(sampled.tint[0] > sampled.tint[1] && sampled.tint[1] > sampled.tint[2]);
 rendered.room.lights[0].drift = [1, 0];
-assert.equal(rendered.lightAt(478, 269), 1, "CPU sampling follows lamp drift");
+assert.equal(rendered.lightAt(638, 359), 1, "CPU sampling follows lamp drift");
 sampleState.lightPixels = oldPixels;
 sampleState.unlitPixels = oldUnlit;
 rendered.room.lights = [];
 rendered.time = "night";
 const lanternPoint = rendered.lanternPosition();
-assert.equal(rendered.lanternRadius, 90);
+assert.equal(rendered.lanternRadius, 120);
 assert.equal(rendered.lightAt(...lanternPoint), rendered.lanternStrength());
 const footLight = rendered.lightAt(rendered.actor.x, rendered.actor.y);
 assert(footLight > 0.3, "Lantern must visibly light the feet");
@@ -328,21 +341,22 @@ key("g");
 assert.equal(controller.state.bloom, false);
 key("G");
 assert.equal(controller.state.bloom, true);
-assert.equal(rendered.lightAt(lanternPoint[0] + 90, lanternPoint[1]), 0);
+assert.equal(rendered.lightAt(lanternPoint[0] + 120, lanternPoint[1]), 0);
 rendered.room.lights = savedLights;
 rendered.time = savedTime;
 const glowPoint = rendered.lanternPosition();
 assert(glowPoint[0] > rendered.actor.x && glowPoint[1] < rendered.actor.y);
 rendered.actor.mirror = true;
-assert.equal(
-  rendered.lanternPosition()[0],
-  2 * rendered.actor.x - glowPoint[0],
+assert(
+  Math.abs(
+    rendered.lanternPosition()[0] - (2 * rendered.actor.x - glowPoint[0]),
+  ) < 1e-8,
 );
 rendered.actor.mirror = false;
 assert(rendered.character.glowTexture);
 const open = rendered.verbRects.find((v) => v.label === "Open");
-click((open.x + 2) / 1.5, 170);
-click(235, 70, 2);
+click(open.x + 2, 340);
+click(470, 140, 2);
 assert.equal(rendered.running, true, "Double-clicking an object runs to it");
 assert.equal(controller.state.reader, null, "Opening must wait for the walk");
 settle();
@@ -354,7 +368,7 @@ assert.equal(
   "https://adventure.test/dev/reader/workstation-1.html",
 );
 const frozen = JSON.stringify(controller.state);
-click(20, 150);
+click(40, 300);
 key("t");
 key("g");
 step(20);
@@ -369,8 +383,8 @@ assert.equal(controller.state.reader, null);
 assert.equal(location.hash, "#stone-house");
 assert.equal(document.activeElement, root);
 const use = rendered.verbRects.find((v) => v.label === "Use");
-click((use.x + 2) / 1.5, 170);
-click(177, 93);
+click(use.x + 2, 340);
+click(354, 186);
 settle();
 step(12);
 assert(
@@ -389,8 +403,8 @@ const lantern = controller.state.lantern;
 key("l");
 assert.notEqual(controller.state.lantern, lantern);
 const look = rendered.verbRects.find((v) => v.label === "Look at");
-click((look.x + 2) / 1.5, 170);
-click(90, 60);
+click(look.x + 2, 340);
+click(180, 120);
 settle();
 const hotspot = rendered.room.items.find((item) => item.id === "window");
 assert.equal(hotspot.label, "Window: The Linux kernel");
@@ -402,19 +416,19 @@ assert.equal(opened.length, 0, "Look at must not open a tab");
 assert.equal(rendered.sentence(), "Look at Window: The Linux kernel");
 const originalDescription = hotspot.content.description;
 hotspot.content.description = "A long note about the kernel. ".repeat(30);
-click(90, 60);
+click(180, 120);
 settle();
 assert.equal(rendered.speechLines.length, 2);
 assert(rendered.speechLines[1].endsWith("…"));
 hotspot.content.description = originalDescription;
 // Move away so the click can prove opening happens before movement.
-click(300, 150);
+click(600, 300);
 settle();
-click((open.x + 2) / 1.5, 170);
+click(open.x + 2, 340);
 const beforeOpen = Array.from(controller.state.position);
-click(90, 60);
+click(180, 120);
 assert.equal(opened.length, 1, "Tab must open synchronously during the click");
-click(90, 60, 2);
+click(180, 120, 2);
 assert.equal(opened.length, 1, "The second click must not open another tab");
 assert.equal(rendered.running, true);
 assert.deepEqual(Array.from(opened[0].args), [
@@ -432,15 +446,15 @@ assert.equal(rendered.speech, "Let's see what's out there.");
 assert.equal(location.hash, "#stone-house");
 const originalLink = hotspot.content.link;
 hotspot.content.link = null;
-click(90, 60);
+click(180, 120);
 assert.equal(
   opened.at(-1).args[0],
   "https://adventure.test/links/linux-kernel/",
 );
 settle();
 hotspot.content.link = originalLink;
-click((look.x + 2) / 1.5, 170);
-click(40, 80);
+click(look.x + 2, 340);
+click(80, 160);
 settle();
 assert.equal(rendered.speech, "That way lies harbour.");
 location.hash = "#stone-house/workstation-6";
@@ -492,8 +506,8 @@ const rebound = rendered.room.items.find((item) => item.id === "window");
 assert.equal(rebound.label, "Window: New link");
 assert.equal(rebound.content.id, "new-link");
 assert.equal(opened.length, 2, "Changing rooms must not open tabs");
-click((open.x + 2) / 1.5, 170);
-click(90, 60);
+click(open.x + 2, 340);
+click(180, 120);
 settle();
 assert.equal(rendered.speech, "There is nothing to open here.");
 assert.equal(opened.length, 2);
@@ -546,8 +560,11 @@ const unbound = rendered.room.items.find((item) => item.id === "window");
 assert.equal(unbound.label, "Window");
 assert.equal(unbound.content, undefined);
 const secondLook = rendered.verbRects.find((v) => v.label === "Look at");
-event(rendered.canvas, "click", { clientX: secondLook.x + 2, clientY: 255 });
-event(rendered.canvas, "click", { clientX: 135, clientY: 90 });
+event(rendered.canvas, "click", {
+  clientX: secondLook.x + 2,
+  clientY: 340,
+});
+event(rendered.canvas, "click", { clientX: 180, clientY: 120 });
 step(300);
 assert.equal(rendered.speech, "The sea, calm tonight.");
 second.destroy();
@@ -565,7 +582,7 @@ for (const value of [
   assert.equal(loaded.objects.book.length, value.length);
   assert(
     loaded.objects.book.every(
-      (bitmap) => bitmap.width === 18 && bitmap.height === 27,
+      (bitmap) => bitmap.width === 24 && bitmap.height === 36,
     ),
   );
 }
@@ -605,6 +622,33 @@ await assert.rejects(
   }),
   /one drawing per lamp/,
 );
+// Load the shipped art as well as the placeholders and walk on its own mask.
+legacyRoom = false;
+const realContainer = new Element("main");
+const real = await module.namespace.boot({
+  world: "./real/world.json",
+  content: "./data/content.json",
+  element: realContainer,
+});
+event(realContainer.children[0].children[1].children[3], "click");
+step();
+assert.deepEqual(Array.from(rendered.room.size), [640, 360]);
+assert.deepEqual(Array.from(rendered.character.frame), [128, 234]);
+assert.equal(rendered.pixelScale, 4 / 3);
+assert.equal(rendered.uiScale, 1);
+assert.equal(rendered.lanternRadius, 120);
+assert(rendered.verbRects.every((v) => v.x >= 0 && v.x + v.width <= 640));
+const realStart = real.state.position;
+const targetX = Math.round(realStart[0]) + 60;
+const targetY = Math.round(realStart[1]);
+assert(rendered.room.walkable[targetY * 640 + targetX]);
+event(rendered.canvas, "click", { clientX: targetX, clientY: targetY });
+assert(real.state.walking);
+step(10);
+assert(real.state.position[0] > realStart[0]);
+for (let i = 0; i < 600 && real.state.walking; i++) step();
+assert.deepEqual(Array.from(real.state.position), [targetX, targetY]);
+real.destroy();
 console.log(
   "New asset loading, start, movement, readers, lamp fade, drift, time, lantern, descriptions, content-bound hotspots, click-time tabs, safe URLs, exits, hashes, and cleanup passed (mock DOM/GPU).",
 );

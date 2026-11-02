@@ -11,7 +11,7 @@ Object.assign(renderer, {
   programs: {},
   scene: {},
   glow: [{ texture: {} }, { texture: {} }, { texture: {} }],
-  canvas: { width: 480, height: 270 },
+  canvas: { width: 640, height: 360 },
   scale: 1,
   lights() {},
   into() {},
@@ -36,8 +36,8 @@ Object.assign(renderer, {
 const texture = {};
 const game = {
   objects: [],
-  room: { size: [480, 270] },
-  uiScale: 2,
+  room: { size: [640, 360] },
+  uiScale: 1,
   character: {
     texture,
     size: [120, 420],
@@ -52,7 +52,7 @@ const game = {
   lightSourcesAt: () => [],
   bloom: true,
   sentence: () => "Walk to Window",
-  verbTop: 252,
+  verbTop: 336,
   verbScale: 1,
   verb: "Open",
   verbRects: [{ label: "Open", x: 4, y: 170 }],
@@ -73,7 +73,7 @@ for (const mirror of [false, true]) {
   assert.equal(uniforms.uBloom, 1);
   const strips = calls.filter((c) => c.type === "rect");
   assert.equal(strips.length, 1, "No background strip under the sentence");
-  assert.deepEqual(strips[0].args.slice(0, 4), [0, 252, 480, 18]);
+  assert.deepEqual(strips[0].args.slice(0, 4), [0, 336, 640, 24]);
   assert(strips[0].args[4][3] > 0 && strips[0].args[4][3] < 1);
   const sentence = calls.filter(
     (c) => c.type === "text" && c.args[0] === game.sentence(),
@@ -83,7 +83,9 @@ for (const mirror of [false, true]) {
     sentence
       .slice(0, 8)
       .every(
-        (c) => Math.abs(c.args[1] - 6) <= 2 && Math.abs(c.args[2] - 9) <= 2,
+        (c) =>
+          Math.abs(c.args[1] - 8) <= 4 / 3 + 1e-8 &&
+          Math.abs(c.args[2] - 12) <= 4 / 3 + 1e-8,
       ),
   );
 }
@@ -105,7 +107,7 @@ for (const item of game.objects) {
   assert.deepEqual(draw.args[1], item.sprite.size);
   assert.deepEqual(draw.args[2], [
     item.position[0] - item.sprite.size[0] / 2,
-    item.position[1] - item.sprite.size[1] + 1,
+    item.position[1] - item.sprite.size[1] + 4 / 3,
     ...item.sprite.size,
   ]);
 }
@@ -115,11 +117,12 @@ game.objects = [];
 for (const [text, expected] of [
   [
     "Walk to a book with a title that fits on two lines",
-    ["Walk to a book with a title that fits", "on two lines"],
+    ["Walk to a book with a title that fits on two lines"],
   ],
+  ["word ".repeat(40), ["word ".repeat(21).trim(), "word ".repeat(19)]],
   [
-    "word ".repeat(40),
-    ["word word word word word word word word", "word word word word word word word…"],
+    "word ".repeat(80),
+    ["word ".repeat(21).trim(), "word ".repeat(20).trim() + "…"],
   ],
 ]) {
   const sentence = game.sentence;
@@ -129,9 +132,15 @@ for (const [text, expected] of [
   const rows = calls.filter(
     (call) => call.type === "text" && call.args[3] === undefined,
   );
-  assert.deepEqual(rows.map((call) => call.args[0]), expected);
-  assert.deepEqual(rows.map((call) => call.args[2]), [9, 27]);
-  assert(rows.every((call) => call.args[1] + call.args[0].length * 12 <= 474));
+  assert.deepEqual(
+    rows.map((call) => call.args[0]),
+    expected,
+  );
+  assert.deepEqual(
+    rows.map((call) => call.args[2]),
+    expected.length === 1 ? [12] : [12, 24],
+  );
+  assert(rows.every((call) => call.args[1] + call.args[0].length * 6 <= 632));
   game.sentence = sentence;
 }
 
@@ -155,6 +164,14 @@ sizing.resize(375, 667);
 assert.equal(sizing.canvas.width, 640);
 assert.equal(sizing.canvas.style.width, "375px");
 assert.equal(sizing.canvas.style.height, "234.375px");
+
+sizing.size = [640, 360];
+sizing.resize(1920, 1080);
+assert.equal(sizing.scale, 3);
+assert.equal(sizing.canvas.width, 1920);
+assert.equal(sizing.canvas.height, 1080);
+assert.equal(sizing.canvas.style.width, "1920px");
+assert.equal(sizing.canvas.style.height, "1080px");
 
 // Room upload dimensions and lamp drawing packing must follow data, including edge pixels.
 const uploads = [];

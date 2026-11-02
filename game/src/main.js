@@ -292,18 +292,20 @@ export async function boot({ world, content, element }) {
       game.room = room;
       renderer.setRoom(room);
       const [width, height] = room.size;
-      game.uiScale = Math.max(1, Math.round(height / 135));
-      game.lanternRadius = height / 3;
-      game.verbTop = height - Math.round(height / 15);
+      game.pixelScale = width / 480;
+      game.uiScale = 1;
+      game.lanternRadius = 90 * game.pixelScale;
+      game.verbTop = height - Math.round(18 * game.pixelScale);
       const margin = width / 80;
       const verbWidth = labels.reduce(
-        (sum, label) => sum + label.length * 6 + 10,
+        (sum, label) => sum + label.length * 6 + 10 * game.pixelScale,
         0,
       );
       game.verbScale = Math.min(game.uiScale, (width - margin * 2) / verbWidth);
       let verbX = margin;
       game.verbRects = labels.map((label) => {
-        const cellWidth = (label.length * 6 + 10) * game.verbScale;
+        const cellWidth =
+          (label.length * 6 + 10 * game.pixelScale) * game.verbScale;
         const rect = {
           label,
           x: verbX,
@@ -570,7 +572,10 @@ export async function boot({ world, content, element }) {
               lamp.level *
               (burning ? flame(t) : 0.98 + 0.02 * Math.sin(t * 0.2));
             lamp.drift = burning
-              ? [0.65 * Math.sin(t * 1.13), 0.45 * Math.sin(t * 0.79)]
+              ? [
+                  0.65 * game.pixelScale * Math.sin(t * 1.13),
+                  0.45 * game.pixelScale * Math.sin(t * 0.79),
+                ]
               : [0, 0];
           }
           let remaining = dt;
@@ -579,7 +584,8 @@ export async function boot({ world, content, element }) {
               dx = next[0] - game.actor.x,
               dy = next[1] - game.actor.y,
               distance = Math.hypot(dx, dy),
-              speed = 90 * game.depth() * (game.running ? 2 : 1),
+              speed =
+                90 * game.pixelScale * game.depth() * (game.running ? 2 : 1),
               travel = speed * remaining;
             if (distance > 0) {
               game.actor.mirror = dx < 0;

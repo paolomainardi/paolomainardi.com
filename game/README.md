@@ -44,7 +44,8 @@ behavior. Link items carry the external URL in `link` and their note in
 `description`; content URLs resolve relative to `content.json` and require HTTP(S).
 The placeholder and real-art demo worlds bind the window to two sample links.
 
-Frame dimensions come from each room's `size`, shared by every room in a world. The placeholders use 480×270 room images and 72×128 character cells. Masks, paths, pointer coordinates, and render targets use the room dimensions.
+Frame dimensions come from each room's `size`, shared by every room in a world. The placeholders use 640×360 room images and 128×234 character cells. Masks, paths, pointer coordinates, and render targets use the room dimensions.
+Movement and effect distances scale with frame width relative to 480. The bitmap font stays at one buffer pixel per font pixel.
 
 Room light adds each lamp's drawing minus the unlit drawing in linear colour, then clamps the result. Each lamp fades over 0.4 seconds. Oil and candle lamps flicker irregularly between 0.85 and 1.0 with slight pool drift; other lamps breathe slowly. There are no lighting bands. The final OKLab palette lookup stays. Set `"dither": true` in `world.json` for a subtle ordered palette dither; it defaults to false.
 
@@ -100,6 +101,7 @@ With the server running, browser verification is available through Playwright CL
 playwright-cli -s=adventure open http://localhost:8000/dev/
 playwright-cli -s=adventure run-code --filename=tests/browser-smoke.js
 playwright-cli -s=adventure run-code --filename=tests/browser-lighting.js
+playwright-cli -s=adventure run-code --filename=tests/browser-640.js
 playwright-cli -s=adventure close
 ```
 

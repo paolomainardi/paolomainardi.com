@@ -4,7 +4,8 @@ The engine reads only these files. Paths inside a file are relative to that file
 
 ## Frame
 
-480×270 pixels. Every room image is exactly 480×270.
+Frame dimensions come from `room.json`'s `size`: 640×360 for this site.
+Every room image must match that size.
 
 ## palette.png and palette.json
 
@@ -100,7 +101,7 @@ at a hotspot never opens a tab.
 ```json
 {
   "name": "stone-house",
-  "size": [480, 270],
+  "size": [640, 360],
   "albedo": "dusk-lit.png",
   "states": {
     "dusk": {
@@ -146,8 +147,8 @@ at a hotspot never opens a tab.
       "color": "#00ffff"
     }
   ],
-  "depth": { "far": [150, 0.8], "near": [265, 1.0] },
-  "spawn": [90, 240]
+  "depth": { "far": [279, 0.88], "near": [359, 1.0] },
+  "spawn": [84, 292]
 }
 ```
 
@@ -157,7 +158,7 @@ at a hotspot never opens a tab.
   drawing shows.
 - `albedo`: the room in plain, even light, used to colour light that has no drawing
   of its own, such as the lantern the character carries.
-- `objects.png`: 480×270, each item painted in its flat `color` on black (#000000).
+- `objects.png`: 640×360, each item painted in its flat `color` on black (#000000).
   A pixel belongs to at most one item.
 - `slot`: a free place for one content object. The object stands on the bottom
   centre of the painted area.
@@ -172,9 +173,9 @@ at a hotspot never opens a tab.
 ```json
 {
   "sheet": "sheet.png",
-  "frame": [72, 128],
-  "anchor": [36, 127],
-  "lantern": [26, -40],
+  "frame": [128, 234],
+  "anchor": [64, 233],
+  "lantern": [27, -83],
   "animations": {
     "idle-front": { "row": 0, "frames": 1, "fps": 1 },
     "walk-side": { "row": 1, "frames": 6, "fps": 8 },
@@ -193,4 +194,4 @@ bright glass are; the engine makes those pixels glow and flicker when the lanter
 
 `sheet.png` is a grid of `frame`-sized cells on a transparent background, one row per
 animation. `anchor` is the feet point inside a cell. `walk-side` faces right; the
-engine mirrors it for left. The figure is about 120 pixels tall at scale 1, the height of a person at the front of the room.
+engine mirrors it for left. The figure is about 230 pixels tall at scale 1, the height of a person at the front of the room.

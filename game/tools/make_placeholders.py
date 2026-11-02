@@ -15,8 +15,9 @@ COLORS = ['#11121d','#1d202f','#292c3b','#383a45','#4b4650','#60545a','#76645f',
 COLORS += [f'#{r:02x}{g:02x}{b:02x}'
            for r in range(0, 256, 51) for g in range(0, 256, 51) for b in range(0, 256, 51)]
 COLORS += [f'#{v:02x}{v:02x}{v:02x}' for v in range(16, 256, 32)]
-ROOM_SIZE = (480, 270)
-CHARACTER_FRAME = (72, 128)
+DRAWING_SIZE = (480, 270)
+ROOM_SIZE = (640, 360)
+CHARACTER_FRAME = (128, 234)
 RGB = np.array([tuple(bytes.fromhex(c[1:])) for c in COLORS], dtype=np.uint8)
 
 def save_json(path, data):
@@ -40,15 +41,15 @@ def generate():
     (DATA / 'objects').mkdir(parents=True, exist_ok=True)
     Image.fromarray(RGB.reshape(1, len(COLORS), 3)).save(DATA / 'palette.png')
     save_json(DATA / 'palette.json', COLORS)
-    base = Image.new('RGB', ROOM_SIZE, COLORS[3])
+    base = Image.new('RGB', DRAWING_SIZE, COLORS[3])
     d = ImageDraw.Draw(base)
-    d.rectangle((0, 158, ROOM_SIZE[0] - 1, ROOM_SIZE[1] - 1), fill=COLORS[5])
+    d.rectangle((0, 158, DRAWING_SIZE[0] - 1, DRAWING_SIZE[1] - 1), fill=COLORS[5])
     for y in range(165, 270, 18):
-        d.line((0, y, ROOM_SIZE[0] - 1, y), fill=COLORS[4])
+        d.line((0, y, DRAWING_SIZE[0] - 1, y), fill=COLORS[4])
         for x in range((y * 7) % 82, 480, 82):
-            d.line((x, y, x - 15, min(y + 16, ROOM_SIZE[1] - 1)), fill=COLORS[4])
+            d.line((x, y, x - 15, min(y + 16, DRAWING_SIZE[1] - 1)), fill=COLORS[4])
     for y in range(27, 158, 22):
-        d.line((0, y, ROOM_SIZE[0] - 1, y), fill=COLORS[2])
+        d.line((0, y, DRAWING_SIZE[0] - 1, y), fill=COLORS[2])
         for x in range(0 if y % 2 else 30, 480, 60):
             d.line((x, y, x, y + 21), fill=COLORS[2])
     d.rectangle((22, 64, 93, 170), fill=COLORS[7])
@@ -83,9 +84,9 @@ def generate():
     d.rectangle((129, 231, 171, 242), fill=COLORS[7])
     d.rectangle((134, 242, 138, 267), fill=COLORS[4])
     d.rectangle((164, 242, 168, 267), fill=COLORS[4])
-    objects = Image.new('RGB', ROOM_SIZE)
+    objects = Image.new('RGB', DRAWING_SIZE)
     m = ImageDraw.Draw(objects)
-    m.rectangle((0, 168, ROOM_SIZE[0] - 1, ROOM_SIZE[1] - 1), fill='#00ff00')
+    m.rectangle((0, 168, DRAWING_SIZE[0] - 1, DRAWING_SIZE[1] - 1), fill='#00ff00')
     m.rectangle((190, 162, 280, 216), fill='#000000')
     m.rectangle((134, 198, 166, 234), fill='#0000ff')
     m.rectangle((140, 204, 160, 225), fill='#00ff00')
@@ -98,7 +99,7 @@ def generate():
         color = '#ff00' + format(100 + i * 20, '02x')
         m.rectangle((x - 10, y - 27, x + 10, y), fill=color)
         items.append(dict(id=f'shelf-{i+1}', kind='slot', color=color))
-    yy, xx = np.mgrid[0:ROOM_SIZE[1], 0:ROOM_SIZE[0]]
+    yy, xx = np.mgrid[0:DRAWING_SIZE[1], 0:DRAWING_SIZE[0]]
     pools = []
     for name, kind, color, bounds, center, radius in [
         ('pendant', 'pendant', '#ffff00', (230, 54, 244, 60), (237, 63), 218),
@@ -112,19 +113,19 @@ def generate():
     items.append(dict(id='door', kind='exit', label='Door', to='harbour', color='#ff8000'))
     m.rectangle((116, 63, 176, 123), fill='#00ffff')
     items.append(dict(id='window', kind='hotspot', label='Window', look='The sea, calm tonight.', color='#00ffff'))
-    objects.save(room_dir / 'objects.png')
+    objects.resize(ROOM_SIZE, Image.Resampling.NEAREST).save(room_dir / 'objects.png')
     raw = np.array(base).astype(float)
-    quantize(raw * 1.35).save(room_dir / 'albedo.png')
+    quantize(raw * 1.35).resize(ROOM_SIZE, Image.Resampling.NEAREST).save(room_dir / 'albedo.png')
     for state, ambient in [('dusk', 0.72), ('night', 0.34)]:
         unlit = raw * ambient
-        quantize(unlit).save(room_dir / f'{state}-unlit.png')
+        quantize(unlit).resize(ROOM_SIZE, Image.Resampling.NEAREST).save(room_dir / f'{state}-unlit.png')
         for name, pool in zip(('pendant', 'oil'), pools):
             light = pool[..., None]
             lit = unlit + (raw * (1.18 - ambient) + np.array([28, 13, 0])) * light
-            quantize(lit).save(room_dir / f'{state}-{name}.png')
+            quantize(lit).resize(ROOM_SIZE, Image.Resampling.NEAREST).save(room_dir / f'{state}-{name}.png')
     save_json(room_dir / 'room.json', dict(name='stone-house', size=list(ROOM_SIZE), albedo='albedo.png',
         states={s: dict(unlit=f'{s}-unlit.png', lights={name: f'{s}-{name}.png' for name in ('pendant', 'oil')}) for s in ('dusk', 'night')},
-        objects='objects.png', items=items, depth=dict(far=[144, 0.7], near=[264, 1.0]), spawn=[90, 240]))
+        objects='objects.png', items=items, depth=dict(far=[192, 0.7], near=[352, 1.0]), spawn=[120, 320]))
     sheet = Image.new('RGBA', (192, 240))
     s = ImageDraw.Draw(sheet)
     glow = Image.new('RGBA', sheet.size)
@@ -166,7 +167,7 @@ def generate():
                                 (column * CHARACTER_FRAME[0], row * CHARACTER_FRAME[1]))
     expanded.save(char_dir / 'sheet.png')
     expanded_glow.save(char_dir / 'glow.png')
-    save_json(char_dir / 'character.json', dict(sheet='sheet.png', glow='glow.png', frame=list(CHARACTER_FRAME), anchor=[36, 127], lantern=[26, -40], animations={
+    save_json(char_dir / 'character.json', dict(sheet='sheet.png', glow='glow.png', frame=list(CHARACTER_FRAME), anchor=[64, 233], lantern=[46, -73], animations={
         name: dict(row=i, frames=n, fps=fps) for i, (name, n, fps) in enumerate([
             ('idle-front', 1, 1), ('walk-side', 6, 8), ('walk-front', 4, 8), ('walk-back', 4, 8), ('talk-front', 2, 4)])}))
     books = []
@@ -177,7 +178,7 @@ def generate():
         b.rectangle((3, 1, 9, 16), fill=COLORS[light])
         b.line((4, 4, 8, 4), fill=COLORS[10])
         b.line((4, 12, 8, 12), fill=COLORS[10])
-        book = book.resize((18, 27), Image.Resampling.NEAREST)
+        book = book.resize((24, 36), Image.Resampling.NEAREST)
         path = f'objects/{name}.png'
         book.save(DATA / path)
         books.append(path)
