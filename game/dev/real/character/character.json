@@ -17,9 +17,9 @@
     },
     "walk-side": {
       "row": 1,
-      "frames": 6,
+      "frames": 8,
       "fps": 8,
-      "stride": 149.0
+      "stride": 134.5
     },
     "walk-front": {
       "row": 2,
@@ -39,14 +39,12 @@
       "fps": 4
     },
     "idle-side": {
-      "row": 1,
-      "start": 2,
+      "row": 5,
       "frames": 1,
       "fps": 1
     },
     "idle-back": {
-      "row": 3,
-      "start": 3,
+      "row": 6,
       "frames": 1,
       "fps": 1
     }

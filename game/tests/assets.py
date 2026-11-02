@@ -107,7 +107,10 @@ assert character['frame'] == [128, 234]
 assert character['anchor'] == [64, 233]
 sheet = Image.open(character_path.parent / character['sheet']).convert('RGBA')
 glow = Image.open(character_path.parent / character['glow']).convert('RGBA')
-assert sheet.size == glow.size == (768, 1170)
+animations = character['animations'].values()
+columns = max(a.get('start', 0) + a['frames'] for a in animations)
+rows = max(a['row'] for a in animations) + 1
+assert sheet.size == glow.size == (128 * columns, 234 * rows)
 pixels = np.array(sheet)
 assert set(map(tuple, pixels[..., :3][pixels[..., 3] > 0])) <= real_palette
 assert np.all(pixels[..., 3][np.array(glow)[..., 3] > 0] > 0)
