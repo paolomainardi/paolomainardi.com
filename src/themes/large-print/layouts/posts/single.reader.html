@@ -22,6 +22,19 @@
                 <div class="post-title"><h1 class="title">{{ .Title }}</h1></div>
             </div>
             <div class="post-content">
+                {{- /* The cover as a still picture, with its night drawing; the reader runs no scripts. */ -}}
+                {{ with .Params.featuredImage }}
+                {{ $img := partial "book/asset.html" . }}
+                {{ $nightPath := replaceRE `\.webp$` "-night.webp" . }}
+                {{ $night := cond (and (ne $nightPath .) (resources.Get (strings.TrimPrefix "/" $nightPath))) (partial "book/asset.html" $nightPath) dict }}
+                <picture class="frontispiece-picture">
+                    {{ with $night }}<source media="(prefers-color-scheme: dark)" srcset="{{ or .srcset .url }}"{{ if .srcset }} sizes="(min-width: 868px) 820px, 100vw"{{ end }} />{{ end }}
+                    <img class="frontispiece" src="{{ $img.url | safeURL }}" alt="{{ $.Title }}"
+                        {{- if gt $img.width 0 }} width="{{ $img.width }}" height="{{ $img.height }}"{{ end }}
+                        {{- with $img.srcset }} srcset="{{ . }}" sizes="(min-width: 868px) 820px, 100vw"{{ end }}
+                        loading="eager" decoding="async" />
+                </picture>
+                {{ end }}
                 <div class="text">{{ .Content }}</div>
             </div>
         </article>
