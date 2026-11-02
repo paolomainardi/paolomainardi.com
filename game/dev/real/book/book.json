@@ -29,20 +29,13 @@
   "faded": "#786458",
   "accent": "#b0386b",
   "font": {
-    "regular": "fonts/literata.woff2",
-    "semibold": "fonts/literata.woff2",
-    "extended": "fonts/literata-ext.woff2",
-    "family": "Literata"
+    "regular": "fonts/NFPixels-Regular.ttf",
+    "family": "NF-Pixels"
   },
   "sizes": {
-    "title": 13,
-    "body": 6.5,
-    "label": 6.5
-  },
-  "weights": {
-    "title": 600,
-    "body": 400,
-    "label": 600
+    "title": 20,
+    "body": 10,
+    "label": 10
   },
   "curl": {
     "image": "curl.png",

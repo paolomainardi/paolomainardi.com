@@ -1,64 +1,30 @@
 import { image, json, resolve, matchingItems } from "./assets.js";
 
 export async function loadFonts(book, url) {
-  const ranges = [
-    [
-      book.font.regular,
-      "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
-    ],
-    [
-      book.font.extended,
-      "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0300-0303,U+0305-0307,U+0309-0328,U+032A-036F,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
-    ],
-  ];
-  const faces = await Promise.all(
-    ranges.map(async ([file, unicodeRange]) => {
-      const face = new FontFace(
-        book.font.family,
-        `url("${resolve(file, url)}")`,
-        {
-          weight: "100 900",
-          unicodeRange,
-        },
-      );
-      await face.load();
-      document.fonts.add(face);
-      return face;
-    }),
+  const face = new FontFace(
+    book.font.family,
+    `url("${resolve(book.font.regular, url)}")`,
   );
-  // Separate weight files are supported as well as a single variable font.
-  if (book.font.semibold !== book.font.regular) {
-    const face = new FontFace(
-      book.font.family,
-      `url("${resolve(book.font.semibold, url)}")`,
-      { weight: String(book.weights.title) },
-    );
-    await face.load();
-    document.fonts.add(face);
-    faces.push(face);
-  }
-  return faces;
+  await face.load();
+  document.fonts.add(face);
+  return [face];
 }
 
-export function bookFonts(book, context, scale = 1) {
+export function bookFonts(book, context) {
   return Object.fromEntries(
     Object.entries(book.sizes).map(([role, size]) => {
-      const css = `${book.weights[role]} ${size * scale}px "${book.font.family}"`;
+      const css = `${size}px "${book.font.family}"`;
       context.font = css;
       const metrics = context.measureText("Hg");
-      const ascent =
-        metrics.fontBoundingBoxAscent ?? metrics.actualBoundingBoxAscent;
-      const descent =
-        metrics.fontBoundingBoxDescent ?? metrics.actualBoundingBoxDescent;
       return [
         role,
         {
           css,
-          ascent: ascent / scale,
-          lineHeight: Math.max(size * 1.4, (ascent + descent) / scale),
+          ascent: Math.ceil(metrics.actualBoundingBoxAscent),
+          lineHeight: Math.round(size * 1.3),
           measure(text) {
             context.font = css;
-            return context.measureText(String(text)).width / scale;
+            return context.measureText(String(text)).width;
           },
         },
       ];
@@ -166,7 +132,7 @@ export function layoutBook(book, topic) {
         lines.length * book.fonts.body.lineHeight + book.fonts.label.lineHeight;
       if (top + entryHeight > bottom) break;
       page.entries.push({ item, lines, x, y: top, width, height: entryHeight });
-      top += entryHeight + book.fonts.body.lineHeight;
+      top += entryHeight + Math.round(book.fonts.body.lineHeight / 2);
       index++;
     }
     if (!page.entries.length && index < topic.items.length && number > 1)

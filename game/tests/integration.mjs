@@ -434,10 +434,10 @@ const menu = rendered.menu;
 const useRow = menu.verbs.indexOf("Use");
 event(canvas, "pointermove", {
   clientX: menu.x + 6,
-  clientY: menu.y + 4 + (useRow + 1) * menu.rowHeight,
+  clientY: menu.y + menu.listTop + useRow * menu.rowHeight,
 });
 assert.equal(rendered.sentence(), "Use Oil lamp");
-click(menu.x + 6, menu.y + 4 + (useRow + 1) * menu.rowHeight);
+click(menu.x + 6, menu.y + menu.listTop + useRow * menu.rowHeight);
 assert.equal(rendered.menu, null);
 assert.equal(rendered.verb, selectedVerb);
 settle();

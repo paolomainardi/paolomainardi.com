@@ -6,7 +6,8 @@ export class TextLayer {
     this.context = canvas.getContext("2d");
     this.revision = 0;
   }
-  update(game, width, height) {
+  update(game) {
+    const [width, height] = game.room.size;
     const key = [
       game.activeBook,
       game.spread,
@@ -25,16 +26,10 @@ export class TextLayer {
       book = game.bookArt;
     this.revision++;
     if (!book) return true;
-    const sx = width / game.room.size[0],
-      sy = height / game.room.size[1];
     const text = (font, value, x, y, color) => {
       ctx.font = font.css;
       ctx.fillStyle = color;
-      ctx.fillText(
-        String(value),
-        Math.round(x * sx),
-        Math.round((y + font.ascent) * sy),
-      );
+      ctx.fillText(String(value), Math.round(x), Math.round(y + font.ascent));
     };
     if (game.activeBook) {
       for (const page of game.activeBook.pages.slice(
@@ -78,12 +73,12 @@ export class TextLayer {
     }
     const menu = game.menu;
     if (menu) {
-      text(book.fonts.label, menu.header, menu.x + 6, menu.y + 4, book.ink);
+      text(book.fonts.label, menu.header, menu.x + 6, menu.y + 4, book.faded);
       ctx.fillStyle = book.ink;
       ctx.fillRect(
-        Math.round((menu.x + 6) * sx),
-        Math.round((menu.y + 4 + menu.rowHeight) * sy) - 1,
-        Math.round((menu.width - 12) * sx),
+        menu.x + 6,
+        menu.y + menu.rowHeight + 2,
+        menu.width - 12,
         1,
       );
       menu.verbs.forEach((verb, i) =>
@@ -91,11 +86,15 @@ export class TextLayer {
           book.fonts.body,
           verb,
           menu.x + 6,
-          menu.y + 4 + (i + 1) * menu.rowHeight,
+          menu.y + menu.listTop + i * menu.rowHeight,
           i === menu.selected ? book.accent : book.ink,
         ),
       );
     }
+    const pixels = ctx.getImageData(0, 0, width, height);
+    for (let i = 3; i < pixels.data.length; i += 4)
+      pixels.data[i] = pixels.data[i] >= 128 ? 255 : 0;
+    ctx.putImageData(pixels, 0, 0);
     return true;
   }
 }

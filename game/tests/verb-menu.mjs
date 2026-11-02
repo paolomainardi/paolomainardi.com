@@ -42,7 +42,7 @@ for (const body of [null, font]) {
     assert.equal(menuHit(menu, menu.x + 6, menu.y + 4), -1);
     for (let i = 0; i < verbs.length; i++)
       assert.equal(
-        menuHit(menu, menu.x + 6, menu.y + 4 + (i + 1) * menu.rowHeight),
+        menuHit(menu, menu.x + 6, menu.y + menu.listTop + i * menu.rowHeight),
         i,
       );
     assert.equal(menuHit(menu, menu.x - 1, menu.y), -1);

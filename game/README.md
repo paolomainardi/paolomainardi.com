@@ -30,8 +30,8 @@ Paths follow [CONTRACT.md](CONTRACT.md), including reader URLs relative to `cont
 Right-click a hotspot, lamp, exit, content object, or topic book to open a
 parchment menu beside the pointer. The menu stays inside the game frame and
 shows the target's name and its supported verbs in world order. Hover a verb
-to highlight it in rose and preview the sentence. The heading uses Literata
-semibold with a one-screen-pixel rule; verbs use Literata regular. Worlds without
+to highlight it in rose and preview the sentence. The heading uses NF-Pixels in the faded colour with a one-game-pixel rule;
+verbs use the same font and weight. Worlds without
 book art retain the 5×7 menu font.
 
 Click a verb, or use Up/Down and Enter, to walk over and run it. **Take** opens
@@ -48,11 +48,12 @@ The window still opens the newest link.
 
 Click a book, or choose **Open**, to walk over and open its close-up. **Look at**
 says the title and post count. The first page shows the title and count, followed
-by post titles and dates. Titles wrap to two lines with an ellipsis. Real Literata
-uses the book's ink, faded and accent colours on a screen-sized Canvas 2D layer
-composited after the pixel-art upscale. Font metrics fill pages to the bottom
-margin. The layer redraws only when the book, spread, hover, menu or canvas size
-changes. The verb bar and sentence line keep the 5×7 font.
+by post titles and dates. Titles wrap to two lines with an ellipsis. NF-Pixels uses 10 px body text with 13 px line height and 20 px titles.
+Entries have half a line of spacing, rounded to 7 game pixels. Font metrics fill
+pages to the bottom margin. Text uses the book's ink, faded and accent colours
+on a 640×360 Canvas 2D layer, with alpha thresholded to 0 or 255 and whole
+game-pixel positions. The layer composites into the game frame before upscale
+and redraws only when the book, spread, hover, menu or game-frame size changes. The verb bar and sentence line keep the 5×7 font.
 
 Hover an entry to highlight it, then click to read. The reader's **Open on the
 website** link opens its URL in a new tab. Closing the reader returns to the same
@@ -70,8 +71,9 @@ placeholder close-up art until a `dev/real/book/` folder is supplied; generation
 never replaces an existing real-art book folder. See [CONTRACT.md](CONTRACT.md)
 for the font and book data formats.
 
-Both book fixtures bundle the site’s Latin and Latin Extended Literata WOFF2
-files. The engine loads these local files without access to the site. Regenerate
+Both book fixtures bundle the unmodified NF-Pixels TTF and its SIL Open Font
+License 1.1 in `fonts/NFPixels-OFL.txt`. The engine loads the local font with
+`FontFace` without access to the site. Regenerate
 palette-mapped corner sprites with `python tools/make_curls.py` using a
 Pillow-enabled Python.
 
@@ -160,4 +162,4 @@ playwright-cli -s=adventure close
 
 The browser checks cover rendered linear light sums, independent lamp switches, fractional fades, albedo lighting, flame dimming and bloom sources, plus walking, lamp switching, readers, iframe Escape, hashes, integer scaling, overflow, and WebGL errors. It saves dusk/night screenshots at four widths under `.playwright-cli/`.
 
-Book layout, WOFF2 loading, text-layer caching, menu headings, corner hover, drag turns, routes, lighting math, assets, interaction simulation, renderer checks, and shader compilation pass. The current sandbox denies server sockets, so browser rendering and visual checks remain unrun. Exits show a line instead of changing rooms, as specified. The verb font covers ASCII; Literata includes Latin and Latin Extended subsets; cross-origin readers need the close button when iframe focus owns Escape.
+Book layout, NF-Pixels loading, binary text alpha, game-pixel positions, text-layer caching, menu headings, corner hover, drag turns, routes, lighting math, assets, interaction simulation, renderer checks, and shader compilation pass. The current sandbox denies server sockets, so browser rendering and visual checks remain unrun. Exits show a line instead of changing rooms, as specified. The verb font covers ASCII; NF-Pixels is bundled under SIL OFL 1.1; cross-origin readers need the close button when iframe focus owns Escape.

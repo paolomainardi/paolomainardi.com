@@ -24,9 +24,11 @@ export function layoutMenu(target, verbs, point, size, font = null) {
   const width = Math.min(
     size[0],
     240,
-    Math.max(
-      textWidth(name, heading),
-      ...verbs.map((verb) => textWidth(verb)),
+    Math.ceil(
+      Math.max(
+        textWidth(name, heading),
+        ...verbs.map((verb) => textWidth(verb)),
+      ),
     ) + 12,
   );
   const header = heading
@@ -34,7 +36,8 @@ export function layoutMenu(target, verbs, point, size, font = null) {
     : wrap(name, Math.max(1, Math.floor((width - 12) / 6)), 1)[0];
   const rowHeight =
     Math.ceil(Math.max(body?.lineHeight || 8, heading?.lineHeight || 8)) + 4;
-  const height = (verbs.length + 1) * rowHeight + 8;
+  const listTop = rowHeight + 8;
+  const height = listTop + verbs.length * rowHeight + 4;
   const x = Math.max(0, Math.min(Math.round(point[0]) + 3, size[0] - width));
   const y = Math.max(0, Math.min(Math.round(point[1]) + 3, size[1] - height));
   return {
@@ -46,12 +49,13 @@ export function layoutMenu(target, verbs, point, size, font = null) {
     width,
     height,
     rowHeight,
+    listTop,
     selected: -1,
   };
 }
 
 export function menuHit(menu, x, y) {
   if (x < menu.x + 1 || x >= menu.x + menu.width - 1) return -1;
-  const row = Math.floor((y - menu.y - 4) / menu.rowHeight) - 1;
+  const row = Math.floor((y - menu.y - menu.listTop) / menu.rowHeight);
   return row >= 0 && row < menu.verbs.length ? row : -1;
 }

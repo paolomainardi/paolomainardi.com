@@ -51,13 +51,13 @@ def generate_book():
         draw.polygon([(origin + 244, 0), (origin + x, 15),
                       (origin + x, 258), (origin + 244, 273)], fill=COLORS[12])
     turn.save(folder / 'turn.png')
-    for name in ['literata.woff2', 'literata-ext.woff2']:
+    for name in ['NFPixels-Regular.ttf', 'NFPixels-OFL.txt']:
         shutil.copyfile(ROOT / 'real/book/fonts' / name, folder / 'fonts' / name)
     save_json(folder / 'book.json', dict(image='open.png', pages=[[92, 56, 208, 240], [340, 56, 208, 240]],
         turn=dict(sheet='turn.png', rect=[76, 40, 488, 274], frames=4, fps=12),
         ink=COLORS[1], faded=COLORS[6], accent=COLORS[21],
-        font=dict(regular='fonts/literata.woff2', semibold='fonts/literata.woff2', extended='fonts/literata-ext.woff2', family='Literata'),
-        sizes=dict(title=13, body=6.5, label=6.5), weights=dict(title=600, body=400, label=600)))
+        font=dict(regular='fonts/NFPixels-Regular.ttf', family='NF-Pixels'),
+        sizes=dict(title=20, body=10, label=10)))
     from make_curls import generate as generate_curl
     generate_curl(folder)
     real = ROOT / 'real/book'

@@ -242,13 +242,10 @@ names them. Frame is 640×360; every colour comes from `palette.json`.
   "turn": { "sheet": "turn.png", "rect": [x, y, w, h], "frames": 4, "fps": 12 },
   "ink": "#rrggbb", "faded": "#rrggbb", "accent": "#rrggbb",
   "font": {
-    "regular": "fonts/literata.woff2",
-    "semibold": "fonts/literata.woff2",
-    "extended": "fonts/literata-ext.woff2",
-    "family": "Literata"
+    "regular": "fonts/NFPixels-Regular.ttf",
+    "family": "NF-Pixels"
   },
-  "sizes": { "title": 13, "body": 6.5, "label": 6.5 },
-  "weights": { "title": 600, "body": 400, "label": 600 },
+  "sizes": { "title": 20, "body": 10, "label": 10 },
   "curl": { "image": "curl.png", "rects": [[x, y, 24, 24], [x, y, 24, 24]] }
 }
 ```
@@ -261,25 +258,28 @@ names them. Frame is 640×360; every colour comes from `palette.json`.
 - `ink` for text, `faded` for dates and page numbers, `accent` (the rose) for
   the entry under the pointer.
 
-- `font`: self-hosted Literata WOFF2 files, loaded with `FontFace`. `regular` and
-  `semibold` may name the same variable font. `extended` holds the Latin Extended
-  subset. The engine loads both subsets with their Unicode ranges.
-- `sizes`: type sizes in game pixels, multiplied by the canvas scale. `weights`
-  selects the title, body and label weight. Labels also set the menu heading.
+- `font`: the unmodified, self-hosted NF-Pixels TTF, loaded with `FontFace`.
+  Distribute `fonts/NFPixels-OFL.txt` (SIL Open Font License 1.1) alongside it.
+  The font has one weight and a 10 px em, with 7 px capitals and 5 px lowercase.
+- `sizes`: type sizes in game pixels: 20 for the title, 10 for body and labels.
+  Body and label line height is 13 px; title line height is 26 px.
 - `curl`: a two-cell transparent strip, left then right, with destination rectangles
   in game pixels. `tools/make_curls.py` folds pixels from `open.png`, darkens the
   back and maps it to the book palette. It detects the paper's outer corners.
 
 Book and menu text use Canvas 2D font metrics for wrapping and pagination. Each
-page fits as many complete entries as its bottom margin allows. Titles have at
+page fits as many complete entries as its bottom margin allows, with half a body
+line between entries, rounded to 7 game pixels. Titles have at
 most two lines with ellipsis; dates and page numbers use the label style.
 
-A transparent text layer matches the screen canvas. Its texture is composited
-after the palette-mapped integer upscale. Text positions and baselines snap to
-whole screen pixels. Text redraws only when the book, spread, hover, menu or
-canvas size changes. The turning leaf masks covered text on the GPU. The menu
-heading uses semibold Literata with a one-screen-pixel rule; verbs use regular
-Literata. The verb bar and sentence line keep their 5×7 font.
+A transparent 640×360 text layer uses whole game-pixel positions and baselines.
+Its alpha is thresholded at 128 to 0 or 255. The texture is composited into the
+game frame before palette mapping and nearest-neighbour upscale. Text redraws
+only when the book, spread, hover, menu or game-frame size changes; screen
+resizing does not change text metrics. The turning leaf masks covered text on
+the GPU. The menu heading uses the same NF-Pixels font as its verbs, set apart
+by `faded` and a one-game-pixel rule. The verb bar and sentence line keep their
+5×7 font.
 
 Lower outer corners curl on hover and show a hand cursor when a turn is available.
 Pressing an outer page half outside an entry captures the pointer. Turn frames

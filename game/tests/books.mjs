@@ -22,7 +22,7 @@ import { context2D, canvas2D } from "./text-fixture.mjs";
 const load = (path) => JSON.parse(readFileSync(new URL(path, import.meta.url)));
 const book = load("../dev/data/book/book.json");
 const ctx = context2D();
-book.fonts = bookFonts(book, ctx, 3);
+book.fonts = bookFonts(book, ctx);
 const world = load("../dev/data/world.json");
 const items = load("../dev/data/content.json").items;
 const topic = {
@@ -31,6 +31,9 @@ const topic = {
 };
 const pages = layoutBook(book, topic);
 assert.equal(pages.length % 2, 0);
+assert.equal(book.fonts.body.lineHeight, 13);
+assert.equal(book.fonts.label.lineHeight, 13);
+assert.equal(book.fonts.title.css, '20px "NF-Pixels"');
 assert.deepEqual(
   pages.flatMap((p) => p.entries.map((e) => e.item.id)),
   topic.items.map((i) => i.id),
@@ -39,6 +42,9 @@ assert.equal(pages[0].count, "22 posts");
 for (const page of pages) {
   for (const entry of page.entries) {
     assert(entry.lines.length <= 2);
+    assert([entry.x, entry.y, entry.height].every(Number.isInteger));
+    const previous = page.entries[page.entries.indexOf(entry) - 1];
+    if (previous) assert.equal(entry.y - previous.y - previous.height, 7);
     assert(
       entry.lines.every((line) => measure(book.fonts.body, line) <= page.width),
     );
@@ -68,7 +74,10 @@ for (const page of pages) {
         book.fonts.body.lineHeight +
       book.fonts.label.lineHeight;
     assert(
-      last.y + last.height + book.fonts.body.lineHeight + height >
+      last.y +
+        last.height +
+        Math.round(book.fonts.body.lineHeight / 2) +
+        height >
         page.y + page.height - book.fonts.label.lineHeight,
       "Page leaves no room for the next entry",
     );
@@ -109,9 +118,11 @@ globalThis.FontFace = class {
 };
 globalThis.document = { fonts: { add() {} } };
 await loadFonts(book, "https://test/book/book.json");
-assert.equal(loaded.length, 2);
-assert(loaded[0].args[1].includes("https://test/book/fonts/literata.woff2"));
-assert(loaded[1].args[2].unicodeRange.includes("U+0100"));
+assert.equal(loaded.length, 1);
+assert(
+  loaded[0].args[1].includes("https://test/book/fonts/NFPixels-Regular.ttf"),
+);
+assert.equal(loaded[0].args[0], "NF-Pixels");
 delete globalThis.FontFace;
 delete globalThis.document;
 for (const direction of [-1, 1]) {
@@ -154,14 +165,25 @@ const game = {
   hover: null,
   menu: null,
 };
-assert(layer.update(game, 1920, 1080));
-assert.equal(layer.update(game, 1920, 1080), false);
+assert(layer.update(game));
+assert.equal(layer.update(game), false);
+assert(
+  canvas
+    .getContext()
+    .calls.filter((c) => c.type === "text")
+    .every((c) => c.args.slice(1).every(Number.isInteger)),
+);
 game.hover = pages[0].entries[0];
-assert(layer.update(game, 1920, 1080));
+assert(layer.update(game));
 assert(canvas.getContext().calls.some((c) => c.color === book.accent));
 game.spread = 1;
-assert(layer.update(game, 1920, 1080));
-assert(layer.update(game, 1280, 720));
+assert(layer.update(game));
+assert.equal(layer.update(game), false);
+assert.deepEqual([canvas.width, canvas.height], [640, 360]);
+assert.deepEqual(
+  Array.from(canvas.getContext().pixels.data).filter((_, i) => i % 4 === 3),
+  [0, 0, 255, 255],
+);
 game.menu = layoutMenu(
   { label: "Target heading" },
   ["Look at", "Open"],
@@ -171,23 +193,25 @@ game.menu = layoutMenu(
 );
 game.activeBook = null;
 canvas.getContext().calls.length = 0;
-assert(layer.update(game, 1280, 720));
+assert(layer.update(game));
 const calls = canvas.getContext().calls;
-assert(calls[0].font.startsWith("600 "));
+assert.equal(calls[0].font, '10px "NF-Pixels"');
+assert.equal(calls[0].color, book.faded);
 assert.equal(calls[0].args[0], "Target heading");
 assert.equal(calls[1].type, "rect");
 assert.equal(calls[1].args[3], 1);
-assert(calls[2].font.startsWith("400 "));
+assert.equal(calls[2].font, calls[0].font);
+assert.equal(calls[2].color, book.ink);
 assert(
   calls
     .filter((c) => c.type === "text")
     .every((c) => c.args.slice(1).every(Number.isInteger)),
 );
 game.menu.selected = 1;
-assert(layer.update(game, 1280, 720));
-assert.equal(layer.update(game, 1280, 720), false);
+assert(layer.update(game));
+assert.equal(layer.update(game), false);
 game.menu = null;
-assert(layer.update(game, 1280, 720));
+assert(layer.update(game));
 
 const draw = Object.create(Renderer.prototype),
   sprites = [],
@@ -200,7 +224,9 @@ Object.assign(draw, {
   scale: 3,
   black: {},
   lut: {},
-  into() {},
+  into(target) {
+    this.target = target;
+  },
   use() {},
   bind() {},
   uniform() {},
@@ -213,6 +239,7 @@ Object.assign(draw, {
   rect() {},
   text() {},
   compositeText() {
+    assert.equal(this.target, this.scene);
     order.push("text");
   },
 });
@@ -229,7 +256,7 @@ for (const direction of [1, -1]) {
   const turn = sprites.find((c) => c[0] === book.turn.texture);
   assert.equal(turn[3][0], (direction === 1 ? 1 : 2) * 488);
   assert.equal(turn[5], direction < 0);
-  assert.deepEqual(order.slice(-2), ["present", "text"]);
+  assert.deepEqual(order.slice(-2), ["text", "present"]);
 }
 game.turning = null;
 game.corner = 1;
@@ -274,6 +301,14 @@ game.corner = 0;
 gpu.compositeText(game);
 gpu.compositeText(game);
 assert.equal(uploads, 1);
+gpu.canvas.width = 1280;
+gpu.canvas.height = 720;
+gpu.compositeText(game);
+assert.equal(
+  uploads,
+  1,
+  "Screen resizing keeps the same game-grid text texture",
+);
 game.turning = { progress: 0.2, direction: 1 };
 gpu.compositeText(game);
 game.turning.progress = 0.8;

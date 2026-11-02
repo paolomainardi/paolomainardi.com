@@ -68,7 +68,6 @@ async (page) => {
     book.fonts = bookFonts(
       book,
       document.createElement("canvas").getContext("2d"),
-      3,
     );
     const content = await (await fetch("./data/content.json")).json();
     const topic = world.books.workstation;

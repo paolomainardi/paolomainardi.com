@@ -388,7 +388,7 @@ renderer.renderMenu(menuGame);
 assert.equal(
   calls.filter((call) => call.type === "text").length,
   0,
-  "Literata text is composited after upscale",
+  "NF-Pixels text uses the game-grid text layer",
 );
 console.log(
   "Menu border, fallback font and separate text layer passed (mock GPU).",

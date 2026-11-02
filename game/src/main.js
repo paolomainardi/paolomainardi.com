@@ -1,6 +1,5 @@
 import {
   loadBook,
-  bookFonts,
   cornerHit,
   dragPage,
   movePage,
@@ -485,21 +484,6 @@ export async function boot({ world, content, element }) {
     await changeRoom(initial.room);
     const fit = () => {
       renderer.resize(root.clientWidth, root.clientHeight);
-      if (game.bookArt) {
-        game.bookArt.fonts = bookFonts(
-          game.bookArt,
-          renderer.textLayer.context,
-          renderer.scale,
-        );
-        for (const book of Object.values(game.books))
-          book.pages = layoutBook(game.bookArt, book);
-        if (game.activeBook)
-          game.spread = Math.min(
-            game.spread,
-            game.activeBook.pages.length / 2 - 1,
-          );
-        game.hover = null;
-      }
     };
     const observer = new ResizeObserver(fit);
     observer.observe(root);

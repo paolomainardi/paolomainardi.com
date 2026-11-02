@@ -474,7 +474,7 @@ void main(){
   }
   compositeText(game) {
     const layer = this.textLayer;
-    if (layer.update(game, this.canvas.width, this.canvas.height)) {
+    if (layer.update(game)) {
       if (!this.textTexture) this.textTexture = this.texture(layer.canvas);
       else {
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.textTexture);
@@ -540,7 +540,7 @@ void main(){
         this.text(
           label,
           menu.x + 6,
-          menu.y + 4 + row * menu.rowHeight,
+          menu.y + (row ? menu.listTop + (row - 1) * menu.rowHeight : 4),
           color(row > 0 && row - 1 === menu.selected ? accent : ink),
         ),
       );
@@ -590,6 +590,8 @@ void main(){
     );
     this.text("Close", 8, game.verbTop + 8);
     gl.disable(gl.BLEND);
+    this.into(this.scene);
+    this.compositeText(game);
     this.into(null);
     this.use(this.programs.present);
     this.bind("uImage", this.scene.texture);
@@ -600,7 +602,6 @@ void main(){
     this.uniform("uDither", game.world?.dither === true ? 1 : 0);
     this.uniform("uScale", this.scale);
     this.draw();
-    this.compositeText(game);
   }
   resize(width, height) {
     const [frameWidth, frameHeight] = this.size;
@@ -838,6 +839,8 @@ void main(){
       );
       this.draw();
     }
+    this.into(this.scene);
+    this.compositeText(game);
     this.into(null);
     this.use(this.programs.present);
     this.bind("uImage", this.scene.texture);
@@ -848,7 +851,6 @@ void main(){
     this.uniform("uDither", game.world?.dither === true ? 1 : 0);
     this.uniform("uScale", this.scale);
     this.draw();
-    this.compositeText(game);
   }
   destroy() {
     const gl = this.gl;

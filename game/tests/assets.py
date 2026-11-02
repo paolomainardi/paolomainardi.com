@@ -120,9 +120,11 @@ for folder in [data / 'book', real / 'book']:
     assert Image.open(folder / book['image']).size == (640, 360)
     turn = book['turn']
     assert Image.open(folder / turn['sheet']).size == (turn['rect'][2] * turn['frames'], turn['rect'][3])
-    for key in ['regular', 'semibold', 'extended']:
-        assert (folder / book['font'][key]).read_bytes()[:4] == b'wOF2'
-    assert book['sizes'] == dict(title=13, body=6.5, label=6.5)
+    assert book['font']['family'] == 'NF-Pixels'
+    assert (folder / book['font']['regular']).read_bytes() == (real / 'book/fonts/NFPixels-Regular.ttf').read_bytes()
+    assert (folder / 'fonts/NFPixels-OFL.txt').read_bytes() == (real / 'book/fonts/NFPixels-OFL.txt').read_bytes()
+    assert b'SIL OPEN FONT LICENSE Version 1.1' in (folder / 'fonts/NFPixels-OFL.txt').read_bytes()
+    assert book['sizes'] == dict(title=20, body=10, label=10)
     curl = np.array(Image.open(folder / book['curl']['image']).convert('RGBA'))
     colors = palette if folder == data / 'book' else real_palette
     assert set(map(tuple, curl[..., :3][curl[..., 3] > 0])) <= colors
@@ -131,4 +133,4 @@ for folder in [data / 'book', real / 'book']:
 assert list(real_world['books']) == ['workstation', 'linux', 'ai', 'docker', 'security', 'personal']
 assert real_world['rooms']['stone-house']['books'] == list(real_world['books'])
 assert [book['sprite'] for book in real_world['books'].values()] == [f'objects/book-{i}.png' for i in range(1, 7)]
-print('Book frame, turn strip, WOFF2 fonts, sizes, palette curls, and real shelf order passed.')
+print('Book frame, turn strip, NF-Pixels and OFL licence, sizes, palette curls, and real shelf order passed.')
