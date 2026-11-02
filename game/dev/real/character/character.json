@@ -17,9 +17,9 @@
     },
     "walk-side": {
       "row": 1,
-      "frames": 8,
+      "frames": 12,
       "fps": 8,
-      "stride": 134.5
+      "stride": 135.5
     },
     "walk-front": {
       "row": 2,
