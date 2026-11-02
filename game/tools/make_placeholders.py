@@ -199,7 +199,7 @@ def generate():
     expanded.save(char_dir / 'sheet.png')
     expanded_glow.save(char_dir / 'glow.png')
     save_json(char_dir / 'character.json', dict(sheet='sheet.png', glow='glow.png', frame=list(CHARACTER_FRAME), anchor=[64, 233], lantern=[46, -73], animations={
-        name: dict(row=i, frames=n, fps=fps) for i, (name, n, fps) in enumerate([
+        name: dict(row=i, frames=n, fps=fps, **({'stride': 96} if name.startswith('walk-') else {})) for i, (name, n, fps) in enumerate([
             ('idle-front', 1, 1), ('walk-side', 6, 8), ('walk-front', 4, 8), ('walk-back', 4, 8), ('talk-front', 2, 4)])}))
     generate_book()
     books = []

@@ -178,9 +178,11 @@ at a hotspot never opens a tab.
   "lantern": [27, -83],
   "animations": {
     "idle-front": { "row": 0, "frames": 1, "fps": 1 },
-    "walk-side": { "row": 1, "frames": 6, "fps": 8 },
-    "walk-front": { "row": 2, "frames": 4, "fps": 8 },
-    "walk-back": { "row": 3, "frames": 4, "fps": 8 },
+    "walk-side": { "row": 1, "start": 0, "frames": 6, "fps": 8, "stride": 96 },
+    "walk-front": { "row": 2, "frames": 4, "fps": 8, "stride": 96 },
+    "walk-back": { "row": 3, "frames": 4, "fps": 8, "stride": 96 },
+    "idle-side": { "row": 1, "start": 0, "frames": 1, "fps": 1 },
+    "idle-back": { "row": 3, "start": 0, "frames": 1, "fps": 1 },
     "talk-front": { "row": 4, "frames": 2, "fps": 4 }
   }
 }
@@ -195,6 +197,23 @@ bright glass are; the engine makes those pixels glow and flicker when the lanter
 `sheet.png` is a grid of `frame`-sized cells on a transparent background, one row per
 animation. `anchor` is the feet point inside a cell. `walk-side` faces right; the
 engine mirrors it for left. The figure is about 230 pixels tall at scale 1, the height of a person at the front of the room.
+
+`start` is the first frame column in the row, default 0. Both the character
+and its optional glow sheet use this column offset.
+
+`stride` is the positive distance in pixels that the feet travel in one walk
+cycle at scale 1. A walk advances by `distance / (stride * depth scale)` cycles,
+with frame `floor(cycles * frames) mod frames`. Running follows the same rule.
+The engine accumulates cycles at the depth of each movement step and keeps the
+phase across path segments, including changes of direction and stride.
+Animations without `stride` use `fps` and elapsed animation time.
+
+On stopping, side walks select `idle-side` with the same mirroring, back walks
+select `idle-back`, and front walks select `idle-front`. Missing idle animations
+fall back to unmirrored `idle-front`. Optional side and back idles may share a
+walk row using `start`. Talking and turning to look at a target keep their
+existing behaviour. Walk direction uses hysteresis around the diagonal to
+avoid switching repeatedly between side and front or back.
 
 ## Book close-up
 

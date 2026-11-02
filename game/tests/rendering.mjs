@@ -260,6 +260,18 @@ assert.deepEqual(
   characterCalls[1].args.slice(1, 4),
 );
 assert.equal(characterCalls[1].args[7].emission, true);
+// Start columns affect both visible and emission crops, including stride frames.
+const sideAnimation = game.character.animations["walk-side"];
+sideAnimation.start = 2;
+sideAnimation.stride = 96;
+game.actor.walkPhase = 0.45;
+calls.length = 0;
+renderer.render(game);
+const offsetCalls = calls.filter((c) => c.type === "sprite" && c.args[0] === texture);
+assert.equal(offsetCalls.length, 2);
+for (const call of offsetCalls) assert.deepEqual(call.args[3], [96, 360, 24, 60]);
+delete sideAnimation.start;
+delete sideAnimation.stride;
 game.character.glowTexture = null;
 console.log(
   "Optional palette dither and character flame bloom alignment passed (mock GPU).",

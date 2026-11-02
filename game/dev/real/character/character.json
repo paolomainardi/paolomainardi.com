@@ -18,22 +18,37 @@
     "walk-side": {
       "row": 1,
       "frames": 6,
-      "fps": 8
+      "fps": 8,
+      "stride": 149.0
     },
     "walk-front": {
       "row": 2,
       "frames": 4,
-      "fps": 8
+      "fps": 8,
+      "stride": 99.333
     },
     "walk-back": {
       "row": 3,
       "frames": 4,
-      "fps": 8
+      "fps": 8,
+      "stride": 99.333
     },
     "talk-front": {
       "row": 4,
       "frames": 2,
       "fps": 4
+    },
+    "idle-side": {
+      "row": 1,
+      "start": 2,
+      "frames": 1,
+      "fps": 1
+    },
+    "idle-back": {
+      "row": 3,
+      "start": 3,
+      "frames": 1,
+      "fps": 1
     }
   },
   "lantern": [

@@ -52,7 +52,9 @@ assert np.all(np.array(sheet)[..., 3][np.array(glow)[..., 3] > 0] > 0)
 assert all(pixel[3] == 0 or pixel[:3] in palette for pixel in sheet.getdata())
 for animation in character['animations'].values():
     assert (animation['row'] + 1) * character['frame'][1] <= sheet.height
-    assert animation['frames'] * character['frame'][0] <= sheet.width
+    assert (animation.get('start', 0) + animation['frames']) * character['frame'][0] <= sheet.width
+for name in ('walk-side', 'walk-front', 'walk-back'):
+    assert character['animations'][name]['stride'] > 0
 for value in world['objects'].values():
     for file in value if isinstance(value, list) else [value]:
         image = Image.open(data / file).convert('RGBA')

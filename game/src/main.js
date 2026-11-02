@@ -16,6 +16,7 @@ import { loadWorld, loadRoom, matchingItems, resolve } from "./assets.js";
 import { findPath, nearestWalkable } from "./pathfinding.js";
 import { wrap } from "./font.js";
 import { flame, lightSourcesAt } from "./lighting.js";
+import { animationFrame } from "./animation.js";
 
 /** Boot an isolated game in a supplied container. URLs resolve against the document. */
 export async function boot({ world, content, element }) {
@@ -178,7 +179,7 @@ export async function boot({ world, content, element }) {
               const i =
                 ((animation.row * game.character.frame[1] + y) *
                   game.character.size[0] +
-                  frame * game.character.frame[0] +
+                  ((animation.start || 0) + frame) * game.character.frame[0] +
                   x) *
                 4;
               const w = ((pixels[i] / 255) * pixels[i + 3]) / 255;
@@ -199,8 +200,7 @@ export async function boot({ world, content, element }) {
     }
     game.lanternPosition = () => {
       const animation = game.character.animations[game.actor.animation];
-      const frame =
-        Math.floor(game.actor.clock * animation.fps) % animation.frames;
+      const frame = animationFrame(game.actor, animation);
       const offset =
         game.character.flames?.[game.actor.animation][frame] ||
         game.character.lantern;
@@ -321,6 +321,7 @@ export async function boot({ world, content, element }) {
       game.readerItem = item;
       game.hover = null;
       game.actor.animation = "idle-front";
+      game.actor.mirror = false;
       reader.setAttribute("aria-label", item.title);
       iframe.title = item.title;
       website.hidden = !item.url;
@@ -415,6 +416,7 @@ export async function boot({ world, content, element }) {
         y: spawn[1],
         animation: "idle-front",
         clock: 0,
+        walkPhase: 0,
         mirror: false,
       };
       game.path = [];
@@ -907,13 +909,22 @@ export async function boot({ world, content, element }) {
                 90 * game.pixelScale * game.depth() * (game.running ? 2 : 1),
               travel = speed * remaining;
             if (distance > 0) {
+              const wasSide = game.actor.animation === "walk-side",
+                wasVertical = ["walk-front", "walk-back"].includes(
+                  game.actor.animation,
+                ),
+                threshold = wasSide ? 0.7 : wasVertical ? 0.9 : 0.8;
               game.actor.mirror = dx < 0;
               game.actor.animation =
-                Math.abs(dx) > Math.abs(dy) * 0.8
+                Math.abs(dx) > Math.abs(dy) * threshold
                   ? "walk-side"
                   : dy < 0
                     ? "walk-back"
                     : "walk-front";
+              const animation = game.character.animations[game.actor.animation];
+              if (animation.stride)
+                game.actor.walkPhase +=
+                  Math.min(distance, travel) / (animation.stride * game.depth());
             }
             if (distance <= travel) {
               game.actor.x = next[0];
@@ -927,8 +938,13 @@ export async function boot({ world, content, element }) {
             }
           }
           if (!game.path.length) {
-            game.actor.animation = "idle-front";
-            game.actor.mirror = false;
+            if (game.actor.animation.startsWith("walk-")) {
+              const idle = game.actor.animation.replace("walk-", "idle-");
+              game.actor.animation = game.character.animations[idle]
+                ? idle
+                : "idle-front";
+              if (game.actor.animation !== "idle-side") game.actor.mirror = false;
+            }
             if (game.pending) {
               const pending = game.pending;
               game.pending = null;

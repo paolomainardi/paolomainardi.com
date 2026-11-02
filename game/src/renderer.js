@@ -1,4 +1,5 @@
 import { TextLayer } from "./text-layer.js";
+import { animationFrame } from "./animation.js";
 import { fontPixels, wrap } from "./font.js";
 import { buildPaletteLookup, PALETTE_STEPS } from "./palette.js";
 
@@ -676,7 +677,7 @@ void main(){
     ]);
     this.draw();
     const animation = game.character.animations[actor.animation],
-      frame = Math.floor(actor.clock * animation.fps) % animation.frames;
+      frame = (animation.start || 0) + animationFrame(actor, animation);
     const sources = game.lightSourcesAt(actor.x, actor.y),
       brightest = sources.reduce(
         (best, light) =>

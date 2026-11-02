@@ -22,17 +22,20 @@
     "walk-side": {
       "row": 1,
       "frames": 6,
-      "fps": 8
+      "fps": 8,
+      "stride": 96
     },
     "walk-front": {
       "row": 2,
       "frames": 4,
-      "fps": 8
+      "fps": 8,
+      "stride": 96
     },
     "walk-back": {
       "row": 3,
       "frames": 4,
-      "fps": 8
+      "fps": 8,
+      "stride": 96
     },
     "talk-front": {
       "row": 4,
