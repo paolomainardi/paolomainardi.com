@@ -3,7 +3,7 @@ const presets = {
   surf: { frequency: 650, duration: 4, level: 0.32 },
   wind: { frequency: 280, duration: 4, level: 0.22 },
   crackle: { frequency: 1800, duration: 4, level: 0.09 },
-  step: { frequency: 160, duration: 0.16, level: 0.7 },
+  step: { frequency: 900, duration: 0.09, level: 1 },
   page: { frequency: 2400, duration: 0.32, level: 0.3 },
   click: { frequency: 1400, duration: 0.035, level: 0.25 },
   creak: { frequency: 380, duration: 0.65, level: 0.28 },
@@ -171,11 +171,12 @@ export class SoundEngine {
       for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
       const filter = c.createBiquadFilter();
       nodes.push(filter);
-      filter.type = ["surf", "step"].includes(definition.synth)
+      filter.type = ["surf"].includes(definition.synth)
         ? "lowpass"
         : "bandpass";
       filter.frequency.value = params.frequency ?? preset.frequency;
-      filter.Q.value = definition.synth === "creak" ? 14 : 0.7;
+      filter.Q.value =
+        definition.synth === "creak" ? 14 : definition.synth === "step" ? 1.4 : 0.7;
       source.playbackRate.value = 0.9 + Math.random() * 0.2;
       source.connect(filter);
       filter.connect(envelope);
