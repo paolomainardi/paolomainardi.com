@@ -101,6 +101,10 @@ Movement and effect distances scale with frame width relative to 480. The bitmap
 
 Room light adds each lamp's drawing minus the unlit drawing in linear colour, then clamps the result. Each lamp fades over 0.4 seconds. Oil and candle lamps flicker irregularly between 0.85 and 1.0 with slight pool drift; other lamps breathe slowly. There are no lighting bands. The final OKLab palette lookup stays. Set `"dither": true` in `world.json` for a subtle ordered palette dither; it defaults to false.
 
+Rooms can supply `"water": "water.png"`, a room-sized mask with red water, yellow reflection, and black elsewhere. The sea swells in whole-pixel steps up to two pixels, clamped inside each water span. Sparse reflection sparkles reuse the brightest painted colours. The eight-second swell and four updates per second keep the motion calm; reduced motion disables both effects. Water moves identically in the unlit and lamp drawings before palette mapping and optional dithering. Rooms without the mask keep their existing rendering.
+
+The demo includes a disposable window-water mask in `dev/data/rooms/stone-house/water.png`; `tools/make_placeholders.py` regenerates it. The real-art mask and its room reference are supplied by the art task.
+
 At night the lantern adds warm light coloured by the room's `albedo`, with a smooth falloff over one third of the frame height. The character samples lamp brightness and colour at its feet, keeps a 70% brightness floor, and receives a rim from the strongest source. The lantern also lights the character near the carrying hand. Bloom follows lit lamps' painted areas and the lantern; `G` toggles it.
 
 The renderer uses the largest whole pixel scale that fits, centred with black bars. On a viewport smaller than one frame, the canvas fits the available space while keeping its native render resolution.
@@ -133,6 +137,7 @@ Checks:
 node tests/verb-menu.mjs # target verbs, edge placement, row hits
 node tests/books.mjs # layout, routes, entry hits, font loading
 node tests/logic.mjs
+node tests/water.mjs # integer swell, mask bounds, glitter and reduced motion
 node tests/lighting.mjs # linear brightness, independent lamps, flame and falloff
 node tests/shaders.mjs # requires glslangValidator
 node tests/rendering.mjs # sprite geometry and UI placement with a mock GPU

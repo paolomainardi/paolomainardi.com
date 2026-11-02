@@ -103,6 +103,7 @@ at a hotspot never opens a tab.
   "name": "stone-house",
   "size": [640, 360],
   "albedo": "dusk-lit.png",
+  "water": "water.png",
   "states": {
     "dusk": {
       "unlit": "dusk-unlit.png",
@@ -158,6 +159,9 @@ at a hotspot never opens a tab.
   drawing shows.
 - `albedo`: the room in plain, even light, used to colour light that has no drawing
   of its own, such as the lantern the character carries.
+- `water` (optional): a room-sized RGB mask, relative to `room.json`. Red 255 marks water; green 255 marks its bright reflection and must lie inside red. Use red `#ff0000` for water, yellow `#ffff00` for reflection, and black elsewhere. This is a data mask, exempt from the drawing palette.
+  Water rows shift horizontally by whole pixels within ±2 over an eight-second swell, with greater movement farther from the mask's horizon. Samples clamp to their connected red row span, including around holes and window bars. Sparse green pixels briefly show the brightest painted reflection RGB triplet from each drawing, more often near the reflection's horizon. Both effects update at most four times per second and stop when `prefers-reduced-motion: reduce` matches, including preference changes during play.
+  Unlit and all lamp layers share the water displacement; lamp pool drift does not move water samples outside the mask. The effects run before lighting composition and the usual palette lookup and dithering. No water colour is synthesized. Omitting `water` preserves the existing room rendering.
 - `objects.png`: 640×360, each item painted in its flat `color` on black (#000000).
   A pixel belongs to at most one item.
 - `slot`: a free place for one content object. The object stands on the bottom

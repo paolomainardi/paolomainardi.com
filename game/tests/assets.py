@@ -22,6 +22,11 @@ for room_id, config in world['rooms'].items():
     assert mask.shape == (360, 640, 3)
     known = {tuple(bytes.fromhex(i['color'][1:])) for i in room['items']} | {(0, 0, 0)}
     assert set(map(tuple, mask.reshape(-1, 3))) <= known
+    if room.get('water'):
+        water = np.array(Image.open(room_path.parent / room['water']).convert('RGB'))
+        assert water.shape == (360, 640, 3)
+        assert set(map(tuple, water.reshape(-1, 3))) <= {(0, 0, 0), (255, 0, 0), (255, 255, 0)}
+        assert np.any(water[..., 0] == 255) and np.any(water[..., 1] == 255)
     files = [room['albedo']]
     light_ids = {i['id'] for i in room['items'] if i['kind'] == 'light'}
     for state in room['states'].values():

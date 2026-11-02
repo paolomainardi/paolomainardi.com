@@ -198,12 +198,12 @@ async function moduleAt(url) {
     },
   });
   cache.set(url, module);
-  await module.link((specifier, parent) =>
-    moduleAt(new URL(specifier, parent.identifier).href),
-  );
   return module;
 }
 const module = await moduleAt("https://adventure.test/src/main.js");
+await module.link((specifier, parent) =>
+  moduleAt(new URL(specifier, parent.identifier).href),
+);
 await module.evaluate();
 const container = new Element("main");
 const controller = await module.namespace.boot({
@@ -273,31 +273,57 @@ rendered.path = [];
 rendered.room.depth = depth;
 step();
 // Distance advances the same cycle at different depths, including running.
-const savedActor = { ...rendered.actor }, savedElapsed = rendered.elapsed;
+const savedActor = { ...rendered.actor },
+  savedElapsed = rendered.elapsed;
 for (const scale of [0.5, 1]) {
   for (const running of [false, true]) {
     rendered.room.depth = { far: [150, scale], near: [352, scale] };
-    Object.assign(rendered.actor, { x: 200, y: 300, animation: "idle-front", walkPhase: 0, clock: 0 });
+    Object.assign(rendered.actor, {
+      x: 200,
+      y: 300,
+      animation: "idle-front",
+      walkPhase: 0,
+      clock: 0,
+    });
     rendered.path = [[600, 300]];
     rendered.running = running;
     step(20);
     const distance = rendered.actor.x - 200;
     assert(Math.abs(distance - 38.4 * scale * (running ? 2 : 1)) < 1e-8);
     assert(Math.abs(rendered.actor.walkPhase - distance / (96 * scale)) < 1e-8);
-    assert.equal(animationFrame(rendered.actor, rendered.character.animations["walk-side"]), running ? 4 : 2);
+    assert.equal(
+      animationFrame(
+        rendered.actor,
+        rendered.character.animations["walk-side"],
+      ),
+      running ? 4 : 2,
+    );
   }
 }
 rendered.room.depth = { far: [150, 1], near: [352, 1] };
 rendered.running = false;
-Object.assign(rendered.actor, { x: 200, y: 300, animation: "walk-side", walkPhase: 0.2 });
-rendered.path = [[200.5, 300], [200.5, 280]];
+Object.assign(rendered.actor, {
+  x: 200,
+  y: 300,
+  animation: "walk-side",
+  walkPhase: 0.2,
+});
+rendered.path = [
+  [200.5, 300],
+  [200.5, 280],
+];
 step();
 assert.equal(rendered.actor.animation, "walk-back");
-assert(Math.abs(rendered.actor.walkPhase - (0.2 + 1.92 / 96)) < 1e-8, "Phase survives a direction change within one tick");
+assert(
+  Math.abs(rendered.actor.walkPhase - (0.2 + 1.92 / 96)) < 1e-8,
+  "Phase survives a direction change within one tick",
+);
 const savedStride = rendered.character.animations["walk-back"].stride;
 rendered.character.animations["walk-back"].stride = 48;
 step();
-assert(Math.abs(rendered.actor.walkPhase - (0.2 + 1.92 / 96 + 1.92 / 48)) < 1e-8);
+assert(
+  Math.abs(rendered.actor.walkPhase - (0.2 + 1.92 / 96 + 1.92 / 48)) < 1e-8,
+);
 rendered.character.animations["walk-back"].stride = savedStride;
 
 // A diagonal must cross the hysteresis band before changing direction.
@@ -316,7 +342,11 @@ for (const [initial, dx, dy, expected] of [
   assert.equal(rendered.actor.animation, expected);
 }
 for (const direction of ["side", "back"]) {
-  rendered.character.animations[`idle-${direction}`] = { row: 0, frames: 1, fps: 1 };
+  rendered.character.animations[`idle-${direction}`] = {
+    row: 0,
+    frames: 1,
+    fps: 1,
+  };
 }
 for (const [dx, dy, idle, mirror] of [
   [-0.5, 0, "idle-side", true],
@@ -332,8 +362,12 @@ for (const [dx, dy, idle, mirror] of [
   step(3);
   assert.equal(rendered.actor.animation, idle, "Standing direction persists");
 }
-for (const direction of ["side", "back"]) delete rendered.character.animations[`idle-${direction}`];
-for (const [dx, dy] of [[-0.5, 0], [0, -0.5]]) {
+for (const direction of ["side", "back"])
+  delete rendered.character.animations[`idle-${direction}`];
+for (const [dx, dy] of [
+  [-0.5, 0],
+  [0, -0.5],
+]) {
   Object.assign(rendered.actor, { x: 300, y: 300, animation: "idle-front" });
   rendered.path = [[300 + dx, 300 + dy]];
   step();
@@ -342,9 +376,17 @@ for (const [dx, dy] of [[-0.5, 0], [0, -0.5]]) {
 }
 // Time-based sheets remain supported; the lantern uses the same cycle frame.
 const side = rendered.character.animations["walk-side"];
-Object.assign(rendered.actor, { animation: "walk-side", walkPhase: 0.4, clock: 0.2, mirror: false });
+Object.assign(rendered.actor, {
+  animation: "walk-side",
+  walkPhase: 0.4,
+  clock: 0.2,
+  mirror: false,
+});
 const flames = rendered.character.flames["walk-side"];
-rendered.character.flames["walk-side"] = Array.from({ length: side.frames }, (_, i) => [i * 10, -i]);
+rendered.character.flames["walk-side"] = Array.from(
+  { length: side.frames },
+  (_, i) => [i * 10, -i],
+);
 assert.equal(rendered.lanternPosition()[0], rendered.actor.x + 20);
 assert.equal(animationFrame(rendered.actor, { frames: 6, fps: 8 }), 1);
 rendered.character.flames["walk-side"] = flames;
@@ -352,7 +394,9 @@ Object.assign(rendered.actor, savedActor);
 rendered.elapsed = savedElapsed;
 rendered.path = [];
 rendered.room.depth = depth;
-console.log("Distance frames, depth, running, segment phase, standing direction and hysteresis passed.");
+console.log(
+  "Distance frames, depth, running, segment phase, standing direction and hysteresis passed.",
+);
 
 assert.equal(location.hash, "#stone-house");
 assert.equal(rendered.objects.length, 6);

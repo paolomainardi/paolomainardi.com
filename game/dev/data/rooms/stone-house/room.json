@@ -107,5 +107,6 @@
   "spawn": [
     120,
     320
-  ]
+  ],
+  "water": "water.png"
 }

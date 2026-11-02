@@ -145,6 +145,12 @@ def generate():
     m.rectangle((116, 63, 176, 123), fill='#00ffff')
     items.append(dict(id='window', kind='hotspot', label='Window', look='The sea, calm tonight.', color='#00ffff'))
     objects.resize(ROOM_SIZE, Image.Resampling.NEAREST).save(room_dir / 'objects.png')
+    water = Image.new('RGB', DRAWING_SIZE)
+    w = ImageDraw.Draw(water)
+    for left, right in [(122, 143), (149, 170)]:
+        w.rectangle((left, 97, right, 117), fill='#ff0000')
+    w.rectangle((155, 97, 161, 117), fill='#ffff00')
+    water.resize(ROOM_SIZE, Image.Resampling.NEAREST).save(room_dir / 'water.png')
     raw = np.array(base).astype(float)
     quantize(raw * 1.35).resize(ROOM_SIZE, Image.Resampling.NEAREST).save(room_dir / 'albedo.png')
     for state, ambient in [('dusk', 0.72), ('night', 0.34)]:
@@ -154,7 +160,7 @@ def generate():
             light = pool[..., None]
             lit = unlit + (raw * (1.18 - ambient) + np.array([28, 13, 0])) * light
             quantize(lit).resize(ROOM_SIZE, Image.Resampling.NEAREST).save(room_dir / f'{state}-{name}.png')
-    save_json(room_dir / 'room.json', dict(name='stone-house', size=list(ROOM_SIZE), albedo='albedo.png',
+    save_json(room_dir / 'room.json', dict(name='stone-house', size=list(ROOM_SIZE), albedo='albedo.png', water='water.png',
         states={s: dict(unlit=f'{s}-unlit.png', lights={name: f'{s}-{name}.png' for name in ('pendant', 'oil')}) for s in ('dusk', 'night')},
         objects='objects.png', items=items, depth=dict(far=[192, 0.7], near=[352, 1.0]), spawn=[120, 320]))
     sheet = Image.new('RGBA', (192, 240))

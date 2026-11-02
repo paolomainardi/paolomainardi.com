@@ -1,3 +1,5 @@
+import { buildWater } from "./water.js";
+
 export function resolve(path, base) {
   const url = new URL(path, base);
   if (!["http:", "https:"].includes(url.protocol))
@@ -127,9 +129,10 @@ export async function loadRoom(world, worldURL, id, renderer) {
     throw new Error(
       "Room requires albedo, unlit, and one drawing per lamp in every state.",
     );
-  const [maskImage, albedo, states] = await Promise.all([
+  const [maskImage, albedo, waterImage, states] = await Promise.all([
     image(resolve(room.objects, url)),
     image(resolve(room.albedo, url)),
+    room.water ? image(resolve(room.water, url)) : null,
     Promise.all(
       Object.entries(room.states).map(async ([key, state]) => [
         key,
@@ -150,6 +153,7 @@ export async function loadRoom(world, worldURL, id, renderer) {
   for (const bitmap of [
     maskImage,
     albedo,
+    ...(waterImage ? [waterImage] : []),
     ...states.flatMap(([, state]) => [
       state.unlit,
       ...Object.values(state.lights),
@@ -205,6 +209,9 @@ export async function loadRoom(world, worldURL, id, renderer) {
     config,
     states: Object.fromEntries(states),
     albedo,
+    water: waterImage
+      ? buildWater(renderer.pixels(waterImage), room.size)
+      : null,
     lights,
     ids,
     walkable,

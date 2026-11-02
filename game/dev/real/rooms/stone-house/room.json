@@ -121,5 +121,6 @@
   "spawn": [
     84,
     292
-  ]
+  ],
+  "water": "water.png"
 }

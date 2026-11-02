@@ -1,3 +1,4 @@
+import { waterFrame, reflectionPeak } from "./water.js";
 import { TextLayer } from "./text-layer.js";
 import { animationFrame } from "./animation.js";
 import { fontPixels, wrap } from "./font.js";
@@ -14,7 +15,8 @@ precision highp float;
 precision highp sampler2DArray;
 in vec2 uv;
 out vec4 color;
-uniform sampler2D uUnlit,uAlbedo,uForeground,uData;
+uniform sampler2D uUnlit,uAlbedo,uForeground,uData,uWater,uReflection;
+uniform bool uWaterMotion;
 uniform sampler2DArray uLights,uMasks;
 uniform int uCount;
 uniform vec3 uLantern;
@@ -26,12 +28,17 @@ vec3 linearColour(vec3 c){return mix(c/12.92,pow((c+.055)/1.055,vec3(2.4)),step(
 vec3 screenColour(vec3 c){c=clamp(c,0.,1.);return mix(c*12.92,1.055*pow(c,vec3(1./2.4))-.055,step(vec3(.0031308),c));}
 float lantern(vec2 p){return (1.-smoothstep(0.,1.,distance(p,uLantern.xy)/uLanternRadius))*uLantern.z;}
 vec3 drawing(vec2 p){
- vec3 base=linearColour(texture(uUnlit,p/uSize).rgb);
+ vec4 water=uWaterMotion?texture(uWater,p/uSize):vec4(0.);
+ vec2 source=p;
+ if(water.b>.5)source.x+=round(water.r*255.)-2.;
+ vec3 base=linearColour(water.g>.5?texelFetch(uReflection,ivec2(0,0),0).rgb:texture(uUnlit,source/uSize).rgb);
  for(int i=0;i<uCount;i++){
    vec4 info=texelFetch(uData,ivec2(i,0),0);
    vec2 drift=texelFetch(uData,ivec2(i,2),0).xy;
-   vec2 at=(p+drift)/uSize;
-   base+=info.z*(linearColour(texture(uLights,vec3(at,float(i))).rgb)-linearColour(texture(uUnlit,at).rgb));
+   vec2 at=(water.b>.5?source:p+drift)/uSize;
+   vec3 lit=water.g>.5?texelFetch(uReflection,ivec2(i+1,0),0).rgb:texture(uLights,vec3(at,float(i))).rgb;
+   vec3 unlit=water.g>.5?texelFetch(uReflection,ivec2(0,0),0).rgb:texture(uUnlit,at).rgb;
+   base+=info.z*(linearColour(lit)-linearColour(unlit));
  }
  base+=linearColour(texture(uAlbedo,p/uSize).rgb)*vec3(1.,.7,.32)*lantern(p);
  return screenColour(base);
@@ -339,6 +346,14 @@ void main(){
       );
       return texture;
     };
+    this.water = room.water;
+    this.waterTick = null;
+    this.motionPreference = globalThis.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    );
+    this.waterTexture = room.water
+      ? keep(this.texture(room.water.frame, width, height))
+      : this.black;
     this.states = Object.fromEntries(
       Object.entries(room.states).map(([key, state]) => {
         const pixels = new Uint8Array(width * height * 4 * count);
@@ -347,7 +362,24 @@ void main(){
         );
         return [
           key,
-          { unlit: keep(this.texture(state.unlit)), lights: array(pixels) },
+          {
+            unlit: keep(this.texture(state.unlit)),
+            lights: array(pixels),
+            reflection: room.water
+              ? keep(
+                  this.texture(
+                    new Uint8Array([
+                      ...reflectionPeak(room.water, state.unlitPixels),
+                      ...room.lights.flatMap((light) =>
+                        reflectionPeak(room.water, state.lightPixels[light.id]),
+                      ),
+                    ]),
+                    room.lights.length + 1,
+                    1,
+                  ),
+                )
+              : this.black,
+          },
         ];
       }),
     );
@@ -415,6 +447,28 @@ void main(){
     this.bind("uLights", state.lights, 3, gl.TEXTURE_2D_ARRAY);
     this.bind("uMasks", this.masks, 5, gl.TEXTURE_2D_ARRAY);
     this.bind("uData", this.data, 4);
+    const moving = !!this.water && !this.motionPreference?.matches;
+    if (moving) {
+      const tick = Math.floor(game.elapsed * 4);
+      if (tick !== this.waterTick) {
+        this.waterTick = tick;
+        gl.activeTexture(gl.TEXTURE0 + 6);
+        gl.bindTexture(gl.TEXTURE_2D, this.waterTexture);
+        gl.texSubImage2D(
+          gl.TEXTURE_2D,
+          0,
+          0,
+          0,
+          ...this.size,
+          gl.RGBA,
+          gl.UNSIGNED_BYTE,
+          waterFrame(this.water, game.elapsed),
+        );
+      }
+    }
+    this.bind("uWater", this.waterTexture, 6);
+    this.bind("uReflection", state.reflection, 8);
+    this.integer("uWaterMotion", moving ? 1 : 0);
     this.integer("uCount", game.room.lights.length);
     this.uniform("uLanternRadius", game.lanternRadius);
     this.uniform("uLantern", [
@@ -589,7 +643,12 @@ void main(){
       [0.025, 0.03, 0.05, 0.85],
     );
     this.text("Close", 8, game.verbTop + 8);
-    this.text("or right click, Esc", 44, game.verbTop + 8, [0.55, 0.52, 0.47, 1]);
+    this.text(
+      "or right click, Esc",
+      44,
+      game.verbTop + 8,
+      [0.55, 0.52, 0.47, 1],
+    );
     gl.disable(gl.BLEND);
     this.into(this.scene);
     this.compositeText(game);
