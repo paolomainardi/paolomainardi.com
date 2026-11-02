@@ -507,7 +507,7 @@ void main(){
       this.uniform("uCoverRect", turn.rect);
       this.uniform("uCoverSize", turn.size);
       this.uniform("uCoverSource", [
-        (previous ? turn.frames - 1 - frame : frame) * turn.rect[2],
+        frame * turn.rect[2],
         0,
         turn.rect[2],
         turn.rect[3],
@@ -571,12 +571,11 @@ void main(){
         Math.floor(game.turning.progress * turn.frames),
       );
       const previous = game.turning.direction < 0;
-      const source = previous ? turn.frames - 1 - frame : frame;
       this.sprite(
         turn.texture,
         turn.size,
         turn.rect,
-        [source * turn.rect[2], 0, turn.rect[2], turn.rect[3]],
+        [frame * turn.rect[2], 0, turn.rect[2], turn.rect[3]],
         undefined,
         previous,
       );
@@ -589,6 +588,7 @@ void main(){
       [0.025, 0.03, 0.05, 0.85],
     );
     this.text("Close", 8, game.verbTop + 8);
+    this.text("or right click, Esc", 44, game.verbTop + 8, [0.55, 0.52, 0.47, 1]);
     gl.disable(gl.BLEND);
     this.into(this.scene);
     this.compositeText(game);

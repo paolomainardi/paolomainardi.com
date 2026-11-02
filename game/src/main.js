@@ -560,8 +560,11 @@ export async function boot({ world, content, element }) {
     on(root, "contextmenu", (event) => {
       event.preventDefault();
       game.menu = null;
-      if (!game.started || game.readerItem || game.loading || game.activeBook)
+      if (game.activeBook && !game.readerItem) {
+        closeBook();
         return;
+      }
+      if (!game.started || game.readerItem || game.loading) return;
       root.focus({ preventScroll: true });
       const pointAt = point(event);
       const target = hit(...pointAt);
@@ -713,7 +716,6 @@ export async function boot({ world, content, element }) {
           openReader(entry.item);
           return;
         }
-        const [left, right] = game.bookArt.pages;
         const corner = cornerHit(
           game.bookArt,
           game.spread,
@@ -722,13 +724,6 @@ export async function boot({ world, content, element }) {
           y,
         );
         if (corner) turnBook(corner);
-        else if (
-          x < left[0] - 16 ||
-          x >= right[0] + right[2] + 16 ||
-          y < Math.min(left[1], right[1]) - 16 ||
-          y >= Math.max(left[1] + left[3], right[1] + right[3]) + 24
-        )
-          closeBook();
         return;
       }
       if (y >= game.verbTop) {

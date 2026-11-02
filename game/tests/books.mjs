@@ -254,7 +254,7 @@ for (const direction of [1, -1]) {
   sprites.length = 0;
   draw.renderBook(game);
   const turn = sprites.find((c) => c[0] === book.turn.texture);
-  assert.equal(turn[3][0], (direction === 1 ? 1 : 2) * 488);
+  assert.equal(turn[3][0], 488);
   assert.equal(turn[5], direction < 0);
   assert.deepEqual(order.slice(-2), ["text", "present"]);
 }
