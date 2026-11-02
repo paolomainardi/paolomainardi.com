@@ -499,7 +499,7 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
           ...object.size,
         ],
         undefined,
-        [0.5 + light * 0.5, 0.48 + light * 0.52, 0.48 + light * 0.5, 1],
+        [0.75 + light * 0.25, 0.73 + light * 0.27, 0.73 + light * 0.25, 1],
       );
     }
     const actor = game.actor,
