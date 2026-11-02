@@ -1,0 +1,27 @@
+{
+  "palette": "../palette.json",
+  "pose": "idle-side",
+  "frames": 12,
+  "hem": 167,
+  "joints": {
+    "hip": [64, 125],
+    "knee": [64, 172],
+    "ankle": [63, 218]
+  },
+  "shin": [44, 168, 82, 214],
+  "boot": [44, 214, 92, 234],
+  "coat_brightness": 420,
+  "far_shade": 0.72,
+  "upper": {
+    "hem_columns": [40, 92],
+    "hem_sway": 4.5,
+    "bob": 2,
+    "lean": 2.4
+  },
+  "lantern": {
+    "box": [88, 134, 107, 170],
+    "pivot": [96, 134],
+    "swing": 7,
+    "flame_brightness": 600
+  }
+}
