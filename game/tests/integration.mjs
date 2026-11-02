@@ -199,6 +199,7 @@ function event(target, type, props = {}) {
   const e = new Event(type, { cancelable: true });
   Object.assign(e, props);
   target.dispatchEvent(e);
+  return e;
 }
 function step(frames = 1) {
   for (let i = 0; i < frames; i++) {
@@ -406,6 +407,55 @@ assert(
 step(13);
 assert.equal(controller.state.lamps.find((l) => l.id === "oil").on, false);
 assert(controller.state.lamps.find((l) => l.id === "oil").level < 0.01);
+// Menu input shares actions with the bar and preserves its selected verb.
+const selectedVerb = rendered.verb;
+const lampBefore = controller.state.lamps.find((l) => l.id === "oil").on;
+assert(
+  event(root, "contextmenu", { clientX: 354, clientY: 186 }).defaultPrevented,
+);
+assert(rendered.menu);
+const menu = rendered.menu;
+const useRow = menu.verbs.indexOf("Use");
+event(canvas, "pointermove", {
+  clientX: menu.x + 6,
+  clientY: menu.y + 4 + (useRow + 1) * menu.rowHeight,
+});
+assert.equal(rendered.sentence(), "Use Oil lamp");
+click(menu.x + 6, menu.y + 4 + (useRow + 1) * menu.rowHeight);
+assert.equal(rendered.menu, null);
+assert.equal(rendered.verb, selectedVerb);
+settle();
+assert.equal(
+  controller.state.lamps.find((l) => l.id === "oil").on,
+  !lampBefore,
+);
+for (const dismissal of ["escape", "outside", "document", "floor"]) {
+  event(root, "contextmenu", { clientX: 354, clientY: 186 });
+  const before = JSON.stringify(controller.state.position);
+  if (dismissal === "escape") key("Escape");
+  if (dismissal === "outside") click(600, 300);
+  if (dismissal === "document") event(document, "click");
+  if (dismissal === "floor")
+    event(root, "contextmenu", { clientX: 600, clientY: 300 });
+  assert.equal(rendered.menu, null);
+  assert.equal(JSON.stringify(controller.state.position), before);
+  assert.equal(controller.state.walking, false);
+}
+event(root, "contextmenu", { clientX: 470, clientY: 140 });
+key("ArrowUp");
+assert.equal(rendered.menu.verbs[rendered.menu.selected], "Take");
+key("ArrowDown");
+assert.equal(rendered.menu.selected, 0);
+key("ArrowUp");
+key("Enter");
+settle();
+assert.equal(controller.state.reader, "workstation-1");
+event(reader, "keydown", { key: "Escape" });
+assert.equal(rendered.verb, selectedVerb);
+assert(
+  event(root, "contextmenu", { clientX: -20, clientY: -20 }).defaultPrevented,
+);
+assert.equal(rendered.menu, null);
 const originalTime = controller.state.time;
 key("t");
 assert.notEqual(controller.state.time, originalTime);
@@ -509,11 +559,14 @@ rendered.world.rooms.second = {
     window: { content: { type: "link", tags: ["linux", "hardware"] } },
   },
 };
+event(root, "contextmenu", { clientX: 354, clientY: 186 });
+assert(rendered.menu);
 location.hash = "#second";
 event(window, "hashchange");
 await new Promise(setImmediate);
 step();
 assert.equal(controller.state.room, "second");
+assert.equal(rendered.menu, null);
 const rebound = rendered.room.items.find((item) => item.id === "window");
 assert.equal(rebound.label, "Window: New link");
 assert.equal(rebound.content.id, "new-link");
@@ -688,6 +741,13 @@ assert.equal(
   catalogue.children[1].children[0].children[0].href,
   "https://adventure.test/dev/reader/workstation-1.html",
 );
+event(bookRoot, "contextmenu", { clientX: 470, clientY: 140 });
+assert.equal(rendered.menu.verbs.at(-1), "Take");
+event(bookRoot, "keydown", { key: "ArrowUp" });
+event(bookRoot, "keydown", { key: "Enter" });
+for (let i = 0; i < 600 && books.state.walking; i++) step();
+assert.equal(books.state.book, "workstation");
+event(bookRoot, "keydown", { key: "Escape" });
 const bookLook = rendered.verbRects.find((v) => v.label === "Look at");
 event(bookCanvas, "click", { clientX: bookLook.x + 2, clientY: 340 });
 event(bookCanvas, "click", { clientX: 470, clientY: 140 });

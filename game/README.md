@@ -25,6 +25,19 @@ const game = await boot({
 
 Paths follow [CONTRACT.md](CONTRACT.md), including reader URLs relative to `content.json`. Hashes restore the room and reader after Start.
 
+## Right-click verb menu
+
+Right-click a hotspot, lamp, exit, content object, or topic book to open a
+parchment menu beside the pointer. The menu stays inside the game frame and
+shows the target's name and its supported verbs in world order. Hover a verb
+to highlight it in rose and preview the sentence. Labels use the book's body
+font when loaded, otherwise the 5×7 font.
+
+Click a verb, or use Up/Down and Enter, to walk over and run it. **Take** opens
+a topic book or a content object's reader. The verb bar keeps its selected
+verb. Escape, an outside click, an empty-floor right click, or a room change
+closes the menu. The browser context menu is suppressed over the game.
+
 ## Topic books
 
 Each room's `books` list fills its shelf slots in order. Each id names a book in
@@ -103,6 +116,7 @@ Regenerate assets:
 Checks:
 
 ```sh
+node tests/verb-menu.mjs # target verbs, edge placement, row hits
 node tests/books.mjs # layout, routes, entry hits, font loading
 node tests/logic.mjs
 node tests/lighting.mjs # linear brightness, independent lamps, flame and falloff

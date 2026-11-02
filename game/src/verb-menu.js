@@ -1,0 +1,50 @@
+import { measure, wrapAtlas } from "./book.js";
+import { wrap } from "./font.js";
+
+export function targetVerbs(verbs, target) {
+  return verbs.filter((verb) => {
+    if (verb === "Walk to" || verb === "Look at") return true;
+    if (verb === "Use") return target.kind === "light";
+    if (verb === "Take") return ["book", "content"].includes(target.kind);
+    if (verb === "Open")
+      return (
+        ["book", "content"].includes(target.kind) ||
+        (target.kind === "hotspot" && !!target.content)
+      );
+    return false;
+  });
+}
+
+export function layoutMenu(target, verbs, point, size, font = null) {
+  const textWidth = (text) => (font ? measure(font, text) : text.length * 6);
+  const name = target.label || target.id;
+  const width = Math.min(
+    size[0],
+    240,
+    Math.max(...[name, ...verbs].map(textWidth)) + 12,
+  );
+  const header = font
+    ? wrapAtlas(font, name, width - 12, 1)[0]
+    : wrap(name, Math.max(1, Math.floor((width - 12) / 6)), 1)[0];
+  const rowHeight = (font?.lineHeight || 8) + 4;
+  const height = (verbs.length + 1) * rowHeight + 8;
+  const x = Math.max(0, Math.min(Math.round(point[0]) + 3, size[0] - width));
+  const y = Math.max(0, Math.min(Math.round(point[1]) + 3, size[1] - height));
+  return {
+    target,
+    verbs,
+    header,
+    x,
+    y,
+    width,
+    height,
+    rowHeight,
+    selected: -1,
+  };
+}
+
+export function menuHit(menu, x, y) {
+  if (x < menu.x + 1 || x >= menu.x + menu.width - 1) return -1;
+  const row = Math.floor((y - menu.y - 4) / menu.rowHeight) - 1;
+  return row >= 0 && row < menu.verbs.length ? row : -1;
+}

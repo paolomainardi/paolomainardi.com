@@ -6,6 +6,7 @@ import {
   parseRoute,
   bookRoute,
 } from "./book.js";
+import { targetVerbs, layoutMenu, menuHit } from "./verb-menu.js";
 import { Renderer } from "./renderer.js";
 import { loadWorld, loadRoom, matchingItems, resolve } from "./assets.js";
 import { findPath, nearestWalkable } from "./pathfinding.js";
@@ -102,6 +103,7 @@ export async function boot({ world, content, element }) {
       elapsed: 0,
       verb: "Walk to",
       hover: null,
+      menu: null,
       path: [],
       running: false,
       pending: null,
@@ -228,15 +230,21 @@ export async function boot({ world, content, element }) {
             ),
         )[0];
     game.sentence = () => {
+      if (game.menu) {
+        const { target, verbs, selected } = game.menu;
+        return selected >= 0
+          ? `${verbs[selected]} ${target.label || target.id}`
+          : target.label || target.id;
+      }
       const target = game.hover;
       return target
         ? `${game.verb} ${target.kind === "content" ? "Book: " : ""}${target.label || target.id}`
         : game.verb;
     };
-    const labels = [
-      "Walk to",
-      ...game.world.verbs.filter((v) => v !== "Walk to"),
-    ];
+    if (!game.world.verbs.includes("Take")) game.world.verbs.push("Take");
+    const labels = game.world.verbs.includes("Walk to")
+      ? [...game.world.verbs]
+      : ["Walk to", ...game.world.verbs];
     function say(text) {
       game.speech = String(text);
       game.speechLines = wrap(
@@ -258,6 +266,7 @@ export async function boot({ world, content, element }) {
       if (location.hash !== value) history.pushState(null, "", value);
     }
     function openBook(book, spread = 0, update = true) {
+      game.menu = null;
       game.activeBook = book;
       game.spread = Math.max(
         0,
@@ -295,6 +304,7 @@ export async function boot({ world, content, element }) {
       root.focus({ preventScroll: true });
     }
     function openReader(item, update = true) {
+      game.menu = null;
       if (!item.reader) {
         say("There is nothing to read here.");
         return;
@@ -359,6 +369,7 @@ export async function boot({ world, content, element }) {
       }
     });
     async function changeRoom(id) {
+      game.menu = null;
       const request = ++roomRequest;
       const room = await loadRoom(game.world, worldURL, id, renderer);
       if (request !== roomRequest || disposed) return;
@@ -505,6 +516,11 @@ export async function boot({ world, content, element }) {
     on(canvas, "pointermove", (event) => {
       if (!game.started || game.readerItem || game.loading) return;
       const [x, y] = point(event);
+      if (game.menu) {
+        game.menu.selected = menuHit(game.menu, x, y);
+        canvas.style.cursor = game.menu.selected >= 0 ? "pointer" : "crosshair";
+        return;
+      }
       game.hover = game.activeBook
         ? game.turning
           ? null
@@ -513,13 +529,36 @@ export async function boot({ world, content, element }) {
       canvas.style.cursor = game.hover ? "pointer" : "crosshair";
     });
     on(canvas, "pointerleave", () => {
+      if (game.menu) game.menu.selected = -1;
       game.hover = null;
     });
+    on(root, "contextmenu", (event) => {
+      event.preventDefault();
+      game.menu = null;
+      if (!game.started || game.readerItem || game.loading || game.activeBook)
+        return;
+      root.focus({ preventScroll: true });
+      const pointAt = point(event);
+      const target = hit(...pointAt);
+      game.hover = null;
+      if (target)
+        game.menu = layoutMenu(
+          target,
+          targetVerbs(labels, target),
+          pointAt,
+          game.room.size,
+          game.bookArt?.fonts.body,
+        );
+    });
     function act(target, verb) {
+      if (!targetVerbs(labels, target).includes(verb)) {
+        say("I can't do that.");
+        return;
+      }
       if (target.kind === "book") {
         if (verb === "Look at")
           say(`${target.book.title}. ${target.book.items.length} posts.`);
-        else if (verb === "Open") openBook(target.book);
+        else if (verb === "Open" || verb === "Take") openBook(target.book);
         else say("I can't do that.");
         return;
       }
@@ -537,7 +576,11 @@ export async function boot({ world, content, element }) {
             ? "Let's see what's out there."
             : "There is nothing to open here.",
         );
-      else if (verb === "Open" && target.content) openReader(target.content);
+      else if (
+        (verb === "Open" || verb === "Take") &&
+        target.kind === "content"
+      )
+        openReader(target.content);
       else if (verb === "Use" && target.kind === "light") {
         const lamp = game.room.lights.find((light) => light.id === target.id);
         lamp.on = !lamp.on;
@@ -558,10 +601,37 @@ export async function boot({ world, content, element }) {
         say("I can't reach that.");
       }
     }
+    function chooseTarget(target, verb, running = false) {
+      if (target.kind === "book" && verb === "Walk to") verb = "Open";
+      if (!targetVerbs(labels, target).includes(verb)) {
+        say("I can't do that.");
+        return;
+      }
+      if (verb === "Open" && target.kind === "hotspot" && target.content) {
+        const url = target.content.link || target.content.url;
+        if (url && !running) window.open(url, "_blank", "noopener,noreferrer");
+      }
+      walk(
+        target.position,
+        verb === "Walk to" && target.kind !== "exit" ? null : { target, verb },
+        running,
+      );
+    }
+    function chooseMenu(index) {
+      const menu = game.menu;
+      game.menu = null;
+      game.hover = null;
+      canvas.style.cursor = "crosshair";
+      if (index >= 0) chooseTarget(menu.target, menu.verbs[index]);
+    }
     on(canvas, "click", (event) => {
       if (!game.started || game.readerItem || game.loading) return;
       root.focus({ preventScroll: true });
       const [x, y] = point(event);
+      if (game.menu) {
+        chooseMenu(menuHit(game.menu, x, y));
+        return;
+      }
       if (game.activeBook) {
         if (game.turning) return;
         if (y >= game.verbTop) {
@@ -613,22 +683,7 @@ export async function boot({ world, content, element }) {
       const target = hit(x, y);
       game.hover = target;
       if (target) {
-        const verb =
-          target.kind === "book" && game.verb === "Walk to"
-            ? "Open"
-            : game.verb;
-        if (verb === "Open" && target.kind === "hotspot" && target.content) {
-          const url = target.content.link || target.content.url;
-          if (url && !(event.detail >= 2))
-            window.open(url, "_blank", "noopener,noreferrer");
-        }
-        walk(
-          target.position,
-          verb === "Walk to" && target.kind !== "exit"
-            ? null
-            : { target, verb },
-          event.detail >= 2,
-        );
+        chooseTarget(target, game.verb, event.detail >= 2);
       } else if (
         x >= 0 &&
         x < game.room.size[0] &&
@@ -638,6 +693,9 @@ export async function boot({ world, content, element }) {
       )
         walk([x, y], null, event.detail >= 2);
     });
+    on(document, "click", (event) => {
+      if (game.menu && event.target !== canvas) chooseMenu(-1);
+    });
     on(root, "keydown", (event) => {
       if (
         event.target === start ||
@@ -646,6 +704,21 @@ export async function boot({ world, content, element }) {
         !game.started
       )
         return;
+      if (game.menu) {
+        if (["Escape", "ArrowUp", "ArrowDown", "Enter"].includes(event.key))
+          event.preventDefault();
+        const menu = game.menu;
+        if (event.key === "Escape") chooseMenu(-1);
+        if (event.key === "ArrowDown")
+          menu.selected = (menu.selected + 1) % menu.verbs.length;
+        if (event.key === "ArrowUp")
+          menu.selected =
+            menu.selected < 0
+              ? menu.verbs.length - 1
+              : (menu.selected + menu.verbs.length - 1) % menu.verbs.length;
+        if (event.key === "Enter") chooseMenu(menu.selected);
+        return;
+      }
       if (game.activeBook) {
         if (["Escape", "ArrowLeft", "ArrowRight"].includes(event.key))
           event.preventDefault();

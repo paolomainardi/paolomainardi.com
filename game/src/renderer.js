@@ -477,6 +477,34 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
       x += advance;
     }
   }
+  renderMenu(game) {
+    const menu = game.menu;
+    const ink = game.bookArt?.ink || "#1d202f";
+    const accent = game.bookArt?.accent || "#8a5650";
+    const color = (hex) => [
+      ...hex
+        .slice(1)
+        .match(/../g)
+        .map((c) => parseInt(c, 16) / 255),
+      1,
+    ];
+    this.rect(menu.x, menu.y, menu.width, menu.height, color(ink));
+    this.rect(
+      menu.x + 1,
+      menu.y + 1,
+      menu.width - 2,
+      menu.height - 2,
+      [0.96, 0.89, 0.72, 1],
+    );
+    [menu.header, ...menu.verbs].forEach((label, row) => {
+      const tint = row > 0 && row - 1 === menu.selected ? accent : ink;
+      const x = menu.x + 6,
+        y = menu.y + 4 + row * menu.rowHeight;
+      if (game.bookArt)
+        this.atlasText(game.bookArt.fonts.body, label, x, y, tint);
+      else this.text(label, x, y, color(tint));
+    });
+  }
   renderBook(game) {
     const gl = this.gl,
       book = game.bookArt;
@@ -759,6 +787,7 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
         this.text(line, x, top + i * 9 * pixelScale, undefined, ui);
       });
     }
+    if (game.menu) this.renderMenu(game);
     gl.disable(gl.BLEND);
     this.into(this.glow[2]);
     this.use(this.programs.glow);

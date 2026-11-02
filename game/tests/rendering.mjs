@@ -357,3 +357,42 @@ for (const count of [1, 17, 32, 256]) {
 console.log(
   "Palette sizes, 64³ uploads, palette membership, and exact OKLab reference samples passed.",
 );
+
+// Menu draws above the scene with a one-pixel border and shared hover colours.
+const menuGame = {
+  menu: {
+    header: "Lamp",
+    verbs: ["Look at", "Use"],
+    selected: 1,
+    x: 500,
+    y: 300,
+    width: 90,
+    height: 48,
+    rowHeight: 12,
+  },
+};
+calls.length = 0;
+renderer.renderMenu(menuGame);
+assert.deepEqual(calls[0].args.slice(0, 4), [500, 300, 90, 48]);
+assert.deepEqual(calls[1].args.slice(0, 4), [501, 301, 88, 46]);
+const menuText = calls.filter((call) => call.type === "text");
+assert.deepEqual(
+  menuText.map((call) => call.args[0]),
+  ["Lamp", "Look at", "Use"],
+);
+assert.notDeepEqual(menuText[1].args[3], menuText[2].args[3]);
+const atlasCalls = [];
+renderer.atlasText = (...args) => atlasCalls.push(args);
+menuGame.bookArt = { fonts: { body: {} }, ink: "#1d202f", accent: "#8a5650" };
+renderer.renderMenu(menuGame);
+assert(atlasCalls.every((call) => call[0] === menuGame.bookArt.fonts.body));
+assert.equal(atlasCalls[1][4], menuGame.bookArt.ink);
+assert.equal(atlasCalls[2][4], menuGame.bookArt.accent);
+console.log(
+  "Menu border, fallback font, body atlas and rose highlight passed (mock GPU).",
+);
+
+menuGame.menu.selected = -1;
+atlasCalls.length = 0;
+renderer.renderMenu(menuGame);
+assert(atlasCalls.every((call) => call[4] === menuGame.bookArt.ink));
