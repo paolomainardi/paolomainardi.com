@@ -310,6 +310,7 @@ Declared in `src/hugo.toml` under `[[module.imports]]` and locked in
 
 Self hosted variable fonts taken from the `@fontsource-variable` packages and
 committed to `src/static/fonts/`. They are not installed at build time.
+Each family's licence text sits next to its font files as `<family>-OFL.txt`.
 
 - Check the latest version: `curl -s https://registry.npmjs.org/@fontsource-variable/<family>/latest | jq '{version: .version}'`
 
