@@ -312,3 +312,82 @@ spread. A corner click and the arrow keys also turn pages. The first and last
 spread disable unavailable turn directions.
 
 Spreads use zero-based indices in `#<room>/book/<id>/<spread>`. Page numbers start at 1. Invalid spread indices clamp to the book bounds. Closing the reader preserves the current book and spread. Rooms without `books` keep the single-post object behavior.
+
+## Sound in world.json
+
+Sound starts only when a Start button creates or resumes an `AudioContext`.
+Worlds without sound configuration remain silent. Browsers without Web Audio
+keep the game playable.
+
+```json
+{
+  "sounds": {
+    "sea": { "synth": "surf", "volume": 0.5, "loop": true },
+    "wind": { "synth": "wind", "volume": 0.3, "loop": true },
+    "flame": { "synth": "crackle", "volume": 0.25, "loop": true },
+    "step": { "synth": "step", "volume": 0.5 },
+    "page": { "synth": "page", "volume": 0.6 },
+    "click": { "synth": "click", "volume": 0.4 },
+    "door": { "synth": "creak", "volume": 0.5 }
+  },
+  "events": {
+    "step": "step",
+    "page-turn": "page",
+    "book-open": "page",
+    "book-close": "page",
+    "lamp": "click",
+    "menu": "click",
+    "door": "door"
+  },
+  "mix": { "master": 0.5, "ambience": 0.8, "effects": 1.0 },
+  "rooms": {
+    "stone-house": {
+      "src": "rooms/stone-house/room.json",
+      "ambience": {
+        "dusk": [{ "sound": "sea", "at": "window" }],
+        "night": [
+          { "sound": "sea", "at": "window" },
+          { "sound": "wind" },
+          { "sound": "flame", "at": "oil-lamp", "light": "oil-lamp" }
+        ]
+      }
+    }
+  }
+}
+```
+
+Each sound selects either `synth` or `src`. `src` resolves relative to
+`world.json`; files load after Start and decode once per URL. Unknown sound
+ids, unknown synths and failed files warn once in the console and are skipped.
+`volume` defaults to 1 and `loop` defaults to false. Ambient definitions use
+`loop: true`. Omitted event mappings are silent.
+
+The seven synths use filtered noise: irregular shore swells (`surf`), drifting
+low wind (`wind`), an oil-flame bed with random pops (`crackle`), a low wooden
+footstep (`step`), swept paper (`page`), a brief switch (`click`), and a resonant
+wooden creak (`creak`). Optional `params.frequency` sets the filter centre or
+cutoff in Hz. `params.duration` sets a positive one-shot duration in seconds.
+Noise, pitch, levels and ambient envelopes vary between plays.
+
+Each `ambience` list belongs to a time of day in the world's room entry.
+`at` names an item in that room. Gain decreases gently with distance from the
+character's feet, never reaches zero, and pans towards the item's relative
+horizontal position. Without `at`, gain stays constant and pan stays centred.
+`light` names a room lamp and multiplies volume by its current fade level.
+Use the fixture's actual ids: placeholders use `oil`; real art uses `oil-lamp`.
+Time and room changes cross-fade old and new sources over one second.
+
+Master, ambience and effects buses use `mix` gains, defaulting to 0.5, 0.8 and
+1.0. `M` or the verb bar's `Sound: on` / `Sound: off` label toggles master mute.
+Mute is held only in memory. The reader ducks both buses to 0.25
+(about 12 dB down); closing it restores volume. Book close-ups keep full
+ambience. Hiding the document suspends the context; showing it resumes the
+context. Destroying the game stops sources and closes the context.
+
+`step` fires at both half-cycle and whole-cycle foot contacts during movement,
+using distance-based walk phase or the animation clock for animations without
+`stride`. Step gain follows character depth. `page-turn` fires when a turn
+commits, including a successful drag. Cancelled turns stay silent. Opening and
+closing book close-ups fire `book-open` and `book-close`. Using a light fires
+`lamp`; choosing a right-click menu verb fires `menu`. Using or walking to an
+exit fires `door` on arrival. Exit travel retains the existing spoken response.

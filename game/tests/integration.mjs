@@ -2,6 +2,7 @@
 // and a renderer stand-in. GPU output still needs a real browser visual pass.
 import assert from "node:assert/strict";
 import { animationFrame } from "../src/animation.js";
+import { AudioContext } from "./audio-fixture.mjs";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -97,6 +98,7 @@ class Renderer {
   }
 }
 const context = vm.createContext({
+  AudioContext,
   URL,
   FontFace: class {
     async load() {}
@@ -245,8 +247,30 @@ assert.equal(cover.children[2].disabled, false);
 assert.equal(reader.hidden, true);
 assert.equal(close.textContent, "×");
 assert.equal(close.attributes["aria-label"], "Close");
+assert.equal(
+  AudioContext.instances.length,
+  0,
+  "Boot must not create audio before Start",
+);
 event(cover.children[3], "click");
 step();
+assert.equal(AudioContext.instances.length, 1);
+const soundEvents = [];
+const originalSoundEvent = rendered.sound.event.bind(rendered.sound);
+rendered.sound.event = (name, volume = 1) => {
+  soundEvents.push({ name, volume, phase: rendered.actor.walkPhase });
+  return originalSoundEvent(name, volume);
+};
+key("m");
+assert.equal(rendered.sound.muted, true);
+click(rendered.soundRect.x + 2, 345);
+assert.equal(rendered.sound.muted, false);
+document.hidden = true;
+event(document, "visibilitychange");
+assert.equal(rendered.sound.context.state, "suspended");
+document.hidden = false;
+event(document, "visibilitychange");
+assert.equal(rendered.sound.context.state, "running");
 // Speed is 120 pixels per second at depth scale 1, and doubles for one walk only.
 const depth = rendered.room.depth;
 rendered.room.depth = { far: [150, 1], near: [265, 1] };
@@ -287,7 +311,19 @@ for (const scale of [0.5, 1]) {
     });
     rendered.path = [[600, 300]];
     rendered.running = running;
+    const beforeSteps = soundEvents.filter(
+      (event) => event.name === "step",
+    ).length;
     step(20);
+    const contacts = soundEvents
+      .filter((event) => event.name === "step")
+      .slice(beforeSteps);
+    assert.equal(
+      contacts.length,
+      running ? 1 : 0,
+      "Foot contacts follow distance at both speeds and depths",
+    );
+    assert(contacts.every((event) => event.volume === scale));
     const distance = rendered.actor.x - 200;
     assert(Math.abs(distance - 38.4 * scale * (running ? 2 : 1)) < 1e-8);
     assert(Math.abs(rendered.actor.walkPhase - distance / (96 * scale)) < 1e-8);
@@ -298,6 +334,16 @@ for (const scale of [0.5, 1]) {
       ),
       running ? 4 : 2,
     );
+    step(40);
+    const fullContacts = soundEvents
+      .filter((event) => event.name === "step")
+      .slice(beforeSteps);
+    assert.equal(
+      fullContacts.length,
+      running ? 4 : 2,
+      "Both foot phases fire over full cycles",
+    );
+    assert(fullContacts.every((event) => event.volume === scale));
   }
 }
 rendered.room.depth = { far: [150, 1], near: [352, 1] };
@@ -524,6 +570,7 @@ settle();
 assert.equal(controller.state.reader, "workstation-1");
 assert.equal(location.hash, "#stone-house/workstation-1");
 assert.equal(reader.hidden, false);
+assert.equal(rendered.sound.duck.gain.calls.at(-1)[1], 0.25);
 assert.equal(
   iframe.src,
   "https://adventure.test/dev/reader/workstation-1.html",
@@ -541,6 +588,7 @@ assert.equal(
 event(reader, "keydown", { key: "Escape" });
 assert.equal(reader.hidden, true);
 assert.equal(controller.state.reader, null);
+assert.equal(rendered.sound.duck.gain.calls.at(-1)[1], 1);
 assert.equal(location.hash, "#stone-house");
 assert.equal(document.activeElement, root);
 const use = rendered.verbRects.find((v) => v.label === "Use");
@@ -739,8 +787,23 @@ assert(
 assert(
   rendered.objectSprites.every((sprite) => !retiredSprites.includes(sprite)),
 );
+assert(soundEvents.some((event) => event.name === "lamp"));
+assert(soundEvents.some((event) => event.name === "menu"));
+// Exit effects fire for Use and Walk to, but not Look at.
+const exit = rendered.room.items.find((item) => item.kind === "exit");
+for (const verb of ["Use", "Walk to"]) {
+  const barVerb = rendered.verbRects.find((v) => v.label === verb);
+  click(barVerb.x + 2, 340);
+  rendered.actor.x = exit.position[0];
+  rendered.actor.y = exit.position[1];
+  click(80, 160);
+  settle();
+}
+assert.equal(soundEvents.filter((event) => event.name === "door").length, 2);
 const originalFlames = rendered.character.flames["walk-side"];
+const firstAudio = rendered.sound.context;
 controller.destroy();
+assert.equal(firstAudio.state, "closed");
 assert.equal(nextFrame, null);
 assert(root.removed);
 // Loading with a deep link preserves the reader selection on Start.
@@ -888,6 +951,12 @@ const bookRoot = bookContainer.children[0],
 const bookReader = bookRoot.children[2];
 event(bookRoot.children[1].children[3], "click");
 step();
+const bookSoundEvents = [];
+const bookSoundEvent = rendered.sound.event.bind(rendered.sound);
+rendered.sound.event = (name, volume) => {
+  bookSoundEvents.push(name);
+  return bookSoundEvent(name, volume);
+};
 assert.equal(rendered.objects.length, 6);
 assert.equal(rendered.objects[0].label, "Workstation");
 assert.equal(rendered.objects[0].book.items.length, 22);
@@ -903,6 +972,11 @@ event(bookRoot, "keydown", { key: "ArrowUp" });
 event(bookRoot, "keydown", { key: "Enter" });
 for (let i = 0; i < 600 && books.state.walking; i++) step();
 assert.equal(books.state.book, "workstation");
+assert.equal(
+  rendered.sound.duck.gain.value,
+  1,
+  "Book close-up keeps full ambience",
+);
 event(bookRoot, "keydown", { key: "Escape" });
 const bookLook = rendered.verbRects.find((v) => v.label === "Look at");
 event(bookCanvas, "click", { clientX: bookLook.x + 2, clientY: 340 });
@@ -1030,6 +1104,9 @@ assert.equal(
 );
 event(bookCanvas, "click", { clientX: 15, clientY: 345 });
 assert.equal(books.state.book, null, "Close verb returns to room");
+assert(bookSoundEvents.includes("book-open"));
+assert(bookSoundEvents.includes("book-close"));
+assert(bookSoundEvents.includes("page-turn"));
 books.destroy();
 location.hash = "#stone-house/book/workstation/1";
 const reloadContainer = new Element("main");

@@ -45,6 +45,15 @@ vec3 drawing(vec2 p){
 }`;
 
 export class Renderer {
+  soundLabel(game) {
+    if (!game.soundRect) return;
+    this.text(
+      game.sound.muted ? "Sound: off" : "Sound: on",
+      game.soundRect.x,
+      game.soundRect.y,
+    );
+  }
+
   constructor(canvas) {
     this.canvas = canvas;
     const gl = (this.gl = canvas.getContext("webgl2", {
@@ -643,6 +652,7 @@ void main(){
       [0.025, 0.03, 0.05, 0.85],
     );
     this.text("Close", 8, game.verbTop + 8);
+    this.soundLabel(game);
     this.text(
       "or right click, Esc",
       44,
@@ -827,6 +837,7 @@ void main(){
       height - game.verbTop,
       [0.025, 0.03, 0.05, 0.55],
     );
+    this.soundLabel(game);
     for (const verb of game.verbRects) {
       const selected = game.verb === verb.label;
       this.text(

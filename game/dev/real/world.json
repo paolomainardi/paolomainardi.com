@@ -36,7 +36,29 @@
         "docker",
         "security",
         "personal"
-      ]
+      ],
+      "ambience": {
+        "dusk": [
+          {
+            "sound": "sea",
+            "at": "window"
+          }
+        ],
+        "night": [
+          {
+            "sound": "sea",
+            "at": "window"
+          },
+          {
+            "sound": "wind"
+          },
+          {
+            "sound": "flame",
+            "at": "oil-lamp",
+            "light": "oil-lamp"
+          }
+        ]
+      }
     }
   },
   "book": "book/book.json",
@@ -93,5 +115,52 @@
       },
       "sprite": "objects/book-6.png"
     }
+  },
+  "sounds": {
+    "sea": {
+      "synth": "surf",
+      "volume": 0.5,
+      "loop": true
+    },
+    "wind": {
+      "synth": "wind",
+      "volume": 0.3,
+      "loop": true
+    },
+    "flame": {
+      "synth": "crackle",
+      "volume": 0.25,
+      "loop": true
+    },
+    "step": {
+      "synth": "step",
+      "volume": 0.5
+    },
+    "page": {
+      "synth": "page",
+      "volume": 0.6
+    },
+    "click": {
+      "synth": "click",
+      "volume": 0.4
+    },
+    "door": {
+      "synth": "creak",
+      "volume": 0.5
+    }
+  },
+  "events": {
+    "step": "step",
+    "page-turn": "page",
+    "book-open": "page",
+    "book-close": "page",
+    "lamp": "click",
+    "menu": "click",
+    "door": "door"
+  },
+  "mix": {
+    "master": 0.5,
+    "ambience": 0.8,
+    "effects": 1.0
   }
 }

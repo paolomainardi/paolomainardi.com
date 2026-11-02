@@ -227,6 +227,9 @@ def generate():
     frame.save(ROOT.parent / 'src/reader-frame.png')
     save_json(DATA / 'world.json', dict(title='The engineer\'s study', palette='palette.png', start='stone-house',
         character='character/character.json', verbs=['Look at', 'Open', 'Use', 'Talk to'], objects=dict(book=books),
+        sounds={'sea': {'synth': 'surf', 'volume': 0.5, 'loop': True}, 'wind': {'synth': 'wind', 'volume': 0.3, 'loop': True}, 'flame': {'synth': 'crackle', 'volume': 0.25, 'loop': True}, 'step': {'synth': 'step', 'volume': 0.5}, 'page': {'synth': 'page', 'volume': 0.6}, 'click': {'synth': 'click', 'volume': 0.4}, 'door': {'synth': 'creak', 'volume': 0.5}},
+        events={'step': 'step', 'page-turn': 'page', 'book-open': 'page', 'book-close': 'page', 'lamp': 'click', 'menu': 'click', 'door': 'door'},
+        mix={'master': 0.5, 'ambience': 0.8, 'effects': 1.0},
         book='book/book.json',
         books={key: dict(title=title, content=content, sprite=books[i % len(books)])
                for i, (key, title, content) in enumerate([
@@ -237,6 +240,8 @@ def generate():
                    ('security', 'Security', dict(tags=['security'])),
                    ('personal', 'Personal', dict(tags=['personal']))])},
         rooms={'stone-house': dict(src='rooms/stone-house/room.json', books=['workstation', 'linux', 'ai', 'docker', 'security', 'personal'],
+            ambience=dict(dusk=[dict(sound='sea', at='window')],
+                night=[dict(sound='sea', at='window'), dict(sound='wind'), dict(sound='flame', at='oil', light='oil')]),
             hotspots=dict(window=dict(content=dict(type='link'))))}))
     titles = ['A room of one\'s own', 'Choosing the hardware', 'Linux on the desk', 'Containers at home', 'A quieter workstation', 'The finished build']
     content = []

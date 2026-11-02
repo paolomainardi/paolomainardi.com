@@ -8,7 +8,7 @@ From this folder:
 python3 -m http.server 8000
 ```
 
-Open <http://localhost:8000/dev/>. **Start** requests fullscreen; **Start in window** stays windowed. Click the floor to walk. Select a verb, then a lamp, book, window, or door. `T` switches dusk/night, `L` toggles the lantern, `G` toggles bloom for comparison, and `Esc` closes the reader.
+Open <http://localhost:8000/dev/>. **Start** requests fullscreen; **Start in window** stays windowed. Click the floor to walk. Select a verb, then a lamp, book, window, or door. `T` switches dusk/night, `L` toggles the lantern, `G` toggles bloom for comparison, `M` toggles sound, and `Esc` closes the reader.
 
 Embed the engine in a container with a defined width and height:
 
@@ -115,6 +115,25 @@ The renderer uses the largest whole pixel scale that fits, centred with black ba
 - `tools/make_placeholders.py`: regenerates demo data and `src/reader-frame.png` using Pillow and NumPy.
 - `tests/`: logic, asset, shader, simulated interaction, and browser checks.
 
+## Sound
+
+Start enables low-volume Web Audio. Click the verb bar's `Sound: on` label or
+press `M` to mute; the setting lasts only for this game instance. The reader
+lowers all sound by about 12 dB. Book close-ups keep full ambience. Hidden tabs
+suspend audio until visible again.
+
+Both demo worlds configure sea at the window, plus wind and lamp crackle at
+night. Nearby sources get louder and pan towards their room position. Switching
+the oil lamp off fades its crackle. Room and time changes cross-fade ambience
+over one second. Wooden footsteps follow both foot contacts while walking or
+running. Pages, book close-ups, lamp switches, menu choices and exits have effects.
+
+Define `sounds`, `events`, `mix` and each room's `ambience` in `world.json`.
+Use built-in filtered-noise synths or a `src` audio file relative to the world.
+Files decode once; missing files and unknown synths warn once and stay silent.
+See [the sound contract](CONTRACT.md#sound-in-worldjson) for all fields,
+generators and event bindings. Placeholder regeneration preserves this setup.
+
 ## Replace the character
 
 Point `world.json`'s `character` at a new `character.json`, or replace the existing character files. The `sheet` path resolves relative to `character.json`. Keep sprite colours in the world's palette, with a transparent background.
@@ -136,6 +155,7 @@ Regenerate assets:
 Checks:
 
 ```sh
+node tests/sound.mjs # mock AudioContext, mixing, spatial sound, fades, events and missing files
 node tests/verb-menu.mjs # target verbs, edge placement, row hits
 node tests/books.mjs # layout, routes, entry hits, font loading
 node tests/logic.mjs
@@ -169,4 +189,4 @@ playwright-cli -s=adventure close
 
 The browser checks cover rendered linear light sums, independent lamp switches, fractional fades, albedo lighting, flame dimming and bloom sources, plus walking, lamp switching, readers, iframe Escape, hashes, integer scaling, overflow, and WebGL errors. It saves dusk/night screenshots at four widths under `.playwright-cli/`.
 
-Book layout, NF-Pixels loading, binary text alpha, game-pixel positions, text-layer caching, menu headings, corner hover, drag turns, routes, lighting math, assets, interaction simulation, renderer checks, and shader compilation pass. The current sandbox denies server sockets, so browser rendering and visual checks remain unrun. Exits show a line instead of changing rooms, as specified. The verb font covers ASCII; NF-Pixels is bundled under SIL OFL 1.1; cross-origin readers need the close button when iframe focus owns Escape.
+Sound lifecycle and gameplay events with mock audio, book layout, NF-Pixels loading, binary text alpha, game-pixel positions, text-layer caching, menu headings, corner hover, drag turns, routes, lighting math, assets, interaction simulation, renderer checks, and shader compilation pass. The current sandbox denies server sockets, so browser rendering and visual checks remain unrun. Exits show a line instead of changing rooms, as specified. The verb font covers ASCII; NF-Pixels is bundled under SIL OFL 1.1; cross-origin readers need the close button when iframe focus owns Escape.

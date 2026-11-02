@@ -8,7 +8,7 @@ for (const [target, expected] of [
   [{ kind: "hotspot" }, ["Walk to", "Look at"]],
   [{ kind: "hotspot", content: {} }, ["Walk to", "Look at", "Open"]],
   [{ kind: "light" }, ["Walk to", "Look at", "Use"]],
-  [{ kind: "exit" }, ["Walk to", "Look at"]],
+  [{ kind: "exit" }, ["Walk to", "Look at", "Use"]],
   [{ kind: "content" }, ["Walk to", "Look at", "Open", "Take"]],
   [{ kind: "book" }, ["Walk to", "Look at", "Open", "Take"]],
 ]) {

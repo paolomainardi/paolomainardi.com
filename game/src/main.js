@@ -17,6 +17,7 @@ import { findPath, nearestWalkable } from "./pathfinding.js";
 import { wrap } from "./font.js";
 import { flame, lightSourcesAt } from "./lighting.js";
 import { animationFrame } from "./animation.js";
+import { SoundEngine, footContacts } from "./sound.js";
 
 /** Boot an isolated game in a supplied container. URLs resolve against the document. */
 export async function boot({ world, content, element }) {
@@ -35,7 +36,7 @@ export async function boot({ world, content, element }) {
   const canvas = document.createElement("canvas");
   canvas.setAttribute(
     "aria-label",
-    "Adventure scene. Click floor to walk. Double click floor or objects to run. Select a verb, then an object. T changes time. L toggles lantern. G toggles bloom.",
+    "Adventure scene. Click floor to walk. Double click floor or objects to run. Select a verb, then an object. T changes time. L toggles lantern. G toggles bloom. M toggles sound.",
   );
   const cover = document.createElement("div");
   cover.className = "adventure-start";
@@ -43,7 +44,7 @@ export async function boot({ world, content, element }) {
   heading.textContent = "The engineer’s study";
   const help = document.createElement("p");
   help.textContent =
-    "Click to walk. Double click to run. Choose a verb, then an object. T: dusk / night. L: lantern. G: bloom.";
+    "Click to walk. Double click to run. Choose a verb, then an object. T: dusk / night. L: lantern. G: bloom. M: sound.";
   const start = document.createElement("button");
   start.textContent = "Loading…";
   start.disabled = true;
@@ -118,6 +119,11 @@ export async function boot({ world, content, element }) {
       objects: [],
       verbRects: [],
     };
+    game.sound = new SoundEngine(game.world, worldURL);
+    subscriptions.push(() => game.sound.destroy());
+    on(document, "visibilitychange", () =>
+      game.sound.visibility(document.hidden),
+    );
     game.bookArt = game.world.book
       ? await loadBook(resolve(game.world.book, worldURL), renderer)
       : null;
@@ -270,6 +276,7 @@ export async function boot({ world, content, element }) {
       if (location.hash !== value) history.pushState(null, "", value);
     }
     function openBook(book, spread = 0, update = true) {
+      game.sound.event("book-open");
       game.menu = null;
       game.activeBook = book;
       game.spread = Math.max(
@@ -284,6 +291,7 @@ export async function boot({ world, content, element }) {
       if (update) writeHash();
     }
     function closeBook() {
+      game.sound.event("book-close");
       game.activeBook = null;
       game.turning = null;
       game.corner = 0;
@@ -305,6 +313,7 @@ export async function boot({ world, content, element }) {
     }
     function hideReader(update = true) {
       reader.hidden = true;
+      game.sound.setReader(false);
       iframe.removeAttribute("src");
       game.readerItem = null;
       if (update) writeHash();
@@ -329,6 +338,7 @@ export async function boot({ world, content, element }) {
       else website.removeAttribute("href");
       iframe.src = item.reader;
       reader.hidden = false;
+      game.sound.setReader(true);
       if (update) writeHash(item);
       close.focus({ preventScroll: true });
     }
@@ -344,6 +354,8 @@ export async function boot({ world, content, element }) {
       wasFullscreen = document.fullscreenElement === root;
     });
     function readerKey(event) {
+      if (event.key.toLowerCase() === "m" && !event.repeat)
+        game.sound.toggleMute();
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
@@ -395,7 +407,15 @@ export async function boot({ world, content, element }) {
         (sum, label) => sum + label.length * 6 + 10 * game.pixelScale,
         0,
       );
-      game.verbScale = Math.min(game.uiScale, (width - margin * 2) / verbWidth);
+      game.soundRect = {
+        x: width - margin - 66,
+        y: game.verbTop + 8,
+        width: 66,
+      };
+      game.verbScale = Math.min(
+        game.uiScale,
+        (width - margin * 3 - 66) / verbWidth,
+      );
       let verbX = margin;
       game.verbRects = labels.map((label) => {
         const cellWidth =
@@ -593,6 +613,7 @@ export async function boot({ world, content, element }) {
         return;
       }
       if (target.kind === "exit") {
+        if (verb === "Use" || verb === "Walk to") game.sound.event("door");
         say(`That way lies ${target.to}.`);
         return;
       }
@@ -614,6 +635,7 @@ export async function boot({ world, content, element }) {
       else if (verb === "Use" && target.kind === "light") {
         const lamp = game.room.lights.find((light) => light.id === target.id);
         lamp.on = !lamp.on;
+        game.sound.event("lamp");
         say(lamp.on ? "Let there be light." : "A little less light.");
       } else say("I can't do that.");
     }
@@ -652,7 +674,10 @@ export async function boot({ world, content, element }) {
       game.menu = null;
       game.hover = null;
       canvas.style.cursor = "crosshair";
-      if (index >= 0) chooseTarget(menu.target, menu.verbs[index]);
+      if (index >= 0) {
+        game.sound.event("menu");
+        chooseTarget(menu.target, menu.verbs[index]);
+      }
     }
     let suppressBookClick = false;
     on(canvas, "pointerdown", (event) => {
@@ -699,6 +724,14 @@ export async function boot({ world, content, element }) {
       if (!game.started || game.readerItem || game.loading) return;
       root.focus({ preventScroll: true });
       const [x, y] = point(event);
+      if (
+        y >= game.verbTop &&
+        x >= game.soundRect.x &&
+        x < game.soundRect.x + game.soundRect.width
+      ) {
+        game.sound.toggleMute();
+        return;
+      }
       if (game.menu) {
         chooseMenu(menuHit(game.menu, x, y));
         return;
@@ -763,6 +796,10 @@ export async function boot({ world, content, element }) {
         !game.started
       )
         return;
+      if (event.key.toLowerCase() === "m") {
+        if (!event.repeat) game.sound.toggleMute();
+        return;
+      }
       if (game.menu) {
         if (["Escape", "ArrowUp", "ArrowDown", "Enter"].includes(event.key))
           event.preventDefault();
@@ -827,6 +864,9 @@ export async function boot({ world, content, element }) {
     function begin(fullscreen) {
       if (game.started) return;
       game.started = true;
+      game.sound.start();
+      game.sound.visibility(document.hidden);
+      game.sound.update(game);
       cover.hidden = true;
       if (fullscreen && root.requestFullscreen)
         root.requestFullscreen().catch(() => {});
@@ -869,7 +909,10 @@ export async function boot({ world, content, element }) {
               (turn.commit && turn.progress === 1) ||
               (!turn.commit && turn.progress === 0)
             ) {
-              if (turn.commit) game.spread = turn.spread;
+              if (turn.commit) {
+                game.spread = turn.spread;
+                game.sound.event("page-turn");
+              }
               game.turning = null;
               writeHash();
             }
@@ -922,9 +965,21 @@ export async function boot({ world, content, element }) {
                     ? "walk-back"
                     : "walk-front";
               const animation = game.character.animations[game.actor.animation];
+              const before = animation.stride
+                ? game.actor.walkPhase
+                : ((game.actor.clock - remaining) * animation.fps) /
+                  animation.frames;
               if (animation.stride)
                 game.actor.walkPhase +=
-                  Math.min(distance, travel) / (animation.stride * game.depth());
+                  Math.min(distance, travel) /
+                  (animation.stride * game.depth());
+              const after = animation.stride
+                ? game.actor.walkPhase
+                : before +
+                  (Math.min(distance / speed, remaining) * animation.fps) /
+                    animation.frames;
+              for (let i = 0; i < footContacts(before, after); i++)
+                game.sound.event("step", game.depth());
             }
             if (distance <= travel) {
               game.actor.x = next[0];
@@ -943,7 +998,8 @@ export async function boot({ world, content, element }) {
               game.actor.animation = game.character.animations[idle]
                 ? idle
                 : "idle-front";
-              if (game.actor.animation !== "idle-side") game.actor.mirror = false;
+              if (game.actor.animation !== "idle-side")
+                game.actor.mirror = false;
             }
             if (game.pending) {
               const pending = game.pending;
@@ -952,6 +1008,7 @@ export async function boot({ world, content, element }) {
             }
           }
         }
+        game.sound.update(game);
         renderer.render(game);
       }
       frame = requestAnimationFrame(tick);
@@ -991,6 +1048,7 @@ export async function boot({ world, content, element }) {
     windowed.hidden = true;
     help.textContent = error.message;
     heading.textContent = "The study could not open";
+    game?.sound?.destroy();
     renderer?.destroy();
     throw error;
   }

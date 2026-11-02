@@ -4,7 +4,7 @@ import { wrap } from "./font.js";
 export function targetVerbs(verbs, target) {
   return verbs.filter((verb) => {
     if (verb === "Walk to" || verb === "Look at") return true;
-    if (verb === "Use") return target.kind === "light";
+    if (verb === "Use") return ["light", "exit"].includes(target.kind);
     if (verb === "Take") return ["book", "content"].includes(target.kind);
     if (verb === "Open")
       return (
