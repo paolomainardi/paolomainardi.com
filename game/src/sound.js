@@ -7,6 +7,7 @@ const presets = {
   page: { frequency: 2400, duration: 0.32, level: 0.3 },
   click: { frequency: 1400, duration: 0.035, level: 0.25 },
   creak: { frequency: 380, duration: 0.65, level: 0.28 },
+  whoosh: { frequency: 700, duration: 0.5, level: 0.25 },
 };
 
 export function soundPosition(room, actor, entry) {
@@ -104,8 +105,8 @@ export class SoundEngine {
     if (this.context) this.ramp(this.duck.gain, open ? 0.25 : 1, 0.15);
   }
 
-  buffer(definition) {
-    const url = new URL(definition.src, this.url).href;
+  buffer(src) {
+    const url = new URL(src, this.url).href;
     if (!this.buffers.has(url)) {
       this.buffers.set(
         url,
@@ -139,7 +140,11 @@ export class SoundEngine {
       return null;
     }
     const c = this.context;
-    const buffer = definition.src ? await this.buffer(definition) : null;
+    // A list of files plays one at random, so repeated sounds differ.
+    const src = Array.isArray(definition.src)
+      ? definition.src[Math.floor(Math.random() * definition.src.length)]
+      : definition.src;
+    const buffer = src ? await this.buffer(src) : null;
     if (this.disposed || (definition.src && !buffer)) return null;
     const output = c.createGain(),
       pan = c.createStereoPanner();

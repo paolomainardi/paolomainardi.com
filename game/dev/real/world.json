@@ -133,8 +133,12 @@
       "loop": true
     },
     "step": {
-      "synth": "step",
-      "volume": 0.9
+      "src": [
+        "sounds/step-wood-1.wav",
+        "sounds/step-wood-2.wav",
+        "sounds/step-wood-3.wav"
+      ],
+      "volume": 0.7
     },
     "page": {
       "synth": "page",
@@ -147,6 +151,22 @@
     "door": {
       "synth": "creak",
       "volume": 0.5
+    },
+    "flare": {
+      "synth": "whoosh",
+      "volume": 0.5,
+      "params": {
+        "frequency": 900,
+        "duration": 0.35
+      }
+    },
+    "gust": {
+      "synth": "whoosh",
+      "volume": 0.4,
+      "params": {
+        "frequency": 350,
+        "duration": 1.2
+      }
     }
   },
   "events": {
@@ -156,7 +176,9 @@
     "book-close": "page",
     "lamp": "click",
     "menu": "click",
-    "door": "door"
+    "door": "door",
+    "lantern": "flare",
+    "time": "gust"
   },
   "mix": {
     "master": 0.5,

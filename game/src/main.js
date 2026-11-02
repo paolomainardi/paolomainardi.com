@@ -826,8 +826,12 @@ export async function boot({ world, content, element }) {
       if (event.key.toLowerCase() === "t") {
         game.timeOverride = true;
         game.time = game.time === "night" ? "dusk" : "night";
+        game.sound.event("time");
       }
-      if (event.key.toLowerCase() === "l") game.lantern = !game.lantern;
+      if (event.key.toLowerCase() === "l") {
+        game.lantern = !game.lantern;
+        game.sound.event("lantern");
+      }
       if (event.key.toLowerCase() === "g") game.bloom = !game.bloom;
     });
     async function restoreHash() {
