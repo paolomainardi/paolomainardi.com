@@ -138,7 +138,7 @@
         "sounds/step-wood-2.wav",
         "sounds/step-wood-3.wav"
       ],
-      "volume": 0.7
+      "volume": 0.35
     },
     "page": {
       "synth": "page",
