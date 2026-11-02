@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { bookFonts } from "../src/book.js";
+import { context2D } from "./text-fixture.mjs";
 import { targetVerbs, layoutMenu, menuHit } from "../src/verb-menu.js";
 const verbs = ["Walk to", "Look at", "Open", "Use", "Talk to", "Take"];
 for (const [target, expected] of [
@@ -16,9 +18,10 @@ for (const [target, expected] of [
     [...expected].reverse(),
   );
 }
-const font = JSON.parse(
-  readFileSync(new URL("../dev/data/book/fonts/body.json", import.meta.url)),
+const book = JSON.parse(
+  readFileSync(new URL("../dev/data/book/book.json", import.meta.url)),
 );
+const font = bookFonts(book, context2D());
 for (const body of [null, font]) {
   for (const point of [
     [0, 0],

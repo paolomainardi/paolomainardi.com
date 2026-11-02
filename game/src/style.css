@@ -18,7 +18,7 @@
   display: block;
   flex: none;
   image-rendering: pixelated;
-  touch-action: manipulation;
+  touch-action: none;
 }
 .adventure [hidden] {
   display: none;

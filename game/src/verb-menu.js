@@ -1,4 +1,4 @@
-import { measure, wrapAtlas } from "./book.js";
+import { measure, wrapText } from "./book.js";
 import { wrap } from "./font.js";
 
 export function targetVerbs(verbs, target) {
@@ -16,17 +16,24 @@ export function targetVerbs(verbs, target) {
 }
 
 export function layoutMenu(target, verbs, point, size, font = null) {
-  const textWidth = (text) => (font ? measure(font, text) : text.length * 6);
+  const body = font?.body,
+    heading = font?.label;
+  const textWidth = (text, role = body) =>
+    role ? measure(role, text) : text.length * 6;
   const name = target.label || target.id;
   const width = Math.min(
     size[0],
     240,
-    Math.max(...[name, ...verbs].map(textWidth)) + 12,
+    Math.max(
+      textWidth(name, heading),
+      ...verbs.map((verb) => textWidth(verb)),
+    ) + 12,
   );
-  const header = font
-    ? wrapAtlas(font, name, width - 12, 1)[0]
+  const header = heading
+    ? wrapText(heading, name, width - 12, 1)[0]
     : wrap(name, Math.max(1, Math.floor((width - 12) / 6)), 1)[0];
-  const rowHeight = (font?.lineHeight || 8) + 4;
+  const rowHeight =
+    Math.ceil(Math.max(body?.lineHeight || 8, heading?.lineHeight || 8)) + 4;
   const height = (verbs.length + 1) * rowHeight + 8;
   const x = Math.max(0, Math.min(Math.round(point[0]) + 3, size[0] - width));
   const y = Math.max(0, Math.min(Math.round(point[1]) + 3, size[1] - height));

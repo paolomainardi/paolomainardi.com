@@ -120,18 +120,15 @@ for folder in [data / 'book', real / 'book']:
     assert Image.open(folder / book['image']).size == (640, 360)
     turn = book['turn']
     assert Image.open(folder / turn['sheet']).size == (turn['rect'][2] * turn['frames'], turn['rect'][3])
-    for path in book['fonts'].values():
-        font_path = folder / path
-        font = load(font_path)
-        atlas = np.array(Image.open(font_path.parent / font['image']).convert('RGBA'))
-        assert set(np.unique(atlas[..., 3])) <= {0, 128, 255}
-        assert np.all(atlas[..., :3][atlas[..., 3] > 0] == 255)
-        assert set(chr(i) for i in range(33, 127)) | set('àèéìòù‘’“”…') <= set(font['glyphs'])
-        for x, y, w, h, ox, oy, advance in font['glyphs'].values():
-            assert 0 <= x < x + w <= atlas.shape[1]
-            assert 0 <= y < y + h <= atlas.shape[0]
-            assert advance > 0
+    for key in ['regular', 'semibold', 'extended']:
+        assert (folder / book['font'][key]).read_bytes()[:4] == b'wOF2'
+    assert book['sizes'] == dict(title=13, body=6.5, label=6.5)
+    curl = np.array(Image.open(folder / book['curl']['image']).convert('RGBA'))
+    colors = palette if folder == data / 'book' else real_palette
+    assert set(map(tuple, curl[..., :3][curl[..., 3] > 0])) <= colors
+    assert curl.shape == (24, 48, 4)
+    assert set(np.unique(curl[..., 3])) == {0, 255}
 assert list(real_world['books']) == ['workstation', 'linux', 'ai', 'docker', 'security', 'personal']
 assert real_world['rooms']['stone-house']['books'] == list(real_world['books'])
 assert [book['sprite'] for book in real_world['books'].values()] == [f'objects/book-{i}.png' for i in range(1, 7)]
-print('Book frame, turn strip, atlas coverage, alpha levels, white masks, glyph bounds, and real shelf order passed.')
+print('Book frame, turn strip, WOFF2 fonts, sizes, palette curls, and real shelf order passed.')

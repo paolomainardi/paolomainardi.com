@@ -61,14 +61,15 @@ async (page) => {
   await page.waitForFunction(() => window.game.state.spread === 1);
   const position = await page.evaluate(() => window.game.state.position);
   const entry = await page.evaluate(async () => {
-    const { layoutBook, bookItems } = await import("../src/book.js");
+    const { layoutBook, bookItems, bookFonts } = await import("../src/book.js");
     const world = await (await fetch("./real/world.json")).json();
     const url = new URL("./real/" + world.book, location.href);
     const book = await (await fetch(url)).json();
-    for (const key of ["title", "body"])
-      book.fonts[key] = await (
-        await fetch(new URL(book.fonts[key], url))
-      ).json();
+    book.fonts = bookFonts(
+      book,
+      document.createElement("canvas").getContext("2d"),
+      3,
+    );
     const content = await (await fetch("./data/content.json")).json();
     const topic = world.books.workstation;
     return layoutBook(book, {

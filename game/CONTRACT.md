@@ -241,7 +241,15 @@ names them. Frame is 640×360; every colour comes from `palette.json`.
   "pages": [[x, y, w, h], [x, y, w, h]],
   "turn": { "sheet": "turn.png", "rect": [x, y, w, h], "frames": 4, "fps": 12 },
   "ink": "#rrggbb", "faded": "#rrggbb", "accent": "#rrggbb",
-  "fonts": { "title": "fonts/title.json", "body": "fonts/body.json" }
+  "font": {
+    "regular": "fonts/literata.woff2",
+    "semibold": "fonts/literata.woff2",
+    "extended": "fonts/literata-ext.woff2",
+    "family": "Literata"
+  },
+  "sizes": { "title": 13, "body": 6.5, "label": 6.5 },
+  "weights": { "title": 600, "body": 400, "label": 600 },
+  "curl": { "image": "curl.png", "rects": [[x, y, 24, 24], [x, y, 24, 24]] }
 }
 ```
 
@@ -253,19 +261,31 @@ names them. Frame is 640×360; every colour comes from `palette.json`.
 - `ink` for text, `faded` for dates and page numbers, `accent` (the rose) for
   the entry under the pointer.
 
-### fonts/<name>.json
+- `font`: self-hosted Literata WOFF2 files, loaded with `FontFace`. `regular` and
+  `semibold` may name the same variable font. `extended` holds the Latin Extended
+  subset. The engine loads both subsets with their Unicode ranges.
+- `sizes`: type sizes in game pixels, multiplied by the canvas scale. `weights`
+  selects the title, body and label weight. Labels also set the menu heading.
+- `curl`: a two-cell transparent strip, left then right, with destination rectangles
+  in game pixels. `tools/make_curls.py` folds pixels from `open.png`, darkens the
+  back and maps it to the book palette. It detects the paper's outer corners.
 
-```json
-{
-  "image": "body.png",
-  "lineHeight": 11, "baseline": 8, "space": 3,
-  "glyphs": { "a": [x, y, w, h, xoffset, yoffset, advance] }
-}
-```
+Book and menu text use Canvas 2D font metrics for wrapping and pagination. Each
+page fits as many complete entries as its bottom margin allows. Titles have at
+most two lines with ellipsis; dates and page numbers use the label style.
 
-The atlas is white on transparent; alpha is 0, 128 or 255 only. The engine
-tints it with `ink`, `faded` or `accent`. `yoffset` is from the line top.
-Glyphs cover printable ASCII plus à è é ì ò ù and the typographic quotes,
-apostrophe and ellipsis. A missing glyph draws `?`.
+A transparent text layer matches the screen canvas. Its texture is composited
+after the palette-mapped integer upscale. Text positions and baselines snap to
+whole screen pixels. Text redraws only when the book, spread, hover, menu or
+canvas size changes. The turning leaf masks covered text on the GPU. The menu
+heading uses semibold Literata with a one-screen-pixel rule; verbs use regular
+Literata. The verb bar and sentence line keep their 5×7 font.
+
+Lower outer corners curl on hover and show a hand cursor when a turn is available.
+Pressing an outer page half outside an entry captures the pointer. Turn frames
+follow horizontal drag progress towards the spine. Release past halfway commits
+the turn; release before halfway or pointer cancellation returns to the same
+spread. A corner click and the arrow keys also turn pages. The first and last
+spread disable unavailable turn directions.
 
 Spreads use zero-based indices in `#<room>/book/<id>/<spread>`. Page numbers start at 1. Invalid spread indices clamp to the book bounds. Closing the reader preserves the current book and spread. Rooms without `books` keep the single-post object behavior.

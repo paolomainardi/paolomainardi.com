@@ -30,8 +30,9 @@ Paths follow [CONTRACT.md](CONTRACT.md), including reader URLs relative to `cont
 Right-click a hotspot, lamp, exit, content object, or topic book to open a
 parchment menu beside the pointer. The menu stays inside the game frame and
 shows the target's name and its supported verbs in world order. Hover a verb
-to highlight it in rose and preview the sentence. Labels use the book's body
-font when loaded, otherwise the 5×7 font.
+to highlight it in rose and preview the sentence. The heading uses Literata
+semibold with a one-screen-pixel rule; verbs use Literata regular. Worlds without
+book art retain the 5×7 menu font.
 
 Click a verb, or use Up/Down and Enter, to walk over and run it. **Take** opens
 a topic book or a content object's reader. The verb bar keeps its selected
@@ -47,21 +48,32 @@ The window still opens the newest link.
 
 Click a book, or choose **Open**, to walk over and open its close-up. **Look at**
 says the title and post count. The first page shows the title and count, followed
-by post titles and dates. Titles wrap to two lines with an ellipsis. Atlas fonts
-use the book's ink, faded, and accent colours through the existing palette and
-integer upscale. The verb bar keeps the 5×7 font.
+by post titles and dates. Titles wrap to two lines with an ellipsis. Real Literata
+uses the book's ink, faded and accent colours on a screen-sized Canvas 2D layer
+composited after the pixel-art upscale. Font metrics fill pages to the bottom
+margin. The layer redraws only when the book, spread, hover, menu or canvas size
+changes. The verb bar and sentence line keep the 5×7 font.
 
 Hover an entry to highlight it, then click to read. The reader's **Open on the
 website** link opens its URL in a new tab. Closing the reader returns to the same
-spread. Left/right arrows or lower page corners turn pages. Escape, the **Close**
+spread. Hover a lower outer corner to curl it and show a hand cursor. Drag a
+page's outer half towards the spine, away from entries, to control the turn.
+Release past halfway to finish, or release earlier to fall back. Pointer
+cancellation also falls back. A corner click or left/right arrows turn pages.
+Escape, the **Close**
 label, or a click outside the book returns to the room at the same position.
 
 `#stone-house/book/workstation/2` restores spread 2 after Start, including on
 reload. The DOM contains a visually hidden catalogue of every book and its post
-links. The placeholder workstation book has three spreads. Real-art books use
+links. Pagination follows font metrics and the supplied page rectangles. Real-art books use
 placeholder close-up art until a `dev/real/book/` folder is supplied; generation
 never replaces an existing real-art book folder. See [CONTRACT.md](CONTRACT.md)
-for the atlas and book data formats.
+for the font and book data formats.
+
+Both book fixtures bundle the site’s Latin and Latin Extended Literata WOFF2
+files. The engine loads these local files without access to the site. Regenerate
+palette-mapped corner sprites with `python tools/make_curls.py` using a
+Pillow-enabled Python.
 
 In `world.json`, each `objects` value accepts a single sprite path or a non-empty list, such as `"book": ["objects/book.png", "objects/book-green.png", "objects/book-blue.png"]`. Content objects cycle through that list in occupied slot order, starting from the first sprite in each room. Drawing and hit areas use each sprite's own dimensions. The placeholders show six books cycling through red, green and blue.
 
@@ -148,4 +160,4 @@ playwright-cli -s=adventure close
 
 The browser checks cover rendered linear light sums, independent lamp switches, fractional fades, albedo lighting, flame dimming and bloom sources, plus walking, lamp switching, readers, iframe Escape, hashes, integer scaling, overflow, and WebGL errors. It saves dusk/night screenshots at four widths under `.playwright-cli/`.
 
-Book layout, atlas loading, routes, lighting math, assets, interaction simulation, renderer checks, and shader compilation pass. The current sandbox denies server sockets, so browser rendering and visual checks remain unrun. Exits show a line instead of changing rooms, as specified. The verb font covers ASCII; book atlases cover the contract character set; cross-origin readers need the close button when iframe focus owns Escape.
+Book layout, WOFF2 loading, text-layer caching, menu headings, corner hover, drag turns, routes, lighting math, assets, interaction simulation, renderer checks, and shader compilation pass. The current sandbox denies server sockets, so browser rendering and visual checks remain unrun. Exits show a line instead of changing rooms, as specified. The verb font covers ASCII; Literata includes Latin and Latin Extended subsets; cross-origin readers need the close button when iframe focus owns Escape.

@@ -29,6 +29,7 @@ class ShaderCheck extends Renderer {
     return {};
   }
 }
+globalThis.document = { createElement: () => ({ getContext: () => ({}) }) };
 new ShaderCheck({
   getContext: () => ({ bindVertexArray() {}, createVertexArray() {} }),
 });
@@ -38,4 +39,4 @@ const result = spawnSync("glslangValidator", ["-S", "vert", path], {
   encoding: "utf8",
 });
 if (result.status !== 0) throw new Error(result.stdout + result.stderr);
-console.log("All six fragment shaders and full-screen vertex shader compile.");
+console.log("All fragment shaders and full-screen vertex shader compile.");

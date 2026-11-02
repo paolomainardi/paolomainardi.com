@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import vm from "node:vm";
+import { context2D } from "./text-fixture.mjs";
 
 const base = fileURLToPath(new URL("../", import.meta.url));
 const python =
@@ -36,12 +37,22 @@ class Element extends EventTarget {
   remove() {
     this.removed = true;
   }
+  setPointerCapture(id) {
+    this.pointerId = id;
+  }
+  hasPointerCapture(id) {
+    return this.pointerId === id;
+  }
+  releasePointerCapture() {
+    this.pointerId = null;
+  }
   getBoundingClientRect() {
     return { left: 0, top: 0, width: 640, height: 360 };
   }
 }
 const document = new EventTarget();
 document.baseURI = "https://adventure.test/dev/";
+document.fonts = { add() {} };
 document.head = new Element("head");
 document.createElement = (tag) => new Element(tag);
 const window = new EventTarget();
@@ -60,6 +71,8 @@ let nextFrame,
   rendered;
 class Renderer {
   constructor() {
+    this.textLayer = { context: context2D() };
+    this.scale = 1;
     this.deletedTextures = [];
     this.gl = {
       deleteTexture: (texture) => this.deletedTextures.push(texture),
@@ -83,6 +96,9 @@ class Renderer {
 }
 const context = vm.createContext({
   URL,
+  FontFace: class {
+    async load() {}
+  },
   Uint8Array,
   Int16Array,
   Int32Array,
@@ -798,19 +814,78 @@ assert.equal(books.state.spread, 0, "Lower left corner turns previous");
 event(bookCanvas, "click", { clientX: 545, clientY: 290 });
 step(30);
 assert.equal(books.state.spread, 1, "Lower right corner turns next");
+// Pointer capture keeps the turn tied to the drag, including cancellation.
+event(bookCanvas, "pointermove", { clientX: 80, clientY: 310 });
+assert.equal(rendered.corner, -1);
+assert.equal(bookCanvas.style.cursor, "pointer");
+event(bookCanvas, "pointerleave");
+assert.equal(rendered.corner, 0);
+const dragTurn = (to, expected, cancel = false) => {
+  event(bookCanvas, "pointerdown", {
+    button: 0,
+    pointerId: 7,
+    clientX: 98,
+    clientY: 310,
+  });
+  assert(rendered.turning?.dragging);
+  event(bookCanvas, "pointermove", { clientX: to, clientY: 310 });
+  const progress = rendered.turning.progress;
+  step(3);
+  assert.equal(
+    rendered.turning.progress,
+    progress,
+    "Held page does not animate on its own",
+  );
+  event(bookCanvas, cancel ? "pointercancel" : "pointerup", {
+    pointerId: 7,
+    clientX: to,
+    clientY: 310,
+  });
+  event(bookCanvas, "click", { clientX: to, clientY: 310 });
+  assert.equal(
+    books.state.reader,
+    null,
+    "Drag release must suppress entry activation",
+  );
+  step(30);
+  assert.equal(books.state.spread, expected);
+};
+dragTurn(145, 1);
+dragTurn(260, 1, true);
+dragTurn(260, 0);
+assert.equal(location.hash, "#stone-house/book/workstation/0");
+// A press on an entry still opens the reader instead of starting a drag.
+const firstEntry = rendered.activeBook.pages[0].entries[0];
+event(bookCanvas, "pointerdown", {
+  button: 0,
+  pointerId: 8,
+  clientX: firstEntry.x + 1,
+  clientY: firstEntry.y + 1,
+});
+assert.equal(rendered.turning, null);
+event(bookCanvas, "click", {
+  clientX: firstEntry.x + 1,
+  clientY: firstEntry.y + 1,
+});
+assert.equal(books.state.reader, firstEntry.item.id);
+event(bookReader, "keydown", { key: "Escape" });
 event(bookRoot, "keydown", { key: "Escape" });
 assert.equal(books.state.book, null);
 assert.equal(JSON.stringify(books.state.position), bookPosition);
 location.hash = "#stone-house/book/workstation/2";
 event(window, "hashchange");
 await Promise.resolve();
-assert.equal(books.state.spread, 2);
+assert.equal(books.state.spread, rendered.activeBook.pages.length / 2 - 1);
 event(bookCanvas, "click", { clientX: 20, clientY: 20 });
 assert.equal(books.state.book, null, "Outside click closes book");
 location.hash = "#stone-house/book/workstation/999";
 event(window, "hashchange");
 await Promise.resolve();
-assert.equal(books.state.spread, 2, "Out-of-range spread clamps");
+assert.equal(
+  books.state.spread,
+  rendered.activeBook.pages.length / 2 - 1,
+  "Out-of-range spread clamps",
+);
 event(bookCanvas, "click", { clientX: 15, clientY: 345 });
 assert.equal(books.state.book, null, "Close verb returns to room");
 books.destroy();

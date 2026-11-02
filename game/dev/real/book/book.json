@@ -28,8 +28,37 @@
   "ink": "#482c17",
   "faded": "#786458",
   "accent": "#b0386b",
-  "fonts": {
-    "title": "fonts/title.json",
-    "body": "fonts/body.json"
+  "font": {
+    "regular": "fonts/literata.woff2",
+    "semibold": "fonts/literata.woff2",
+    "extended": "fonts/literata-ext.woff2",
+    "family": "Literata"
+  },
+  "sizes": {
+    "title": 13,
+    "body": 6.5,
+    "label": 6.5
+  },
+  "weights": {
+    "title": 600,
+    "body": 400,
+    "label": 600
+  },
+  "curl": {
+    "image": "curl.png",
+    "rects": [
+      [
+        56,
+        266,
+        24,
+        24
+      ],
+      [
+        560,
+        268,
+        24,
+        24
+      ]
+    ]
   }
 }

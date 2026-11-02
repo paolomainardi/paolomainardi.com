@@ -1,5 +1,10 @@
 import {
   loadBook,
+  bookFonts,
+  cornerHit,
+  dragPage,
+  movePage,
+  releasePage,
   bookItems,
   layoutBook,
   hitEntry,
@@ -273,6 +278,7 @@ export async function boot({ world, content, element }) {
         Math.min(Math.floor(spread), book.pages.length / 2 - 1),
       );
       game.turning = null;
+      game.corner = 0;
       game.hover = null;
       game.path = [];
       game.pending = null;
@@ -281,6 +287,7 @@ export async function boot({ world, content, element }) {
     function closeBook() {
       game.activeBook = null;
       game.turning = null;
+      game.corner = 0;
       game.hover = null;
       canvas.style.cursor = "crosshair";
       writeHash();
@@ -293,7 +300,8 @@ export async function boot({ world, content, element }) {
         spread >= game.activeBook.pages.length / 2
       )
         return;
-      game.turning = { direction, spread, clock: 0 };
+      game.turning = { direction, spread, progress: 0, commit: true };
+      game.corner = 0;
       game.hover = null;
     }
     function hideReader(update = true) {
@@ -475,7 +483,24 @@ export async function boot({ world, content, element }) {
     if (!game.world.rooms[initial.room])
       initial = { room: game.world.start, item: null };
     await changeRoom(initial.room);
-    const fit = () => renderer.resize(root.clientWidth, root.clientHeight);
+    const fit = () => {
+      renderer.resize(root.clientWidth, root.clientHeight);
+      if (game.bookArt) {
+        game.bookArt.fonts = bookFonts(
+          game.bookArt,
+          renderer.textLayer.context,
+          renderer.scale,
+        );
+        for (const book of Object.values(game.books))
+          book.pages = layoutBook(game.bookArt, book);
+        if (game.activeBook)
+          game.spread = Math.min(
+            game.spread,
+            game.activeBook.pages.length / 2 - 1,
+          );
+        game.hover = null;
+      }
+    };
     const observer = new ResizeObserver(fit);
     observer.observe(root);
     fit();
@@ -516,6 +541,21 @@ export async function boot({ world, content, element }) {
     on(canvas, "pointermove", (event) => {
       if (!game.started || game.readerItem || game.loading) return;
       const [x, y] = point(event);
+      if (game.turning?.dragging) {
+        movePage(game.turning, x);
+        canvas.style.cursor = "grabbing";
+        return;
+      }
+      game.corner =
+        game.activeBook && !game.turning
+          ? cornerHit(
+              game.bookArt,
+              game.spread,
+              game.activeBook.pages.length,
+              x,
+              y,
+            )
+          : 0;
       if (game.menu) {
         game.menu.selected = menuHit(game.menu, x, y);
         canvas.style.cursor = game.menu.selected >= 0 ? "pointer" : "crosshair";
@@ -526,11 +566,12 @@ export async function boot({ world, content, element }) {
           ? null
           : hitEntry(game.activeBook.pages, game.spread, x, y)
         : hit(x, y);
-      canvas.style.cursor = game.hover ? "pointer" : "crosshair";
+      canvas.style.cursor = game.hover || game.corner ? "pointer" : "crosshair";
     });
     on(canvas, "pointerleave", () => {
       if (game.menu) game.menu.selected = -1;
       game.hover = null;
+      game.corner = 0;
     });
     on(root, "contextmenu", (event) => {
       event.preventDefault();
@@ -547,7 +588,7 @@ export async function boot({ world, content, element }) {
           targetVerbs(labels, target),
           pointAt,
           game.room.size,
-          game.bookArt?.fonts.body,
+          game.bookArt?.fonts,
         );
     });
     function act(target, verb) {
@@ -624,6 +665,47 @@ export async function boot({ world, content, element }) {
       canvas.style.cursor = "crosshair";
       if (index >= 0) chooseTarget(menu.target, menu.verbs[index]);
     }
+    let suppressBookClick = false;
+    on(canvas, "pointerdown", (event) => {
+      suppressBookClick = false;
+      if (
+        event.button !== 0 ||
+        !game.started ||
+        game.readerItem ||
+        game.loading ||
+        !game.activeBook ||
+        game.turning
+      )
+        return;
+      const [x, y] = point(event);
+      if (hitEntry(game.activeBook.pages, game.spread, x, y)) return;
+      const turn = dragPage(
+        game.bookArt,
+        game.spread,
+        game.activeBook.pages.length,
+        x,
+        y,
+      );
+      if (!turn) return;
+      game.turning = { ...turn, spread: game.spread + turn.direction };
+      game.hover = null;
+      game.corner = 0;
+      canvas.setPointerCapture(event.pointerId);
+    });
+    function finishDrag(event, cancelled = false) {
+      if (!game.turning?.dragging) return;
+      movePage(game.turning, point(event)[0]);
+      const turn = game.turning;
+      releasePage(turn, cancelled);
+      suppressBookClick = turn.moved || turn.corner || cancelled;
+      if (!turn.moved && !turn.corner) game.turning = null;
+      if (canvas.hasPointerCapture(event.pointerId))
+        canvas.releasePointerCapture(event.pointerId);
+      canvas.style.cursor = "crosshair";
+    }
+    on(canvas, "pointerup", (event) => finishDrag(event));
+    on(canvas, "pointercancel", (event) => finishDrag(event, true));
+    on(canvas, "lostpointercapture", (event) => finishDrag(event, true));
     on(canvas, "click", (event) => {
       if (!game.started || game.readerItem || game.loading) return;
       root.focus({ preventScroll: true });
@@ -633,6 +715,10 @@ export async function boot({ world, content, element }) {
         return;
       }
       if (game.activeBook) {
+        if (suppressBookClick) {
+          suppressBookClick = false;
+          return;
+        }
         if (game.turning) return;
         if (y >= game.verbTop) {
           if (x >= 8 && x < 60) closeBook();
@@ -643,23 +729,15 @@ export async function boot({ world, content, element }) {
           openReader(entry.item);
           return;
         }
-        const pages = game.bookArt.pages;
-        const left = pages[0],
-          right = pages[1];
-        if (
-          x >= left[0] - 16 &&
-          x < left[0] + 32 &&
-          y >= left[1] + left[3] - 20 &&
-          y < left[1] + left[3] + 24
-        )
-          turnBook(-1);
-        else if (
-          x >= right[0] + right[2] - 32 &&
-          x < right[0] + right[2] + 16 &&
-          y >= right[1] + right[3] - 20 &&
-          y < right[1] + right[3] + 24
-        )
-          turnBook(1);
+        const [left, right] = game.bookArt.pages;
+        const corner = cornerHit(
+          game.bookArt,
+          game.spread,
+          game.activeBook.pages.length,
+          x,
+          y,
+        );
+        if (corner) turnBook(corner);
         else if (
           x < left[0] - 16 ||
           x >= right[0] + right[2] + 16 ||
@@ -798,14 +876,22 @@ export async function boot({ world, content, element }) {
           game.activeBook &&
           game.turning
         ) {
-          game.turning.clock += dt;
-          if (
-            game.turning.clock >=
-            game.bookArt.turn.frames / game.bookArt.turn.fps
-          ) {
-            game.spread = game.turning.spread;
-            game.turning = null;
-            writeHash();
+          const turn = game.turning;
+          if (!turn.dragging) {
+            const step =
+              (dt * game.bookArt.turn.fps) / game.bookArt.turn.frames;
+            turn.progress = Math.max(
+              0,
+              Math.min(1, turn.progress + (turn.commit ? step : -step)),
+            );
+            if (
+              (turn.commit && turn.progress === 1) ||
+              (!turn.commit && turn.progress === 0)
+            ) {
+              if (turn.commit) game.spread = turn.spread;
+              game.turning = null;
+              writeHash();
+            }
           }
         }
         if (game.started && !game.readerItem && !game.activeBook) {

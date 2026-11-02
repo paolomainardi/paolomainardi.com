@@ -13,6 +13,7 @@ Object.assign(renderer, {
   glow: [{ texture: {} }, { texture: {} }, { texture: {} }],
   canvas: { width: 640, height: 360 },
   scale: 1,
+  compositeText() {},
   lights() {},
   into() {},
   use() {},
@@ -381,18 +382,14 @@ assert.deepEqual(
   ["Lamp", "Look at", "Use"],
 );
 assert.notDeepEqual(menuText[1].args[3], menuText[2].args[3]);
-const atlasCalls = [];
-renderer.atlasText = (...args) => atlasCalls.push(args);
-menuGame.bookArt = { fonts: { body: {} }, ink: "#1d202f", accent: "#8a5650" };
+calls.length = 0;
+menuGame.bookArt = { ink: "#1d202f", accent: "#8a5650" };
 renderer.renderMenu(menuGame);
-assert(atlasCalls.every((call) => call[0] === menuGame.bookArt.fonts.body));
-assert.equal(atlasCalls[1][4], menuGame.bookArt.ink);
-assert.equal(atlasCalls[2][4], menuGame.bookArt.accent);
-console.log(
-  "Menu border, fallback font, body atlas and rose highlight passed (mock GPU).",
+assert.equal(
+  calls.filter((call) => call.type === "text").length,
+  0,
+  "Literata text is composited after upscale",
 );
-
-menuGame.menu.selected = -1;
-atlasCalls.length = 0;
-renderer.renderMenu(menuGame);
-assert(atlasCalls.every((call) => call[4] === menuGame.bookArt.ink));
+console.log(
+  "Menu border, fallback font and separate text layer passed (mock GPU).",
+);

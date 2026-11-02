@@ -1,26 +1,78 @@
 import { image, json, resolve, matchingItems } from "./assets.js";
 
-export async function loadFont(url, renderer) {
-  const font = await json(url);
-  const bitmap = await image(resolve(font.image, url));
-  const pixels = renderer.pixels(bitmap);
-  for (let i = 3; i < pixels.length; i += 4)
-    if (![0, 128, 255].includes(pixels[i]))
-      throw new Error("Font alpha must be 0, 128 or 255.");
-  return {
-    ...font,
-    texture: renderer.texture(bitmap),
-    size: [bitmap.width, bitmap.height],
-  };
+export async function loadFonts(book, url) {
+  const ranges = [
+    [
+      book.font.regular,
+      "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+    ],
+    [
+      book.font.extended,
+      "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0300-0303,U+0305-0307,U+0309-0328,U+032A-036F,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+    ],
+  ];
+  const faces = await Promise.all(
+    ranges.map(async ([file, unicodeRange]) => {
+      const face = new FontFace(
+        book.font.family,
+        `url("${resolve(file, url)}")`,
+        {
+          weight: "100 900",
+          unicodeRange,
+        },
+      );
+      await face.load();
+      document.fonts.add(face);
+      return face;
+    }),
+  );
+  // Separate weight files are supported as well as a single variable font.
+  if (book.font.semibold !== book.font.regular) {
+    const face = new FontFace(
+      book.font.family,
+      `url("${resolve(book.font.semibold, url)}")`,
+      { weight: String(book.weights.title) },
+    );
+    await face.load();
+    document.fonts.add(face);
+    faces.push(face);
+  }
+  return faces;
+}
+
+export function bookFonts(book, context, scale = 1) {
+  return Object.fromEntries(
+    Object.entries(book.sizes).map(([role, size]) => {
+      const css = `${book.weights[role]} ${size * scale}px "${book.font.family}"`;
+      context.font = css;
+      const metrics = context.measureText("Hg");
+      const ascent =
+        metrics.fontBoundingBoxAscent ?? metrics.actualBoundingBoxAscent;
+      const descent =
+        metrics.fontBoundingBoxDescent ?? metrics.actualBoundingBoxDescent;
+      return [
+        role,
+        {
+          css,
+          ascent: ascent / scale,
+          lineHeight: Math.max(size * 1.4, (ascent + descent) / scale),
+          measure(text) {
+            context.font = css;
+            return context.measureText(String(text)).width / scale;
+          },
+        },
+      ];
+    }),
+  );
 }
 
 export async function loadBook(url, renderer) {
   const book = await json(url);
-  const [bitmap, turn, title, body] = await Promise.all([
+  const [bitmap, turn, curl] = await Promise.all([
     image(resolve(book.image, url)),
     image(resolve(book.turn.sheet, url)),
-    loadFont(resolve(book.fonts.title, url), renderer),
-    loadFont(resolve(book.fonts.body, url), renderer),
+    image(resolve(book.curl.image, url)),
+    loadFonts(book, url),
   ]);
   if (
     bitmap.width !== 640 ||
@@ -39,7 +91,12 @@ export async function loadBook(url, renderer) {
       texture: renderer.texture(turn),
       size: [turn.width, turn.height],
     },
-    fonts: { title, body },
+    curl: {
+      ...book.curl,
+      texture: renderer.texture(curl),
+      size: [curl.width, curl.height],
+    },
+    fonts: bookFonts(book, renderer.textLayer.context),
   };
 }
 
@@ -53,18 +110,11 @@ export function bookItems(items, filter) {
     : matches.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 }
 
-export function glyph(font, char) {
-  return font.glyphs[char] || font.glyphs["?"];
-}
-
 export function measure(font, text) {
-  return Array.from(String(text)).reduce(
-    (w, char) => w + (char === " " ? font.space : glyph(font, char)[6]),
-    0,
-  );
+  return font.measure(String(text));
 }
 
-export function wrapAtlas(font, text, width, maxLines = Infinity) {
+export function wrapText(font, text, width, maxLines = Infinity) {
   const lines = [];
   for (const paragraph of String(text).split("\n")) {
     let line = "";
@@ -103,16 +153,17 @@ export function layoutBook(book, topic) {
     const page = { number, x, y, width, height, entries: [], heading: [] };
     let top = y;
     if (number === 1) {
-      page.heading = wrapAtlas(book.fonts.title, topic.title, width, 2);
+      page.heading = wrapText(book.fonts.title, topic.title, width, 2);
       top += page.heading.length * book.fonts.title.lineHeight;
       page.count = `${topic.items.length} posts`;
       top += book.fonts.body.lineHeight * 2;
     }
-    const bottom = y + height - book.fonts.body.lineHeight * 2;
+    const bottom = y + height - book.fonts.label.lineHeight;
     while (index < topic.items.length) {
       const item = topic.items[index];
-      const lines = wrapAtlas(book.fonts.body, item.title, width, 2);
-      const entryHeight = (lines.length + 1) * book.fonts.body.lineHeight;
+      const lines = wrapText(book.fonts.body, item.title, width, 2);
+      const entryHeight =
+        lines.length * book.fonts.body.lineHeight + book.fonts.label.lineHeight;
       if (top + entryHeight > bottom) break;
       page.entries.push({ item, lines, x, y: top, width, height: entryHeight });
       top += entryHeight + book.fonts.body.lineHeight;
@@ -157,4 +208,62 @@ export function parseRoute(hash, start) {
 
 export function bookRoute(room, id, spread) {
   return `#${encodeURIComponent(room)}/book/${encodeURIComponent(id)}/${spread}`;
+}
+
+export function cornerHit(book, spread, pageCount, x, y) {
+  for (const direction of [-1, 1]) {
+    if (spread + direction < 0 || spread + direction >= pageCount / 2) continue;
+    const [px, py, width, height] = book.curl.rects[direction < 0 ? 0 : 1];
+    if (x >= px - 8 && x < px + width + 8 && y >= py - 4 && y < py + height + 8)
+      return direction;
+  }
+  return 0;
+}
+
+export function dragPage(book, spread, pageCount, x, y) {
+  for (const direction of [-1, 1]) {
+    const [px, py, width, height] = book.pages[direction < 0 ? 0 : 1];
+    const [cx, cy, cw, ch] = book.curl.rects[direction < 0 ? 0 : 1];
+    const left = Math.min(px, cx),
+      right = Math.max(px + width, cx + cw);
+    const corner = cornerHit(book, spread, pageCount, x, y) === direction;
+    const outer = direction < 0 ? x < px + width / 2 : x >= px + width / 2;
+    if (
+      (corner ||
+        (outer &&
+          x >= left &&
+          x < right &&
+          y >= py - 16 &&
+          y < Math.max(py + height, cy + ch))) &&
+      spread + direction >= 0 &&
+      spread + direction < pageCount / 2
+    )
+      return {
+        direction,
+        start: x,
+        distance: Math.abs(
+          x - (book.pages[0][0] + book.pages[0][2] + book.pages[1][0]) / 2,
+        ),
+        progress: 0,
+        dragging: true,
+        moved: false,
+        corner,
+      };
+  }
+  return null;
+}
+
+export function movePage(turn, x) {
+  turn.moved ||= Math.abs(x - turn.start) > 3;
+  turn.progress = Math.max(
+    0,
+    Math.min(1, ((turn.start - x) * turn.direction) / turn.distance),
+  );
+}
+
+export function releasePage(turn, cancelled = false) {
+  turn.dragging = false;
+  turn.commit =
+    !cancelled && (turn.progress > 0.5 || (!turn.moved && turn.corner));
+  return turn.commit;
 }

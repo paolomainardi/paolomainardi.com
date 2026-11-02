@@ -1,4 +1,4 @@
-import { glyph, measure } from "./book.js";
+import { TextLayer } from "./text-layer.js";
 import { fontPixels, wrap } from "./font.js";
 import { buildPaletteLookup, PALETTE_STEPS } from "./palette.js";
 
@@ -109,6 +109,25 @@ uniform sampler2D uImage,uGlow,uGlowCore;uniform sampler3D uPalette;uniform floa
 const float bayer[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
 void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(uImage,uv).rgb+uDither*((bayer[q.y*4+q.x]+.5)/16.-.5)/255.,0.,1.);vec3 mapped=texture(uPalette,(floor(c*${PALETTE_STEPS - 1}.+.5)+.5)/${PALETTE_STEPS}.).rgb;color=vec4(mapped+(texture(uGlow,uv).rgb*.45+texture(uGlowCore,uv).rgb*.12)*uBloom,1.);}`);
 
+    this.programs.text = this.program(`#version 300 es
+precision highp float;in vec2 uv;out vec4 color;
+uniform sampler2D uImage,uCover;
+uniform vec2 uSize,uCoverSize;
+uniform vec4 uCoverRect,uCoverSource;
+uniform bool uTurning,uPrevious;
+void main(){
+ vec2 at=vec2(uv.x,1.-uv.y);
+ if(uTurning){
+  vec2 q=(at*uSize-uCoverRect.xy)/uCoverRect.zw;
+  if(all(greaterThanEqual(q,vec2(0)))&&all(lessThan(q,vec2(1)))){
+   if(uPrevious)q.x=1.-q.x;
+   vec2 tex=(uCoverSource.xy+floor(q*uCoverSource.zw)+.5)/uCoverSize;
+   if(texture(uCover,tex).a>.01)discard;
+  }
+ }
+ color=texture(uImage,at);
+}`);
+    this.textLayer = new TextLayer();
     this.black = this.texture(new Uint8Array([0, 0, 0, 0]), 1, 1);
     this.white = this.texture(new Uint8Array([255, 255, 255, 255]), 1, 1);
     this.font = this.texture(fontPixels(), 96, 48);
@@ -453,29 +472,49 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
       x += 6 * scale;
     }
   }
-  atlasText(font, text, x, y, color) {
-    const tint = [
-      ...color
-        .slice(1)
-        .match(/../g)
-        .map((c) => parseInt(c, 16) / 255),
-      1,
-    ];
-    for (const char of String(text)) {
-      if (char === " ") {
-        x += font.space;
-        continue;
+  compositeText(game) {
+    const layer = this.textLayer;
+    if (layer.update(game, this.canvas.width, this.canvas.height)) {
+      if (!this.textTexture) this.textTexture = this.texture(layer.canvas);
+      else {
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.textTexture);
+        this.gl.texImage2D(
+          this.gl.TEXTURE_2D,
+          0,
+          this.gl.RGBA,
+          this.gl.RGBA,
+          this.gl.UNSIGNED_BYTE,
+          layer.canvas,
+        );
       }
-      const [sx, sy, w, h, ox, oy, advance] = glyph(font, char);
-      this.sprite(
-        font.texture,
-        font.size,
-        [Math.round(x + ox), Math.round(y + oy), w, h],
-        [sx, sy, w, h],
-        tint,
-      );
-      x += advance;
     }
+    if (!game.activeBook && !game.menu) return;
+    const gl = this.gl;
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    this.use(this.programs.text);
+    this.bind("uImage", this.textTexture);
+    const turn = game.bookArt?.turn;
+    this.integer("uTurning", game.turning ? 1 : 0);
+    this.bind("uCover", turn?.texture || this.black, 1);
+    if (game.turning) {
+      const frame = Math.min(
+        turn.frames - 1,
+        Math.floor(game.turning.progress * turn.frames),
+      );
+      const previous = game.turning.direction < 0;
+      this.integer("uPrevious", previous ? 1 : 0);
+      this.uniform("uCoverRect", turn.rect);
+      this.uniform("uCoverSize", turn.size);
+      this.uniform("uCoverSource", [
+        (previous ? turn.frames - 1 - frame : frame) * turn.rect[2],
+        0,
+        turn.rect[2],
+        turn.rect[3],
+      ]);
+    }
+    this.draw();
+    gl.disable(gl.BLEND);
   }
   renderMenu(game) {
     const menu = game.menu;
@@ -496,14 +535,16 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
       menu.height - 2,
       [0.96, 0.89, 0.72, 1],
     );
-    [menu.header, ...menu.verbs].forEach((label, row) => {
-      const tint = row > 0 && row - 1 === menu.selected ? accent : ink;
-      const x = menu.x + 6,
-        y = menu.y + 4 + row * menu.rowHeight;
-      if (game.bookArt)
-        this.atlasText(game.bookArt.fonts.body, label, x, y, tint);
-      else this.text(label, x, y, color(tint));
-    });
+    if (!game.bookArt) {
+      [menu.header, ...menu.verbs].forEach((label, row) =>
+        this.text(
+          label,
+          menu.x + 6,
+          menu.y + 4 + row * menu.rowHeight,
+          color(row > 0 && row - 1 === menu.selected ? accent : ink),
+        ),
+      );
+    }
   }
   renderBook(game) {
     const gl = this.gl,
@@ -513,50 +554,21 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
     this.sprite(book.texture, [640, 360], [0, 0, ...this.size]);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    for (const page of game.activeBook.pages.slice(
-      game.spread * 2,
-      game.spread * 2 + 2,
-    )) {
-      let y = page.y;
-      page.heading.forEach((line) => {
-        this.atlasText(book.fonts.title, line, page.x, y, book.ink);
-        y += book.fonts.title.lineHeight;
-      });
-      if (page.count)
-        this.atlasText(book.fonts.body, page.count, page.x, y, book.faded);
-      for (const entry of page.entries) {
-        entry.lines.forEach((line, i) =>
-          this.atlasText(
-            book.fonts.body,
-            line,
-            entry.x,
-            entry.y + i * book.fonts.body.lineHeight,
-            game.hover === entry ? book.accent : book.ink,
-          ),
-        );
-        this.atlasText(
-          book.fonts.body,
-          entry.item.date || "",
-          entry.x,
-          entry.y + entry.lines.length * book.fonts.body.lineHeight,
-          book.faded,
-        );
-      }
-      const number = String(page.number);
-      this.atlasText(
-        book.fonts.body,
-        number,
-        page.x +
-          Math.floor((page.width - measure(book.fonts.body, number)) / 2),
-        page.y + page.height - book.fonts.body.lineHeight,
-        book.faded,
-      );
+    if (game.corner && !game.turning) {
+      const curl = book.curl;
+      const rect = curl.rects[game.corner < 0 ? 0 : 1];
+      this.sprite(curl.texture, curl.size, rect, [
+        game.corner < 0 ? 0 : rect[2],
+        0,
+        rect[2],
+        rect[3],
+      ]);
     }
     if (game.turning) {
       const turn = book.turn;
       const frame = Math.min(
         turn.frames - 1,
-        Math.floor(game.turning.clock * turn.fps),
+        Math.floor(game.turning.progress * turn.frames),
       );
       const previous = game.turning.direction < 0;
       const source = previous ? turn.frames - 1 - frame : frame;
@@ -588,6 +600,7 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
     this.uniform("uDither", game.world?.dither === true ? 1 : 0);
     this.uniform("uScale", this.scale);
     this.draw();
+    this.compositeText(game);
   }
   resize(width, height) {
     const [frameWidth, frameHeight] = this.size;
@@ -835,6 +848,7 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
     this.uniform("uDither", game.world?.dither === true ? 1 : 0);
     this.uniform("uScale", this.scale);
     this.draw();
+    this.compositeText(game);
   }
   destroy() {
     const gl = this.gl;

@@ -2,7 +2,7 @@
 from pathlib import Path
 import json
 import math
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 import shutil
 import numpy as np
 
@@ -51,27 +51,15 @@ def generate_book():
         draw.polygon([(origin + 244, 0), (origin + x, 15),
                       (origin + x, 258), (origin + 244, 273)], fill=COLORS[12])
     turn.save(folder / 'turn.png')
-    for name, size, line_height in [('body', 10, 13), ('title', 14, 18)]:
-        font = ImageFont.truetype('/usr/share/fonts/TTF/DejaVuSans.ttf', size)
-        chars = ''.join(chr(i) for i in range(33, 127)) + 'àèéìòù‘’“”…'
-        atlas = Image.new('RGBA', (256, 160))
-        draw = ImageDraw.Draw(atlas)
-        glyphs = {}
-        for i, char in enumerate(chars):
-            x, y = (i % 16) * 16, (i // 16) * 20
-            box = font.getbbox(char)
-            draw.text((x - box[0], y - box[1]), char, font=font, fill='white')
-            glyphs[char] = [x, y, box[2] - box[0], box[3] - box[1], box[0], box[1], round(font.getlength(char))]
-        alpha = np.array(atlas.getchannel('A'))
-        alpha = np.where(alpha < 64, 0, np.where(alpha < 192, 128, 255)).astype(np.uint8)
-        atlas.putalpha(Image.fromarray(alpha))
-        atlas.save(folder / f'fonts/{name}.png')
-        save_json(folder / f'fonts/{name}.json', dict(image=f'{name}.png', lineHeight=line_height,
-                  baseline=size, space=round(font.getlength(' ')), glyphs=glyphs))
+    for name in ['literata.woff2', 'literata-ext.woff2']:
+        shutil.copyfile(ROOT / 'real/book/fonts' / name, folder / 'fonts' / name)
     save_json(folder / 'book.json', dict(image='open.png', pages=[[92, 56, 208, 240], [340, 56, 208, 240]],
         turn=dict(sheet='turn.png', rect=[76, 40, 488, 274], frames=4, fps=12),
         ink=COLORS[1], faded=COLORS[6], accent=COLORS[21],
-        fonts=dict(title='fonts/title.json', body='fonts/body.json')))
+        font=dict(regular='fonts/literata.woff2', semibold='fonts/literata.woff2', extended='fonts/literata-ext.woff2', family='Literata'),
+        sizes=dict(title=13, body=6.5, label=6.5), weights=dict(title=600, body=400, label=600)))
+    from make_curls import generate as generate_curl
+    generate_curl(folder)
     real = ROOT / 'real/book'
     if not real.exists():
         shutil.copytree(folder, real)
