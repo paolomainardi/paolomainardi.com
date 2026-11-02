@@ -51,6 +51,7 @@ window.open = (...args) => {
   return null; // noopener may return null even when the browser opens the tab.
 };
 const location = { hash: "" };
+let legacyBooks = true;
 let objectPaths,
   contentOverride,
   legacyRoom = false;
@@ -113,6 +114,17 @@ const context = vm.createContext({
       ok: true,
       json: async () => {
         const data = JSON.parse(readFileSync(path, "utf8"));
+        if (path.endsWith("/data/world.json") && legacyBooks) {
+          delete data.books;
+          delete data.book;
+          data.rooms["stone-house"].books = undefined;
+          data.rooms["stone-house"].content = { series: "workstation" };
+          data.rooms["stone-house"].object = "book";
+        }
+        if (path.endsWith("/data/content.json") && legacyBooks)
+          data.items = data.items.filter(
+            (item) => !item.part || item.part <= 6,
+          );
         if (path.endsWith("/data/world.json") && objectPaths !== undefined)
           data.objects.book = objectPaths;
         if (path.endsWith("/content.json") && contentOverride)
@@ -651,4 +663,109 @@ assert.deepEqual(Array.from(real.state.position), [targetX, targetY]);
 real.destroy();
 console.log(
   "New asset loading, start, movement, readers, lamp fade, drift, time, lantern, descriptions, content-bound hotspots, click-time tabs, safe URLs, exits, hashes, and cleanup passed (mock DOM/GPU).",
+);
+
+// Book mode uses the shipped topic bindings and close-up assets.
+legacyBooks = false;
+location.hash = "#stone-house";
+const bookContainer = new Element("main");
+const books = await module.namespace.boot({
+  world: "./data/world.json",
+  content: "./data/content.json",
+  element: bookContainer,
+});
+const bookRoot = bookContainer.children[0],
+  bookCanvas = bookRoot.children[0];
+const bookReader = bookRoot.children[2];
+event(bookRoot.children[1].children[3], "click");
+step();
+assert.equal(rendered.objects.length, 6);
+assert.equal(rendered.objects[0].label, "Workstation");
+assert.equal(rendered.objects[0].book.items.length, 22);
+const catalogue = bookRoot.children.find((node) => node.tagName === "nav");
+assert.equal(catalogue.children.length, 12);
+assert.equal(
+  catalogue.children[1].children[0].children[0].href,
+  "https://adventure.test/dev/reader/workstation-1.html",
+);
+const bookLook = rendered.verbRects.find((v) => v.label === "Look at");
+event(bookCanvas, "click", { clientX: bookLook.x + 2, clientY: 340 });
+event(bookCanvas, "click", { clientX: 470, clientY: 140 });
+for (let i = 0; i < 600 && books.state.walking; i++) step();
+assert.equal(rendered.speech, "Workstation. 22 posts.");
+const walkVerb = rendered.verbRects.find((v) => v.label === "Walk to");
+event(bookCanvas, "click", { clientX: walkVerb.x + 2, clientY: 340 });
+event(bookCanvas, "click", { clientX: 470, clientY: 140 });
+assert.equal(books.state.book, null, "Book waits for arrival");
+for (let i = 0; i < 600 && books.state.walking; i++) step();
+assert.equal(books.state.book, "workstation");
+assert.equal(location.hash, "#stone-house/book/workstation/0");
+const bookPosition = JSON.stringify(books.state.position);
+event(bookRoot, "keydown", { key: "ArrowRight" });
+step(30);
+assert.equal(books.state.spread, 1);
+assert.equal(location.hash, "#stone-house/book/workstation/1");
+const entry = rendered.activeBook.pages[2].entries[0];
+event(bookCanvas, "pointermove", {
+  clientX: entry.x + 1,
+  clientY: entry.y + 1,
+});
+assert.equal(rendered.hover, entry);
+assert.equal(bookCanvas.style.cursor, "pointer");
+event(bookCanvas, "click", { clientX: entry.x + 1, clientY: entry.y + 1 });
+assert.equal(books.state.reader, entry.item.id);
+assert.equal(bookReader.children[2].href, entry.item.url);
+assert.equal(bookReader.children[2].rel, "noopener");
+assert.equal(bookReader.children[2].target, "_blank");
+let readerEscapeStopped = false;
+bookReader.addEventListener("keydown", (event) => {
+  readerEscapeStopped = event.cancelBubble;
+});
+event(bookReader, "keydown", { key: "Escape" });
+assert(
+  readerEscapeStopped,
+  "Reader Escape must stop before reaching the room key handler",
+);
+assert.equal(books.state.reader, null);
+assert.equal(books.state.spread, 1);
+assert.equal(location.hash, "#stone-house/book/workstation/1");
+event(bookCanvas, "click", { clientX: 345, clientY: 290 });
+step(30);
+assert.equal(books.state.spread, 1, "Interior blank space does not turn");
+event(bookCanvas, "click", { clientX: 95, clientY: 290 });
+step(30);
+assert.equal(books.state.spread, 0, "Lower left corner turns previous");
+event(bookCanvas, "click", { clientX: 545, clientY: 290 });
+step(30);
+assert.equal(books.state.spread, 1, "Lower right corner turns next");
+event(bookRoot, "keydown", { key: "Escape" });
+assert.equal(books.state.book, null);
+assert.equal(JSON.stringify(books.state.position), bookPosition);
+location.hash = "#stone-house/book/workstation/2";
+event(window, "hashchange");
+await Promise.resolve();
+assert.equal(books.state.spread, 2);
+event(bookCanvas, "click", { clientX: 20, clientY: 20 });
+assert.equal(books.state.book, null, "Outside click closes book");
+location.hash = "#stone-house/book/workstation/999";
+event(window, "hashchange");
+await Promise.resolve();
+assert.equal(books.state.spread, 2, "Out-of-range spread clamps");
+event(bookCanvas, "click", { clientX: 15, clientY: 345 });
+assert.equal(books.state.book, null, "Close verb returns to room");
+books.destroy();
+location.hash = "#stone-house/book/workstation/1";
+const reloadContainer = new Element("main");
+const reloaded = await module.namespace.boot({
+  world: "./real/world.json",
+  content: "./data/content.json",
+  element: reloadContainer,
+});
+event(reloadContainer.children[0].children[1].children[3], "click");
+step();
+assert.equal(reloaded.state.book, "workstation");
+assert.equal(reloaded.state.spread, 1);
+reloaded.destroy();
+console.log(
+  "Topic shelves, catalogue, look, click-to-open, turns, entry hits, reader return, website link, closing, routing, and reload passed (mock DOM/GPU).",
 );

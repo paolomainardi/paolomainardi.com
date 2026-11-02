@@ -100,10 +100,18 @@
   background: #fbf7ef;
   image-rendering: auto;
 }
-.adventure-live {
+.adventure-live,
+.adventure-catalogue {
   position: absolute;
   width: 1px;
   height: 1px;
   overflow: hidden;
   clip-path: inset(50%);
+}
+.adventure-reader > a {
+  padding: 4px 12px;
+  color: #f5e3b8;
+}
+.adventure-reader > a:focus-visible {
+  outline: 2px solid #ffd08a;
 }

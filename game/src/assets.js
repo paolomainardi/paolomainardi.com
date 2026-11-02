@@ -81,6 +81,18 @@ export async function loadWorld(worldURL, contentURL) {
     character: { ...character, sheet, glow },
     palette,
     objects: Object.fromEntries(objects),
+    books: Object.fromEntries(
+      await Promise.all(
+        Object.entries(world.books || {}).map(async ([id, book]) => [
+          id,
+          {
+            ...book,
+            id,
+            bitmap: await image(resolve(book.sprite, worldURL)),
+          },
+        ]),
+      ),
+    ),
   };
 }
 

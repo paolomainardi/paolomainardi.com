@@ -1,3 +1,4 @@
+import { glyph, measure } from "./book.js";
 import { fontPixels, wrap } from "./font.js";
 import { buildPaletteLookup, PALETTE_STEPS } from "./palette.js";
 
@@ -452,6 +453,114 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
       x += 6 * scale;
     }
   }
+  atlasText(font, text, x, y, color) {
+    const tint = [
+      ...color
+        .slice(1)
+        .match(/../g)
+        .map((c) => parseInt(c, 16) / 255),
+      1,
+    ];
+    for (const char of String(text)) {
+      if (char === " ") {
+        x += font.space;
+        continue;
+      }
+      const [sx, sy, w, h, ox, oy, advance] = glyph(font, char);
+      this.sprite(
+        font.texture,
+        font.size,
+        [Math.round(x + ox), Math.round(y + oy), w, h],
+        [sx, sy, w, h],
+        tint,
+      );
+      x += advance;
+    }
+  }
+  renderBook(game) {
+    const gl = this.gl,
+      book = game.bookArt;
+    gl.disable(gl.BLEND);
+    this.into(this.scene);
+    this.sprite(book.texture, [640, 360], [0, 0, ...this.size]);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    for (const page of game.activeBook.pages.slice(
+      game.spread * 2,
+      game.spread * 2 + 2,
+    )) {
+      let y = page.y;
+      page.heading.forEach((line) => {
+        this.atlasText(book.fonts.title, line, page.x, y, book.ink);
+        y += book.fonts.title.lineHeight;
+      });
+      if (page.count)
+        this.atlasText(book.fonts.body, page.count, page.x, y, book.faded);
+      for (const entry of page.entries) {
+        entry.lines.forEach((line, i) =>
+          this.atlasText(
+            book.fonts.body,
+            line,
+            entry.x,
+            entry.y + i * book.fonts.body.lineHeight,
+            game.hover === entry ? book.accent : book.ink,
+          ),
+        );
+        this.atlasText(
+          book.fonts.body,
+          entry.item.date || "",
+          entry.x,
+          entry.y + entry.lines.length * book.fonts.body.lineHeight,
+          book.faded,
+        );
+      }
+      const number = String(page.number);
+      this.atlasText(
+        book.fonts.body,
+        number,
+        page.x +
+          Math.floor((page.width - measure(book.fonts.body, number)) / 2),
+        page.y + page.height - book.fonts.body.lineHeight,
+        book.faded,
+      );
+    }
+    if (game.turning) {
+      const turn = book.turn;
+      const frame = Math.min(
+        turn.frames - 1,
+        Math.floor(game.turning.clock * turn.fps),
+      );
+      const previous = game.turning.direction < 0;
+      const source = previous ? turn.frames - 1 - frame : frame;
+      this.sprite(
+        turn.texture,
+        turn.size,
+        turn.rect,
+        [source * turn.rect[2], 0, turn.rect[2], turn.rect[3]],
+        undefined,
+        previous,
+      );
+    }
+    this.rect(
+      0,
+      game.verbTop,
+      this.size[0],
+      this.size[1] - game.verbTop,
+      [0.025, 0.03, 0.05, 0.85],
+    );
+    this.text("Close", 8, game.verbTop + 8);
+    gl.disable(gl.BLEND);
+    this.into(null);
+    this.use(this.programs.present);
+    this.bind("uImage", this.scene.texture);
+    this.bind("uGlow", this.black, 1);
+    this.bind("uPalette", this.lut, 2, gl.TEXTURE_3D);
+    this.bind("uGlowCore", this.black, 3);
+    this.uniform("uBloom", 0);
+    this.uniform("uDither", game.world?.dither === true ? 1 : 0);
+    this.uniform("uScale", this.scale);
+    this.draw();
+  }
   resize(width, height) {
     const [frameWidth, frameHeight] = this.size;
     const scale = Math.max(
@@ -477,6 +586,10 @@ void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(
     this.scale = scale;
   }
   render(game) {
+    if (game.activeBook) {
+      this.renderBook(game);
+      return;
+    }
     const gl = this.gl;
     gl.disable(gl.BLEND);
     this.lights(game);

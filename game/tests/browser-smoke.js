@@ -36,6 +36,8 @@ async (page) => {
   await click(135, 340); // Open
   await click(469, 140);
   await settle();
+  await page.waitForFunction(() => window.game.state.book === "workstation");
+  await click(100, 102);
   await page.waitForFunction(
     () => window.game.state.reader === "workstation-1",
   );
@@ -48,10 +50,11 @@ async (page) => {
     const frame = reader.querySelector("iframe").getBoundingClientRect();
     const close = reader.querySelector("button").getBoundingClientRect();
     const box = reader.getBoundingClientRect();
+    const link = reader.querySelector("a").getBoundingClientRect();
     return {
       fills:
         Math.abs(frame.top - box.top - reader.clientTop) < 1 &&
-        Math.abs(frame.height - reader.clientHeight) < 1,
+        Math.abs(frame.height + link.height - reader.clientHeight) < 1,
       overlay:
         close.top >= frame.top &&
         close.bottom <= frame.bottom &&
@@ -66,6 +69,9 @@ async (page) => {
   await page.frameLocator("iframe").locator("body").click();
   await page.keyboard.press("Escape");
   await page.waitForFunction(() => window.game.state.reader === null);
+  if ((await page.evaluate(() => window.game.state.book)) !== "workstation")
+    throw new Error("Reader Escape must preserve the book");
+  await page.keyboard.press("Escape");
   await click(85, 340); // Look at
   await click(180, 120);
   await settle();
@@ -156,15 +162,17 @@ async (page) => {
       views.push({ width, height, state, ...metrics });
     }
   }
-  await page.goto(`${origin}/dev/#stone-house/workstation-6`);
+  await page.goto(`${origin}/dev/#stone-house/book/workstation/2`);
   await page.waitForFunction(() => !!window.game);
   await page
     .getByRole("button", { name: "Start in window", exact: true })
     .click();
   await page.waitForFunction(
-    () => window.game.state.reader === "workstation-6",
+    () =>
+      window.game.state.book === "workstation" &&
+      window.game.state.spread === 2,
   );
-  await page.getByRole("button", { name: "Close", exact: true }).click();
+  await page.keyboard.press("Escape");
   if (errors.length) throw new Error(errors.join("\n"));
   return { passed: true, views, errors };
 };

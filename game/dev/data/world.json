@@ -16,13 +16,72 @@
       "objects/book-blue.png"
     ]
   },
-  "rooms": {
-    "stone-house": {
-      "src": "rooms/stone-house/room.json",
+  "book": "book/book.json",
+  "books": {
+    "workstation": {
+      "title": "Workstation",
       "content": {
         "series": "workstation"
       },
-      "object": "book",
+      "sprite": "objects/book.png"
+    },
+    "linux": {
+      "title": "Linux",
+      "content": {
+        "tags": [
+          "linux"
+        ]
+      },
+      "sprite": "objects/book-green.png"
+    },
+    "ai": {
+      "title": "AI and agents",
+      "content": {
+        "tags": [
+          "ai"
+        ]
+      },
+      "sprite": "objects/book-blue.png"
+    },
+    "docker": {
+      "title": "Docker",
+      "content": {
+        "tags": [
+          "docker"
+        ]
+      },
+      "sprite": "objects/book.png"
+    },
+    "security": {
+      "title": "Security",
+      "content": {
+        "tags": [
+          "security"
+        ]
+      },
+      "sprite": "objects/book-green.png"
+    },
+    "personal": {
+      "title": "Personal",
+      "content": {
+        "tags": [
+          "personal"
+        ]
+      },
+      "sprite": "objects/book-blue.png"
+    }
+  },
+  "rooms": {
+    "stone-house": {
+      "src": "rooms/stone-house/room.json",
+      "books": [
+        "workstation",
+        "linux",
+        "ai",
+        "docker",
+        "security",
+        "personal"
+      ],
       "hotspots": {
         "window": {
           "content": {

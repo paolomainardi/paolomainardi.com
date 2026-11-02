@@ -1,3 +1,11 @@
+import {
+  loadBook,
+  bookItems,
+  layoutBook,
+  hitEntry,
+  parseRoute,
+  bookRoute,
+} from "./book.js";
 import { Renderer } from "./renderer.js";
 import { loadWorld, loadRoom, matchingItems, resolve } from "./assets.js";
 import { findPath, nearestWalkable } from "./pathfinding.js";
@@ -52,7 +60,11 @@ export async function boot({ world, content, element }) {
   iframe.title = "Article reader";
   iframe.setAttribute("sandbox", "allow-same-origin");
   iframe.referrerPolicy = "no-referrer";
-  reader.append(close, iframe);
+  const website = document.createElement("a");
+  website.textContent = "Open on the website";
+  website.target = "_blank";
+  website.rel = "noopener";
+  reader.append(close, iframe, website);
   root.append(reader);
   const live = document.createElement("div");
   live.className = "adventure-live";
@@ -99,6 +111,35 @@ export async function boot({ world, content, element }) {
       objects: [],
       verbRects: [],
     };
+    game.bookArt = game.world.book
+      ? await loadBook(resolve(game.world.book, worldURL), renderer)
+      : null;
+    for (const book of Object.values(game.books)) {
+      book.items = bookItems(game.items, book.content);
+      book.sprite = {
+        texture: renderer.texture(book.bitmap),
+        size: [book.bitmap.width, book.bitmap.height],
+      };
+      book.pages = layoutBook(game.bookArt, book);
+    }
+    const catalogue = document.createElement("nav");
+    catalogue.className = "adventure-catalogue";
+    catalogue.setAttribute("aria-label", "Books and posts");
+    for (const book of Object.values(game.books)) {
+      const title = document.createElement("h2");
+      title.textContent = book.title;
+      const list = document.createElement("ul");
+      for (const item of book.items) {
+        const row = document.createElement("li"),
+          link = document.createElement("a");
+        link.textContent = item.title;
+        if (item.url) link.href = item.url;
+        row.append(link);
+        list.append(row);
+      }
+      catalogue.append(title, list);
+    }
+    root.append(catalogue);
     game.character.texture = renderer.texture(game.character.sheet);
     game.character.size = [
       game.character.sheet.width,
@@ -208,19 +249,43 @@ export async function boot({ world, content, element }) {
       live.textContent = String(text);
     }
     function hashState() {
-      const parts = location.hash.slice(1).split("/");
-      try {
-        return {
-          room: decodeURIComponent(parts[0] || game.world.start),
-          item: parts[1] ? decodeURIComponent(parts[1]) : null,
-        };
-      } catch {
-        return { room: game.world.start, item: null };
-      }
+      return parseRoute(location.hash, game.world.start);
     }
     function writeHash(item = null) {
-      const value = `#${encodeURIComponent(game.room.id)}${item ? "/" + encodeURIComponent(item.id) : ""}`;
+      const value = game.activeBook
+        ? bookRoute(game.room.id, game.activeBook.id, game.spread)
+        : `#${encodeURIComponent(game.room.id)}${item ? "/" + encodeURIComponent(item.id) : ""}`;
       if (location.hash !== value) history.pushState(null, "", value);
+    }
+    function openBook(book, spread = 0, update = true) {
+      game.activeBook = book;
+      game.spread = Math.max(
+        0,
+        Math.min(Math.floor(spread), book.pages.length / 2 - 1),
+      );
+      game.turning = null;
+      game.hover = null;
+      game.path = [];
+      game.pending = null;
+      if (update) writeHash();
+    }
+    function closeBook() {
+      game.activeBook = null;
+      game.turning = null;
+      game.hover = null;
+      canvas.style.cursor = "crosshair";
+      writeHash();
+    }
+    function turnBook(direction) {
+      const spread = game.spread + direction;
+      if (
+        game.turning ||
+        spread < 0 ||
+        spread >= game.activeBook.pages.length / 2
+      )
+        return;
+      game.turning = { direction, spread, clock: 0 };
+      game.hover = null;
     }
     function hideReader(update = true) {
       reader.hidden = true;
@@ -241,6 +306,9 @@ export async function boot({ world, content, element }) {
       game.actor.animation = "idle-front";
       reader.setAttribute("aria-label", item.title);
       iframe.title = item.title;
+      website.hidden = !item.url;
+      if (item.url) website.href = item.url;
+      else website.removeAttribute("href");
       iframe.src = item.reader;
       reader.hidden = false;
       if (update) writeHash(item);
@@ -260,12 +328,17 @@ export async function boot({ world, content, element }) {
     function readerKey(event) {
       if (event.key === "Escape") {
         event.preventDefault();
+        event.stopPropagation();
         hideReader();
       } else if (event.key === "Tab") {
+        if (event.target === website && !event.shiftKey) {
+          event.preventDefault();
+          close.focus();
+        }
         // Keep keyboard focus within the modal, including after the last article link.
         if (event.target === close && event.shiftKey) {
           event.preventDefault();
-          iframe.focus();
+          (website.hidden ? iframe : website).focus();
         }
       }
     }
@@ -289,6 +362,8 @@ export async function boot({ world, content, element }) {
       const request = ++roomRequest;
       const room = await loadRoom(game.world, worldURL, id, renderer);
       if (request !== roomRequest || disposed) return;
+      game.activeBook = null;
+      game.turning = null;
       game.room = room;
       renderer.setRoom(room);
       const [width, height] = room.size;
@@ -341,7 +416,9 @@ export async function boot({ world, content, element }) {
           hotspot.label = `${hotspot.label || hotspot.id}: ${item.title}`;
         }
       }
-      const matching = matchingItems(game.items, room.config.content);
+      const matching = room.config.books
+        ? []
+        : matchingItems(game.items, room.config.content);
       for (const sprite of game.objectSprites || [])
         renderer.gl.deleteTexture(sprite.texture);
       game.objectSprites = (assets.objects[room.config.object] || []).map(
@@ -360,7 +437,27 @@ export async function boot({ world, content, element }) {
           content: matching[i],
           sprite: game.objectSprites[i % game.objectSprites.length],
         }));
-      if (game.objects.length && !game.objectSprites.length)
+      if (room.config.books) {
+        game.objects = room.items
+          .filter((item) => item.kind === "slot" && item.bounds[2] >= 0)
+          .slice(0, room.config.books.length)
+          .map((slot, i) => {
+            const book = game.books[room.config.books[i]];
+            if (!book) throw new Error(`Unknown book: ${room.config.books[i]}`);
+            return {
+              ...slot,
+              kind: "book",
+              label: book.title,
+              book,
+              sprite: book.sprite,
+            };
+          });
+      }
+      if (
+        !room.config.books &&
+        game.objects.length &&
+        !game.objectSprites.length
+      )
         throw new Error(`Missing object sprite: ${room.config.object}`);
     }
     let initial = hashState();
@@ -408,13 +505,24 @@ export async function boot({ world, content, element }) {
     on(canvas, "pointermove", (event) => {
       if (!game.started || game.readerItem || game.loading) return;
       const [x, y] = point(event);
-      game.hover = hit(x, y);
+      game.hover = game.activeBook
+        ? game.turning
+          ? null
+          : hitEntry(game.activeBook.pages, game.spread, x, y)
+        : hit(x, y);
       canvas.style.cursor = game.hover ? "pointer" : "crosshair";
     });
     on(canvas, "pointerleave", () => {
       game.hover = null;
     });
     function act(target, verb) {
+      if (target.kind === "book") {
+        if (verb === "Look at")
+          say(`${target.book.title}. ${target.book.items.length} posts.`);
+        else if (verb === "Open") openBook(target.book);
+        else say("I can't do that.");
+        return;
+      }
       if (target.kind === "exit") {
         say(`That way lies ${target.to}.`);
         return;
@@ -454,6 +562,43 @@ export async function boot({ world, content, element }) {
       if (!game.started || game.readerItem || game.loading) return;
       root.focus({ preventScroll: true });
       const [x, y] = point(event);
+      if (game.activeBook) {
+        if (game.turning) return;
+        if (y >= game.verbTop) {
+          if (x >= 8 && x < 60) closeBook();
+          return;
+        }
+        const entry = hitEntry(game.activeBook.pages, game.spread, x, y);
+        if (entry) {
+          openReader(entry.item);
+          return;
+        }
+        const pages = game.bookArt.pages;
+        const left = pages[0],
+          right = pages[1];
+        if (
+          x >= left[0] - 16 &&
+          x < left[0] + 32 &&
+          y >= left[1] + left[3] - 20 &&
+          y < left[1] + left[3] + 24
+        )
+          turnBook(-1);
+        else if (
+          x >= right[0] + right[2] - 32 &&
+          x < right[0] + right[2] + 16 &&
+          y >= right[1] + right[3] - 20 &&
+          y < right[1] + right[3] + 24
+        )
+          turnBook(1);
+        else if (
+          x < left[0] - 16 ||
+          x >= right[0] + right[2] + 16 ||
+          y < Math.min(left[1], right[1]) - 16 ||
+          y >= Math.max(left[1] + left[3], right[1] + right[3]) + 24
+        )
+          closeBook();
+        return;
+      }
       if (y >= game.verbTop) {
         const cell = game.verbRects.find(
           (v) =>
@@ -468,7 +613,10 @@ export async function boot({ world, content, element }) {
       const target = hit(x, y);
       game.hover = target;
       if (target) {
-        const verb = game.verb;
+        const verb =
+          target.kind === "book" && game.verb === "Walk to"
+            ? "Open"
+            : game.verb;
         if (verb === "Open" && target.kind === "hotspot" && target.content) {
           const url = target.content.link || target.content.url;
           if (url && !(event.detail >= 2))
@@ -498,6 +646,14 @@ export async function boot({ world, content, element }) {
         !game.started
       )
         return;
+      if (game.activeBook) {
+        if (["Escape", "ArrowLeft", "ArrowRight"].includes(event.key))
+          event.preventDefault();
+        if (event.key === "Escape") closeBook();
+        if (event.key === "ArrowLeft") turnBook(-1);
+        if (event.key === "ArrowRight") turnBook(1);
+        return;
+      }
       if (event.key.toLowerCase() === "t") {
         game.timeOverride = true;
         game.time = game.time === "night" ? "dusk" : "night";
@@ -519,8 +675,15 @@ export async function boot({ world, content, element }) {
         }
       }
       if (game.started) {
+        if (state.book && game.room.config.books?.includes(state.book)) {
+          hideReader(false);
+          openBook(game.books[state.book], state.spread, false);
+          return;
+        }
+        game.activeBook = null;
+        game.turning = null;
         const item = game.objects.find(
-          (object) => object.content.id === state.item,
+          (object) => object.content?.id === state.item,
         )?.content;
         if (item) openReader(item, false);
         else hideReader(false);
@@ -537,9 +700,11 @@ export async function boot({ world, content, element }) {
         root.requestFullscreen().catch(() => {});
       root.focus({ preventScroll: true });
       const item = game.objects.find(
-        (object) => object.content.id === initial.item,
+        (object) => object.content?.id === initial.item,
       )?.content;
-      if (item) openReader(item);
+      if (initial.book && game.room.config.books?.includes(initial.book))
+        openBook(game.books[initial.book], initial.spread);
+      else if (item) openReader(item);
       else writeHash();
       initial.item = null;
     }
@@ -554,7 +719,23 @@ export async function boot({ world, content, element }) {
       const dt = last ? Math.min((now - last) / 1000, 0.05) : 0;
       last = now;
       if (!game.loading) {
-        if (game.started && !game.readerItem) {
+        if (
+          game.started &&
+          !game.readerItem &&
+          game.activeBook &&
+          game.turning
+        ) {
+          game.turning.clock += dt;
+          if (
+            game.turning.clock >=
+            game.bookArt.turn.frames / game.bookArt.turn.fps
+          ) {
+            game.spread = game.turning.spread;
+            game.turning = null;
+            writeHash();
+          }
+        }
+        if (game.started && !game.readerItem && !game.activeBook) {
           if (!game.timeOverride) {
             const hour = new Date().getHours();
             game.time = hour >= 6 && hour < 20 ? "dusk" : "night";
@@ -638,6 +819,8 @@ export async function boot({ world, content, element }) {
           lantern: game.lantern,
           bloom: game.bloom,
           reader: game.readerItem?.id || null,
+          book: game.activeBook?.id || null,
+          spread: game.activeBook ? game.spread : null,
           position: [game.actor.x, game.actor.y],
           walking: game.path.length > 0,
           verb: game.verb,

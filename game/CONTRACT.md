@@ -195,3 +195,77 @@ bright glass are; the engine makes those pixels glow and flicker when the lanter
 `sheet.png` is a grid of `frame`-sized cells on a transparent background, one row per
 animation. `anchor` is the feet point inside a cell. `walk-side` faces right; the
 engine mirrors it for left. The figure is about 230 pixels tall at scale 1, the height of a person at the front of the room.
+
+## Book close-up
+
+Shared by the art task and the engine task. Paths are relative to the file that
+names them. Frame is 640×360; every colour comes from `palette.json`.
+
+### Topic books in world.json
+
+```json
+{
+  "book": "book/book.json",
+  "books": {
+    "linux": {
+      "title": "Linux",
+      "content": { "tags": ["linux"] },
+      "sprite": "objects/book-1.png"
+    },
+    "ai": {
+      "title": "AI and agents",
+      "content": { "tags": ["ai", "agents"] },
+      "sprite": "objects/book-2.png"
+    }
+  },
+  "rooms": {
+    "stone-house": {
+      "src": "rooms/stone-house/room.json",
+      "books": ["linux", "ai"]
+    }
+  }
+}
+```
+
+- `books` is one book per topic. `content` is the same filter rooms use today;
+  items are ordered by `date`, newest first, except a `series` filter, which
+  keeps `part` ascending.
+- A room's `books` fills its slots in order, one book per slot. A room can still
+  use `content` and `object` as today instead.
+
+### book/book.json
+
+```json
+{
+  "image": "open.png",
+  "pages": [[x, y, w, h], [x, y, w, h]],
+  "turn": { "sheet": "turn.png", "rect": [x, y, w, h], "frames": 4, "fps": 12 },
+  "ink": "#rrggbb", "faded": "#rrggbb", "accent": "#rrggbb",
+  "fonts": { "title": "fonts/title.json", "body": "fonts/body.json" }
+}
+```
+
+- `image`: the whole 640×360 frame, an open book close up, both pages blank.
+- `pages`: the text area of the left and the right page, inside the margins.
+- `turn`: a strip of `frames` cells, each `rect` sized, transparent outside the
+  turning page; drawn over `image` at `rect`, right-to-left for "next", mirrored
+  order for "previous".
+- `ink` for text, `faded` for dates and page numbers, `accent` (the rose) for
+  the entry under the pointer.
+
+### fonts/<name>.json
+
+```json
+{
+  "image": "body.png",
+  "lineHeight": 11, "baseline": 8, "space": 3,
+  "glyphs": { "a": [x, y, w, h, xoffset, yoffset, advance] }
+}
+```
+
+The atlas is white on transparent; alpha is 0, 128 or 255 only. The engine
+tints it with `ink`, `faded` or `accent`. `yoffset` is from the line top.
+Glyphs cover printable ASCII plus à è é ì ò ù and the typographic quotes,
+apostrophe and ellipsis. A missing glyph draws `?`.
+
+Spreads use zero-based indices in `#<room>/book/<id>/<spread>`. Page numbers start at 1. Invalid spread indices clamp to the book bounds. Closing the reader preserves the current book and spread. Rooms without `books` keep the single-post object behavior.

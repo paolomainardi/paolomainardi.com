@@ -2,7 +2,8 @@
 from pathlib import Path
 import json
 import math
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
+import shutil
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1] / 'dev'
@@ -32,6 +33,48 @@ def quantize(array):
         dist = ((flat[y, :, None, :] - RGB.astype(np.int32)) ** 2).sum(axis=2)
         output[y] = RGB[dist.argmin(axis=1)]
     return Image.fromarray(output)
+
+def generate_book():
+    folder = DATA / 'book'
+    (folder / 'fonts').mkdir(parents=True, exist_ok=True)
+    paper = Image.new('RGB', ROOM_SIZE, COLORS[6])
+    draw = ImageDraw.Draw(paper)
+    draw.rectangle((66, 33, 574, 320), fill=COLORS[4])
+    draw.rectangle((76, 40, 316, 314), fill=COLORS[11])
+    draw.rectangle((323, 40, 564, 314), fill=COLORS[10])
+    draw.line((320, 40, 320, 314), fill=COLORS[7], width=3)
+    paper.save(folder / 'open.png')
+    turn = Image.new('RGBA', (488 * 4, 274))
+    draw = ImageDraw.Draw(turn)
+    for frame, x in enumerate([240, 175, 95, 0]):
+        origin = frame * 488
+        draw.polygon([(origin + 244, 0), (origin + x, 15),
+                      (origin + x, 258), (origin + 244, 273)], fill=COLORS[12])
+    turn.save(folder / 'turn.png')
+    for name, size, line_height in [('body', 10, 13), ('title', 14, 18)]:
+        font = ImageFont.truetype('/usr/share/fonts/TTF/DejaVuSans.ttf', size)
+        chars = ''.join(chr(i) for i in range(33, 127)) + 'àèéìòù‘’“”…'
+        atlas = Image.new('RGBA', (256, 160))
+        draw = ImageDraw.Draw(atlas)
+        glyphs = {}
+        for i, char in enumerate(chars):
+            x, y = (i % 16) * 16, (i // 16) * 20
+            box = font.getbbox(char)
+            draw.text((x - box[0], y - box[1]), char, font=font, fill='white')
+            glyphs[char] = [x, y, box[2] - box[0], box[3] - box[1], box[0], box[1], round(font.getlength(char))]
+        alpha = np.array(atlas.getchannel('A'))
+        alpha = np.where(alpha < 64, 0, np.where(alpha < 192, 128, 255)).astype(np.uint8)
+        atlas.putalpha(Image.fromarray(alpha))
+        atlas.save(folder / f'fonts/{name}.png')
+        save_json(folder / f'fonts/{name}.json', dict(image=f'{name}.png', lineHeight=line_height,
+                  baseline=size, space=round(font.getlength(' ')), glyphs=glyphs))
+    save_json(folder / 'book.json', dict(image='open.png', pages=[[92, 56, 208, 240], [340, 56, 208, 240]],
+        turn=dict(sheet='turn.png', rect=[76, 40, 488, 274], frames=4, fps=12),
+        ink=COLORS[1], faded=COLORS[6], accent=COLORS[21],
+        fonts=dict(title='fonts/title.json', body='fonts/body.json')))
+    real = ROOT / 'real/book'
+    if not real.exists():
+        shutil.copytree(folder, real)
 
 def generate():
     room_dir = DATA / 'rooms/stone-house'
@@ -170,6 +213,7 @@ def generate():
     save_json(char_dir / 'character.json', dict(sheet='sheet.png', glow='glow.png', frame=list(CHARACTER_FRAME), anchor=[64, 233], lantern=[46, -73], animations={
         name: dict(row=i, frames=n, fps=fps) for i, (name, n, fps) in enumerate([
             ('idle-front', 1, 1), ('walk-side', 6, 8), ('walk-front', 4, 8), ('walk-back', 4, 8), ('talk-front', 2, 4)])}))
+    generate_book()
     books = []
     for name, dark, light in [('book', 20, 22), ('book-green', 14, 16), ('book-blue', 28, 29)]:
         book = Image.new('RGBA', (12, 18))
@@ -189,7 +233,16 @@ def generate():
     frame.save(ROOT.parent / 'src/reader-frame.png')
     save_json(DATA / 'world.json', dict(title='The engineer\'s study', palette='palette.png', start='stone-house',
         character='character/character.json', verbs=['Look at', 'Open', 'Use', 'Talk to'], objects=dict(book=books),
-        rooms={'stone-house': dict(src='rooms/stone-house/room.json', content=dict(series='workstation'), object='book',
+        book='book/book.json',
+        books={key: dict(title=title, content=content, sprite=books[i % len(books)])
+               for i, (key, title, content) in enumerate([
+                   ('workstation', 'Workstation', dict(series='workstation')),
+                   ('linux', 'Linux', dict(tags=['linux'])),
+                   ('ai', 'AI and agents', dict(tags=['ai'])),
+                   ('docker', 'Docker', dict(tags=['docker'])),
+                   ('security', 'Security', dict(tags=['security'])),
+                   ('personal', 'Personal', dict(tags=['personal']))])},
+        rooms={'stone-house': dict(src='rooms/stone-house/room.json', books=['workstation', 'linux', 'ai', 'docker', 'security', 'personal'],
             hotspots=dict(window=dict(content=dict(type='link'))))}))
     titles = ['A room of one\'s own', 'Choosing the hardware', 'Linux on the desk', 'Containers at home', 'A quieter workstation', 'The finished build']
     content = []
@@ -208,6 +261,12 @@ def generate():
 <h2>Start with what you need</h2><p>Measure the work you do each day before choosing parts. A useful system is one you understand and can repair.</p>
 <pre><code>$ uname -s\nLinux\n$ printf 'hello, workstation\\n'\nhello, workstation</code></pre>
 <p>Close this reader with Escape or the close button to return to the study.</p></html>''')
+    for i in range(7, 23):
+        content.append(dict(id=f'workstation-{i}', type='post',
+            title=f'Workstation notes {i}: choosing quiet hardware and tools for a Linux development desk',
+            description='Placeholder notes for the book close-up.', date=f'2026-10-{i:02}',
+            tags=['linux', ['ai', 'docker', 'security', 'personal'][i % 4]], series='workstation', part=i,
+            url='../reader/workstation-1.html', reader='../reader/workstation-1.html'))
     content.extend([
         dict(id='web-platform', type='link', title='The web platform',
              description='Standards and tools for building on the web.', date='2026-10-20',
@@ -217,7 +276,7 @@ def generate():
              tags=['linux'], link='https://www.kernel.org/', url='/links/linux-kernel/'),
     ])
     save_json(DATA / 'content.json', dict(items=content))
-    print(f'Generated placeholder assets and six articles plus two links in {ROOT}')
+    print(f'Generated placeholder assets, book close-up, 22 posts and two links in {ROOT}')
 
 if __name__ == '__main__':
     generate()

@@ -25,6 +25,31 @@ const game = await boot({
 
 Paths follow [CONTRACT.md](CONTRACT.md), including reader URLs relative to `content.json`. Hashes restore the room and reader after Start.
 
+## Topic books
+
+Each room's `books` list fills its shelf slots in order. Each id names a book in
+`world.json`'s `books` map, with a title, content filter, and its own sprite.
+Series books sort by part; other topics sort by newest date. Books contain posts.
+The window still opens the newest link.
+
+Click a book, or choose **Open**, to walk over and open its close-up. **Look at**
+says the title and post count. The first page shows the title and count, followed
+by post titles and dates. Titles wrap to two lines with an ellipsis. Atlas fonts
+use the book's ink, faded, and accent colours through the existing palette and
+integer upscale. The verb bar keeps the 5×7 font.
+
+Hover an entry to highlight it, then click to read. The reader's **Open on the
+website** link opens its URL in a new tab. Closing the reader returns to the same
+spread. Left/right arrows or lower page corners turn pages. Escape, the **Close**
+label, or a click outside the book returns to the room at the same position.
+
+`#stone-house/book/workstation/2` restores spread 2 after Start, including on
+reload. The DOM contains a visually hidden catalogue of every book and its post
+links. The placeholder workstation book has three spreads. Real-art books use
+placeholder close-up art until a `dev/real/book/` folder is supplied; generation
+never replaces an existing real-art book folder. See [CONTRACT.md](CONTRACT.md)
+for the atlas and book data formats.
+
 In `world.json`, each `objects` value accepts a single sprite path or a non-empty list, such as `"book": ["objects/book.png", "objects/book-green.png", "objects/book-blue.png"]`. Content objects cycle through that list in occupied slot order, starting from the first sprite in each room. Drawing and hit areas use each sprite's own dimensions. The placeholders show six books cycling through red, green and blue.
 
 Bind room hotspots to content in `world.json`:
@@ -54,7 +79,7 @@ At night the lantern adds warm light coloured by the room's `albedo`, with a smo
 The renderer uses the largest whole pixel scale that fits, centred with black bars. On a viewport smaller than one frame, the canvas fits the available space while keeping its native render resolution.
 
 - `src/`: WebGL2 renderer, OKLab palette lookup, mask loader, A\*, bitmap font, interaction, and reader frame.
-- `dev/data/`: generated per-lamp drawings, albedo, masks, palette, sprites, world, six sample posts, and two sample links.
+- `dev/data/`: generated per-lamp drawings, albedo, masks, palette, sprites, world, 22 sample posts, and two sample links.
 - `dev/reader/`: readable sample articles.
 - `tools/make_placeholders.py`: regenerates demo data and `src/reader-frame.png` using Pillow and NumPy.
 - `tests/`: logic, asset, shader, simulated interaction, and browser checks.
@@ -78,6 +103,7 @@ Regenerate assets:
 Checks:
 
 ```sh
+node tests/books.mjs # layout, routes, entry hits, font loading
 node tests/logic.mjs
 node tests/lighting.mjs # linear brightness, independent lamps, flame and falloff
 node tests/shaders.mjs # requires glslangValidator
@@ -99,6 +125,7 @@ With the server running, browser verification is available through Playwright CL
 
 ```sh
 playwright-cli -s=adventure open http://localhost:8000/dev/
+playwright-cli -s=adventure run-code --filename=tests/browser-books.js
 playwright-cli -s=adventure run-code --filename=tests/browser-smoke.js
 playwright-cli -s=adventure run-code --filename=tests/browser-lighting.js
 playwright-cli -s=adventure run-code --filename=tests/browser-640.js
@@ -107,4 +134,4 @@ playwright-cli -s=adventure close
 
 The browser checks cover rendered linear light sums, independent lamp switches, fractional fades, albedo lighting, flame dimming and bloom sources, plus walking, lamp switching, readers, iframe Escape, hashes, integer scaling, overflow, and WebGL errors. It saves dusk/night screenshots at four widths under `.playwright-cli/`.
 
-Logic, lighting math, assets, interaction simulation, renderer checks, and shader compilation pass. The current sandbox denies server sockets and Playwright cache writes, so browser rendering and visual checks remain unrun. Exits show a line instead of changing rooms, as specified. The embedded font covers ASCII; cross-origin readers need the close button when iframe focus owns Escape.
+Book layout, atlas loading, routes, lighting math, assets, interaction simulation, renderer checks, and shader compilation pass. The current sandbox denies server sockets, so browser rendering and visual checks remain unrun. Exits show a line instead of changing rooms, as specified. The verb font covers ASCII; book atlases cover the contract character set; cross-origin readers need the close button when iframe focus owns Escape.

@@ -66,8 +66,8 @@ content_path = data / 'content.json'
 items = load(content_path)['items']
 posts = [item for item in items if item['type'] == 'post']
 links = [item for item in items if item['type'] == 'link']
-assert len(posts) == 6 and len(links) == 2
-assert [item['part'] for item in posts] == list(range(1, 7))
+assert len(posts) == 22 and len(links) == 2
+assert [item['part'] for item in posts] == list(range(1, 23))
 assert world['rooms']['stone-house']['hotspots']['window']['content'] == {'type': 'link'}
 for item in links:
     assert all(item.get(key) for key in ['id', 'title', 'description', 'date', 'tags', 'link'])
@@ -114,3 +114,24 @@ for value in real_world['objects'].values():
         pixels = np.array(Image.open(real / file).convert('RGBA'))
         assert set(map(tuple, pixels[..., :3][pixels[..., 3] > 0])) <= real_palette
 print('Real 640×360 room, palette, masks, 128×234 character cells, glow, and books passed.')
+
+for folder in [data / 'book', real / 'book']:
+    book = load(folder / 'book.json')
+    assert Image.open(folder / book['image']).size == (640, 360)
+    turn = book['turn']
+    assert Image.open(folder / turn['sheet']).size == (turn['rect'][2] * turn['frames'], turn['rect'][3])
+    for path in book['fonts'].values():
+        font_path = folder / path
+        font = load(font_path)
+        atlas = np.array(Image.open(font_path.parent / font['image']).convert('RGBA'))
+        assert set(np.unique(atlas[..., 3])) <= {0, 128, 255}
+        assert np.all(atlas[..., :3][atlas[..., 3] > 0] == 255)
+        assert set(chr(i) for i in range(33, 127)) | set('àèéìòù‘’“”…') <= set(font['glyphs'])
+        for x, y, w, h, ox, oy, advance in font['glyphs'].values():
+            assert 0 <= x < x + w <= atlas.shape[1]
+            assert 0 <= y < y + h <= atlas.shape[0]
+            assert advance > 0
+assert list(real_world['books']) == ['workstation', 'linux', 'ai', 'docker', 'security', 'personal']
+assert real_world['rooms']['stone-house']['books'] == list(real_world['books'])
+assert [book['sprite'] for book in real_world['books'].values()] == [f'objects/book-{i}.png' for i in range(1, 7)]
+print('Book frame, turn strip, atlas coverage, alpha levels, white masks, glyph bounds, and real shelf order passed.')

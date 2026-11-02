@@ -22,17 +22,76 @@
   "rooms": {
     "stone-house": {
       "src": "rooms/stone-house/room.json",
-      "content": {
-        "series": "workstation"
-      },
-      "object": "book",
       "hotspots": {
         "window": {
           "content": {
             "type": "link"
           }
         }
-      }
+      },
+      "books": [
+        "workstation",
+        "linux",
+        "ai",
+        "docker",
+        "security",
+        "personal"
+      ]
+    }
+  },
+  "book": "book/book.json",
+  "books": {
+    "workstation": {
+      "title": "Workstation",
+      "content": {
+        "series": "workstation"
+      },
+      "sprite": "objects/book-1.png"
+    },
+    "linux": {
+      "title": "Linux",
+      "content": {
+        "tags": [
+          "linux"
+        ]
+      },
+      "sprite": "objects/book-2.png"
+    },
+    "ai": {
+      "title": "AI and agents",
+      "content": {
+        "tags": [
+          "ai"
+        ]
+      },
+      "sprite": "objects/book-3.png"
+    },
+    "docker": {
+      "title": "Docker",
+      "content": {
+        "tags": [
+          "docker"
+        ]
+      },
+      "sprite": "objects/book-4.png"
+    },
+    "security": {
+      "title": "Security",
+      "content": {
+        "tags": [
+          "security"
+        ]
+      },
+      "sprite": "objects/book-5.png"
+    },
+    "personal": {
+      "title": "Personal",
+      "content": {
+        "tags": [
+          "personal"
+        ]
+      },
+      "sprite": "objects/book-6.png"
     }
   }
 }

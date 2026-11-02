@@ -1,0 +1,35 @@
+{
+  "image": "open.png",
+  "pages": [
+    [
+      92,
+      56,
+      208,
+      240
+    ],
+    [
+      340,
+      56,
+      208,
+      240
+    ]
+  ],
+  "turn": {
+    "sheet": "turn.png",
+    "rect": [
+      76,
+      40,
+      488,
+      274
+    ],
+    "frames": 4,
+    "fps": 12
+  },
+  "ink": "#1d202f",
+  "faded": "#76645f",
+  "accent": "#8a5650",
+  "fonts": {
+    "title": "fonts/title.json",
+    "body": "fonts/body.json"
+  }
+}
