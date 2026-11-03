@@ -141,7 +141,8 @@ for folder in [data / 'book', real / 'book']:
     assert set(map(tuple, curl[..., :3][curl[..., 3] > 0])) <= colors
     assert curl.shape == (24, 48, 4)
     assert set(np.unique(curl[..., 3])) == {0, 255}
-assert list(real_world['books']) == ['workstation', 'linux', 'ai', 'docker', 'security', 'personal']
-assert real_world['rooms']['stone-house']['books'] == list(real_world['books'])
-assert [book['sprite'] for book in real_world['books'].values()] == [f'objects/book-{i}.png' for i in range(1, 7)]
+shelf = real_world['rooms']['stone-house']['books']
+assert shelf == ['workstation', 'linux', 'ai', 'docker', 'security', 'personal']
+assert [real_world['books'][b]['sprite'] for b in shelf] == [f'objects/book-{i}.png' for i in range(1, 7)]
+assert real_world['rooms']['harbour']['hotspots']['noticeboard']['book'] == 'links'
 print('Book frame, turn strip, NF-Pixels and OFL licence, sizes, palette curls, and real shelf order passed.')

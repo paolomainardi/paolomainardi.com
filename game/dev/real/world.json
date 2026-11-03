@@ -27,13 +27,6 @@
   "rooms": {
     "stone-house": {
       "src": "rooms/stone-house/room.json",
-      "hotspots": {
-        "window": {
-          "content": {
-            "type": "link"
-          }
-        }
-      },
       "books": [
         "workstation",
         "linux",
@@ -61,6 +54,32 @@
             "sound": "flame",
             "at": "oil-lamp",
             "light": "oil-lamp"
+          }
+        ]
+      }
+    },
+    "harbour": {
+      "src": "rooms/harbour/room.json",
+      "books": [],
+      "hotspots": {
+        "noticeboard": {
+          "book": "links"
+        }
+      },
+      "ambience": {
+        "dusk": [
+          {
+            "sound": "sea",
+            "at": "boat"
+          }
+        ],
+        "night": [
+          {
+            "sound": "sea",
+            "at": "boat"
+          },
+          {
+            "sound": "wind"
           }
         ]
       }
@@ -119,6 +138,13 @@
         ]
       },
       "sprite": "objects/book-6.png"
+    },
+    "links": {
+      "title": "Links",
+      "content": {
+        "type": "link"
+      },
+      "sprite": "objects/book-1.png"
     }
   },
   "sounds": {

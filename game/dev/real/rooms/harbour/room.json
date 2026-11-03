@@ -1,0 +1,101 @@
+{
+  "name": "harbour",
+  "size": [
+    640,
+    360
+  ],
+  "albedo": "albedo.png",
+  "water": "water.png",
+  "states": {
+    "dusk": {
+      "unlit": "dusk-unlit.png",
+      "lights": {
+        "street-lamp": "dusk-street-lamp.png",
+        "door-lantern": "dusk-door-lantern.png"
+      }
+    },
+    "night": {
+      "unlit": "night-unlit.png",
+      "lights": {
+        "street-lamp": "night-street-lamp.png",
+        "door-lantern": "night-door-lantern.png"
+      }
+    }
+  },
+  "objects": "objects.png",
+  "items": [
+    {
+      "id": "floor",
+      "kind": "walkable",
+      "color": "#00ff00"
+    },
+    {
+      "id": "door",
+      "kind": "exit",
+      "color": "#ff8000",
+      "label": "Door",
+      "to": "stone-house"
+    },
+    {
+      "id": "noticeboard",
+      "kind": "hotspot",
+      "color": "#ff00ff",
+      "label": "Notice board",
+      "look": "A few papers. Plenty of places to go."
+    },
+    {
+      "id": "street-lamp",
+      "kind": "light",
+      "color": "#ffff00",
+      "label": "Street lamp",
+      "light": "wall",
+      "tint": "#ff9506"
+    },
+    {
+      "id": "door-lantern",
+      "kind": "light",
+      "color": "#ffc000",
+      "label": "Door lantern",
+      "light": "oil",
+      "tint": "#ff6900"
+    },
+    {
+      "id": "boat",
+      "kind": "hotspot",
+      "color": "#00ffff",
+      "label": "Rowing boat",
+      "look": "Two oars. No deadlines."
+    },
+    {
+      "id": "lighthouse",
+      "kind": "hotspot",
+      "color": "#0080ff",
+      "label": "Lighthouse",
+      "look": "Still keeping watch."
+    },
+    {
+      "id": "quay-posts",
+      "kind": "foreground",
+      "color": "#0000ff"
+    },
+    {
+      "id": "cargo",
+      "kind": "foreground",
+      "color": "#8000ff"
+    }
+  ],
+  "depth": {
+    "far": [
+      279,
+      0.631
+    ],
+    "near": [
+      299,
+      0.681
+    ]
+  },
+  "spawn": [
+    145,
+    285
+  ]
+}
