@@ -87,12 +87,14 @@
         "letter": {
           "content": {
             "type": "about"
-          }
+          },
+          "site": "/about/"
         },
         "logbook": {
           "content": {
             "type": "talk"
-          }
+          },
+          "site": "/talks/"
         }
       },
       "ambience": {
@@ -144,7 +146,8 @@
         "series": "workstation",
         "type": "post"
       },
-      "sprite": "objects/book-1.png"
+      "sprite": "objects/book-1.png",
+      "site": "/posts/manage-dotfiles-with-yadm/#series"
     },
     "linux": {
       "title": "Linux",
@@ -154,7 +157,8 @@
         ],
         "type": "post"
       },
-      "sprite": "objects/book-2.png"
+      "sprite": "objects/book-2.png",
+      "site": "/tags/linux/"
     },
     "ai": {
       "title": "AI and agents",
@@ -164,7 +168,8 @@
         ],
         "type": "post"
       },
-      "sprite": "objects/book-3.png"
+      "sprite": "objects/book-3.png",
+      "site": "/tags/ai/"
     },
     "docker": {
       "title": "Docker",
@@ -174,7 +179,8 @@
         ],
         "type": "post"
       },
-      "sprite": "objects/book-4.png"
+      "sprite": "objects/book-4.png",
+      "site": "/tags/docker/"
     },
     "security": {
       "title": "Security",
@@ -184,7 +190,8 @@
         ],
         "type": "post"
       },
-      "sprite": "objects/book-5.png"
+      "sprite": "objects/book-5.png",
+      "site": "/tags/security/"
     },
     "personal": {
       "title": "Personal",
@@ -194,7 +201,8 @@
         ],
         "type": "post"
       },
-      "sprite": "objects/book-6.png"
+      "sprite": "objects/book-6.png",
+      "site": "/tags/personal/"
     }
   },
   "sounds": {
@@ -268,11 +276,13 @@
   },
   "boards": {
     "links": {
-      "title": "Notices",
+      "title": "Links",
       "content": {
         "type": "link"
       },
-      "board": "board/board.json"
+      "board": "board/board.json",
+      "subtitle": "Things I read and think are worth your time, with a line or two on why.",
+      "site": "/links/"
     }
   }
 }

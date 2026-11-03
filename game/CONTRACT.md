@@ -362,7 +362,9 @@ A world board binds content to close-up art. A hotspot uses `board` instead of `
 {
   "boards": {
     "links": {
-      "title": "Notices",
+      "title": "Links",
+      "subtitle": "Things I read and think are worth your time, with a line or two on why.",
+      "site": "/links/",
       "content": { "type": "link" },
       "board": "board/board.json"
     }
@@ -403,6 +405,7 @@ Items sort by date, newest first, regardless of `part`. Board links join the hid
 }
 ```
 
+- Optional `title` is a `[x, y, width, height]` rectangle for the board heading. By default it spans the notices horizontally, from the frame top to the highest notice. The world board's `title` uses the book title font. Its optional `subtitle` uses the faded body font, wrapped to at most two lines. Both are centred in the rectangle and hidden in the note view. Leave enough height above notices for the heading.
 - `image` is the empty 640×360 board frame. `notices` supplies six to eight places in reading order. The example shows one place.
 - Each place names a blank paper sprite, its top-left `at`, and an absolute `[x, y, width, height]` text rectangle.
   The engine draws the paper and a pin at its top centre, followed by the wrapped title and date. Titles truncate with an ellipsis to leave room for the date.
@@ -417,6 +420,14 @@ Items sort by date, newest first, regardless of `part`. Board links join the hid
 The route is `#<room>/board/<id>/<page>` with zero-based pages clamped to board bounds.
 The bottom bar's **Close**, right click and Escape return to the room. The bar reserves separate places for Close, one hint or temporary message, and sound.
 A temporary message replaces the hint and expires while the close-up stays open. Book close-ups use the same bar.
+
+## Site paths in world.json
+
+Books, boards and content-bound hotspot bindings accept optional `site`, such as `/tags/linux/`, `/links/` or `/about/`. Paths must start with a single slash and resolve against the page's origin, independently of `world.json`, `content.json` and document base URLs. Cross-origin paths are rejected. Fragments are preserved.
+
+While a book, board or reader from a bound hotspot is open, the bottom bar shows its path in faded text before Sound. Hover changes it to the accent colour and shows "Open <path> on the site" in the sentence line. Clicking opens a new tab with `rel="noopener"`. The bar reserves space for Close, the sentence and Sound; long paths and sentences truncate to fit. Readers leave the bar uncovered. Rooms show no path.
+
+Closing a reader returns to its book or board path. Hotspot reader routes restore the hotspot path. The hidden accessible catalogue includes these destinations as links labelled "<title> on the site".
 
 ## Sound in world.json
 

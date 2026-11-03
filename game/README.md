@@ -163,6 +163,10 @@ The route `#harbour/board/links/0` restores the board after Start. Board links a
 
 Close boards and books with the bottom bar's **Close**, right click or Escape.
 Temporary messages replace the bar hint and expire without overlapping Close or sound.
+Boards show their title in the book title font and an optional faded subtitle above the notices. The subtitle wraps to two lines. An optional `title` rectangle in the board art contract sets the heading area.
+
+Add `site` to a world book, board or content-bound hotspot, for example `"site": "/links/"`. The open view shows this path before Sound in the bottom bar. Hover highlights it and shows "Open <path> on the site"; clicking opens a new tab with `noopener`. Paths resolve against the page origin, including when world assets live elsewhere. The accessible catalogue includes the same links. Long paths truncate to keep controls separate. Rooms show no path.
+
 The placeholders live in `dev/data/board/`; their data format is in [CONTRACT.md](CONTRACT.md#notice-boards).
 
 Choose **Island map** in the study or harbour to visit the placeholder map.
@@ -242,6 +246,7 @@ With the server running, browser verification is available through Playwright CL
 
 ```sh
 playwright-cli -s=adventure open http://localhost:8000/dev/
+playwright-cli -s=adventure run-code --filename=tests/browser-site.js
 playwright-cli -s=adventure run-code --filename=tests/browser-books.js
 playwright-cli -s=adventure run-code --filename=tests/browser-smoke.js
 playwright-cli -s=adventure run-code --filename=tests/browser-lighting.js

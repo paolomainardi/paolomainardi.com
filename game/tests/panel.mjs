@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
-import { layoutPanel, inside, inventoryIcon } from "../src/panel.js";
+import {
+  layoutPanel,
+  inside,
+  inventoryIcon,
+  siteLayout,
+  sitePath,
+} from "../src/panel.js";
 const verbs = ["Look at", "Open", "Use", "Take", "Talk to"];
 const panel = layoutPanel([640, 360], verbs);
 assert.equal(panel.top, 324);
@@ -36,3 +42,30 @@ assert(icon.every(Number.isInteger));
 console.log(
   "Panel order, grid positions, half-open edge hits, and whole-pixel icons passed.",
 );
+
+for (const width of [320, 640, 960]) {
+  const game = { room: { size: [width, 360] } };
+  assert.equal(sitePath(game), null);
+  for (const state of [
+    { activeBook: { site: "/tags/linux/" } },
+    { activeBoard: { site: "/links/" } },
+    { readerItem: {}, readerSite: "/about/" },
+    { activeBook: { site: "/" + "long/".repeat(100) } },
+  ]) {
+    Object.assign(
+      game,
+      {
+        activeBook: null,
+        activeBoard: null,
+        readerItem: null,
+        readerSite: null,
+      },
+      state,
+    );
+    const rect = siteLayout(game);
+    assert(rect.x >= 152);
+    assert(rect.x + rect.width <= width - 82);
+    assert.equal(rect.y, state.readerItem ? 328 : 344);
+    assert(inside(rect, rect.x, rect.y));
+  }
+}

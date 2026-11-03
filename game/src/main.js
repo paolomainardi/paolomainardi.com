@@ -11,7 +11,7 @@ import {
   parseRoute,
   bookRoute,
 } from "./book.js";
-import { layoutPanel, inside } from "./panel.js";
+import { layoutPanel, inside, siteLayout } from "./panel.js";
 import { targetVerbs, layoutMenu, menuHit } from "./verb-menu.js";
 import { Renderer } from "./renderer.js";
 import { loadWorld, loadRoom, matchingItems, resolve } from "./assets.js";
@@ -158,6 +158,18 @@ export async function boot({ world, content, element }) {
         ]),
       ),
     );
+    const siteURL = (path) => {
+      if (
+        typeof path !== "string" ||
+        !path.startsWith("/") ||
+        path.startsWith("//")
+      )
+        throw new Error("Site paths must start with a single slash.");
+      const url = resolve(path, location.origin + "/");
+      if (new URL(url).origin !== location.origin)
+        throw new Error("Site paths must stay on the page origin.");
+      return url;
+    };
     const catalogue = document.createElement("nav");
     catalogue.className = "adventure-catalogue";
     catalogue.setAttribute("aria-label", "Books and posts");
@@ -168,6 +180,16 @@ export async function boot({ world, content, element }) {
       const title = document.createElement("h2");
       title.textContent = book.title;
       const list = document.createElement("ul");
+      if (book.site) {
+        const row = document.createElement("li"),
+          link = document.createElement("a");
+        link.textContent = `${book.title} on the site`;
+        link.href = siteURL(book.site);
+        link.target = "_blank";
+        link.rel = "noopener";
+        row.append(link);
+        list.append(row);
+      }
       for (const item of book.items) {
         const row = document.createElement("li"),
           link = document.createElement("a");
@@ -178,6 +200,23 @@ export async function boot({ world, content, element }) {
       }
       catalogue.append(title, list);
     }
+    const hotspotLinks = document.createElement("ul");
+    for (const room of Object.values(game.world.rooms))
+      for (const [id, binding] of Object.entries(room.hotspots || {})) {
+        if (!binding.content || !binding.site) continue;
+        const row = document.createElement("li"),
+          link = document.createElement("a");
+        const item = matchingItems(game.items, binding.content).sort((a, b) =>
+          (b.date || "").localeCompare(a.date || ""),
+        )[0];
+        link.textContent = `${item?.title || id} on the site`;
+        link.href = siteURL(binding.site);
+        link.target = "_blank";
+        link.rel = "noopener";
+        row.append(link);
+        hotspotLinks.append(row);
+      }
+    catalogue.append(hotspotLinks);
     root.append(catalogue);
     game.character.texture = renderer.texture(game.character.sheet);
     game.character.size = [
@@ -269,6 +308,8 @@ export async function boot({ world, content, element }) {
             ),
         )[0];
     game.sentence = () => {
+      const site = siteLayout(game);
+      if (game.siteHover && site) return `Open ${site.path} on the site`;
       if (game.sentenceNotice && game.speechUntil > game.elapsed)
         return game.sentenceNotice;
       if (game.selectedItem)
@@ -311,6 +352,7 @@ export async function boot({ world, content, element }) {
       if (location.hash !== value) history.pushState(null, "", value);
     }
     function openBoard(board, page = 0, update = true) {
+      game.siteHover = false;
       game.activeBook = null;
       game.activeBoard = board;
       game.turning = null;
@@ -324,6 +366,7 @@ export async function boot({ world, content, element }) {
       if (update) writeHash();
     }
     function openBook(book, spread = 0, update = true) {
+      game.siteHover = false;
       game.sound.event("book-open");
       game.menu = null;
       game.activeBoard = null;
@@ -342,6 +385,7 @@ export async function boot({ world, content, element }) {
       if (update) writeHash();
     }
     function closeBook() {
+      game.siteHover = false;
       game.activeBoard = null;
       game.boardNote = null;
       game.inventoryNote = false;
@@ -371,6 +415,8 @@ export async function boot({ world, content, element }) {
       game.sound.setReader(false);
       iframe.removeAttribute("src");
       game.readerItem = null;
+      game.readerSite = null;
+      game.siteHover = false;
       if (update) writeHash();
       root.focus({ preventScroll: true });
     }
@@ -393,6 +439,11 @@ export async function boot({ world, content, element }) {
       game.path = [];
       game.pending = null;
       game.readerItem = item;
+      game.readerSite =
+        [...game.objects, ...game.room.items].find(
+          (object) => object.content === item,
+        )?.site || null;
+      game.siteHover = false;
       game.hover = null;
       game.actor.animation = "idle-front";
       game.actor.mirror = false;
@@ -529,6 +580,7 @@ export async function boot({ world, content, element }) {
         )[0];
         if (item) {
           hotspot.content = item;
+          hotspot.site = binding.site;
           hotspot.label = `${hotspot.label || hotspot.id}: ${item.title}`;
         }
       }
@@ -582,6 +634,20 @@ export async function boot({ world, content, element }) {
     await changeRoom(initial.room);
     const fit = () => {
       renderer.resize(root.clientWidth, root.clientHeight);
+      const [width, height] = game.room.size;
+      const scale = Math.max(
+        1,
+        Math.floor(
+          Math.min(root.clientWidth / width, root.clientHeight / height),
+        ),
+      );
+      const fit = Math.min(
+        scale,
+        root.clientWidth / width,
+        root.clientHeight / height,
+      );
+      reader.style.top = `${(root.clientHeight - height * fit) / 2 + 6 * fit}px`;
+      reader.style.height = `${(height - 48) * fit}px`;
     };
     const observer = new ResizeObserver(fit);
     observer.observe(root);
@@ -621,6 +687,13 @@ export async function boot({ world, content, element }) {
       ];
     }
     on(canvas, "pointermove", (event) => {
+      const site = siteLayout(game);
+      game.siteHover = !!(site && inside(site, ...point(event)));
+      if (game.siteHover) {
+        game.hover = null;
+        canvas.style.cursor = "pointer";
+        return;
+      }
       if (!game.started || game.readerItem || game.loading || game.transition)
         return;
       const [x, y] = point(event);
@@ -671,6 +744,7 @@ export async function boot({ world, content, element }) {
       canvas.style.cursor = game.hover || game.corner ? "pointer" : "crosshair";
     });
     on(canvas, "pointerleave", () => {
+      game.siteHover = false;
       if (game.menu) game.menu.selected = -1;
       game.hover = null;
       game.corner = 0;
@@ -896,6 +970,17 @@ export async function boot({ world, content, element }) {
     on(canvas, "pointercancel", (event) => finishDrag(event, true));
     on(canvas, "lostpointercapture", (event) => finishDrag(event, true));
     on(canvas, "click", (event) => {
+      const site = siteLayout(game);
+      if (game.started && site && inside(site, ...point(event))) {
+        const link = document.createElement("a");
+        link.href = siteURL(site.path);
+        link.target = "_blank";
+        link.rel = "noopener";
+        root.append(link);
+        link.click();
+        link.remove();
+        return;
+      }
       if (!game.started || game.readerItem || game.loading || game.transition)
         return;
       root.focus({ preventScroll: true });

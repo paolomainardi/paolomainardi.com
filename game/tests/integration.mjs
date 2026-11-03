@@ -73,7 +73,7 @@ window.open = (...args) => {
   opened.push({ args, position: [rendered.actor.x, rendered.actor.y] });
   return null; // noopener may return null even when the browser opens the tab.
 };
-const location = { hash: "" };
+const location = { hash: "", origin: "https://page.test" };
 let legacyBooks = true;
 let animationStart = 0;
 let objectPaths,
@@ -969,9 +969,9 @@ assert.equal(rendered.objects.length, 6);
 assert.equal(rendered.objects[0].label, "Workstation");
 assert.equal(rendered.objects[0].book.items.length, 22);
 const catalogue = bookRoot.children.find((node) => node.tagName === "nav");
-assert.equal(catalogue.children.length, 16);
+assert.equal(catalogue.children.length, 17);
 assert.equal(
-  catalogue.children[1].children[0].children[0].href,
+  catalogue.children[1].children[1].children[0].href,
   "https://adventure.test/dev/reader/workstation-1.html",
 );
 event(bookRoot, "contextmenu", { clientX: 470, clientY: 140 });
@@ -1208,6 +1208,13 @@ for (const verb of ["Open"]) {
   select(verb);
   tap(slot.x + 1, slot.y + 1);
   assert.equal(adventure.state.book, "workstation");
+  const panelModule = await moduleAt("https://adventure.test/src/panel.js");
+  const site = panelModule.namespace.siteLayout(rendered);
+  tap(site.x + 1, site.y + 1);
+  assert.equal(
+    clickedLinks.at(-1).href,
+    "https://page.test/posts/manage-dotfiles-with-yadm/#series",
+  );
   event(adventureRoot, "keydown", { key: "Escape" });
 }
 for (const verb of ["Talk to"]) {
@@ -1280,6 +1287,28 @@ for (const verb of ["Open", "Walk to"]) {
 select("Open");
 tap(...board.position);
 arrive();
+const panelModule = await moduleAt("https://adventure.test/src/panel.js");
+const checkSite = (path) => {
+  const rect = panelModule.namespace.siteLayout(rendered);
+  assert.equal(rect.path, path);
+  assert(rect.x + rect.width <= rendered.panel.sound.x - 8);
+  event(adventureCanvas, "pointermove", {
+    clientX: rect.x + 1,
+    clientY: rect.y + 1,
+  });
+  assert.equal(rendered.sentence(), `Open ${path} on the site`);
+  const count = clickedLinks.length;
+  tap(rect.x + 1, rect.y + 1);
+  assert.equal(clickedLinks.length, count + 1);
+  assert.deepEqual(clickedLinks.at(-1), {
+    href: `https://page.test${path}`,
+    target: "_blank",
+    rel: "noopener",
+  });
+  event(adventureCanvas, "pointerleave");
+  assert.equal(rendered.siteHover, false);
+};
+checkSite("/links/");
 const linkEntry = rendered.activeBoard.items[0];
 const notice = rendered.activeBoard.art.notices[0];
 const linksBefore = clickedLinks.length;
@@ -1389,7 +1418,7 @@ const accessible = adventureRoot.children.find(
 );
 assert(
   accessible.children
-    .at(-1)
+    .at(-2)
     .children.every((row) => row.children[0].href.startsWith("https://")),
 );
 // Carry a notice into another room, then open it without walking or showing the board.
@@ -1492,6 +1521,7 @@ for (const kind of ["about", "talk"]) {
     if (verb === "Look at") assert.equal(rendered.speech, paper.look);
     else {
       assert.equal(adventure.state.reader, `found-${kind}`);
+      checkSite(kind === "about" ? "/about/" : "/talks/");
       event(adventureRoot.children[2], "keydown", { key: "Escape" });
     }
   }

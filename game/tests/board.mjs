@@ -195,3 +195,63 @@ assert(
     (line) => line.value === "Take it",
   ),
 );
+
+for (const custom of [null, [80, 4, 480, 60]]) {
+  const titled = {
+    ...board,
+    title: "Links",
+    subtitle:
+      "Things I read and think are worth your time, with a line or two on why.",
+    art: { ...art, ...(custom ? { title: custom } : {}) },
+  };
+  const heading = boardText(titled, 0, null, null, fonts).filter(
+    (line) => line.y < art.notices[0].at[1],
+  );
+  assert.equal(heading[0].value, "Links");
+  assert.equal(heading[0].font, fonts.title);
+  assert.equal(heading[0].color, art.ink);
+  assert(heading.length >= 2 && heading.length <= 3);
+  for (const line of heading.slice(1)) {
+    assert.equal(line.font, fonts.body);
+    assert.equal(line.color, art.faded);
+  }
+  const rect = custom || [60, 0, 520, 68];
+  for (const line of heading) {
+    assert(
+      Math.abs(
+        line.x + line.font.measure(line.value) / 2 - (rect[0] + rect[2] / 2),
+      ) <= 1,
+    );
+    assert(line.y >= rect[1]);
+    assert(line.y + line.font.lineHeight <= rect[1] + rect[3]);
+  }
+  assert(
+    !boardText(titled, 0, entry.item, null, fonts).some(
+      (line) => line.value === "Links",
+    ),
+  );
+}
+
+for (const path of [
+  "/links/",
+  "/posts/manage-dotfiles-with-yadm/#series",
+  "/" + "long/".repeat(100),
+]) {
+  game.activeBoard = { ...board, site: path };
+  game.soundRect = { x: 566 };
+  for (const hover of [false, true]) {
+    game.siteHover = hover;
+    texts.length = 0;
+    renderer.renderFooter(game);
+    const site = texts.find((line) => line[1] + line[0].length * 6 === 558);
+    assert(site, "Site path ends before sound with an eight pixel gap");
+    assert.deepEqual(
+      site[3],
+      hover ? [0.9, 0.64, 0.7, 1] : [0.55, 0.51, 0.47, 1],
+    );
+    const sentence = texts.at(-1);
+    assert(sentence[1] + sentence[0].length * 6 < site[1]);
+    assert(texts[0][1] + texts[0][0].length * 6 < sentence[1]);
+    if (hover) assert(sentence[0].startsWith("Open"));
+  }
+}

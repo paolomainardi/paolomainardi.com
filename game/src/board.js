@@ -1,5 +1,5 @@
 import { image, json, resolve, matchingItems } from "./assets.js";
-import { wrapText } from "./book.js";
+import { wrapText, measure } from "./book.js";
 
 export async function loadBoard(config, worldURL, renderer) {
   const url = resolve(config.board, worldURL);
@@ -142,6 +142,36 @@ export function boardText(board, page, note, hover, fonts, canTake = true) {
         hover === key ? art.accent : art.ink,
       );
   } else {
+    const top = Math.min(...art.notices.map((notice) => notice.at[1]));
+    const left = Math.min(...art.notices.map((notice) => notice.at[0]));
+    const right = Math.max(
+      ...art.notices.map(
+        (notice) => notice.at[0] + art.sprites[notice.paper].size[0],
+      ),
+    );
+    const [x, y, width, height] = art.title || [left, 0, right - left, top];
+    const titles = wrapText(fonts.title, board.title || "", width, 1);
+    const subtitles = wrapText(fonts.body, board.subtitle || "", width, 2);
+    const textHeight =
+      titles.length * fonts.title.lineHeight +
+      subtitles.length * fonts.body.lineHeight;
+    let titleY = y + Math.max(0, Math.floor((height - textHeight) / 2));
+    for (const [font, values, color] of [
+      [fonts.title, titles, art.ink],
+      [fonts.body, subtitles, art.faded],
+    ])
+      for (const value of values) {
+        if (titleY + font.lineHeight <= y + height) {
+          add(
+            font,
+            value,
+            x + Math.floor((width - measure(font, value)) / 2),
+            titleY,
+            color,
+          );
+          titleY += font.lineHeight;
+        }
+      }
     for (const entry of boardEntries(board, page))
       paper(entry.item, entry.text, hover === entry.item, false);
     // The paging papers are part of the board drawing: an inactive one says why, in faded ink.

@@ -46,3 +46,30 @@ export function inventoryIcon(sprite, slot) {
     height,
   ];
 }
+
+export function sitePath(game) {
+  return (
+    (game.readerItem
+      ? game.readerSite || game.activeBook?.site || game.activeBoard?.site
+      : game.activeBook?.site || game.activeBoard?.site) || null
+  );
+}
+
+export function siteLayout(game) {
+  const path = sitePath(game);
+  if (!path) return null;
+  const [width, height] = game.room.size;
+  const right = width - 82;
+  // Leave Close and a short sentence to the left, even for a long path.
+  const capacity = Math.max(1, Math.floor((right - 152) / 6));
+  const label =
+    path.length > capacity ? path.slice(0, capacity - 1) + "…" : path;
+  return {
+    path,
+    label,
+    x: right - label.length * 6,
+    y: game.activeBook || game.activeBoard ? height - 16 : height - 32,
+    width: label.length * 6,
+    height: 8,
+  };
+}

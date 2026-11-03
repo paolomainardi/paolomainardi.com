@@ -80,8 +80,8 @@ def generate_board_and_map():
     ImageDraw.Draw(note).rectangle((90, 20, 550, 318), fill=COLORS[11])
     note.save(folder / 'note.png')
     save_json(folder / 'board.json', dict(image='board.png', pin='pin.png',
-        notices=[dict(paper='paper.png', at=[60 + col * 180, 40 + row * 128],
-            text=[68 + col * 180, 52 + row * 128, 144, 88]) for row in range(2) for col in range(3)],
+        notices=[dict(paper='paper.png', at=[60 + col * 180, 68 + row * 116],
+            text=[68 + col * 180, 80 + row * 116, 144, 88]) for row in range(2) for col in range(3)],
         older=[470, 306, 110, 16], newer=[60, 306, 110, 16],
         note=dict(image='note.png', text=[115, 42, 410, 224], go=[115, 287, 100, 18], back=[445, 287, 60, 18]),
         ink=COLORS[1], faded=COLORS[6], accent=COLORS[21]))
@@ -315,8 +315,8 @@ def generate():
         events={'step': 'step', 'page-turn': 'page', 'book-open': 'page', 'book-close': 'page', 'lamp': 'click', 'menu': 'click', 'door': 'door', 'lantern': 'flare', 'time': 'gust'},
         mix={'master': 0.5, 'ambience': 0.8, 'effects': 1.0},
         book='book/book.json',
-        boards={'links': dict(title='Notices', content=dict(type='link'), board='board/board.json')},
-        books={key: dict(title=title, content=content, sprite=books[i % len(books)])
+        boards={'links': dict(title='Links', subtitle='Things I read and think are worth your time, with a line or two on why.', site='/links/', content=dict(type='link'), board='board/board.json')},
+        books={key: dict(title=title, content=content, sprite=books[i % len(books)], site='/posts/manage-dotfiles-with-yadm/#series' if key == 'workstation' else '/links/' if key == 'links' else f'/tags/{key}/')
                for i, (key, title, content) in enumerate([
                    ('workstation', 'Workstation', dict(series='workstation')),
                    ('linux', 'Linux', dict(tags=['linux'])),
@@ -328,8 +328,8 @@ def generate():
         rooms={'stone-house': dict(src='rooms/stone-house/room.json', books=['workstation', 'linux', 'ai', 'docker', 'security', 'personal'],
             ambience=dict(dusk=[dict(sound='sea', at='window')],
                 night=[dict(sound='sea', at='window'), dict(sound='wind'), dict(sound='flame', at='oil', light='oil')]),
-            hotspots=dict(window=dict(content=dict(type='link')),
-                about=dict(content=dict(type='about')), talk=dict(content=dict(type='talk')))),
+            hotspots=dict(window=dict(content=dict(type='link'), site='/links/'),
+                about=dict(content=dict(type='about'), site='/about/'), talk=dict(content=dict(type='talk'), site='/talks/'))),
             'harbour': dict(src='rooms/harbour/room.json', books=[],
                 hotspots=dict(noticeboard=dict(board='links'))),
             'map': dict(src='rooms/map/room.json', books=[])}))

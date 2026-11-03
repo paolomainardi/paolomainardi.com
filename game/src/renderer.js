@@ -1,5 +1,5 @@
 import { boardEntries } from "./board.js";
-import { inventoryIcon } from "./panel.js";
+import { inventoryIcon, siteLayout } from "./panel.js";
 import { waterFrame, reflectionPeak } from "./water.js";
 import { TextLayer } from "./text-layer.js";
 import { animationFrame } from "./animation.js";
@@ -47,6 +47,18 @@ vec3 drawing(vec2 p){
 }`;
 
 export class Renderer {
+  siteLabel(game) {
+    const site = siteLayout(game);
+    if (site)
+      this.text(
+        site.label,
+        site.x,
+        site.y,
+        game.siteHover ? [0.9, 0.64, 0.7, 1] : [0.55, 0.51, 0.47, 1],
+      );
+    return site;
+  }
+
   soundLabel(game) {
     if (!game.soundRect) return;
     this.text(
@@ -676,12 +688,19 @@ void main(){
     const top = game.room.size[1] - 24;
     this.rect(0, top, this.size[0], 24, [0.025, 0.03, 0.05, 0.85]);
     this.text("Close", 8, top + 8);
+    const site = this.siteLabel(game);
     const message =
-      game.sentenceNotice && game.speechUntil > game.elapsed
-        ? game.sentenceNotice
-        : "or right click, Esc";
+      game.siteHover && site
+        ? `Open ${site.path} on the site`
+        : game.sentenceNotice && game.speechUntil > game.elapsed
+          ? game.sentenceNotice
+          : "or right click, Esc";
     this.text(
-      wrap(message, Math.floor((this.size[0] - 156) / 6), 1)[0],
+      wrap(
+        message,
+        Math.max(1, Math.floor(((site?.x ?? this.size[0] - 82) - 76) / 6)),
+        1,
+      )[0],
       68,
       top + 8,
     );
@@ -971,8 +990,13 @@ void main(){
       top = game.verbTop;
     const accent = [0.9, 0.64, 0.7, 1];
     this.rect(0, top, width, 36, [0.025, 0.03, 0.05, 0.88]);
+    const site = this.siteLabel(game);
     this.text(
-      wrap(game.sentence(), Math.floor((width - 92) / 6), 1)[0],
+      wrap(
+        game.sentence(),
+        Math.max(1, Math.floor(((site?.x ?? width - 82) - 16) / 6)),
+        1,
+      )[0],
       8,
       top + 4,
     );

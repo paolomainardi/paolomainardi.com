@@ -85,11 +85,13 @@
   "book": "book/book.json",
   "boards": {
     "links": {
-      "title": "Notices",
+      "title": "Links",
       "content": {
         "type": "link"
       },
-      "board": "board/board.json"
+      "board": "board/board.json",
+      "subtitle": "Things I read and think are worth your time, with a line or two on why.",
+      "site": "/links/"
     }
   },
   "books": {
@@ -98,7 +100,8 @@
       "content": {
         "series": "workstation"
       },
-      "sprite": "objects/book.png"
+      "sprite": "objects/book.png",
+      "site": "/posts/manage-dotfiles-with-yadm/#series"
     },
     "linux": {
       "title": "Linux",
@@ -107,7 +110,8 @@
           "linux"
         ]
       },
-      "sprite": "objects/book-green.png"
+      "sprite": "objects/book-green.png",
+      "site": "/tags/linux/"
     },
     "ai": {
       "title": "AI and agents",
@@ -116,7 +120,8 @@
           "ai"
         ]
       },
-      "sprite": "objects/book-blue.png"
+      "sprite": "objects/book-blue.png",
+      "site": "/tags/ai/"
     },
     "docker": {
       "title": "Docker",
@@ -125,7 +130,8 @@
           "docker"
         ]
       },
-      "sprite": "objects/book.png"
+      "sprite": "objects/book.png",
+      "site": "/tags/docker/"
     },
     "security": {
       "title": "Security",
@@ -134,7 +140,8 @@
           "security"
         ]
       },
-      "sprite": "objects/book-green.png"
+      "sprite": "objects/book-green.png",
+      "site": "/tags/security/"
     },
     "personal": {
       "title": "Personal",
@@ -143,14 +150,16 @@
           "personal"
         ]
       },
-      "sprite": "objects/book-blue.png"
+      "sprite": "objects/book-blue.png",
+      "site": "/tags/personal/"
     },
     "links": {
       "title": "Links",
       "content": {
         "type": "link"
       },
-      "sprite": "objects/book.png"
+      "sprite": "objects/book.png",
+      "site": "/links/"
     }
   },
   "rooms": {
@@ -190,17 +199,20 @@
         "window": {
           "content": {
             "type": "link"
-          }
+          },
+          "site": "/links/"
         },
         "about": {
           "content": {
             "type": "about"
-          }
+          },
+          "site": "/about/"
         },
         "talk": {
           "content": {
             "type": "talk"
-          }
+          },
+          "site": "/talks/"
         }
       }
     },
