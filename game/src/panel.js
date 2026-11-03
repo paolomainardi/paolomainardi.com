@@ -1,6 +1,6 @@
 export function layoutPanel([width, height], verbs) {
   const top = height - 36;
-  const capacity = Math.max(1, Math.floor((width - 344) / 32));
+  const capacity = Math.max(1, Math.floor((width - 392) / 32));
   return {
     top,
     verbs: verbs.map((label, i) => ({
@@ -17,7 +17,8 @@ export function layoutPanel([width, height], verbs) {
       height: 18,
     })),
     previous: { x: 308, y: top + 16, width: 16, height: 18 },
-    next: { x: width - 24, y: top + 16, width: 16, height: 18 },
+    next: { x: width - 72, y: top + 16, width: 16, height: 18 },
+    forget: { x: width - 44, y: top + 21, width: 36, height: 8 },
     sound: { x: width - 74, y: top + 4, width: 66, height: 8 },
   };
 }

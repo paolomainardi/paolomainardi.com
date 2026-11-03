@@ -29,13 +29,21 @@ for (const [i, rect] of panel.verbs.entries()) {
   assert(!inside(rect, rect.x - 0.001, rect.y));
   assert(!inside(rect, rect.x, rect.y - 0.001));
 }
-for (const rect of [...panel.slots, panel.previous, panel.next, panel.sound]) {
+for (const rect of [
+  ...panel.slots,
+  panel.previous,
+  panel.next,
+  panel.sound,
+  panel.forget,
+]) {
   assert(rect.x >= 0 && rect.x + rect.width <= 640);
   assert(rect.y >= panel.top && rect.y + rect.height <= 360);
   assert(inside(rect, rect.x, rect.y));
   assert(!inside(rect, rect.x + rect.width, rect.y));
   assert(!inside(rect, rect.x, rect.y + rect.height));
 }
+assert(panel.slots.at(-1).x + panel.slots.at(-1).width <= panel.next.x);
+assert(panel.next.x + panel.next.width <= panel.forget.x);
 const icon = inventoryIcon({ size: [24, 36] }, panel.slots[0]);
 assert.deepEqual(icon.slice(2), [8, 12]);
 assert(icon.every(Number.isInteger));

@@ -34,14 +34,21 @@ With no verb selected, clicks use **Walk to**. Click the selected verb again to 
 Hover and selected verbs use rose. Panel clicks never walk, and floor can reach the panel's top.
 Unsupported actions say "I can't do that."
 
-**Take** copies a topic book into the session inventory while leaving its shelf
+**Take** copies a topic book into the inventory while leaving its shelf
 copy in place. Taking it again says "I already have it." Icons use each book's
 sprite, reduced by an integer divisor into whole pixels. Arrows scroll full
 inventories. **Look at** describes an item; **Open** opens its book.
 Select **Use** or leave the verb unselected, click an inventory item, then a target to form
 "Use <item> with <target>" and hear a short response. Other verbs give a short
-response. Inventory survives room changes and clears when the game is restarted.
-It uses no browser storage.
+response. Inventory survives room changes and visits. The game saves only a JSON
+list of `{ "kind": "book" | "notice", "id": "<id>" }` entries in `localStorage`
+under `adventure.inventory`, whenever items change. On start it restores current
+books and notices, drops stale identifiers, and rewrites the list. Room, lamps,
+time of day, and position start fresh; existing hash routes still apply.
+Blocked, full, or missing storage silently leaves inventory in the session only.
+Click **Forget** at the end of the inventory row to hear "Pockets emptied." and
+clear every item and the storage key. Removing `adventure.inventory` from browser
+site data also clears saved inventory before the next visit.
 
 ## Right-click verb menu
 
@@ -154,7 +161,7 @@ The renderer uses the largest whole pixel scale that fits, centred with black ba
 
 The placeholder harbour has a notice board. Open it or click with no verb selected.
 Notices show titles and dates; hover lifts and accents a paper. Click to read Paolo's note, then choose **Go there** to open its link safely in a new tab.
-**Take it** keeps a copy in the session inventory and says "I'll keep this one." The notice stays on the board. Taking it again says "I already have it."
+**Take it** keeps a copy in the inventory and says "I'll keep this one." The notice stays on the board. Taking it again says "I already have it."
 Paper icons use the board's paper sprite and pin, reduced to whole pixels. Inventory arrows scroll books and notices.
 **Open** or a plain click on a carried notice shows its note over the current room, with **Go there** and **Back**. **Look at** says its title.
 Every note shows the link hostname under its date in faded ink. Notes without a description say "No note on this one. Worth a look." in faded ink.
@@ -238,7 +245,7 @@ labels, short descriptions, direct-click tab opening, URL preference and fallbac
 missing URLs, unmatched filters, and preservation of article readers. The browser
 smoke check also checks a real popup, user activation, and its missing opener.
 
-The integration check covers taking notices, duplicate takes, carried-note actions across rooms, and session reset. It also uses the real lighthouse world and masks with the about/talk content fixture: plain clicks and **Open** walk to the letter and logbook before opening their embedded readers.
+The integration check covers taking notices, duplicate takes, carried-note actions across rooms, inventory restoration, stale identifiers, corrupt JSON, storage failures, and Forget. It also uses the real lighthouse world and masks with the about/talk content fixture: plain clicks and **Open** walk to the letter and logbook before opening their embedded readers.
 
 The integration check uses real data and PNGs with simulated DOM/GPU interfaces. Set `ART_PYTHON` to another Pillow-enabled Python if needed. It does not verify rendered output.
 

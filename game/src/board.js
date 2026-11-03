@@ -77,6 +77,26 @@ export function boardHit(board, page, note, x, y, canTake = true) {
   );
 }
 
+// The board's title and subtitle sit on a paper strip above the notices, centred on them.
+export function boardTitleBox(board, art, fonts) {
+  if (!board.title && !board.subtitle) return null;
+  const top = Math.min(...art.notices.map((notice) => notice.at[1]));
+  const left = Math.min(...art.notices.map((notice) => notice.at[0]));
+  const right = Math.max(
+    ...art.notices.map((notice) => notice.at[0] + art.sprites[notice.paper].size[0]),
+  );
+  const lines = [
+    ...wrapText(fonts.title, board.title || "", right - left, 1).map((v) => [fonts.title, v, art.ink]),
+    ...wrapText(fonts.body, board.subtitle || "", right - left, 1).map((v) => [fonts.body, v, art.faded]),
+  ];
+  const w = Math.max(...lines.map(([font, value]) => measure(font, value))) + 16;
+  const h = lines.reduce((sum, [font]) => sum + font.lineHeight, 0) + 8;
+  const [x, y] = art.title
+    ? [art.title[0] + Math.floor((art.title[2] - w) / 2), art.title[1]]
+    : [Math.floor((left + right - w) / 2), Math.max(0, top - h - 4)];
+  return { x, y, w, h, lines };
+}
+
 export function boardText(board, page, note, hover, fonts, canTake = true) {
   const art = board.art,
     lines = [];
@@ -142,36 +162,14 @@ export function boardText(board, page, note, hover, fonts, canTake = true) {
         hover === key ? art.accent : art.ink,
       );
   } else {
-    const top = Math.min(...art.notices.map((notice) => notice.at[1]));
-    const left = Math.min(...art.notices.map((notice) => notice.at[0]));
-    const right = Math.max(
-      ...art.notices.map(
-        (notice) => notice.at[0] + art.sprites[notice.paper].size[0],
-      ),
-    );
-    const [x, y, width, height] = art.title || [left, 0, right - left, top];
-    const titles = wrapText(fonts.title, board.title || "", width, 1);
-    const subtitles = wrapText(fonts.body, board.subtitle || "", width, 2);
-    const textHeight =
-      titles.length * fonts.title.lineHeight +
-      subtitles.length * fonts.body.lineHeight;
-    let titleY = y + Math.max(0, Math.floor((height - textHeight) / 2));
-    for (const [font, values, color] of [
-      [fonts.title, titles, art.ink],
-      [fonts.body, subtitles, art.faded],
-    ])
-      for (const value of values) {
-        if (titleY + font.lineHeight <= y + height) {
-          add(
-            font,
-            value,
-            x + Math.floor((width - measure(font, value)) / 2),
-            titleY,
-            color,
-          );
-          titleY += font.lineHeight;
-        }
+    const box = boardTitleBox(board, art, fonts);
+    if (box) {
+      let lineY = box.y + 4;
+      for (const [font, value, color] of box.lines) {
+        add(font, value, box.x + Math.floor((box.w - measure(font, value)) / 2), lineY, color);
+        lineY += font.lineHeight;
       }
+    }
     for (const entry of boardEntries(board, page))
       paper(entry.item, entry.text, hover === entry.item, false);
     // The paging papers are part of the board drawing: an inactive one says why, in faded ink.

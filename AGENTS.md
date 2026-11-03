@@ -167,8 +167,10 @@ Run `just` or `just --list` to see all recipes.
   with a table of contents at the top. Keep it readable; it is maintained by
   hand. Add new rules to the section they belong to rather than the end.
 - **JavaScript**: ES5 syntax in an IIFE, no dependencies. Feature detect
-  rather than assume. No browser storage, with one exception: the colour scheme
-  toggle remembers the reader's choice in `localStorage`. The scripts are
+  rather than assume. No browser storage, with two exceptions: the colour scheme
+  toggle remembers the reader's choice in `localStorage`, and the adventure at
+  `/play/` keeps the ids of the items the visitor took in
+  `adventure.inventory`. The scripts are
   concatenated into one deferred bundle by `layouts/_partials/scripts.html`.
   The one exception is `scheme-init.js`, inlined at the top of the body so a
   stored colour scheme is applied before the first paint.

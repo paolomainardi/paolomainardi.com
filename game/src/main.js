@@ -158,6 +158,63 @@ export async function boot({ world, content, element }) {
         ]),
       ),
     );
+    function saveInventory() {
+      try {
+        window.localStorage.setItem(
+          "adventure.inventory",
+          JSON.stringify(
+            game.inventory.map((item) => ({
+              kind: item.note ? "notice" : "book",
+              id: item.note ? item.note.id : item.book.id,
+            })),
+          ),
+        );
+      } catch {}
+    }
+    function carriedNotice(note, board) {
+      const entry =
+        board.art.notices[board.items.indexOf(note) % board.art.notices.length];
+      return {
+        kind: "inventory",
+        label: note.title,
+        note,
+        board,
+        sprite: board.art.sprites[entry.paper],
+        pin: board.art.sprites[board.art.pin],
+      };
+    }
+    try {
+      const saved = JSON.parse(
+        window.localStorage.getItem("adventure.inventory"),
+      );
+      if (Array.isArray(saved)) {
+        for (const entry of saved) {
+          if (!entry || typeof entry.id !== "string") continue;
+          if (entry.kind === "book" && Object.hasOwn(game.books, entry.id)) {
+            const book = game.books[entry.id];
+            if (!game.inventory.some((item) => item.book === book))
+              game.inventory.push({
+                kind: "inventory",
+                label: book.title,
+                book,
+                sprite: book.sprite,
+              });
+          } else if (entry.kind === "notice") {
+            const note = game.items.find((item) => item.id === entry.id);
+            const board = Object.values(game.boards).find((board) =>
+              board.items.includes(note),
+            );
+            if (
+              note &&
+              board &&
+              !game.inventory.some((item) => item.note === note)
+            )
+              game.inventory.push(carriedNotice(note, board));
+          }
+        }
+        saveInventory();
+      }
+    } catch {}
     const siteURL = (path) => {
       if (
         typeof path !== "string" ||
@@ -741,7 +798,12 @@ export async function boot({ world, content, element }) {
         : slot >= 0
           ? game.inventory[game.inventoryOffset + slot] || null
           : hit(x, y);
-      canvas.style.cursor = game.hover || game.corner ? "pointer" : "crosshair";
+      canvas.style.cursor =
+        game.hover ||
+        game.corner ||
+        (!game.activeBook && inside(game.panel.forget, x, y))
+          ? "pointer"
+          : "crosshair";
     });
     on(canvas, "pointerleave", () => {
       game.siteHover = false;
@@ -802,6 +864,7 @@ export async function boot({ world, content, element }) {
             say("I already have it.");
           else {
             game.inventory.push({ ...target, kind: "inventory" });
+            saveInventory();
             say(`Taken ${target.book.title}.`);
           }
         } else say("I can't do that.");
@@ -1023,18 +1086,8 @@ export async function boot({ world, content, element }) {
             say("I already have it.");
           else {
             const board = game.activeBoard;
-            const entry =
-              board.art.notices[
-                board.items.indexOf(note) % board.art.notices.length
-              ];
-            game.inventory.push({
-              kind: "inventory",
-              label: note.title,
-              note,
-              board,
-              sprite: board.art.sprites[entry.paper],
-              pin: board.art.sprites[board.art.pin],
-            });
+            game.inventory.push(carriedNotice(note, board));
+            saveInventory();
             say("I'll keep this one.");
           }
         } else if (hit === "go")
@@ -1072,6 +1125,18 @@ export async function boot({ world, content, element }) {
         return;
       }
       if (y >= game.verbTop) {
+        if (inside(game.panel.forget, x, y)) {
+          say("Pockets emptied.");
+          game.inventory = [];
+          game.inventoryOffset = 0;
+          game.selectedItem = null;
+          game.hover = null;
+          game.sentenceNotice = null;
+          try {
+            window.localStorage.removeItem("adventure.inventory");
+          } catch {}
+          return;
+        }
         const cell = game.verbRects.find((rect) => inside(rect, x, y));
         if (cell) {
           game.verb = game.verb === cell.label ? null : cell.label;

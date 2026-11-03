@@ -1,4 +1,4 @@
-import { boardEntries } from "./board.js";
+import { boardEntries, boardTitleBox } from "./board.js";
 import { inventoryIcon, siteLayout } from "./panel.js";
 import { waterFrame, reflectionPeak } from "./water.js";
 import { TextLayer } from "./text-layer.js";
@@ -725,6 +725,23 @@ void main(){
     draw(art.image);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    const box =
+      !game.boardNote && boardTitleBox(board, art, game.bookArt.fonts);
+    if (box) {
+      const color = (hex) =>
+        hex
+          .match(/\w\w/g)
+          .map((c) => parseInt(c, 16) / 255)
+          .concat(1);
+      this.rect(box.x, box.y, box.w, box.h, color(art.ink));
+      this.rect(
+        box.x + 1,
+        box.y + 1,
+        box.w - 2,
+        box.h - 2,
+        [0.96, 0.9, 0.78, 1],
+      );
+    }
     for (const entry of boardEntries(board, game.boardPage)) {
       const lift = Number(!game.boardNote && game.hover === entry.item);
       const rgb = art.accent.match(/\w\w/g).map((c) => parseInt(c, 16) / 255);
@@ -1047,6 +1064,12 @@ void main(){
       this.text("<", game.panel.previous.x + 4, top + 21, accent);
     if (game.inventoryOffset + game.panel.slots.length < game.inventory.length)
       this.text(">", game.panel.next.x + 4, top + 21, accent);
+    this.text(
+      "Forget",
+      game.panel.forget.x,
+      game.panel.forget.y,
+      [0.62, 0.63, 0.64, 1],
+    );
   }
   destroy() {
     const gl = this.gl;

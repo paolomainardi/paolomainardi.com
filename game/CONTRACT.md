@@ -84,8 +84,18 @@ Panel clicks never walk. Runtime pathfinding removes floor pixels under the pane
 Unsupported actions give a short response. The right-click menu contains supported verbs from this five-verb list.
 
 **Take** on a topic book adds one inventory copy keyed by book id; the shelf
-keeps its book. Duplicates say "I already have it." Inventory lives only in the
-running game, survives room changes, and uses no browser storage. Each icon
+keeps its book. Duplicates say "I already have it." Inventory survives room
+changes and visits. Only inventory is stored, under the `localStorage` key
+`adventure.inventory`, as a JSON list of `{ "kind": "book" | "notice", "id": "<book id or content item id>" }`
+entries with no other fields. Each inventory change writes that list. After world,
+content, and inventory artwork load, startup restores valid items, drops stale
+identifiers, and rewrites the key. Corrupt JSON is ignored. Every storage read,
+write, and removal is guarded: blocked, full, or missing storage silently keeps
+inventory for the session only. Room, lamps, time of day, and position start fresh;
+hash routing still applies. The small **Forget** label at the end of the inventory
+row says "Pockets emptied.", then clears all items and removes the key. Removing
+`adventure.inventory` from browser site data also clears saved items for the next
+visit. Each icon
 uses its book sprite divided by the smallest integer that fits its slot; output
 sizes and coordinates are whole pixels. Scroll arrows page through occupied
 slots when the inventory is full. **Look at** describes inventory items;
@@ -413,8 +423,8 @@ Items sort by date, newest first, regardless of `part`. Board links join the hid
 - `older` and `newer` are page control rectangles. Each page holds one board-full. A control hides when there is nothing on its side.
 - Clicking a notice draws `note.image`, a 640×360 transparent overlay containing a large paper. Its `text` rectangle holds the title, date, faded link hostname and the item's `description` as Paolo's note, wrapped to fit. Without a description it shows "No note on this one. Worth a look." in faded ink.
   `go` opens `link` in a new tab with `rel="noopener"`; `back` returns to the same board page.
-- Optional `note.take` is a `[x, y, width, height]` rectangle for **Take it**. Without it, an 80-pixel-wide rectangle is centred in the gap between `go` and `back`, using `go`'s y and height. It copies the notice into session inventory and says "I'll keep this one." The board keeps its copy. Repeating it says "I already have it."
-- Notice inventory icons use the paper sprite from the notice's board slot, reduced by an integer divisor, with its pin. Inventory arrows scroll both books and notices. **Look at** says the notice title. **Open** or a plain inventory click shows the same note over the current room, with **Go there** and **Back** only. Back, Close, Escape and right click return to the current room. Inventory clears when the game restarts and uses no storage.
+- Optional `note.take` is a `[x, y, width, height]` rectangle for **Take it**. Without it, an 80-pixel-wide rectangle is centred in the gap between `go` and `back`, using `go`'s y and height. It copies the notice into inventory and says "I'll keep this one." The board keeps its copy. Repeating it says "I already have it."
+- Notice inventory icons use the paper sprite from the notice's board slot, reduced by an integer divisor, with its pin. Inventory arrows scroll both books and notices. **Look at** says the notice title. **Open** or a plain inventory click shows the same note over the current room, with **Go there** and **Back** only. Back, Close, Escape and right click return to the current room. Carried notices persist under `adventure.inventory` with books; **Forget** clears both.
 - Text uses the book's NF-Pixels font and sizes. Supply `world.book` with the shared font definition.
 
 The route is `#<room>/board/<id>/<page>` with zero-based pages clamped to board bounds.

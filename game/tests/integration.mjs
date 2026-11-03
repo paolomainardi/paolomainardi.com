@@ -1140,6 +1140,20 @@ console.log(
 );
 
 // Task 18: panel boundaries, session inventory, book hotspots and actual travel.
+const inventoryKey = "adventure.inventory";
+const stored = new Map();
+const storage = {
+  getItem(key) {
+    return stored.get(key) ?? null;
+  },
+  setItem(key, value) {
+    stored.set(key, value);
+  },
+  removeItem(key) {
+    stored.delete(key);
+  },
+};
+window.localStorage = storage;
 location.hash = "#stone-house";
 const adventureContainer = new Element("main");
 const adventure = await module.namespace.boot({
@@ -1195,6 +1209,9 @@ select("Take");
 tap(...topic.position);
 arrive();
 assert.deepEqual(Array.from(adventure.state.inventory), ["workstation"]);
+assert.deepEqual(JSON.parse(stored.get(inventoryKey)), [
+  { kind: "book", id: "workstation" },
+]);
 assert.equal(rendered.objects.length, 6, "Shelf keeps its book");
 tap(...topic.position);
 arrive();
@@ -1380,6 +1397,10 @@ const beforeTaking = adventure.state.inventory.length;
 tap(...takeRect.slice(0, 2));
 assert.equal(rendered.speech, "I'll keep this one.");
 assert.equal(adventure.state.inventory.length, beforeTaking + 1);
+assert.deepEqual(JSON.parse(stored.get(inventoryKey)).at(-1), {
+  kind: "notice",
+  id: rendered.boardNote.id,
+});
 assert.equal(notices.items.length, 14, "Taken notice stays on board");
 let taken = rendered.inventory.at(-1);
 assert.equal(taken.sprite, notices.art.sprites[notices.art.notices[0].paper]);
@@ -1556,6 +1577,24 @@ console.log(
   "Board paging, note Back, hash restore, close gestures, accessible links, beacon Use and cycle, map travel and found about/talk readers passed.",
 );
 adventure.destroy();
+const savedInventory = stored.get(inventoryKey);
+const savedEntries = JSON.parse(savedInventory);
+contentOverride = [
+  ...JSON.parse(readFileSync(base + "dev/data/content.json", "utf8")).items,
+  ...notices.items,
+];
+stored.set(
+  inventoryKey,
+  JSON.stringify([
+    ...savedEntries,
+    { kind: "book", id: "deleted-book" },
+    { kind: "notice", id: "deleted-notice" },
+    { kind: "book", id: "__proto__" },
+    { kind: "other", id: "workstation" },
+    { kind: "book", id: "workstation" },
+    null,
+  ]),
+);
 location.hash = "#stone-house";
 const freshContainer = new Element("main");
 const fresh = await module.namespace.boot({
@@ -1565,12 +1604,122 @@ const fresh = await module.namespace.boot({
 });
 assert.deepEqual(
   Array.from(fresh.state.inventory),
-  [],
-  "New session starts empty",
+  savedEntries.map((entry) => entry.id),
+  "New session restores books and notices and drops stale or invalid entries",
 );
+assert.equal(
+  stored.get(inventoryKey),
+  savedInventory,
+  "Restore rewrites only valid identifiers",
+);
+const freshRoot = freshContainer.children[0];
+event(freshRoot.children[1].children[3], "click");
+step();
+assert.deepEqual(Array.from(fresh.state.position), [120, 300]);
+assert.equal(rendered.elapsed, 0, "Elapsed time starts fresh");
+assert.equal(rendered.lantern, true);
+assert.equal(rendered.timeOverride, false);
+assert(rendered.inventory[0].sprite.texture, "Restored book has its sprite");
+assert(rendered.inventory.at(-1).pin.texture, "Restored notice has its pin");
+// Restored items retain their actions and duplicate protection.
+event(freshRoot.children[0], "click", { clientX: 70, clientY: 345 });
+event(freshRoot.children[0], "click", {
+  clientX: rendered.panel.slots[0].x + 1,
+  clientY: rendered.panel.slots[0].y + 1,
+});
+assert.equal(fresh.state.book, "workstation");
+event(freshRoot, "keydown", { key: "Escape" });
+rendered.selectedItem = rendered.inventory[0];
+rendered.inventoryOffset = rendered.panel.slots.length;
+event(freshRoot.children[0], "click", {
+  clientX: rendered.panel.forget.x + 1,
+  clientY: rendered.panel.forget.y + 1,
+});
+assert.deepEqual(Array.from(fresh.state.inventory), []);
+assert.equal(stored.has(inventoryKey), false);
+assert.equal(rendered.speech, "Pockets emptied.");
+assert.equal(rendered.selectedItem, null);
+assert.equal(rendered.inventoryOffset, 0);
+assert.equal(fresh.state.walking, false);
 fresh.destroy();
+contentOverride = undefined;
+for (const value of ["{broken", "null", "{}", '"text"']) {
+  stored.set(inventoryKey, value);
+  const instance = await module.namespace.boot({
+    world: "./data/world.json",
+    content: "./data/content.json",
+    element: new Element("main"),
+  });
+  assert.deepEqual(
+    Array.from(instance.state.inventory),
+    [],
+    "Corrupt storage is ignored",
+  );
+  instance.destroy();
+}
+// Blocked access, missing storage, quota failures, and failed deletion stay silent.
+for (const failure of [
+  "missing",
+  "access",
+  "getItem",
+  "setItem",
+  "removeItem",
+]) {
+  stored.clear();
+  if (failure === "missing") window.localStorage = undefined;
+  else if (failure === "access")
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      get() {
+        throw new Error("Storage blocked");
+      },
+    });
+  else
+    window.localStorage = {
+      ...storage,
+      [failure]() {
+        throw new Error("Storage unavailable");
+      },
+    };
+  const target = new Element("main");
+  const instance = await module.namespace.boot({
+    world: "./data/world.json",
+    content: "./data/content.json",
+    element: target,
+  });
+  const root = target.children[0],
+    canvas = root.children[0];
+  event(root.children[1].children[3], "click");
+  step();
+  const take = rendered.verbRects.find((rect) => rect.label === "Take");
+  event(canvas, "click", { clientX: take.x + 1, clientY: take.y + 1 });
+  const book = rendered.objects[0];
+  event(canvas, "click", {
+    clientX: book.position[0],
+    clientY: book.position[1],
+  });
+  for (let i = 0; i < 600 && instance.state.walking; i++) step();
+  assert.deepEqual(
+    Array.from(instance.state.inventory),
+    ["workstation"],
+    failure,
+  );
+  event(canvas, "click", {
+    clientX: rendered.panel.forget.x + 1,
+    clientY: rendered.panel.forget.y + 1,
+  });
+  assert.deepEqual(Array.from(instance.state.inventory), [], failure);
+  assert.equal(rendered.speech, "Pockets emptied.");
+  instance.destroy();
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    writable: true,
+    value: storage,
+  });
+}
+stored.clear();
 console.log(
-  "Panel edges, inventory actions and scrolling, book hotspots, safe link tabs, fades, matching exits, facing, spawn fallback and session reset passed.",
+  "Inventory persistence, stale IDs, corrupt JSON, unavailable storage and Forget passed. Panel actions, scrolling, hotspots and travel passed.",
 );
 
 {
