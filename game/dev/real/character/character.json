@@ -23,15 +23,15 @@
     },
     "walk-front": {
       "row": 2,
-      "frames": 4,
+      "frames": 12,
       "fps": 8,
-      "stride": 99.333
+      "stride": 67.7
     },
     "walk-back": {
       "row": 3,
-      "frames": 4,
+      "frames": 12,
       "fps": 8,
-      "stride": 99.333
+      "stride": 67.7
     },
     "talk-front": {
       "row": 4,

@@ -1,10 +1,10 @@
-"""Build a character's side walk from its standing side pose, as a cut-out figure.
+"""Build side, front and back walks from standing poses as cut-out figures.
 
 Usage: python tools/rig_walk.py <character.json> [--preview walk.gif]
 
 Reads rig.json next to character.json, cuts the legs and the lantern out of the
-standing pose, moves them with standard human gait angles and writes the walk
-row into the sheet and glow sheet. See docs/character-walk.md.
+standing poses, moves them with standard human gait angles and writes the walk
+rows into the sheet and glow sheet. See docs/character-walk.md.
 """
 import argparse
 import json
@@ -38,7 +38,8 @@ def curve(keys, t):
 
 
 class Rig:
-    def __init__(self, pose, rig, palette):
+    def __init__(self, pose, rig, palette, arm=None):
+        self.arm = arm
         self.src = pose
         self.h, self.w = pose.shape[:2]
         self.rig = rig
@@ -151,6 +152,23 @@ class Rig:
         over(body)
         for layer in near[1:]:
             over(layer)
+        if self.arm is not None:
+            a = self.rig["arm"]
+            shoulder = a["shoulder"]
+            angle = -a.get("swing", 18) * math.sin(2 * math.pi * (t + 0.25))
+            arm = self.arm
+            if angle < 0:
+                elbow = a["elbow"]
+                lower = arm.copy()
+                lower[:elbow[1]] = 0
+                arm = arm.copy()
+                arm[elbow[1]:] = 0
+                bent = self.place(lower, elbow, -angle * 0.35, elbow)
+                arm[bent[..., 3] > 0] = bent[bent[..., 3] > 0]
+            lean = round(self.rig.get("upper", {}).get("lean", 2.4)
+                         * math.sin(math.radians(curve(self.gait["hip"], t + 0.5)))
+                         * max(0, (self.hem - 40 - shoulder[1]) / (self.hem - 40)))
+            over(self.place(arm, shoulder, angle, (shoulder[0] + lean, shoulder[1] + bob)))
         if self.lantern is not None:
             pivot = tuple(self.rig["lantern"]["pivot"])
             swing = self.rig["lantern"].get("swing", 7) * math.sin(2 * math.pi * (t - 0.15))
@@ -179,6 +197,92 @@ class Rig:
         return phases, total
 
 
+class DepthRig(Rig):
+    """Project the same sagittal gait into the front or back image plane."""
+
+    def __init__(self, pose, rig, palette, direction, stride):
+        super().__init__(pose, rig, palette)
+        self.direction, self.stride = direction, stride
+        self.legs = []
+        for spec in rig["legs"]:
+            x0, y0, x1, y1 = spec["thigh"]
+            hip, knee = spec["joints"]["hip"], spec["joints"]["knee"]
+            height = knee[1] - hip[1] + 6
+            thigh = np.zeros_like(pose)
+            thigh[hip[1] - 3:hip[1] - 3 + height, x0:x1] = np.array(
+                Image.fromarray(pose[y0:y1, x0:x1]).resize((x1 - x0, height), Image.NEAREST))
+            shin = self.cut(spec["shin"])
+            boot = self.cut(spec["boot"])
+            self.legs.append((spec, thigh, shin, boot))
+        self.arms = []
+        for spec in rig.get("arms", []):
+            self.arms.append((spec, self.cut(spec["box"])))
+            x0, y0, x1, y1 = spec["box"]
+            self.body[y0:y1, x0:x1] = 0
+
+    def vertical(self, image, pivot, scale, target):
+        # Affine inverse mapping preserves the pivot without wrapping image edges.
+        transform = (1, 0, pivot[0] - target[0], 0, 1 / scale,
+                     pivot[1] - target[1] / scale)
+        return np.array(Image.fromarray(image).transform(
+            (self.w, self.h), Image.Transform.AFFINE, transform, Image.Resampling.NEAREST))
+
+    def frame(self, t, distance_phase):
+        canvas = np.zeros_like(self.src)
+        glow = np.zeros_like(self.src)
+        sway = round(math.sin(2 * math.pi * t))
+        bob = -round((1 - math.cos(4 * math.pi * t)) / 2)
+        layers = []
+        for i, (spec, thigh, shin, boot) in enumerate(self.legs):
+            phase = (t + i * .5) % 1
+            distance = (distance_phase + i * .5) % 1
+            a1 = curve(self.gait["hip"], phase)
+            a2 = a1 - curve(self.gait["knee"], phase)
+            c1, c2 = math.cos(math.radians(a1)), math.cos(math.radians(a2))
+            hip, knee, ankle = [spec["joints"][key] for key in ("hip", "knee", "ankle")]
+            # The stance foot retreats by exactly stride/frames in screen depth.
+            if distance < .5:
+                depth = self.stride * (distance - .25)
+                lift = 0
+            else:
+                u = (distance - .5) * 2
+                depth = self.stride * (.25 - .5 * u)
+                lift = self.rig.get("foot_lift", 5) * math.sin(math.pi * u)
+            foot_y = self.h - 1 - self.direction * depth - self.stride / 4 - lift
+            ky = hip[1] + (knee[1] - hip[1]) * c1
+            ay = ky + (ankle[1] - knee[1]) * c2
+            # Contact correction is hidden at the hip beneath the coat.
+            correction = foot_y - (ay + self.h - 1 - ankle[1])
+            target_hip = (hip[0] + sway, hip[1] + correction)
+            target_knee = (knee[0] + sway / 2, ky + correction)
+            target_ankle = (ankle[0], ay + correction)
+            parts = [self.vertical(thigh, hip, c1, target_hip),
+                     self.vertical(shin, knee, c2, target_knee),
+                     self.vertical(boot, ankle, 1, target_ankle)]
+            away = self.direction * depth > 0
+            layers.append((away, parts))
+        def over(layer):
+            m = layer[..., 3] > 0
+            canvas[m] = layer[m]
+        for away, parts in sorted(layers, key=lambda item: not item[0]):
+            for part in parts:
+                over(self.to_palette(part, self.rig.get("far_shade", .84) if away else 1))
+        body = self.place(self.body, (0, 0), 0, (sway, bob))
+        over(body)
+        for i, (spec, arm) in enumerate(self.arms):
+            pivot = spec["pivot"]
+            angle = spec.get("swing", 3) * math.sin(2 * math.pi * (t + i * .5))
+            over(self.place(arm, pivot, angle, (pivot[0] + sway, pivot[1] + bob)))
+        if self.lantern is not None:
+            pivot = self.rig["lantern"]["pivot"]
+            swing = self.rig["lantern"].get("swing", 4) * math.sin(2 * math.pi * (t - .15))
+            hand = (pivot[0] + sway, pivot[1] + bob)
+            over(self.place(self.lantern, pivot, swing, hand))
+            glow = self.place(self.flame, pivot, swing, hand)
+            glow[canvas[..., 3] == 0] = 0
+        return canvas, glow
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("character", type=Path)
@@ -196,36 +300,63 @@ def main():
     col = pose_anim.get("start", 0)
     pose = np.array(sheet.crop((col * fw, pose_anim["row"] * fh, (col + 1) * fw, (pose_anim["row"] + 1) * fh)))
 
-    r = Rig(pose, rig, palette)
+    if "clean_pose" in rig:
+        pose = np.array(Image.open(folder / rig["clean_pose"]).convert("RGBA"))
+    arm = np.array(Image.open(folder / rig["arm"]["source"]).convert("RGBA")) if "arm" in rig else None
+    r = Rig(pose, rig, palette, arm)
     n = rig.get("frames", 12)
     phases, stride = r.timing(n)
-    frames = [r.frame(t) for t in phases]
-
-    walk = meta["animations"]["walk-side"]
-    width = max(sheet.width, n * fw)
-    for name, image, index in (("sheet", sheet, 0), ("glow", glow_sheet, 1)):
-        if image is None:
+    walks = {"side": ([r.frame(t) for t in phases], stride)}
+    for view, direction in (("front", 1), ("back", -1)):
+        if view not in rig:
             continue
-        out = Image.new("RGBA", (width, image.height))
-        out.paste(image, (0, 0))
-        out.paste(Image.new("RGBA", (width, fh)), (0, walk["row"] * fh))
-        for i, f in enumerate(frames):
-            out.paste(Image.fromarray(f[index]), (i * fw, walk["row"] * fh))
+        config = {**rig[view], "gait": r.gait}
+        idle = meta["animations"][config.get("pose", "idle-" + view)]
+        col = idle.get("start", 0)
+        pose = np.array(sheet.crop((col * fw, idle["row"] * fh,
+                                    (col + 1) * fw, (idle["row"] + 1) * fh)))
+        depth_stride = stride * config.get("stride_scale", .5)
+        depth = DepthRig(pose, config, palette, direction, depth_stride)
+        walks[view] = ([depth.frame(t, i / n) for i, t in enumerate(phases)], depth_stride)
+
+    width = max(sheet.width, n * fw)
+    for name, source, index in (("sheet", sheet, 0), ("glow", glow_sheet, 1)):
+        if source is None:
+            continue
+        out = Image.new("RGBA", (width, source.height))
+        out.paste(source, (0, 0))
+        for view, (frames, _) in walks.items():
+            row = meta["animations"]["walk-" + view]["row"]
+            out.paste(Image.new("RGBA", (width, fh)), (0, row * fh))
+            for i, frame in enumerate(frames):
+                out.paste(Image.fromarray(frame[index]), (i * fw, row * fh))
         out.save(folder / meta[name])
-    walk.update(frames=n, stride=round(stride, 1))
-    walk.pop("start", None)
+    for view, (_, distance) in walks.items():
+        walk = meta["animations"]["walk-" + view]
+        walk.update(frames=n, stride=round(distance, 1))
+        walk.pop("start", None)
+        print(f"walk-{view}: {n} frames, stride {distance:.1f} px per cycle, {distance / n:.1f} px per frame")
     args.character.write_text(json.dumps(meta, indent=2) + "\n")
-    print(f"walk-side: {n} frames, stride {stride:.1f} px per cycle, {stride / n:.1f} px per frame")
 
     if args.preview:
-        step, x, images = stride / n, 10.0, []
-        for _ in range(3):
-            for canvas, _ in frames:
-                bg = Image.new("RGBA", (fw * 5, fh + 6), (110, 110, 110, 255))
-                ImageDraw.Draw(bg).line([(0, fh), (fw * 5, fh)], fill=(80, 80, 80, 255))
-                bg.alpha_composite(Image.fromarray(canvas), (round(x), 0))
-                images.append(bg.resize((bg.width * 2, bg.height * 2), Image.NEAREST).convert("RGB"))
-                x += step
+        images = []
+        lane = fh + math.ceil(max((distance for view, (_, distance) in walks.items() if view != "side"), default=0) * 3) + 40
+        for k in range(n * 3):
+            bg = Image.new("RGBA", (fw * 5, lane * len(walks)), (110, 110, 110, 255))
+            draw = ImageDraw.Draw(bg)
+            for row, (view, (frames, distance)) in enumerate(walks.items()):
+                top = row * lane
+                draw.text((8, top + 4), f"walk-{view}: {distance:.1f} px/cycle", fill="white")
+                if view == "side":
+                    x, y = round(10 + k * distance / n), top + 20
+                    draw.line([(0, y + fh), (bg.width, y + fh)], fill=(80, 80, 80))
+                else:
+                    x = fw * 2
+                    y = top + 20 + round((k if view == "front" else n * 3 - 1 - k) * distance / n)
+                    for mark in range(0, lane - fh, 12):
+                        draw.line([(x - 20, top + fh + mark), (x + fw + 20, top + fh + mark)], fill=(80, 80, 80))
+                bg.alpha_composite(Image.fromarray(frames[k % n][0]), (x, y))
+            images.append(bg.resize((bg.width * 2, bg.height * 2), Image.NEAREST).convert("RGB"))
         images[0].save(args.preview, save_all=True, append_images=images[1:], duration=90, loop=0)
 
 
