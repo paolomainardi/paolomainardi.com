@@ -18,4 +18,14 @@
         {{- $items = $items | append $item -}}
     {{- end -}}
 {{- end -}}
+{{- /* The about page and the talks are found papers in the lighthouse. */ -}}
+{{- range slice (dict "path" "/about" "type" "about") (dict "path" "/talks" "type" "talk") -}}
+    {{- $type := .type -}}
+    {{- with site.GetPage .path -}}
+        {{- $page := . -}}
+        {{- with .OutputFormats.Get "reader" -}}
+            {{- $items = $items | append (dict "id" ($page.Slug | default $page.File.ContentBaseName) "type" $type "title" $page.Title "description" ($page.Description | default $page.Summary | plainify) "url" $page.RelPermalink "reader" .RelPermalink) -}}
+        {{- end -}}
+    {{- end -}}
+{{- end -}}
 {{- dict "items" $items | jsonify -}}
