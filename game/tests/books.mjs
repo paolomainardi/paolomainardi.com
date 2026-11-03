@@ -317,3 +317,11 @@ assert.equal(uploads, 1, "Moving leaf masks text without redrawing it");
 game.spread = 1;
 gpu.compositeText(game);
 assert.equal(uploads, 2);
+
+const linksTopic = {
+  ...world.books.links,
+  items: bookItems(items, world.books.links.content),
+};
+assert.equal(linksTopic.items.length, 2);
+assert(linksTopic.items.every((item) => item.type === "link"));
+assert.equal(layoutBook(book, linksTopic)[0].count, "2 links");

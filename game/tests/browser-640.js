@@ -41,9 +41,9 @@ async (page) => {
   const position = await page.evaluate(() => window.game.state.position);
   if (Math.hypot(position[0] - target[0], position[1] - target[1]) > 0.5)
     throw new Error("Character did not reach the floor target");
-  await page.mouse.click(85 * 3, 348 * 3);
+  await page.mouse.click(86 * 3, 338 * 3);
   if (await page.evaluate(() => window.game.state.verb !== "Look at"))
-    throw new Error("Verb bar hit area failed");
+    throw new Error("Verb panel hit area failed");
   const windowPoint = await page.evaluate(async () => {
     const image = await createImageBitmap(
       await (await fetch("/dev/real/rooms/stone-house/objects.png")).blob(),

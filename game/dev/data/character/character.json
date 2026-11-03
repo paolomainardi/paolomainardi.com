@@ -41,6 +41,16 @@
       "row": 4,
       "frames": 2,
       "fps": 4
+    },
+    "idle-side": {
+      "row": 1,
+      "frames": 1,
+      "fps": 1
+    },
+    "idle-back": {
+      "row": 3,
+      "frames": 1,
+      "fps": 1
     }
   }
 }

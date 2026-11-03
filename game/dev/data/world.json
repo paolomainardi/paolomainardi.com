@@ -4,10 +4,15 @@
   "start": "stone-house",
   "character": "character/character.json",
   "verbs": [
-    "Look at",
     "Open",
+    "Close",
+    "Give",
+    "Take",
+    "Look at",
+    "Talk to",
     "Use",
-    "Talk to"
+    "Read",
+    "Walk to"
   ],
   "objects": {
     "book": [
@@ -15,103 +20,6 @@
       "objects/book-green.png",
       "objects/book-blue.png"
     ]
-  },
-  "book": "book/book.json",
-  "books": {
-    "workstation": {
-      "title": "Workstation",
-      "content": {
-        "series": "workstation"
-      },
-      "sprite": "objects/book.png"
-    },
-    "linux": {
-      "title": "Linux",
-      "content": {
-        "tags": [
-          "linux"
-        ]
-      },
-      "sprite": "objects/book-green.png"
-    },
-    "ai": {
-      "title": "AI and agents",
-      "content": {
-        "tags": [
-          "ai"
-        ]
-      },
-      "sprite": "objects/book-blue.png"
-    },
-    "docker": {
-      "title": "Docker",
-      "content": {
-        "tags": [
-          "docker"
-        ]
-      },
-      "sprite": "objects/book.png"
-    },
-    "security": {
-      "title": "Security",
-      "content": {
-        "tags": [
-          "security"
-        ]
-      },
-      "sprite": "objects/book-green.png"
-    },
-    "personal": {
-      "title": "Personal",
-      "content": {
-        "tags": [
-          "personal"
-        ]
-      },
-      "sprite": "objects/book-blue.png"
-    }
-  },
-  "rooms": {
-    "stone-house": {
-      "src": "rooms/stone-house/room.json",
-      "books": [
-        "workstation",
-        "linux",
-        "ai",
-        "docker",
-        "security",
-        "personal"
-      ],
-      "hotspots": {
-        "window": {
-          "content": {
-            "type": "link"
-          }
-        }
-      },
-      "ambience": {
-        "dusk": [
-          {
-            "sound": "sea",
-            "at": "window"
-          }
-        ],
-        "night": [
-          {
-            "sound": "sea",
-            "at": "window"
-          },
-          {
-            "sound": "wind"
-          },
-          {
-            "sound": "flame",
-            "at": "oil",
-            "light": "oil"
-          }
-        ]
-      }
-    }
   },
   "sounds": {
     "sea": {
@@ -177,5 +85,118 @@
     "master": 0.5,
     "ambience": 0.8,
     "effects": 1.0
+  },
+  "book": "book/book.json",
+  "books": {
+    "workstation": {
+      "title": "Workstation",
+      "content": {
+        "series": "workstation"
+      },
+      "sprite": "objects/book.png"
+    },
+    "linux": {
+      "title": "Linux",
+      "content": {
+        "tags": [
+          "linux"
+        ]
+      },
+      "sprite": "objects/book-green.png"
+    },
+    "ai": {
+      "title": "AI and agents",
+      "content": {
+        "tags": [
+          "ai"
+        ]
+      },
+      "sprite": "objects/book-blue.png"
+    },
+    "docker": {
+      "title": "Docker",
+      "content": {
+        "tags": [
+          "docker"
+        ]
+      },
+      "sprite": "objects/book.png"
+    },
+    "security": {
+      "title": "Security",
+      "content": {
+        "tags": [
+          "security"
+        ]
+      },
+      "sprite": "objects/book-green.png"
+    },
+    "personal": {
+      "title": "Personal",
+      "content": {
+        "tags": [
+          "personal"
+        ]
+      },
+      "sprite": "objects/book-blue.png"
+    },
+    "links": {
+      "title": "Links",
+      "content": {
+        "type": "link"
+      },
+      "sprite": "objects/book.png"
+    }
+  },
+  "rooms": {
+    "stone-house": {
+      "src": "rooms/stone-house/room.json",
+      "books": [
+        "workstation",
+        "linux",
+        "ai",
+        "docker",
+        "security",
+        "personal"
+      ],
+      "ambience": {
+        "dusk": [
+          {
+            "sound": "sea",
+            "at": "window"
+          }
+        ],
+        "night": [
+          {
+            "sound": "sea",
+            "at": "window"
+          },
+          {
+            "sound": "wind"
+          },
+          {
+            "sound": "flame",
+            "at": "oil",
+            "light": "oil"
+          }
+        ]
+      },
+      "hotspots": {
+        "window": {
+          "content": {
+            "type": "link"
+          }
+        }
+      }
+    },
+    "harbour": {
+      "src": "rooms/harbour/room.json",
+      "books": [],
+      "hotspots": {
+        "noticeboard": {
+          "book": "links"
+        }
+      }
+    }
   }
 }

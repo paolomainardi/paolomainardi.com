@@ -1,3 +1,4 @@
+import { inventoryIcon } from "./panel.js";
 import { waterFrame, reflectionPeak } from "./water.js";
 import { TextLayer } from "./text-layer.js";
 import { animationFrame } from "./animation.js";
@@ -50,7 +51,7 @@ export class Renderer {
     this.text(
       game.sound.muted ? "Sound: off" : "Sound: on",
       game.soundRect.x,
-      game.soundRect.y,
+      game.activeBook ? game.room.size[1] - 16 : game.soundRect.y,
     );
   }
 
@@ -644,21 +645,13 @@ void main(){
         previous,
       );
     }
-    this.rect(
-      0,
-      game.verbTop,
-      this.size[0],
-      this.size[1] - game.verbTop,
-      [0.025, 0.03, 0.05, 0.85],
-    );
-    this.text("Close", 8, game.verbTop + 8);
+    const footerTop = game.room.size[1] - 24;
+    this.rect(0, footerTop, this.size[0], 24, [0.025, 0.03, 0.05, 0.85]);
+    this.text("Close", 8, footerTop + 8);
     this.soundLabel(game);
-    this.text(
-      "or right click, Esc",
-      44,
-      game.verbTop + 8,
-      [0.55, 0.52, 0.47, 1],
-    );
+    this.text("or right click, Esc", 44, footerTop + 8, [0.55, 0.52, 0.47, 1]);
+    if (game.sentenceNotice && game.speechUntil > game.elapsed)
+      this.text(wrap(game.sentenceNotice, 64, 1)[0], 160, footerTop + 8);
     gl.disable(gl.BLEND);
     this.into(this.scene);
     this.compositeText(game);
@@ -806,52 +799,11 @@ void main(){
       ui = game.uiScale,
       margin = width / 80,
       sentenceY = 9 * pixelScale;
-    const sentences = wrap(
-      game.sentence(),
-      Math.max(1, Math.floor((width - margin * 2) / (6 * ui))),
-      2,
-    );
-    sentences.forEach((sentence, i) => {
-      for (let y = -1; y <= 1; y++)
-        for (let x = -1; x <= 1; x++)
-          if (x || y)
-            this.text(
-              sentence,
-              margin + x * pixelScale,
-              sentenceY + i * 9 * pixelScale + y * pixelScale,
-              [0.025, 0.03, 0.05, 1],
-              ui,
-            );
-      this.text(
-        sentence,
-        margin,
-        sentenceY + i * 9 * pixelScale,
-        undefined,
-        ui,
-      );
-    });
-    this.rect(
-      0,
-      game.verbTop,
-      width,
-      height - game.verbTop,
-      [0.025, 0.03, 0.05, 0.55],
-    );
-    this.soundLabel(game);
-    for (const verb of game.verbRects) {
-      const selected = game.verb === verb.label;
-      this.text(
-        verb.label,
-        verb.x,
-        verb.y,
-        selected ? [1, 0.72, 0.35, 1] : [0.82, 0.83, 0.84, 1],
-        game.verbScale,
-      );
-    }
+    this.renderPanel(game);
     if (game.speech && game.speechUntil > game.elapsed) {
       const lines = game.speechLines,
         top = Math.max(
-          sentenceY + sentences.length * 9 * pixelScale + 8 * pixelScale,
+          sentenceY + 8 * pixelScale,
           rect[1] - (lines.length * 9 + 8) * pixelScale,
         );
       lines.forEach((line, i) => {
@@ -922,6 +874,51 @@ void main(){
     this.uniform("uDither", game.world?.dither === true ? 1 : 0);
     this.uniform("uScale", this.scale);
     this.draw();
+  }
+  renderPanel(game) {
+    const width = game.room.size[0],
+      top = game.verbTop;
+    const accent = [0.9, 0.64, 0.7, 1];
+    this.rect(0, top, width, 52, [0.025, 0.03, 0.05, 0.88]);
+    this.text(
+      wrap(game.sentence(), Math.floor((width - 92) / 6), 1)[0],
+      8,
+      top + 4,
+    );
+    this.soundLabel(game);
+    for (const verb of game.verbRects)
+      this.text(
+        verb.label,
+        verb.x,
+        verb.y,
+        game.verb === verb.label || game.panelHover === verb
+          ? accent
+          : [0.82, 0.83, 0.84, 1],
+        1,
+      );
+    game.panel.slots.forEach((slot, i) => {
+      const item = game.inventory[game.inventoryOffset + i];
+      this.rect(
+        slot.x,
+        slot.y,
+        slot.width,
+        slot.height,
+        item && (game.selectedItem === item || game.hover === item)
+          ? [0.32, 0.18, 0.24, 1]
+          : [0.09, 0.1, 0.14, 1],
+      );
+      if (item)
+        this.sprite(
+          item.sprite.texture,
+          item.sprite.size,
+          inventoryIcon(item.sprite, slot),
+          [0, 0, ...item.sprite.size],
+        );
+    });
+    if (game.inventoryOffset > 0)
+      this.text("<", game.panel.previous.x + 4, top + 29, accent);
+    if (game.inventoryOffset + game.panel.slots.length < game.inventory.length)
+      this.text(">", game.panel.next.x + 4, top + 29, accent);
   }
   destroy() {
     const gl = this.gl;

@@ -68,7 +68,7 @@ export async function loadBook(url, renderer) {
 
 export function bookItems(items, filter) {
   const matches = matchingItems(
-    items.filter((item) => item.type === "post"),
+    items.filter((item) => item.type === (filter?.type || "post")),
     filter,
   );
   return filter?.series
@@ -121,7 +121,7 @@ export function layoutBook(book, topic) {
     if (number === 1) {
       page.heading = wrapText(book.fonts.title, topic.title, width, 2);
       top += page.heading.length * book.fonts.title.lineHeight;
-      page.count = `${topic.items.length} posts`;
+      page.count = `${topic.items.length} ${topic.content?.type === "link" ? "links" : "posts"}`;
       top += book.fonts.body.lineHeight * 2;
     }
     const bottom = y + height - book.fonts.label.lineHeight;

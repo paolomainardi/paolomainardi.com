@@ -4,10 +4,15 @@
   "start": "stone-house",
   "character": "character/character.json",
   "verbs": [
-    "Look at",
     "Open",
+    "Close",
+    "Give",
+    "Take",
+    "Look at",
+    "Talk to",
     "Use",
-    "Talk to"
+    "Read",
+    "Walk to"
   ],
   "objects": {
     "book": [

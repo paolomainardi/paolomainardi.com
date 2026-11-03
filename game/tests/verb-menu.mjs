@@ -54,3 +54,28 @@ assert.equal(near.y, 103);
 console.log(
   "Target verbs, world ordering, edge placement, font layouts and row hits passed.",
 );
+
+const newVerbs = [
+  "Open",
+  "Close",
+  "Give",
+  "Take",
+  "Look at",
+  "Talk to",
+  "Use",
+  "Read",
+  "Walk to",
+];
+assert.deepEqual(targetVerbs(newVerbs, { kind: "hotspot", book: {} }), [
+  "Open",
+  "Look at",
+  "Read",
+  "Walk to",
+]);
+assert.deepEqual(targetVerbs(newVerbs, { kind: "inventory" }), [
+  "Open",
+  "Look at",
+  "Use",
+  "Read",
+  "Walk to",
+]);

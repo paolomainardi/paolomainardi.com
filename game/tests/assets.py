@@ -41,7 +41,8 @@ for room_id, config in world['rooms'].items():
         color = tuple(bytes.fromhex(item['color'][1:]))
         assert np.any(np.all(mask == color, axis=2)), item['id']
         assert 'pool' not in item
-    assert sum(i['kind'] == 'slot' for i in room['items']) == 6
+    assert sum(i['kind'] == 'slot' for i in room['items']) == (6 if room_id == 'stone-house' else 0)
+    assert not np.any(np.all(mask[308:] == (0, 255, 0), axis=2))
 character_path = data / world['character']
 character = load(character_path)
 sheet = Image.open(character_path.parent / character['sheet']).convert('RGBA')

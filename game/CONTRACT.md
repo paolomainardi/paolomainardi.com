@@ -62,7 +62,17 @@ and must use HTTP(S).
   "palette": "palette.png",
   "start": "stone-house",
   "character": "character/character.json",
-  "verbs": ["Look at", "Open", "Use", "Talk to"],
+  "verbs": [
+    "Open",
+    "Close",
+    "Give",
+    "Take",
+    "Look at",
+    "Talk to",
+    "Use",
+    "Read",
+    "Walk to"
+  ],
   "objects": { "book": "objects/book.png" },
   "rooms": {
     "stone-house": {
@@ -75,6 +85,24 @@ and must use HTTP(S).
 }
 ```
 
+`verbs` defines the 3×3 grid in row order. Use the nine verbs in the example.
+The panel occupies game rows 308 through 359 in a 640×360 frame, with a sentence
+line above the grid and inventory. Hover and selected verbs use rose. Every hit
+rectangle includes its top and left edges and excludes its bottom and right
+edges. Panel clicks never walk. Runtime pathfinding removes all floor pixels
+under the panel, including when an asset mask marks them walkable.
+Unsupported verb and target combinations give a short spoken response.
+
+**Take** on a topic book adds one inventory copy keyed by book id; the shelf
+keeps its book. Duplicates say "I already have it." Inventory lives only in the
+running game, survives room changes, and uses no browser storage. Each icon
+uses its book sprite divided by the smallest integer that fits its slot; output
+sizes and coordinates are whole pixels. Scroll arrows page through occupied
+slots when the inventory is full. **Look at** describes inventory items;
+**Open** and **Read** open their close-up. **Use** or **Walk to** selects an item;
+the next target forms "Use <item> with <target>" and produces a short response.
+Other verbs also produce a short response.
+
 `objects` values accept a sprite path or a non-empty list of sprite paths relative to `world.json`, which content objects cycle through in occupied slot order, starting again in each room.
 
 `content` is a filter on content items: every key must match (`tags` matches when
@@ -86,9 +114,14 @@ filter. Filters use the same rules as slots, but choose only the newest matching
 item by `date`, ignoring `part`. A missing binding or no matching item leaves the
 hotspot's original label and actions unchanged.
 
+A hotspot binding can instead name a book: `"hotspots": { "noticeboard":
+{ "book": "links" } }`. `book` takes priority over `content` and must name an
+entry in `world.books`. **Read**, **Open**, or a click with **Walk to** opens the
+book after walking to the hotspot. Hotspot books also support book hash routes.
+
 A bound hotspot's label becomes `<hotspot label>: <item title>`. **Look at** says
 the item's title and description, shortened to at most two lines with `...` when
-truncated. **Open** calls `window.open(url, "_blank", "noopener,noreferrer")`
+truncated. **Open** or **Read** calls `window.open(url, "_blank", "noopener,noreferrer")`
 directly during the click, using `link` if present, otherwise `url`. The tab opens
 before the character walks, so the browser retains user activation. After walking
 to the hotspot, the character says "Let's see what's out there." Opening a hotspot
@@ -170,7 +203,15 @@ at a hotspot never opens a tab.
   `pendant`, `wall`, `oil`, `desk` or `candle`; oil and candle flicker.
 - `depth`: at screen y `far[0]` the character is drawn at scale `far[1]`, at y
   `near[0]` at scale `near[1]`, linear in between.
-- `spawn`: where the character's feet start.
+- `spawn`: where the character's feet start when no matching entrance exists.
+
+Using or walking to an exit travels to the room named by its `to`. Travel fades
+to black over 0.15 seconds, loads the room, then fades back over 0.15 seconds.
+Input is paused during the transition. The destination exit whose `to` names the
+previous room is the entrance. Arrival uses its nearest walkable point above
+the panel and faces towards the room centre, using the corresponding idle
+animation when supplied. Without a matching entrance, arrival uses the nearest
+walkable point to `spawn`. An exit to an undefined room gives a short response.
 
 ## character/character.json
 
@@ -251,7 +292,7 @@ names them. Frame is 640×360; every colour comes from `palette.json`.
 ```
 
 - `books` is one book per topic. `content` is the same filter rooms use today;
-  items are ordered by `date`, newest first, except a `series` filter, which
+  books default to posts; set `"type": "link"` for a links book. Items are ordered by `date`, newest first, except a `series` filter, which
   keeps `part` ascending.
 - A room's `books` fills its slots in order, one book per slot. A room can still
   use `content` and `object` as today instead.
@@ -301,7 +342,7 @@ game frame before palette mapping and nearest-neighbour upscale. Text redraws
 only when the book, spread, hover, menu or game-frame size changes; screen
 resizing does not change text metrics. The turning leaf masks covered text on
 the GPU. The menu heading uses the same NF-Pixels font as its verbs, set apart
-by `faded` and a one-game-pixel rule. The verb bar and sentence line keep their
+by `faded` and a one-game-pixel rule. The verb panel and sentence line keep their
 5×7 font.
 
 Lower outer corners curl on hover and show a hand cursor when a turn is available.
@@ -310,6 +351,12 @@ follow horizontal drag progress towards the spine. Release past halfway commits
 the turn; release before halfway or pointer cancellation returns to the same
 spread. A corner click and the arrow keys also turn pages. The first and last
 spread disable unavailable turn directions.
+
+Clicking a book entry with a `reader` opens the embedded reader. An entry without
+`reader` opens its HTTP(S) `link` synchronously from the click, in a new tab with
+`target="_blank"` and `rel="noopener"`. The sentence line shows "Opening the link…".
+The book stays open on the same spread. An entry without either field gives a
+short spoken response.
 
 Spreads use zero-based indices in `#<room>/book/<id>/<spread>`. Page numbers start at 1. Invalid spread indices clamp to the book bounds. Closing the reader preserves the current book and spread. Rooms without `books` keep the single-post object behavior.
 
@@ -378,7 +425,7 @@ Use the fixture's actual ids: placeholders use `oil`; real art uses `oil-lamp`.
 Time and room changes cross-fade old and new sources over one second.
 
 Master, ambience and effects buses use `mix` gains, defaulting to 0.5, 0.8 and
-1.0. `M` or the verb bar's `Sound: on` / `Sound: off` label toggles master mute.
+1.0. `M` or the panel's `Sound: on` / `Sound: off` label toggles master mute.
 Mute is held only in memory. The reader ducks both buses to 0.25
 (about 12 dB down); closing it restores volume. Book close-ups keep full
 ambience. Hiding the document suspends the context; showing it resumes the
@@ -390,4 +437,4 @@ using distance-based walk phase or the animation clock for animations without
 commits, including a successful drag. Cancelled turns stay silent. Opening and
 closing book close-ups fire `book-open` and `book-close`. Using a light fires
 `lamp`; choosing a right-click menu verb fires `menu`. Using or walking to an
-exit fires `door` on arrival. Exit travel retains the existing spoken response.
+exit fires `door` on arrival. Exit travel loads the destination room after fading out.

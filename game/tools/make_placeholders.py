@@ -144,7 +144,9 @@ def generate():
     items.append(dict(id='door', kind='exit', label='Door', to='harbour', color='#ff8000'))
     m.rectangle((116, 63, 176, 123), fill='#00ffff')
     items.append(dict(id='window', kind='hotspot', label='Window', look='The sea, calm tonight.', color='#00ffff'))
-    objects.resize(ROOM_SIZE, Image.Resampling.NEAREST).save(room_dir / 'objects.png')
+    objects = objects.resize(ROOM_SIZE, Image.Resampling.NEAREST)
+    ImageDraw.Draw(objects).rectangle((0, 308, 639, 359), fill='#000000')
+    objects.save(room_dir / 'objects.png')
     water = Image.new('RGB', DRAWING_SIZE)
     w = ImageDraw.Draw(water)
     for left, right in [(122, 143), (149, 170)]:
@@ -162,7 +164,31 @@ def generate():
             quantize(lit).resize(ROOM_SIZE, Image.Resampling.NEAREST).save(room_dir / f'{state}-{name}.png')
     save_json(room_dir / 'room.json', dict(name='stone-house', size=list(ROOM_SIZE), albedo='albedo.png', water='water.png',
         states={s: dict(unlit=f'{s}-unlit.png', lights={name: f'{s}-{name}.png' for name in ('pendant', 'oil')}) for s in ('dusk', 'night')},
-        objects='objects.png', items=items, depth=dict(far=[192, 0.7], near=[352, 1.0]), spawn=[120, 320]))
+        objects='objects.png', items=items, depth=dict(far=[192, 0.7], near=[352, 1.0]), spawn=[120, 300]))
+    harbour = DATA / 'rooms/harbour'
+    harbour.mkdir(parents=True, exist_ok=True)
+    scene = Image.new('RGB', ROOM_SIZE, COLORS[14])
+    hd = ImageDraw.Draw(scene)
+    hd.rectangle((0, 220, 639, 359), fill=COLORS[7])
+    hd.rectangle((532, 95, 612, 244), fill=COLORS[2])
+    hd.rectangle((240, 110, 390, 204), fill=COLORS[6])
+    hd.rectangle((248, 118, 382, 196), fill=COLORS[11])
+    scene.save(harbour / 'albedo.png')
+    scene.save(harbour / 'dusk-unlit.png')
+    quantize(np.array(scene) * 0.5).save(harbour / 'night-unlit.png')
+    mask = Image.new('RGB', ROOM_SIZE)
+    hm = ImageDraw.Draw(mask)
+    hm.rectangle((0, 245, 639, 307), fill='#00ff00')
+    hm.rectangle((532, 95, 612, 244), fill='#ff8000')
+    hm.rectangle((240, 110, 390, 204), fill='#00ffff')
+    mask.save(harbour / 'objects.png')
+    save_json(harbour / 'room.json', dict(name='harbour', size=list(ROOM_SIZE),
+        albedo='albedo.png', objects='objects.png', spawn=[320, 280],
+        depth=dict(far=[245, 0.7], near=[307, 1.0]),
+        states={s: dict(unlit=f'{s}-unlit.png', lights={}) for s in ('dusk', 'night')},
+        items=[dict(id='floor', kind='walkable', color='#00ff00'),
+               dict(id='study-door', kind='exit', label='Study door', to='stone-house', color='#ff8000'),
+               dict(id='noticeboard', kind='hotspot', label='Notice board', color='#00ffff')]))
     sheet = Image.new('RGBA', (192, 240))
     s = ImageDraw.Draw(sheet)
     glow = Image.new('RGBA', sheet.size)
@@ -207,6 +233,10 @@ def generate():
     save_json(char_dir / 'character.json', dict(sheet='sheet.png', glow='glow.png', frame=list(CHARACTER_FRAME), anchor=[64, 233], lantern=[46, -73], animations={
         name: dict(row=i, frames=n, fps=fps, **({'stride': 96} if name.startswith('walk-') else {})) for i, (name, n, fps) in enumerate([
             ('idle-front', 1, 1), ('walk-side', 6, 8), ('walk-front', 4, 8), ('walk-back', 4, 8), ('talk-front', 2, 4)])}))
+    character = json.loads((char_dir / 'character.json').read_text())
+    for direction, row in [('side', 1), ('back', 3)]:
+        character['animations'][f'idle-{direction}'] = dict(row=row, frames=1, fps=1)
+    save_json(char_dir / 'character.json', character)
     generate_book()
     books = []
     for name, dark, light in [('book', 20, 22), ('book-green', 14, 16), ('book-blue', 28, 29)]:
@@ -226,9 +256,9 @@ def generate():
         f.rectangle((inset, inset, 11-inset, 11-inset), outline=COLORS[color])
     frame.save(ROOT.parent / 'src/reader-frame.png')
     save_json(DATA / 'world.json', dict(title='The engineer\'s study', palette='palette.png', start='stone-house',
-        character='character/character.json', verbs=['Look at', 'Open', 'Use', 'Talk to'], objects=dict(book=books),
-        sounds={'sea': {'synth': 'surf', 'volume': 0.5, 'loop': True}, 'wind': {'synth': 'wind', 'volume': 0.3, 'loop': True}, 'flame': {'synth': 'crackle', 'volume': 0.25, 'loop': True}, 'step': {'synth': 'step', 'volume': 0.5}, 'page': {'synth': 'page', 'volume': 0.6}, 'click': {'synth': 'click', 'volume': 0.4}, 'door': {'synth': 'creak', 'volume': 0.5}},
-        events={'step': 'step', 'page-turn': 'page', 'book-open': 'page', 'book-close': 'page', 'lamp': 'click', 'menu': 'click', 'door': 'door'},
+        character='character/character.json', verbs=['Open', 'Close', 'Give', 'Take', 'Look at', 'Talk to', 'Use', 'Read', 'Walk to'], objects=dict(book=books),
+        sounds={'sea': {'synth': 'surf', 'volume': 0.5, 'loop': True}, 'wind': {'synth': 'wind', 'volume': 0.3, 'loop': True}, 'flame': {'synth': 'crackle', 'volume': 0.25, 'loop': True}, 'step': {'synth': 'step', 'volume': 0.9}, 'page': {'synth': 'page', 'volume': 0.6}, 'click': {'synth': 'click', 'volume': 0.4}, 'door': {'synth': 'creak', 'volume': 0.5}, 'flare': {'synth': 'whoosh', 'volume': 0.5, 'params': {'frequency': 900, 'duration': 0.35}}, 'gust': {'synth': 'whoosh', 'volume': 0.4, 'params': {'frequency': 350, 'duration': 1.2}}},
+        events={'step': 'step', 'page-turn': 'page', 'book-open': 'page', 'book-close': 'page', 'lamp': 'click', 'menu': 'click', 'door': 'door', 'lantern': 'flare', 'time': 'gust'},
         mix={'master': 0.5, 'ambience': 0.8, 'effects': 1.0},
         book='book/book.json',
         books={key: dict(title=title, content=content, sprite=books[i % len(books)])
@@ -238,11 +268,14 @@ def generate():
                    ('ai', 'AI and agents', dict(tags=['ai'])),
                    ('docker', 'Docker', dict(tags=['docker'])),
                    ('security', 'Security', dict(tags=['security'])),
-                   ('personal', 'Personal', dict(tags=['personal']))])},
+                   ('personal', 'Personal', dict(tags=['personal'])),
+                   ('links', 'Links', dict(type='link'))])},
         rooms={'stone-house': dict(src='rooms/stone-house/room.json', books=['workstation', 'linux', 'ai', 'docker', 'security', 'personal'],
             ambience=dict(dusk=[dict(sound='sea', at='window')],
                 night=[dict(sound='sea', at='window'), dict(sound='wind'), dict(sound='flame', at='oil', light='oil')]),
-            hotspots=dict(window=dict(content=dict(type='link'))))}))
+            hotspots=dict(window=dict(content=dict(type='link')))),
+            'harbour': dict(src='rooms/harbour/room.json', books=[],
+                hotspots=dict(noticeboard=dict(book='links')))}))
     titles = ['A room of one\'s own', 'Choosing the hardware', 'Linux on the desk', 'Containers at home', 'A quieter workstation', 'The finished build']
     content = []
     for i, title in enumerate(titles, 1):

@@ -1,0 +1,53 @@
+{
+  "name": "harbour",
+  "size": [
+    640,
+    360
+  ],
+  "albedo": "albedo.png",
+  "objects": "objects.png",
+  "spawn": [
+    320,
+    280
+  ],
+  "depth": {
+    "far": [
+      245,
+      0.7
+    ],
+    "near": [
+      307,
+      1.0
+    ]
+  },
+  "states": {
+    "dusk": {
+      "unlit": "dusk-unlit.png",
+      "lights": {}
+    },
+    "night": {
+      "unlit": "night-unlit.png",
+      "lights": {}
+    }
+  },
+  "items": [
+    {
+      "id": "floor",
+      "kind": "walkable",
+      "color": "#00ff00"
+    },
+    {
+      "id": "study-door",
+      "kind": "exit",
+      "label": "Study door",
+      "to": "stone-house",
+      "color": "#ff8000"
+    },
+    {
+      "id": "noticeboard",
+      "kind": "hotspot",
+      "label": "Notice board",
+      "color": "#00ffff"
+    }
+  ]
+}

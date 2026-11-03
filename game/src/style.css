@@ -57,7 +57,7 @@
 }
 .adventure-start h1 {
   margin: 0;
-  font: bold clamp(20px, 4vw, 36px)/1.2 monospace;
+  font: bold clamp(20px, 4vw, 36px) / 1.2 monospace;
 }
 .adventure-start p {
   max-width: 48ch;
@@ -114,4 +114,12 @@
 }
 .adventure-reader > a:focus-visible {
   outline: 2px solid #ffd08a;
+}
+
+.adventure-fade {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
 }

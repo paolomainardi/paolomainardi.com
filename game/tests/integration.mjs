@@ -33,6 +33,15 @@ class Element extends EventTarget {
     delete this.attributes[key];
     if (key === "src") this.src = "";
   }
+  click() {
+    if (this.tagName === "a")
+      clickedLinks.push({
+        href: this.href,
+        target: this.target,
+        rel: this.rel,
+      });
+    this.dispatchEvent(new Event("click"));
+  }
   focus() {
     document.activeElement = this;
   }
@@ -59,6 +68,7 @@ document.head = new Element("head");
 document.createElement = (tag) => new Element(tag);
 const window = new EventTarget();
 const opened = [];
+const clickedLinks = [];
 window.open = (...args) => {
   opened.push({ args, position: [rendered.actor.x, rendered.actor.y] });
   return null; // noopener may return null even when the browser opens the tab.
@@ -263,7 +273,7 @@ rendered.sound.event = (name, volume = 1) => {
 };
 key("m");
 assert.equal(rendered.sound.muted, true);
-click(rendered.soundRect.x + 2, 345);
+click(rendered.soundRect.x + 2, rendered.soundRect.y + 2);
 assert.equal(rendered.sound.muted, false);
 document.hidden = true;
 event(document, "visibilitychange");
@@ -275,7 +285,7 @@ assert.equal(rendered.sound.context.state, "running");
 const depth = rendered.room.depth;
 rendered.room.depth = { far: [150, 1], near: [265, 1] };
 rendered.actor.x = 320;
-event(canvas, "click", { clientX: 533.333, clientY: 320, detail: 1 });
+event(canvas, "click", { clientX: 533.333, clientY: 300, detail: 1 });
 step(10);
 assert(
   Math.abs(rendered.actor.x - 339.2) < 1e-8,
@@ -286,10 +296,10 @@ assert(
   }),
 );
 rendered.actor.x = 320;
-event(canvas, "click", { clientX: 533.333, clientY: 320, detail: 2 });
+event(canvas, "click", { clientX: 533.333, clientY: 300, detail: 2 });
 step(10);
 assert(Math.abs(rendered.actor.x - 358.4) < 1e-8);
-event(canvas, "click", { clientX: 533.333, clientY: 320, detail: 1 });
+event(canvas, "click", { clientX: 533.333, clientY: 300, detail: 1 });
 step(10);
 assert(Math.abs(rendered.actor.x - 377.6) < 1e-8);
 rendered.actor.x = 120;
@@ -485,17 +495,13 @@ event(canvas, "pointermove", {
 });
 assert.notEqual(rendered.hover, varied);
 
-assert.deepEqual(Array.from(controller.state.position), [120, 320]);
-assert.equal(
-  rendered.verbTop,
-  336,
-  "Verb strip must occupy one fifteenth of the frame",
-);
+assert.deepEqual(Array.from(controller.state.position), [120, 300]);
+assert.equal(rendered.verbTop, 308, "Panel occupies the bottom 52 pixels");
 assert(
-  rendered.verbRects.every((v) => v.y === 344),
-  "Verbs stay in one row",
+  rendered.verbRects.every((v, i) => v.y === 324 + Math.floor(i / 3) * 12),
+  "Verbs follow a three-column grid",
 );
-click(150, 320);
+click(150, 300);
 step(10);
 const expectedTravel = 120 * rendered.depth() * 0.16;
 assert(
@@ -562,7 +568,7 @@ assert(
 rendered.actor.mirror = false;
 assert(rendered.character.glowTexture);
 const open = rendered.verbRects.find((v) => v.label === "Open");
-click(open.x + 2, 340);
+click(open.x + 2, open.y + 2);
 click(470, 140, 2);
 assert.equal(rendered.running, true, "Double-clicking an object runs to it");
 assert.equal(controller.state.reader, null, "Opening must wait for the walk");
@@ -592,7 +598,7 @@ assert.equal(rendered.sound.duck.gain.calls.at(-1)[1], 1);
 assert.equal(location.hash, "#stone-house");
 assert.equal(document.activeElement, root);
 const use = rendered.verbRects.find((v) => v.label === "Use");
-click(use.x + 2, 340);
+click(use.x + 2, use.y + 2);
 click(354, 186);
 settle();
 step(12);
@@ -639,10 +645,10 @@ for (const dismissal of ["escape", "outside", "document", "floor"]) {
 }
 event(root, "contextmenu", { clientX: 470, clientY: 140 });
 key("ArrowUp");
-assert.equal(rendered.menu.verbs[rendered.menu.selected], "Take");
+assert.equal(rendered.menu.verbs[rendered.menu.selected], "Walk to");
 key("ArrowDown");
 assert.equal(rendered.menu.selected, 0);
-key("ArrowUp");
+key("ArrowDown");
 key("Enter");
 settle();
 assert.equal(controller.state.reader, "workstation-1");
@@ -661,7 +667,7 @@ const lantern = controller.state.lantern;
 key("l");
 assert.notEqual(controller.state.lantern, lantern);
 const look = rendered.verbRects.find((v) => v.label === "Look at");
-click(look.x + 2, 340);
+click(look.x + 2, look.y + 2);
 click(180, 120);
 settle();
 const hotspot = rendered.room.items.find((item) => item.id === "window");
@@ -682,7 +688,7 @@ hotspot.content.description = originalDescription;
 // Move away so the click can prove opening happens before movement.
 click(600, 300);
 settle();
-click(open.x + 2, 340);
+click(open.x + 2, open.y + 2);
 const beforeOpen = Array.from(controller.state.position);
 click(180, 120);
 assert.equal(opened.length, 1, "Tab must open synchronously during the click");
@@ -711,7 +717,7 @@ assert.equal(
 );
 settle();
 hotspot.content.link = originalLink;
-click(look.x + 2, 340);
+click(look.x + 2, look.y + 2);
 click(80, 160);
 settle();
 assert.equal(rendered.speech, "That way lies harbour.");
@@ -767,7 +773,7 @@ const rebound = rendered.room.items.find((item) => item.id === "window");
 assert.equal(rebound.label, "Window: New link");
 assert.equal(rebound.content.id, "new-link");
 assert.equal(opened.length, 2, "Changing rooms must not open tabs");
-click(open.x + 2, 340);
+click(open.x + 2, open.y + 2);
 click(180, 120);
 settle();
 assert.equal(rendered.speech, "There is nothing to open here.");
@@ -791,15 +797,16 @@ assert(soundEvents.some((event) => event.name === "lamp"));
 assert(soundEvents.some((event) => event.name === "menu"));
 // Exit effects fire for Use and Walk to, but not Look at.
 const exit = rendered.room.items.find((item) => item.kind === "exit");
+exit.to = "unbuilt-room";
 for (const verb of ["Use", "Walk to"]) {
   const barVerb = rendered.verbRects.find((v) => v.label === verb);
-  click(barVerb.x + 2, 340);
+  click(barVerb.x + 2, barVerb.y + 2);
   rendered.actor.x = exit.position[0];
   rendered.actor.y = exit.position[1];
   click(80, 160);
   settle();
 }
-assert.equal(soundEvents.filter((event) => event.name === "door").length, 2);
+assert.equal(soundEvents.filter((event) => event.name === "door").length, 0);
 const originalFlames = rendered.character.flames["walk-side"];
 const firstAudio = rendered.sound.context;
 controller.destroy();
@@ -846,7 +853,7 @@ assert.equal(unbound.content, undefined);
 const secondLook = rendered.verbRects.find((v) => v.label === "Look at");
 event(rendered.canvas, "click", {
   clientX: secondLook.x + 2,
-  clientY: 340,
+  clientY: secondLook.y + 2,
 });
 event(rendered.canvas, "click", { clientX: 180, clientY: 120 });
 step(300);
@@ -961,13 +968,13 @@ assert.equal(rendered.objects.length, 6);
 assert.equal(rendered.objects[0].label, "Workstation");
 assert.equal(rendered.objects[0].book.items.length, 22);
 const catalogue = bookRoot.children.find((node) => node.tagName === "nav");
-assert.equal(catalogue.children.length, 12);
+assert.equal(catalogue.children.length, 14);
 assert.equal(
   catalogue.children[1].children[0].children[0].href,
   "https://adventure.test/dev/reader/workstation-1.html",
 );
 event(bookRoot, "contextmenu", { clientX: 470, clientY: 140 });
-assert.equal(rendered.menu.verbs.at(-1), "Take");
+assert.equal(rendered.menu.verbs.at(-1), "Walk to");
 event(bookRoot, "keydown", { key: "ArrowUp" });
 event(bookRoot, "keydown", { key: "Enter" });
 for (let i = 0; i < 600 && books.state.walking; i++) step();
@@ -979,12 +986,18 @@ assert.equal(
 );
 event(bookRoot, "keydown", { key: "Escape" });
 const bookLook = rendered.verbRects.find((v) => v.label === "Look at");
-event(bookCanvas, "click", { clientX: bookLook.x + 2, clientY: 340 });
+event(bookCanvas, "click", {
+  clientX: bookLook.x + 2,
+  clientY: bookLook.y + 2,
+});
 event(bookCanvas, "click", { clientX: 470, clientY: 140 });
 for (let i = 0; i < 600 && books.state.walking; i++) step();
-assert.equal(rendered.speech, "Workstation. 22 posts.");
+assert.equal(rendered.speech, "Workstation. 22 entries.");
 const walkVerb = rendered.verbRects.find((v) => v.label === "Walk to");
-event(bookCanvas, "click", { clientX: walkVerb.x + 2, clientY: 340 });
+event(bookCanvas, "click", {
+  clientX: walkVerb.x + 2,
+  clientY: walkVerb.y + 2,
+});
 event(bookCanvas, "click", { clientX: 470, clientY: 140 });
 assert.equal(books.state.book, null, "Book waits for arrival");
 for (let i = 0; i < 600 && books.state.walking; i++) step();
@@ -1122,4 +1135,190 @@ assert.equal(reloaded.state.spread, 1);
 reloaded.destroy();
 console.log(
   "Topic shelves, catalogue, look, click-to-open, turns, entry hits, reader return, website link, closing, routing, and reload passed (mock DOM/GPU).",
+);
+
+// Task 18: panel boundaries, session inventory, book hotspots and actual travel.
+location.hash = "#stone-house";
+const adventureContainer = new Element("main");
+const adventure = await module.namespace.boot({
+  world: "./data/world.json",
+  content: "./data/content.json",
+  element: adventureContainer,
+});
+const adventureRoot = adventureContainer.children[0],
+  adventureCanvas = adventureRoot.children[0];
+event(adventureRoot.children[1].children[3], "click");
+step();
+const tap = (x, y) =>
+  event(adventureCanvas, "click", { clientX: x, clientY: y });
+const select = (label) => {
+  const rect = rendered.verbRects.find((rect) => rect.label === label);
+  tap(rect.x + 1, rect.y + 1);
+};
+const arrive = () => {
+  for (let i = 0; i < 600 && adventure.state.walking; i++) step();
+  assert(!adventure.state.walking);
+};
+assert.deepEqual(
+  Array.from(rendered.verbRects, (rect) => rect.label),
+  Array.from(rendered.world.verbs),
+);
+assert(!rendered.room.walkable.slice(308 * 640).some(Boolean));
+for (const [x, y] of [
+  [0, 308],
+  [639, 308],
+  [0, 359],
+  [639, 359],
+  [8, 323],
+  [640, 350],
+]) {
+  tap(x, y);
+  assert.equal(
+    adventure.state.walking,
+    false,
+    `Panel click at ${x},${y} must not walk`,
+  );
+}
+const topic = rendered.objects[0];
+select("Take");
+tap(...topic.position);
+arrive();
+assert.deepEqual(Array.from(adventure.state.inventory), ["workstation"]);
+assert.equal(rendered.objects.length, 6, "Shelf keeps its book");
+tap(...topic.position);
+arrive();
+assert.equal(rendered.speech, "I already have it.");
+assert.equal(adventure.state.inventory.length, 1);
+let slot = rendered.panel.slots[0];
+select("Look at");
+tap(slot.x + 1, slot.y + 1);
+assert.equal(rendered.speech, "Workstation. 22 entries.");
+for (const verb of ["Open", "Read"]) {
+  select(verb);
+  tap(slot.x + 1, slot.y + 1);
+  assert.equal(adventure.state.book, "workstation");
+  event(adventureRoot, "keydown", { key: "Escape" });
+}
+for (const verb of ["Give", "Close", "Talk to"]) {
+  select(verb);
+  tap(slot.x + 1, slot.y + 1);
+  assert.equal(rendered.speech, "I can't do that.");
+}
+select("Walk to");
+tap(slot.x + 1, slot.y + 1);
+assert.equal(rendered.selectedItem.book.id, "workstation");
+const windowTarget = rendered.room.items.find((item) => item.id === "window");
+event(adventureCanvas, "pointermove", {
+  clientX: windowTarget.position[0],
+  clientY: windowTarget.position[1],
+});
+assert.equal(rendered.sentence(), `Use Workstation with ${windowTarget.label}`);
+tap(...windowTarget.position);
+assert.equal(rendered.speech, "I can't use those together.");
+assert.equal(rendered.sentence(), `Use Workstation with ${windowTarget.label}`);
+assert.equal(rendered.selectedItem, null);
+select("Close");
+tap(...topic.position);
+assert.equal(rendered.speech, "I can't do that.");
+for (let i = 1; i < 20; i++)
+  rendered.inventory.push({ ...rendered.inventory[0], label: `Copy ${i}` });
+tap(rendered.panel.next.x + 1, rendered.panel.next.y + 1);
+assert.equal(rendered.inventoryOffset, rendered.panel.slots.length);
+tap(rendered.panel.previous.x + 1, rendered.panel.previous.y + 1);
+assert.equal(rendered.inventoryOffset, 0);
+rendered.inventory.splice(1);
+const travel = async (target, to, verb = "Walk to") => {
+  select(verb);
+  tap(...target.position);
+  arrive();
+  assert.equal(rendered.transition.phase, "out");
+  step(5);
+  assert(
+    Number(
+      adventureRoot.children.find(
+        (child) => child.className === "adventure-fade",
+      ).style.opacity,
+    ) > 0,
+  );
+  for (let i = 0; i < 100 && rendered.transition; i++) {
+    step();
+    await new Promise(setImmediate);
+  }
+  assert.equal(adventure.state.room, to);
+  assert.equal(rendered.transition, null);
+  assert.equal(location.hash, `#${to}`);
+};
+await travel(
+  rendered.room.items.find((item) => item.kind === "exit"),
+  "harbour",
+);
+assert.deepEqual(Array.from(adventure.state.position), [572, 245]);
+assert.equal(rendered.actor.animation, "idle-side");
+assert.equal(rendered.actor.mirror, true, "Arrival faces left into harbour");
+assert.deepEqual(Array.from(adventure.state.inventory), ["workstation"]);
+const board = rendered.room.items.find((item) => item.id === "noticeboard");
+assert.equal(board.book.id, "links");
+for (const verb of ["Read", "Open", "Walk to"]) {
+  select(verb);
+  tap(...board.position);
+  arrive();
+  assert.equal(adventure.state.book, "links");
+  event(adventureRoot, "keydown", { key: "Escape" });
+}
+select("Read");
+tap(...board.position);
+arrive();
+const linkEntry = rendered.activeBook.pages.flatMap((page) => page.entries)[0];
+const linksBefore = clickedLinks.length;
+tap(linkEntry.x + 1, linkEntry.y + 1);
+assert.equal(clickedLinks.length, linksBefore + 1);
+assert.deepEqual(clickedLinks.at(-1), {
+  href: linkEntry.item.link,
+  target: "_blank",
+  rel: "noopener",
+});
+assert.equal(rendered.sentence(), "Opening the link…");
+assert.equal(adventure.state.reader, null);
+assert.equal(adventure.state.book, "links");
+event(adventureRoot, "keydown", { key: "Escape" });
+await travel(
+  rendered.room.items.find((item) => item.kind === "exit"),
+  "stone-house",
+  "Use",
+);
+const entrance = rendered.room.items.find((item) => item.kind === "exit");
+const pathfinding = await moduleAt("https://adventure.test/src/pathfinding.js");
+assert.deepEqual(
+  Array.from(adventure.state.position),
+  Array.from(
+    pathfinding.namespace.nearestWalkable(
+      rendered.room.walkable,
+      ...entrance.position,
+      rendered.room.size,
+    ),
+  ),
+);
+assert.equal(rendered.actor.animation, "idle-side");
+assert.equal(rendered.actor.mirror, false, "Arrival faces right into study");
+// A destination without an exit pointing back uses its spawn.
+rendered.world.rooms["no-return"] = rendered.world.rooms["stone-house"];
+entrance.to = "no-return";
+await travel(entrance, "no-return");
+assert.deepEqual(Array.from(adventure.state.position), [120, 300]);
+adventure.destroy();
+location.hash = "#stone-house";
+const freshContainer = new Element("main");
+const fresh = await module.namespace.boot({
+  world: "./data/world.json",
+  content: "./data/content.json",
+  element: freshContainer,
+});
+assert.deepEqual(
+  Array.from(fresh.state.inventory),
+  [],
+  "New session starts empty",
+);
+fresh.destroy();
+console.log(
+  "Panel edges, inventory actions and scrolling, book hotspots, safe link tabs, fades, matching exits, facing, spawn fallback and session reset passed.",
 );

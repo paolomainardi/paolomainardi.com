@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { layoutPanel } from "../src/panel.js";
+import { wrap } from "../src/font.js";
 import { Renderer } from "../src/renderer.js";
 
 // Exercise render placement without requiring a GPU. Use deliberately different
@@ -53,7 +55,10 @@ const game = {
   lightSourcesAt: () => [],
   bloom: true,
   sentence: () => "Walk to Window",
-  verbTop: 336,
+  panel: layoutPanel([640, 360], ["Open"]),
+  inventory: [],
+  inventoryOffset: 0,
+  verbTop: 308,
   verbScale: 1,
   verb: "Open",
   verbRects: [{ label: "Open", x: 4, y: 170 }],
@@ -73,22 +78,14 @@ for (const mirror of [false, true]) {
   );
   assert.equal(uniforms.uBloom, 1);
   const strips = calls.filter((c) => c.type === "rect");
-  assert.equal(strips.length, 1, "No background strip under the sentence");
-  assert.deepEqual(strips[0].args.slice(0, 4), [0, 336, 640, 24]);
+  assert.equal(strips.length, 1 + game.panel.slots.length);
+  assert.deepEqual(strips[0].args.slice(0, 4), [0, 308, 640, 52]);
   assert(strips[0].args[4][3] > 0 && strips[0].args[4][3] < 1);
   const sentence = calls.filter(
     (c) => c.type === "text" && c.args[0] === game.sentence(),
   );
-  assert.equal(sentence.length, 9, "Eight outline offsets plus sentence text");
-  assert(
-    sentence
-      .slice(0, 8)
-      .every(
-        (c) =>
-          Math.abs(c.args[1] - 8) <= 4 / 3 + 1e-8 &&
-          Math.abs(c.args[2] - 12) <= 4 / 3 + 1e-8,
-      ),
-  );
+  assert.equal(sentence.length, 1, "Sentence stays inside the panel");
+  assert.deepEqual(sentence[0].args.slice(1, 3), [8, 312]);
 }
 console.log(
   "Swappable frame, anchor, animation, mirroring, sentence outline, and compact translucent UI passed (mock GPU).",
@@ -114,18 +111,8 @@ for (const item of game.objects) {
 }
 game.objects = [];
 
-// Long labels use two outlined rows and truncate only when a third is needed.
-for (const [text, expected] of [
-  [
-    "Walk to a book with a title that fits on two lines",
-    ["Walk to a book with a title that fits on two lines"],
-  ],
-  ["word ".repeat(40), ["word ".repeat(21).trim(), "word ".repeat(19)]],
-  [
-    "word ".repeat(80),
-    ["word ".repeat(21).trim(), "word ".repeat(20).trim() + "…"],
-  ],
-]) {
+// Sentence truncates to one row, leaving space for the sound control.
+for (const text of ["Walk to Window", "word ".repeat(80)]) {
   const sentence = game.sentence;
   game.sentence = () => text;
   calls.length = 0;
@@ -135,13 +122,9 @@ for (const [text, expected] of [
   );
   assert.deepEqual(
     rows.map((call) => call.args[0]),
-    expected,
+    wrap(text, 91, 1),
   );
-  assert.deepEqual(
-    rows.map((call) => call.args[2]),
-    expected.length === 1 ? [12] : [12, 24],
-  );
-  assert(rows.every((call) => call.args[1] + call.args[0].length * 6 <= 632));
+  assert(rows.every((call) => call.args[2] === 312));
   game.sentence = sentence;
 }
 
@@ -267,9 +250,12 @@ sideAnimation.stride = 96;
 game.actor.walkPhase = 0.45;
 calls.length = 0;
 renderer.render(game);
-const offsetCalls = calls.filter((c) => c.type === "sprite" && c.args[0] === texture);
+const offsetCalls = calls.filter(
+  (c) => c.type === "sprite" && c.args[0] === texture,
+);
 assert.equal(offsetCalls.length, 2);
-for (const call of offsetCalls) assert.deepEqual(call.args[3], [96, 360, 24, 60]);
+for (const call of offsetCalls)
+  assert.deepEqual(call.args[3], [96, 360, 24, 60]);
 delete sideAnimation.start;
 delete sideAnimation.stride;
 game.character.glowTexture = null;
@@ -404,4 +390,30 @@ assert.equal(
 );
 console.log(
   "Menu border, fallback font and separate text layer passed (mock GPU).",
+);
+
+// Inventory draws the item's own sprite and shares the verb highlight colour.
+const iconItem = { sprite: { texture: {}, size: [24, 36] } };
+game.inventory = [iconItem];
+game.panelHover = game.verbRects[0];
+calls.length = 0;
+renderer.renderPanel(game);
+const iconDraw = calls.find(
+  (call) => call.type === "sprite" && call.args[0] === iconItem.sprite.texture,
+);
+assert.deepEqual(iconDraw.args[1], [24, 36]);
+assert.deepEqual(iconDraw.args[2].slice(2), [12, 18]);
+assert(iconDraw.args[2].every(Number.isInteger));
+const selectedColor = calls.find(
+  (call) => call.type === "text" && call.args[0] === "Open",
+).args[3];
+game.verb = "Read";
+calls.length = 0;
+renderer.renderPanel(game);
+assert.deepEqual(
+  calls.find((call) => call.type === "text" && call.args[0] === "Open").args[3],
+  selectedColor,
+);
+console.log(
+  "Inventory sprite scaling and shared rose hover/selection colour passed.",
 );

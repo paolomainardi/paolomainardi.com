@@ -26,14 +26,14 @@ async (page) => {
   const walked = await page.evaluate(() => window.game.state.position);
   if (Math.hypot(walked[0] - 280, walked[1] - 300) > 0.5)
     throw new Error("Walking failed");
-  // Font pixels remain native; verb padding follows the frame scale.
-  await click(170, 340); // Use
+  // Panel hit areas use native game pixels.
+  await click(10, 350); // Use
   await click(353, 187);
   await settle();
   await page.waitForFunction(
     () => window.game.state.lamps.find((l) => l.id === "oil").level < 0.01,
   );
-  await click(135, 340); // Open
+  await click(10, 326); // Open
   await click(469, 140);
   await settle();
   await page.waitForFunction(() => window.game.state.book === "workstation");
@@ -72,7 +72,7 @@ async (page) => {
   if ((await page.evaluate(() => window.game.state.book)) !== "workstation")
     throw new Error("Reader Escape must preserve the book");
   await page.keyboard.press("Escape");
-  await click(85, 340); // Look at
+  await click(86, 338); // Look at
   await click(180, 120);
   await settle();
   const description = await page.locator(".adventure-live").textContent();
@@ -83,7 +83,7 @@ async (page) => {
     throw new Error("Content-bound hotspot description failed");
   await click(533, 307);
   await settle();
-  await click(135, 340); // Open
+  await click(10, 326); // Open
   await page.context().route("https://www.kernel.org/", (route) =>
     route.fulfill({
       contentType: "text/html",

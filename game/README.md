@@ -25,6 +25,24 @@ const game = await boot({
 
 Paths follow [CONTRACT.md](CONTRACT.md), including reader URLs relative to `content.json`. Hashes restore the room and reader after Start.
 
+## Verb panel and inventory
+
+The dark, translucent panel occupies the bottom 52 pixels of the 640×360 frame.
+Its sentence line sits above a 3×3 verb grid on the left and inventory icons on
+the right. The grid follows `world.verbs` in row order: Open, Close, Give; Take,
+Look at, Talk to; Use, Read, Walk to. Hover and selected verbs use rose.
+Panel clicks never move the character, and paths stay above the panel.
+Unsupported actions say "I can't do that."
+
+**Take** copies a topic book into the session inventory while leaving its shelf
+copy in place. Taking it again says "I already have it." Icons use each book's
+sprite, reduced by an integer divisor into whole pixels. Arrows scroll full
+inventories. **Look at** describes an item; **Open** or **Read** opens its book.
+Select **Use** or **Walk to**, click an inventory item, then a target to form
+"Use <item> with <target>" and hear a short response. Other verbs give a short
+response. Inventory survives room changes and clears when the game is restarted.
+It uses no browser storage.
+
 ## Right-click verb menu
 
 Right-click a hotspot, lamp, exit, content object, or topic book to open a
@@ -34,8 +52,8 @@ to highlight it in rose and preview the sentence. The heading uses NF-Pixels in 
 verbs use the same font and weight. Worlds without
 book art retain the 5×7 menu font.
 
-Click a verb, or use Up/Down and Enter, to walk over and run it. **Take** opens
-a topic book or a content object's reader. The verb bar keeps its selected
+Click a verb, or use Up/Down and Enter, to walk over and run it. **Take** copies
+a topic book into the inventory. A content object still opens its reader. The panel keeps its selected
 verb. Escape, an outside click, an empty-floor right click, or a room change
 closes the menu. The browser context menu is suppressed over the game.
 
@@ -43,17 +61,18 @@ closes the menu. The browser context menu is suppressed over the game.
 
 Each room's `books` list fills its shelf slots in order. Each id names a book in
 `world.json`'s `books` map, with a title, content filter, and its own sprite.
-Series books sort by part; other topics sort by newest date. Books contain posts.
+Series books sort by part; other topics sort by newest date. Books contain posts
+unless their filter sets another content type, such as `"type": "link"`.
 The window still opens the newest link.
 
-Click a book, or choose **Open**, to walk over and open its close-up. **Look at**
-says the title and post count. The first page shows the title and count, followed
+Click a book with **Walk to**, or choose **Open** or **Read**, to walk over and open its close-up. **Look at**
+says the title and entry count. The first page shows the title and count, followed
 by post titles and dates. Titles wrap to two lines with an ellipsis. NF-Pixels uses 10 px body text with 13 px line height and 20 px titles.
 Entries have half a line of spacing, rounded to 7 game pixels. Font metrics fill
 pages to the bottom margin. Text uses the book's ink, faded and accent colours
 on a 640×360 Canvas 2D layer, with alpha thresholded to 0 or 255 and whole
 game-pixel positions. The layer composites into the game frame before upscale
-and redraws only when the book, spread, hover, menu or game-frame size changes. The verb bar and sentence line keep the 5×7 font.
+and redraws only when the book, spread, hover, menu or game-frame size changes. The verb panel and sentence line keep the 5×7 font.
 
 Hover an entry to highlight it, then click to read. The reader's **Open on the
 website** link opens its URL in a new tab. Closing the reader returns to the same
@@ -62,7 +81,7 @@ page's outer half towards the spine, away from entries, to control the turn.
 Release past halfway to finish, or release earlier to fall back. Pointer
 cancellation also falls back. A corner click or left/right arrows turn pages.
 Escape, the **Close**
-label, or a click outside the book returns to the room at the same position.
+label, or a right click returns to the room at the same position.
 
 `#stone-house/book/workstation/2` restores spread 2 after Start, including on
 reload. The DOM contains a visually hidden catalogue of every book and its post
@@ -96,6 +115,24 @@ behavior. Link items carry the external URL in `link` and their note in
 `description`; content URLs resolve relative to `content.json` and require HTTP(S).
 The placeholder and real-art demo worlds bind the window to two sample links.
 
+A hotspot can instead open a whole book:
+
+```json
+"hotspots": { "noticeboard": { "book": "links" } }
+```
+
+The book id names `world.books`. **Read**, **Open**, or a click with **Walk to**
+walks to the hotspot and opens that book. The second placeholder room, the
+harbour, has a notice board bound to a links book. Clicking an entry without a
+`reader` opens its `link` in a new tab with `rel="noopener"` and shows
+"Opening the link…" in the sentence line.
+
+Using an exit or walking to it fades the scene to black, loads its destination,
+and fades back. The character arrives at the destination exit whose `to` points
+back to the previous room, at the nearest walkable point, facing into the room.
+Without a matching exit, arrival uses the nearest walkable point to `spawn`.
+The placeholder study and harbour have exits in both directions.
+
 Frame dimensions come from each room's `size`, shared by every room in a world. The placeholders use 640×360 room images and 128×234 character cells. Masks, paths, pointer coordinates, and render targets use the room dimensions.
 Movement and effect distances scale with frame width relative to 480. The bitmap font stays at one buffer pixel per font pixel.
 
@@ -117,7 +154,7 @@ The renderer uses the largest whole pixel scale that fits, centred with black ba
 
 ## Sound
 
-Start enables low-volume Web Audio. Click the verb bar's `Sound: on` label or
+Start enables low-volume Web Audio. Click the panel's `Sound: on` label or
 press `M` to mute; the setting lasts only for this game instance. The reader
 lowers all sound by about 12 dB. Book close-ups keep full ambience. Hidden tabs
 suspend audio until visible again.
@@ -156,6 +193,7 @@ Checks:
 
 ```sh
 node tests/sound.mjs # mock AudioContext, mixing, spatial sound, fades, events and missing files
+node tests/panel.mjs # panel grid, boundaries and inventory icon sizing
 node tests/verb-menu.mjs # target verbs, edge placement, row hits
 node tests/books.mjs # layout, routes, entry hits, font loading
 node tests/logic.mjs
@@ -189,4 +227,9 @@ playwright-cli -s=adventure close
 
 The browser checks cover rendered linear light sums, independent lamp switches, fractional fades, albedo lighting, flame dimming and bloom sources, plus walking, lamp switching, readers, iframe Escape, hashes, integer scaling, overflow, and WebGL errors. It saves dusk/night screenshots at four widths under `.playwright-cli/`.
 
-Sound lifecycle and gameplay events with mock audio, book layout, NF-Pixels loading, binary text alpha, game-pixel positions, text-layer caching, menu headings, corner hover, drag turns, routes, lighting math, assets, interaction simulation, renderer checks, and shader compilation pass. The current sandbox denies server sockets, so browser rendering and visual checks remain unrun. Exits show a line instead of changing rooms, as specified. The verb font covers ASCII; NF-Pixels is bundled under SIL OFL 1.1; cross-origin readers need the close button when iframe focus owns Escape.
+The automated suite covers sound, books, panel layout and boundaries, inventory,
+hotspot books, safe link tabs, room arrival and fades, rendering, assets, lighting,
+and shaders. Browser rendering remains unchecked: the current sandbox denies
+local server sockets. The verb font covers ASCII; NF-Pixels is bundled under
+SIL OFL 1.1. Cross-origin readers need the close button when iframe focus owns
+Escape.
