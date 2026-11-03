@@ -353,6 +353,24 @@
       ],
       "link": "https://www.kernel.org/",
       "url": "/links/linux-kernel/"
+    },
+    {
+      "id": "found-about",
+      "type": "about",
+      "title": "Found about paper",
+      "description": "A about paper from the study.",
+      "date": "2026-11-01",
+      "reader": "../reader/workstation-1.html",
+      "url": "../reader/workstation-1.html"
+    },
+    {
+      "id": "found-talk",
+      "type": "talk",
+      "title": "Found talk paper",
+      "description": "A talk paper from the study.",
+      "date": "2026-11-01",
+      "reader": "../reader/workstation-1.html",
+      "url": "../reader/workstation-1.html"
     }
   ]
 }

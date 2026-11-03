@@ -1,3 +1,4 @@
+import { loadBoard, boardItems, boardPage, boardHit } from "./board.js";
 import {
   loadBook,
   cornerHit,
@@ -16,7 +17,7 @@ import { Renderer } from "./renderer.js";
 import { loadWorld, loadRoom, matchingItems, resolve } from "./assets.js";
 import { findPath, nearestWalkable } from "./pathfinding.js";
 import { wrap } from "./font.js";
-import { flame, lightSourcesAt } from "./lighting.js";
+import { beacon, flame, lightSourcesAt } from "./lighting.js";
 import { animationFrame } from "./animation.js";
 import { SoundEngine, footContacts } from "./sound.js";
 
@@ -111,7 +112,7 @@ export async function boot({ world, content, element }) {
       bloom: true,
       timeOverride: false,
       elapsed: 0,
-      verb: "Walk to",
+      verb: null,
       hover: null,
       menu: null,
       path: [],
@@ -144,10 +145,26 @@ export async function boot({ world, content, element }) {
       };
       book.pages = layoutBook(game.bookArt, book);
     }
+    game.boards = Object.fromEntries(
+      await Promise.all(
+        Object.entries(game.world.boards || {}).map(async ([id, config]) => [
+          id,
+          {
+            ...config,
+            id,
+            items: boardItems(game.items, config.content),
+            art: await loadBoard(config, worldURL, renderer),
+          },
+        ]),
+      ),
+    );
     const catalogue = document.createElement("nav");
     catalogue.className = "adventure-catalogue";
     catalogue.setAttribute("aria-label", "Books and posts");
-    for (const book of Object.values(game.books)) {
+    for (const book of [
+      ...Object.values(game.books),
+      ...Object.values(game.boards),
+    ]) {
       const title = document.createElement("h2");
       title.textContent = book.title;
       const list = document.createElement("ul");
@@ -155,7 +172,7 @@ export async function boot({ world, content, element }) {
         const row = document.createElement("li"),
           link = document.createElement("a");
         link.textContent = item.title;
-        if (item.url) link.href = item.url;
+        if (item.link || item.url) link.href = item.link || item.url;
         row.append(link);
         list.append(row);
       }
@@ -214,6 +231,7 @@ export async function boot({ world, content, element }) {
       }
     }
     game.lanternPosition = () => {
+      if (game.room.map) return [0, 0];
       const animation = game.character.animations[game.actor.animation];
       const frame = animationFrame(game.actor, animation);
       const offset =
@@ -225,7 +243,9 @@ export async function boot({ world, content, element }) {
       ];
     };
     game.lanternStrength = () =>
-      game.lantern && game.time === "night" ? flame(game.elapsed) : 0;
+      !game.room.map && game.lantern && game.time === "night"
+        ? flame(game.elapsed)
+        : 0;
     game.lightSourcesAt = (x, y) => lightSourcesAt(game, x, y);
     game.lightAt = (x, y) =>
       Math.min(
@@ -260,9 +280,11 @@ export async function boot({ world, content, element }) {
           : target.label || target.id;
       }
       const target = game.hover;
+      if (game.room.map && target?.kind === "exit")
+        return `Go to ${target.label || target.id}`;
       return target
-        ? `${game.verb} ${target.kind === "content" ? "Book: " : ""}${target.label || target.id}`
-        : game.verb;
+        ? `${game.verb || "Walk to"} ${target.kind === "content" ? "Book: " : ""}${target.label || target.id}`
+        : game.verb || "Walk to";
     };
     const labels = game.world.verbs;
     function say(text) {
@@ -281,14 +303,30 @@ export async function boot({ world, content, element }) {
       return parseRoute(location.hash, game.world.start);
     }
     function writeHash(item = null) {
-      const value = game.activeBook
-        ? bookRoute(game.room.id, game.activeBook.id, game.spread)
-        : `#${encodeURIComponent(game.room.id)}${item ? "/" + encodeURIComponent(item.id) : ""}`;
+      const value = game.activeBoard
+        ? `#${encodeURIComponent(game.room.id)}/board/${encodeURIComponent(game.activeBoard.id)}/${game.boardPage}`
+        : game.activeBook
+          ? bookRoute(game.room.id, game.activeBook.id, game.spread)
+          : `#${encodeURIComponent(game.room.id)}${item ? "/" + encodeURIComponent(item.id) : ""}`;
       if (location.hash !== value) history.pushState(null, "", value);
+    }
+    function openBoard(board, page = 0, update = true) {
+      game.activeBook = null;
+      game.activeBoard = board;
+      game.turning = null;
+      game.corner = 0;
+      game.boardPage = boardPage(board, page);
+      game.boardNote = null;
+      game.menu = game.hover = game.pending = null;
+      game.path = [];
+      game.sentenceNotice = null;
+      if (update) writeHash();
     }
     function openBook(book, spread = 0, update = true) {
       game.sound.event("book-open");
       game.menu = null;
+      game.activeBoard = null;
+      game.sentenceNotice = null;
       game.activeBook = book;
       game.spread = Math.max(
         0,
@@ -302,6 +340,9 @@ export async function boot({ world, content, element }) {
       if (update) writeHash();
     }
     function closeBook() {
+      game.activeBoard = null;
+      game.boardNote = null;
+      game.sentenceNotice = null;
       game.sound.event("book-close");
       game.activeBook = null;
       game.turning = null;
@@ -415,6 +456,8 @@ export async function boot({ world, content, element }) {
       const room = await loadRoom(game.world, worldURL, id, renderer);
       if (request !== roomRequest || disposed) return;
       game.activeBook = null;
+      game.activeBoard = null;
+      game.boardNote = null;
       game.turning = null;
       game.room = room;
       renderer.setRoom(room);
@@ -434,11 +477,13 @@ export async function boot({ world, content, element }) {
           (item) =>
             item.kind === "exit" && item.to === from && item.bounds[2] >= 0,
         );
-      const spawn = nearestWalkable(
-        room.walkable,
-        ...(entrance ? entrance.position : room.spawn),
-        room.size,
-      );
+      const spawn = room.map
+        ? room.spawn || [0, 0]
+        : nearestWalkable(
+            room.walkable,
+            ...(entrance ? entrance.position : room.spawn),
+            room.size,
+          );
       if (!spawn) throw new Error(`Room ${id} has no walkable floor.`);
       const dx = width / 2 - spawn[0],
         dy = game.verbTop / 2 - spawn[1];
@@ -464,6 +509,12 @@ export async function boot({ world, content, element }) {
       )) {
         const binding = room.config.hotspots?.[hotspot.id];
         if (!binding) continue;
+        if (binding.board) {
+          hotspot.board = game.boards[binding.board];
+          if (!hotspot.board)
+            throw new Error(`Unknown board: ${binding.board}`);
+          continue;
+        }
         if (binding.book) {
           hotspot.book = game.books[binding.book];
           if (!hotspot.book) throw new Error(`Unknown book: ${binding.book}`);
@@ -574,6 +625,17 @@ export async function boot({ world, content, element }) {
         canvas.style.cursor = "grabbing";
         return;
       }
+      if (game.activeBoard) {
+        game.hover = boardHit(
+          game.activeBoard,
+          game.boardPage,
+          game.boardNote,
+          x,
+          y,
+        );
+        canvas.style.cursor = game.hover ? "pointer" : "crosshair";
+        return;
+      }
       game.corner =
         game.activeBook && !game.turning
           ? cornerHit(
@@ -612,7 +674,7 @@ export async function boot({ world, content, element }) {
     on(root, "contextmenu", (event) => {
       event.preventDefault();
       game.menu = null;
-      if (game.activeBook && !game.readerItem) {
+      if ((game.activeBook || game.activeBoard) && !game.readerItem) {
         closeBook();
         return;
       }
@@ -632,11 +694,15 @@ export async function boot({ world, content, element }) {
         );
     });
     function act(target, verb) {
-      if (!targetVerbs(labels, target).includes(verb)) {
+      if (verb !== "Walk to" && !targetVerbs(labels, target).includes(verb)) {
         say("I can't do that.");
         return;
       }
-      if (target.book && (verb === "Open" || verb === "Read")) {
+      if (target.board && verb === "Open") {
+        openBoard(target.board);
+        return;
+      }
+      if (target.book && verb === "Open") {
         openBook(target.book);
         return;
       }
@@ -670,26 +736,31 @@ export async function boot({ world, content, element }) {
         return;
       }
       if (verb === "Look at" && target.kind === "hotspot" && target.content) {
-        say(`${target.content.title}. ${target.content.description || ""}`);
+        say(
+          target.look ||
+            `${target.content.title}. ${target.content.description || ""}`,
+        );
       } else if (verb === "Look at")
         say(target.content?.description || target.look || "Nothing unusual.");
+      else if (verb === "Open" && target.kind === "hotspot" && target.content)
+        target.content.reader
+          ? openReader(target.content)
+          : say(
+              target.content.link || target.content.url
+                ? "Let's see what's out there."
+                : "There is nothing to open here.",
+            );
       else if (
-        ["Open", "Read"].includes(verb) &&
-        target.kind === "hotspot" &&
-        target.content
-      )
-        say(
-          target.content.link || target.content.url
-            ? "Let's see what's out there."
-            : "There is nothing to open here.",
-        );
-      else if (
-        (verb === "Open" || verb === "Read" || verb === "Take") &&
+        (verb === "Open" || verb === "Take") &&
         target.kind === "content"
       )
         openReader(target.content);
       else if (verb === "Use" && target.kind === "light") {
         const lamp = game.room.lights.find((light) => light.id === target.id);
+        if (lamp.light === "beacon") {
+          say("Too far away.");
+          return;
+        }
         lamp.on = !lamp.on;
         game.sound.event("lamp");
         say(lamp.on ? "Let there be light." : "A little less light.");
@@ -710,6 +781,11 @@ export async function boot({ world, content, element }) {
       }
     }
     function chooseTarget(target, verb, running = false) {
+      verb ||= "Walk to";
+      if (game.room.map) {
+        if (target.kind === "exit") act(target, "Walk to");
+        return;
+      }
       if (game.selectedItem) {
         const item = game.selectedItem;
         game.selectedItem = null;
@@ -720,10 +796,18 @@ export async function boot({ world, content, element }) {
         game.sentenceNotice = sentence;
         return;
       }
-      if (target.kind !== "inventory" && target.book && verb === "Walk to")
+      if (
+        target.kind !== "inventory" &&
+        (target.book || target.board || target.content?.reader) &&
+        verb === "Walk to"
+      )
         verb = "Open";
-      if (!targetVerbs(labels, target).includes(verb)) {
+      if (verb !== "Walk to" && !targetVerbs(labels, target).includes(verb)) {
         say("I can't do that.");
+        return;
+      }
+      if (target.light === "beacon" && verb === "Use") {
+        act(target, verb);
         return;
       }
       if (target.kind === "inventory") {
@@ -733,13 +817,10 @@ export async function boot({ world, content, element }) {
         } else act(target, verb);
         return;
       }
-      if (
-        ["Open", "Read"].includes(verb) &&
-        target.kind === "hotspot" &&
-        target.content
-      ) {
+      if (verb === "Open" && target.kind === "hotspot" && target.content) {
         const url = target.content.link || target.content.url;
-        if (url && !running) window.open(url, "_blank", "noopener,noreferrer");
+        if (url && !target.content.reader && !running)
+          window.open(url, "_blank", "noopener,noreferrer");
       }
       walk(
         target.position,
@@ -806,7 +887,7 @@ export async function boot({ world, content, element }) {
       const [x, y] = point(event);
       if (
         inside(
-          game.activeBook
+          game.activeBook || game.activeBoard
             ? { ...game.soundRect, y: game.room.size[1] - 16 }
             : game.soundRect,
           x,
@@ -818,6 +899,27 @@ export async function boot({ world, content, element }) {
       }
       if (game.menu) {
         chooseMenu(menuHit(game.menu, x, y));
+        return;
+      }
+      if (game.activeBoard) {
+        if (y >= game.room.size[1] - 24) {
+          if (x >= 8 && x < 60) closeBook();
+          return;
+        }
+        const hit = boardHit(
+          game.activeBoard,
+          game.boardPage,
+          game.boardNote,
+          x,
+          y,
+        );
+        if (hit === "back") game.boardNote = null;
+        else if (hit === "go") openReader({ ...game.boardNote, reader: null });
+        else if (hit === "older" || hit === "newer") {
+          game.boardPage += hit === "older" ? 1 : -1;
+          writeHash();
+        } else if (hit) game.boardNote = hit;
+        game.hover = null;
         return;
       }
       if (game.activeBook) {
@@ -848,7 +950,7 @@ export async function boot({ world, content, element }) {
       if (y >= game.verbTop) {
         const cell = game.verbRects.find((rect) => inside(rect, x, y));
         if (cell) {
-          game.verb = cell.label;
+          game.verb = game.verb === cell.label ? null : cell.label;
           game.selectedItem = null;
           game.sentenceNotice = null;
         }
@@ -878,7 +980,7 @@ export async function boot({ world, content, element }) {
         y < game.room.size[1] &&
         game.room.walkable[Math.floor(y) * game.room.size[0] + Math.floor(x)]
       )
-        walk([x, y], null, event.detail >= 2);
+        if (!game.room.map) walk([x, y], null, event.detail >= 2);
     });
     on(document, "click", (event) => {
       if (game.menu && event.target !== canvas) chooseMenu(-1);
@@ -910,6 +1012,13 @@ export async function boot({ world, content, element }) {
               ? menu.verbs.length - 1
               : (menu.selected + menu.verbs.length - 1) % menu.verbs.length;
         if (event.key === "Enter") chooseMenu(menu.selected);
+        return;
+      }
+      if (game.activeBoard) {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closeBook();
+        }
         return;
       }
       if (game.activeBook) {
@@ -946,6 +1055,15 @@ export async function boot({ world, content, element }) {
       }
       if (game.started) {
         if (
+          state.board &&
+          game.room.items.some((item) => item.board?.id === state.board)
+        ) {
+          hideReader(false);
+          openBoard(game.boards[state.board], state.spread, false);
+          return;
+        }
+        game.activeBoard = null;
+        if (
           state.book &&
           (game.room.config.books?.includes(state.book) ||
             game.room.items.some((item) => item.book?.id === state.book) ||
@@ -957,7 +1075,7 @@ export async function boot({ world, content, element }) {
         }
         game.activeBook = null;
         game.turning = null;
-        const item = game.objects.find(
+        const item = [...game.objects, ...game.room.items].find(
           (object) => object.content?.id === state.item,
         )?.content;
         if (item) openReader(item, false);
@@ -977,10 +1095,15 @@ export async function boot({ world, content, element }) {
       if (fullscreen && root.requestFullscreen)
         root.requestFullscreen().catch(() => {});
       root.focus({ preventScroll: true });
-      const item = game.objects.find(
+      const item = [...game.objects, ...game.room.items].find(
         (object) => object.content?.id === initial.item,
       )?.content;
       if (
+        initial.board &&
+        game.room.items.some((item) => item.board?.id === initial.board)
+      )
+        openBoard(game.boards[initial.board], initial.spread);
+      else if (
         initial.book &&
         (game.room.config.books?.includes(initial.book) ||
           game.room.items.some((item) => item.book?.id === initial.book))
@@ -1056,12 +1179,17 @@ export async function boot({ world, content, element }) {
             }
           }
         }
-        if (game.started && !game.readerItem && !game.activeBook) {
+        if (game.started && !game.readerItem) game.elapsed += dt;
+        if (
+          game.started &&
+          !game.readerItem &&
+          !game.activeBook &&
+          !game.activeBoard
+        ) {
           if (!game.timeOverride) {
             const hour = new Date().getHours();
             game.time = hour >= 6 && hour < 20 ? "dusk" : "night";
           }
-          game.elapsed += dt;
           game.actor.clock += dt;
           for (const lamp of game.room.lights) {
             lamp.level +=
@@ -1072,7 +1200,11 @@ export async function boot({ world, content, element }) {
             const burning = ["oil", "candle"].includes(lamp.light);
             lamp.strength =
               lamp.level *
-              (burning ? flame(t) : 0.98 + 0.02 * Math.sin(t * 0.2));
+              (lamp.light === "beacon"
+                ? beacon(game.elapsed)
+                : burning
+                  ? flame(t)
+                  : 0.98 + 0.02 * Math.sin(t * 0.2));
             lamp.drift = burning
               ? [
                   0.65 * game.pixelScale * Math.sin(t * 1.13),
@@ -1168,9 +1300,12 @@ export async function boot({ world, content, element }) {
           lantern: game.lantern,
           bloom: game.bloom,
           reader: game.readerItem?.id || null,
+          board: game.activeBoard?.id || null,
+          page: game.activeBoard ? game.boardPage : null,
+          note: game.activeBoard ? game.boardNote?.id || null : null,
           book: game.activeBook?.id || null,
           spread: game.activeBook ? game.spread : null,
-          position: [game.actor.x, game.actor.y],
+          position: game.room.map ? null : [game.actor.x, game.actor.y],
           walking: game.path.length > 0,
           verb: game.verb,
           inventory: game.inventory.map((item) => item.book.id),

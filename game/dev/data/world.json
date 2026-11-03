@@ -4,15 +4,11 @@
   "start": "stone-house",
   "character": "character/character.json",
   "verbs": [
-    "Open",
-    "Close",
-    "Give",
-    "Take",
     "Look at",
-    "Talk to",
+    "Open",
     "Use",
-    "Read",
-    "Walk to"
+    "Take",
+    "Talk to"
   ],
   "objects": {
     "book": [
@@ -87,6 +83,15 @@
     "effects": 1.0
   },
   "book": "book/book.json",
+  "boards": {
+    "links": {
+      "title": "Notices",
+      "content": {
+        "type": "link"
+      },
+      "board": "board/board.json"
+    }
+  },
   "books": {
     "workstation": {
       "title": "Workstation",
@@ -186,6 +191,16 @@
           "content": {
             "type": "link"
           }
+        },
+        "about": {
+          "content": {
+            "type": "about"
+          }
+        },
+        "talk": {
+          "content": {
+            "type": "talk"
+          }
         }
       }
     },
@@ -194,9 +209,13 @@
       "books": [],
       "hotspots": {
         "noticeboard": {
-          "book": "links"
+          "board": "links"
         }
       }
+    },
+    "map": {
+      "src": "rooms/map/room.json",
+      "books": []
     }
   }
 }

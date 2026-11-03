@@ -7,10 +7,11 @@ export function targetVerbs(verbs, target) {
     if (verb === "Use")
       return ["light", "exit", "inventory"].includes(target.kind);
     if (verb === "Take") return ["book", "content"].includes(target.kind);
-    if (verb === "Open" || verb === "Read")
+    if (verb === "Open")
       return (
         ["book", "content", "inventory"].includes(target.kind) ||
-        (target.kind === "hotspot" && !!(target.content || target.book))
+        (target.kind === "hotspot" &&
+          !!(target.content || target.book || target.board))
       );
     return false;
   });

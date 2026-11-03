@@ -23,11 +23,15 @@
   "states": {
     "dusk": {
       "unlit": "dusk-unlit.png",
-      "lights": {}
+      "lights": {
+        "beacon": "dusk-beacon.png"
+      }
     },
     "night": {
       "unlit": "night-unlit.png",
-      "lights": {}
+      "lights": {
+        "beacon": "night-beacon.png"
+      }
     }
   },
   "items": [
@@ -48,6 +52,20 @@
       "kind": "hotspot",
       "label": "Notice board",
       "color": "#00ffff"
+    },
+    {
+      "id": "island",
+      "kind": "exit",
+      "label": "Island map",
+      "to": "map",
+      "color": "#8000ff"
+    },
+    {
+      "id": "beacon",
+      "kind": "light",
+      "label": "Lighthouse",
+      "light": "beacon",
+      "color": "#ffff00"
     }
   ]
 }

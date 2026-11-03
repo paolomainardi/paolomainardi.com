@@ -1,0 +1,99 @@
+{
+  "name": "lighthouse",
+  "size": [
+    640,
+    360
+  ],
+  "albedo": "albedo.png",
+  "states": {
+    "dusk": {
+      "unlit": "dusk-unlit.png",
+      "lights": {
+        "lens": "dusk-lens.png",
+        "desk-lamp": "dusk-desk-lamp.png"
+      }
+    },
+    "night": {
+      "unlit": "night-unlit.png",
+      "lights": {
+        "lens": "night-lens.png",
+        "desk-lamp": "night-desk-lamp.png"
+      }
+    }
+  },
+  "objects": "objects.png",
+  "items": [
+    {
+      "id": "floor",
+      "kind": "walkable",
+      "color": "#00ff00"
+    },
+    {
+      "id": "desk",
+      "kind": "foreground",
+      "color": "#0000ff"
+    },
+    {
+      "id": "pedestal",
+      "kind": "foreground",
+      "color": "#8000ff"
+    },
+    {
+      "id": "stair-rail",
+      "kind": "foreground",
+      "color": "#ff00ff"
+    },
+    {
+      "id": "lens",
+      "kind": "light",
+      "label": "Lens",
+      "color": "#ffff00",
+      "light": "wall",
+      "tint": "#fffdb4"
+    },
+    {
+      "id": "desk-lamp",
+      "kind": "light",
+      "label": "Desk lamp",
+      "color": "#ffc000",
+      "light": "oil",
+      "tint": "#fdd08e"
+    },
+    {
+      "id": "letter",
+      "kind": "hotspot",
+      "label": "Letter",
+      "color": "#00ffff",
+      "look": "A folded letter. Someone kept it close."
+    },
+    {
+      "id": "logbook",
+      "kind": "hotspot",
+      "label": "Logbook",
+      "color": "#0080ff",
+      "look": "Winds, tides, and long nights."
+    },
+    {
+      "id": "stairs",
+      "kind": "exit",
+      "label": "Stairs",
+      "color": "#ff8000",
+      "to": "map"
+    }
+  ],
+  "water": "water.png",
+  "depth": {
+    "far": [
+      271,
+      0.72
+    ],
+    "near": [
+      300,
+      0.8
+    ]
+  },
+  "spawn": [
+    472,
+    298
+  ]
+}

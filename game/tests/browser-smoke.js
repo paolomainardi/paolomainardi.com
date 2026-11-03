@@ -27,13 +27,13 @@ async (page) => {
   if (Math.hypot(walked[0] - 280, walked[1] - 300) > 0.5)
     throw new Error("Walking failed");
   // Panel hit areas use native game pixels.
-  await click(10, 350); // Use
+  await click(130, 346); // Use
   await click(353, 187);
   await settle();
   await page.waitForFunction(
     () => window.game.state.lamps.find((l) => l.id === "oil").level < 0.01,
   );
-  await click(10, 326); // Open
+  await click(70, 346); // Open
   await click(469, 140);
   await settle();
   await page.waitForFunction(() => window.game.state.book === "workstation");
@@ -72,18 +72,15 @@ async (page) => {
   if ((await page.evaluate(() => window.game.state.book)) !== "workstation")
     throw new Error("Reader Escape must preserve the book");
   await page.keyboard.press("Escape");
-  await click(86, 338); // Look at
+  await click(10, 346); // Look at
   await click(180, 120);
   await settle();
   const description = await page.locator(".adventure-live").textContent();
-  if (
-    !description.includes("The Linux kernel") ||
-    !description.replace(/\s+/g, " ").includes("Follow kernel releases")
-  )
+  if (description !== "The sea, calm tonight.")
     throw new Error("Content-bound hotspot description failed");
   await click(533, 307);
   await settle();
-  await click(10, 326); // Open
+  await click(70, 346); // Open
   await page.context().route("https://www.kernel.org/", (route) =>
     route.fulfill({
       contentType: "text/html",

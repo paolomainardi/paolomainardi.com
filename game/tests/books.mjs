@@ -92,7 +92,7 @@ assert(
 assert(measure(book.fonts.body, "WWW") > measure(book.fonts.body, "iii"));
 assert.deepEqual(
   parseRoute(bookRoute("stone house", "Linux / AI", 2), "start"),
-  { room: "stone house", book: "Linux / AI", spread: 2, item: null },
+  { room: "stone house", board: null, book: "Linux / AI", spread: 2, item: null },
 );
 assert.equal(parseRoute("#%xx/book/linux/2", "start").room, "start");
 assert.equal(parseRoute("#room/book/linux/nope", "start").spread, 0);

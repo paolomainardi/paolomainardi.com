@@ -62,17 +62,7 @@ and must use HTTP(S).
   "palette": "palette.png",
   "start": "stone-house",
   "character": "character/character.json",
-  "verbs": [
-    "Open",
-    "Close",
-    "Give",
-    "Take",
-    "Look at",
-    "Talk to",
-    "Use",
-    "Read",
-    "Walk to"
-  ],
+  "verbs": ["Look at", "Open", "Use", "Take", "Talk to"],
   "objects": { "book": "objects/book.png" },
   "rooms": {
     "stone-house": {
@@ -85,13 +75,13 @@ and must use HTTP(S).
 }
 ```
 
-`verbs` defines the 3×3 grid in row order. Use the nine verbs in the example.
-The panel occupies game rows 308 through 359 in a 640×360 frame, with a sentence
-line above the grid and inventory. Hover and selected verbs use rose. Every hit
-rectangle includes its top and left edges and excludes its bottom and right
-edges. Panel clicks never walk. Runtime pathfinding removes all floor pixels
-under the panel, including when an asset mask marks them walkable.
-Unsupported verb and target combinations give a short spoken response.
+`verbs` defines one row in this order: `Look at`, `Open`, `Use`, `Take`, `Talk to`.
+`Open` also reads. No selected verb means `Walk to`; selecting the same verb again deselects it.
+The panel occupies the bottom 36 game pixels (rows 324 through 359 at 640×360).
+The sentence sits above the verb row on the left and inventory on the right.
+Hover and selected verbs use rose. Hit rectangles include their top and left edges and exclude their bottom and right edges.
+Panel clicks never walk. Runtime pathfinding removes floor pixels under the panel, but permits floor up to its top.
+Unsupported actions give a short response. The right-click menu contains supported verbs from this five-verb list.
 
 **Take** on a topic book adds one inventory copy keyed by book id; the shelf
 keeps its book. Duplicates say "I already have it." Inventory lives only in the
@@ -99,7 +89,7 @@ running game, survives room changes, and uses no browser storage. Each icon
 uses its book sprite divided by the smallest integer that fits its slot; output
 sizes and coordinates are whole pixels. Scroll arrows page through occupied
 slots when the inventory is full. **Look at** describes inventory items;
-**Open** and **Read** open their close-up. **Use** or **Walk to** selects an item;
+**Open** opens its close-up. **Use** or a plain click selects an item;
 the next target forms "Use <item> with <target>" and produces a short response.
 Other verbs also produce a short response.
 
@@ -116,18 +106,15 @@ hotspot's original label and actions unchanged.
 
 A hotspot binding can instead name a book: `"hotspots": { "noticeboard":
 { "book": "links" } }`. `book` takes priority over `content` and must name an
-entry in `world.books`. **Read**, **Open**, or a click with **Walk to** opens the
+entry in `world.books`. **Open** or a plain click opens the
 book after walking to the hotspot. Hotspot books also support book hash routes.
 
-A bound hotspot's label becomes `<hotspot label>: <item title>`. **Look at** says
-the item's title and description, shortened to at most two lines with `...` when
-truncated. **Open** or **Read** calls `window.open(url, "_blank", "noopener,noreferrer")`
-directly during the click, using `link` if present, otherwise `url`. The tab opens
-before the character walks, so the browser retains user activation. After walking
-to the hotspot, the character says "Let's see what's out there." Opening a hotspot
-does not open the article reader or change its hash. Without either URL, the
-character walks over and says there is nothing to open. Loading a room or looking
-at a hotspot never opens a tab.
+A bound hotspot's label becomes `<hotspot label>: <item title>`. **Look at** says the hotspot's own `look` line, falling back to the item's title and description, shortened to two lines.
+If the item has a `reader`, **Open** or a plain click opens the embedded reader after walking to it.
+This applies to `about` and `talk` items as well as posts. Reader hash routes also restore hotspot items.
+Otherwise **Open** calls `window.open(url, "_blank", "noopener,noreferrer")` during the click, using `link` if present, otherwise `url`.
+After walking, the character says "Let's see what's out there." Without either URL, it says there is nothing to open.
+Looking at a hotspot or loading a room never opens a tab.
 
 ## rooms/<name>/room.json (written by the asset builder)
 
@@ -200,7 +187,9 @@ at a hotspot never opens a tab.
 - `slot`: a free place for one content object. The object stands on the bottom
   centre of the painted area.
 - `light`: the painted area is the lamp itself (bulb, flame, glass). `light` is
-  `pendant`, `wall`, `oil`, `desk` or `candle`; oil and candle flicker.
+  `pendant`, `wall`, `oil`, `desk`, `candle` or `beacon`; oil and candle flicker.
+  A beacon stays dark for four seconds, then rises smoothly to full strength and back over one second, repeating every five seconds.
+  It still requires its own lamp drawing in each state. **Use** says "Too far away." without walking or switching it.
 - `depth`: at screen y `far[0]` the character is drawn at scale `far[1]`, at y
   `near[0]` at scale `near[1]`, linear in between.
 - `spawn`: where the character's feet start when no matching entrance exists.
@@ -212,6 +201,11 @@ previous room is the entrance. Arrival uses its nearest walkable point above
 the panel and faces towards the room centre, using the corresponding idle
 animation when supplied. Without a matching entrance, arrival uses the nearest
 walkable point to `spawn`. An exit to an undefined room gives a short response.
+
+A room with `"map": true` is an island map. It needs no `depth`, `spawn` or walkable mask pixels.
+It uses the normal room images and exit mask, draws no character, shadow or carried lantern, and never walks.
+Hovering an exit writes `Go to <label>`; clicking travels immediately with the usual fade.
+Arrival from room `map` uses the destination exit whose `to` is `"map"`, otherwise its `spawn`.
 
 ## character/character.json
 
@@ -359,6 +353,67 @@ The book stays open on the same spread. An entry without either field gives a
 short spoken response.
 
 Spreads use zero-based indices in `#<room>/book/<id>/<spread>`. Page numbers start at 1. Invalid spread indices clamp to the book bounds. Closing the reader preserves the current book and spread. Rooms without `books` keep the single-post object behavior.
+
+## Notice boards
+
+A world board binds content to close-up art. A hotspot uses `board` instead of `book` or `content`:
+
+```json
+{
+  "boards": {
+    "links": {
+      "title": "Notices",
+      "content": { "type": "link" },
+      "board": "board/board.json"
+    }
+  },
+  "rooms": {
+    "harbour": {
+      "src": "rooms/harbour/room.json",
+      "hotspots": { "noticeboard": { "board": "links" } }
+    }
+  }
+}
+```
+
+**Open** or a plain click walks to the hotspot and opens the board. `board` takes priority over other bindings.
+Items sort by date, newest first, regardless of `part`. Board links join the hidden accessible catalogue.
+
+`board/board.json` follows this format. All paths resolve relative to this file. All colours come from `palette.json`:
+
+```json
+{
+  "image": "board.png",
+  "notices": [
+    { "paper": "paper-1.png", "at": [60, 40], "text": [68, 52, 144, 88] }
+  ],
+  "pin": "pin.png",
+  "older": [470, 306, 110, 16],
+  "newer": [60, 306, 110, 16],
+  "note": {
+    "image": "note.png",
+    "text": [115, 42, 410, 224],
+    "go": [115, 287, 100, 18],
+    "back": [445, 287, 60, 18]
+  },
+  "ink": "#1d202f",
+  "faded": "#76645f",
+  "accent": "#8a5650"
+}
+```
+
+- `image` is the empty 640×360 board frame. `notices` supplies six to eight places in reading order. The example shows one place.
+- Each place names a blank paper sprite, its top-left `at`, and an absolute `[x, y, width, height]` text rectangle.
+  The engine draws the paper and a pin at its top centre, followed by the wrapped title and date. Titles truncate with an ellipsis to leave room for the date.
+- Hover lifts the paper, pin and text by one game pixel and tints the paper and title with `accent`.
+- `older` and `newer` are page control rectangles. Each page holds one board-full. A control hides when there is nothing on its side.
+- Clicking a notice draws `note.image`, a 640×360 transparent overlay containing a large paper. Its `text` rectangle holds the title, date and the item's `description` as Paolo's note, wrapped to fit.
+  `go` opens `link` in a new tab with `rel="noopener"`; `back` returns to the same board page.
+- Text uses the book's NF-Pixels font and sizes. Supply `world.book` with the shared font definition.
+
+The route is `#<room>/board/<id>/<page>` with zero-based pages clamped to board bounds.
+The bottom bar's **Close**, right click and Escape return to the room. The bar reserves separate places for Close, one hint or temporary message, and sound.
+A temporary message replaces the hint and expires while the close-up stays open. Book close-ups use the same bar.
 
 ## Sound in world.json
 

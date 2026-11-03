@@ -48,6 +48,7 @@ export function lightSourcesAt(game, x, y) {
       strength: Math.max(...tint) * light.strength,
     };
   });
+  if (game.room.map) return sources;
   const position = game.lanternPosition();
   sources.push({
     position,
@@ -56,4 +57,9 @@ export function lightSourcesAt(game, x, y) {
       falloff(x, y, position, game.lanternRadius) * game.lanternStrength(),
   });
   return sources;
+}
+
+export function beacon(time) {
+  const phase = ((time % 5) + 5) % 5;
+  return phase < 4 ? 0 : Math.sin((phase - 4) * Math.PI) ** 2;
 }

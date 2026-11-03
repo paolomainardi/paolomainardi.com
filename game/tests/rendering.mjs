@@ -58,7 +58,7 @@ const game = {
   panel: layoutPanel([640, 360], ["Open"]),
   inventory: [],
   inventoryOffset: 0,
-  verbTop: 308,
+  verbTop: 324,
   verbScale: 1,
   verb: "Open",
   verbRects: [{ label: "Open", x: 4, y: 170 }],
@@ -79,13 +79,13 @@ for (const mirror of [false, true]) {
   assert.equal(uniforms.uBloom, 1);
   const strips = calls.filter((c) => c.type === "rect");
   assert.equal(strips.length, 1 + game.panel.slots.length);
-  assert.deepEqual(strips[0].args.slice(0, 4), [0, 308, 640, 52]);
+  assert.deepEqual(strips[0].args.slice(0, 4), [0, 324, 640, 36]);
   assert(strips[0].args[4][3] > 0 && strips[0].args[4][3] < 1);
   const sentence = calls.filter(
     (c) => c.type === "text" && c.args[0] === game.sentence(),
   );
   assert.equal(sentence.length, 1, "Sentence stays inside the panel");
-  assert.deepEqual(sentence[0].args.slice(1, 3), [8, 312]);
+  assert.deepEqual(sentence[0].args.slice(1, 3), [8, 328]);
 }
 console.log(
   "Swappable frame, anchor, animation, mirroring, sentence outline, and compact translucent UI passed (mock GPU).",
@@ -124,7 +124,7 @@ for (const text of ["Walk to Window", "word ".repeat(80)]) {
     rows.map((call) => call.args[0]),
     wrap(text, 91, 1),
   );
-  assert(rows.every((call) => call.args[2] === 312));
+  assert(rows.every((call) => call.args[2] === 328));
   game.sentence = sentence;
 }
 
@@ -402,12 +402,12 @@ const iconDraw = calls.find(
   (call) => call.type === "sprite" && call.args[0] === iconItem.sprite.texture,
 );
 assert.deepEqual(iconDraw.args[1], [24, 36]);
-assert.deepEqual(iconDraw.args[2].slice(2), [12, 18]);
+assert.deepEqual(iconDraw.args[2].slice(2), [8, 12]);
 assert(iconDraw.args[2].every(Number.isInteger));
 const selectedColor = calls.find(
   (call) => call.type === "text" && call.args[0] === "Open",
 ).args[3];
-game.verb = "Read";
+game.verb = "Use";
 calls.length = 0;
 renderer.renderPanel(game);
 assert.deepEqual(
@@ -417,3 +417,12 @@ assert.deepEqual(
 console.log(
   "Inventory sprite scaling and shared rose hover/selection colour passed.",
 );
+
+// Map rooms draw neither the character nor its shadow or lantern emission.
+game.room.map = true;
+calls.length = 0;
+renderer.render(game);
+assert(
+  !calls.some((call) => call.type === "sprite" && call.args[0] === texture),
+);
+assert(!calls.some((call) => call.type === "sprite" && call.args[6]?.emission));

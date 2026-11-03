@@ -1,0 +1,43 @@
+{
+  "name": "map",
+  "size": [
+    640,
+    360
+  ],
+  "albedo": "albedo.png",
+  "states": {
+    "dusk": {
+      "unlit": "dusk-unlit.png",
+      "lights": {}
+    },
+    "night": {
+      "unlit": "night-unlit.png",
+      "lights": {}
+    }
+  },
+  "objects": "objects.png",
+  "items": [
+    {
+      "id": "house",
+      "kind": "exit",
+      "label": "Stone house",
+      "to": "stone-house",
+      "color": "#ff8000"
+    },
+    {
+      "id": "harbour",
+      "kind": "exit",
+      "label": "Harbour",
+      "to": "harbour",
+      "color": "#00ffff"
+    },
+    {
+      "id": "lighthouse",
+      "kind": "exit",
+      "label": "Lighthouse",
+      "to": "lighthouse",
+      "color": "#ffff00"
+    }
+  ],
+  "map": true
+}

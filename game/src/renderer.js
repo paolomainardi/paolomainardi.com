@@ -1,3 +1,4 @@
+import { boardEntries } from "./board.js";
 import { inventoryIcon } from "./panel.js";
 import { waterFrame, reflectionPeak } from "./water.js";
 import { TextLayer } from "./text-layer.js";
@@ -51,7 +52,9 @@ export class Renderer {
     this.text(
       game.sound.muted ? "Sound: off" : "Sound: on",
       game.soundRect.x,
-      game.activeBook ? game.room.size[1] - 16 : game.soundRect.y,
+      game.activeBook || game.activeBoard
+        ? game.room.size[1] - 16
+        : game.soundRect.y,
     );
   }
 
@@ -553,7 +556,7 @@ void main(){
         );
       }
     }
-    if (!game.activeBook && !game.menu) return;
+    if (!game.activeBook && !game.activeBoard && !game.menu) return;
     const gl = this.gl;
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -645,15 +648,78 @@ void main(){
         previous,
       );
     }
-    const footerTop = game.room.size[1] - 24;
-    this.rect(0, footerTop, this.size[0], 24, [0.025, 0.03, 0.05, 0.85]);
-    this.text("Close", 8, footerTop + 8);
-    this.soundLabel(game);
-    this.text("or right click, Esc", 44, footerTop + 8, [0.55, 0.52, 0.47, 1]);
-    if (game.sentenceNotice && game.speechUntil > game.elapsed)
-      this.text(wrap(game.sentenceNotice, 64, 1)[0], 160, footerTop + 8);
+    this.renderFooter(game);
     gl.disable(gl.BLEND);
     this.into(this.scene);
+    this.compositeText(game);
+    this.into(null);
+    this.use(this.programs.present);
+    this.bind("uImage", this.scene.texture);
+    this.bind("uGlow", this.black, 1);
+    this.bind("uPalette", this.lut, 2, gl.TEXTURE_3D);
+    this.bind("uGlowCore", this.black, 3);
+    this.uniform("uBloom", 0);
+    this.uniform("uDither", game.world?.dither === true ? 1 : 0);
+    this.uniform("uScale", this.scale);
+    this.draw();
+  }
+  renderFooter(game) {
+    const top = game.room.size[1] - 24;
+    this.rect(0, top, this.size[0], 24, [0.025, 0.03, 0.05, 0.85]);
+    this.text("Close", 8, top + 8);
+    const message =
+      game.sentenceNotice && game.speechUntil > game.elapsed
+        ? game.sentenceNotice
+        : "or right click, Esc";
+    this.text(
+      wrap(message, Math.floor((this.size[0] - 156) / 6), 1)[0],
+      68,
+      top + 8,
+    );
+    this.soundLabel(game);
+  }
+  renderBoard(game) {
+    const gl = this.gl,
+      board = game.activeBoard,
+      art = board.art;
+    gl.disable(gl.BLEND);
+    this.into(this.scene);
+    const draw = (path, at = [0, 0], lift = 0, tint) => {
+      const sprite = art.sprites[path];
+      this.sprite(
+        sprite.texture,
+        sprite.size,
+        [at[0], at[1] - lift, ...sprite.size],
+        undefined,
+        tint,
+      );
+    };
+    draw(art.image);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    for (const entry of boardEntries(board, game.boardPage)) {
+      const lift = Number(!game.boardNote && game.hover === entry.item);
+      const rgb = art.accent.match(/\w\w/g).map((c) => parseInt(c, 16) / 255);
+      draw(
+        entry.paper,
+        entry.at,
+        lift,
+        lift ? rgb.map((c) => 0.85 + c * 0.15).concat(1) : undefined,
+      );
+      const paper = art.sprites[entry.paper],
+        pin = art.sprites[art.pin];
+      draw(
+        art.pin,
+        [
+          entry.at[0] + Math.floor((paper.size[0] - pin.size[0]) / 2),
+          entry.at[1],
+        ],
+        lift,
+      );
+    }
+    if (game.boardNote) draw(art.note.image);
+    this.renderFooter(game);
+    gl.disable(gl.BLEND);
     this.compositeText(game);
     this.into(null);
     this.use(this.programs.present);
@@ -691,6 +757,10 @@ void main(){
     this.scale = scale;
   }
   render(game) {
+    if (game.activeBoard) {
+      this.renderBoard(game);
+      return;
+    }
     if (game.activeBook) {
       this.renderBook(game);
       return;
@@ -720,47 +790,49 @@ void main(){
         [0.75 + light * 0.25, 0.73 + light * 0.27, 0.73 + light * 0.25, 1],
       );
     }
-    const actor = game.actor,
-      scale = game.depth(),
-      lamp = game.nearestLamp();
-    const dx = lamp ? actor.x - lamp.position[0] : 10,
-      dy = lamp ? actor.y - lamp.position[1] : 8,
-      len = Math.hypot(dx, dy) || 1;
-    this.use(this.programs.shadow);
-    this.uniform("uShadow", [
-      actor.x,
-      actor.y,
-      (dx / len) * game.character.frame[0] * 0.7 * scale,
-      (dy / len) * game.character.frame[1] * 0.2 * scale,
-    ]);
-    this.uniform("uShadowSize", [
-      game.character.frame[0] * 0.28 * scale,
-      game.character.frame[1] * 0.06 * scale,
-    ]);
-    this.draw();
-    const animation = game.character.animations[actor.animation],
+    let rect, frame, animation;
+    const actor = game.actor;
+    if (!game.room.map) {
+      const scale = game.depth(),
+        lamp = game.nearestLamp();
+      const dx = lamp ? actor.x - lamp.position[0] : 10,
+        dy = lamp ? actor.y - lamp.position[1] : 8,
+        len = Math.hypot(dx, dy) || 1;
+      this.use(this.programs.shadow);
+      this.uniform("uShadow", [
+        actor.x,
+        actor.y,
+        (dx / len) * game.character.frame[0] * 0.7 * scale,
+        (dy / len) * game.character.frame[1] * 0.2 * scale,
+      ]);
+      this.uniform("uShadowSize", [
+        game.character.frame[0] * 0.28 * scale,
+        game.character.frame[1] * 0.06 * scale,
+      ]);
+      this.draw();
+      animation = game.character.animations[actor.animation];
       frame = (animation.start || 0) + animationFrame(actor, animation);
-    const sources = game.lightSourcesAt(actor.x, actor.y),
-      brightest = sources.reduce(
-        (best, light) =>
-          light.strength > (best?.strength || 0) ? light : best,
-        null,
-      ),
-      tint = [0, 1, 2].map(
-        (channel) =>
-          0.7 +
-          0.3 *
-            Math.min(
-              1,
-              sources.reduce(
-                (sum, light) =>
-                  sum +
-                  (light.strength * light.tint[channel]) /
-                    Math.max(...light.tint, 0.001),
-                0,
+      const sources = game.lightSourcesAt(actor.x, actor.y),
+        brightest = sources.reduce(
+          (best, light) =>
+            light.strength > (best?.strength || 0) ? light : best,
+          null,
+        ),
+        tint = [0, 1, 2].map(
+          (channel) =>
+            0.7 +
+            0.3 *
+              Math.min(
+                1,
+                sources.reduce(
+                  (sum, light) =>
+                    sum +
+                    (light.strength * light.tint[channel]) /
+                      Math.max(...light.tint, 0.001),
+                  0,
+                ),
               ),
-            ),
-      ),
+        );
       rect = [
         Math.round(
           actor.x -
@@ -773,23 +845,24 @@ void main(){
         Math.round(game.character.frame[0] * scale),
         Math.round(game.character.frame[1] * scale),
       ];
-    this.sprite(
-      game.character.texture,
-      game.character.size,
-      rect,
-      [
-        frame * game.character.frame[0],
-        animation.row * game.character.frame[1],
-        ...game.character.frame,
-      ],
-      [...tint, 1],
-      actor.mirror,
-      brightest
-        ? Math.sign(brightest.position[0] - actor.x) *
-            Math.min(1, brightest.strength * 1.5)
-        : 0,
-      { game },
-    );
+      this.sprite(
+        game.character.texture,
+        game.character.size,
+        rect,
+        [
+          frame * game.character.frame[0],
+          animation.row * game.character.frame[1],
+          ...game.character.frame,
+        ],
+        [...tint, 1],
+        actor.mirror,
+        brightest
+          ? Math.sign(brightest.position[0] - actor.x) *
+              Math.min(1, brightest.strength * 1.5)
+          : 0,
+        { game },
+      );
+    }
     this.use(this.programs.room);
     this.lighting(game);
     this.integer("uFront", 1);
@@ -800,7 +873,7 @@ void main(){
       margin = width / 80,
       sentenceY = 9 * pixelScale;
     this.renderPanel(game);
-    if (game.speech && game.speechUntil > game.elapsed) {
+    if (!game.room.map && game.speech && game.speechUntil > game.elapsed) {
       const lines = game.speechLines,
         top = Math.max(
           sentenceY + 8 * pixelScale,
@@ -830,7 +903,7 @@ void main(){
     this.use(this.programs.glow);
     this.lighting(game);
     this.draw();
-    if (game.character.glowTexture) {
+    if (!game.room.map && game.character.glowTexture) {
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.ONE, gl.ONE);
       this.sprite(
@@ -879,7 +952,7 @@ void main(){
     const width = game.room.size[0],
       top = game.verbTop;
     const accent = [0.9, 0.64, 0.7, 1];
-    this.rect(0, top, width, 52, [0.025, 0.03, 0.05, 0.88]);
+    this.rect(0, top, width, 36, [0.025, 0.03, 0.05, 0.88]);
     this.text(
       wrap(game.sentence(), Math.floor((width - 92) / 6), 1)[0],
       8,
@@ -916,9 +989,9 @@ void main(){
         );
     });
     if (game.inventoryOffset > 0)
-      this.text("<", game.panel.previous.x + 4, top + 29, accent);
+      this.text("<", game.panel.previous.x + 4, top + 21, accent);
     if (game.inventoryOffset + game.panel.slots.length < game.inventory.length)
-      this.text(">", game.panel.next.x + 4, top + 29, accent);
+      this.text(">", game.panel.next.x + 4, top + 21, accent);
   }
   destroy() {
     const gl = this.gl;

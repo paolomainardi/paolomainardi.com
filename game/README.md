@@ -27,18 +27,18 @@ Paths follow [CONTRACT.md](CONTRACT.md), including reader URLs relative to `cont
 
 ## Verb panel and inventory
 
-The dark, translucent panel occupies the bottom 52 pixels of the 640×360 frame.
-Its sentence line sits above a 3×3 verb grid on the left and inventory icons on
-the right. The grid follows `world.verbs` in row order: Open, Close, Give; Take,
-Look at, Talk to; Use, Read, Walk to. Hover and selected verbs use rose.
-Panel clicks never move the character, and paths stay above the panel.
+The dark, translucent panel occupies the bottom 36 pixels of the 640×360 frame.
+Its sentence line sits above five verbs on the left and inventory on the right:
+**Look at**, **Open**, **Use**, **Take**, **Talk to**. **Open** also reads.
+With no verb selected, clicks use **Walk to**. Click the selected verb again to deselect it.
+Hover and selected verbs use rose. Panel clicks never walk, and floor can reach the panel's top.
 Unsupported actions say "I can't do that."
 
 **Take** copies a topic book into the session inventory while leaving its shelf
 copy in place. Taking it again says "I already have it." Icons use each book's
 sprite, reduced by an integer divisor into whole pixels. Arrows scroll full
-inventories. **Look at** describes an item; **Open** or **Read** opens its book.
-Select **Use** or **Walk to**, click an inventory item, then a target to form
+inventories. **Look at** describes an item; **Open** opens its book.
+Select **Use** or leave the verb unselected, click an inventory item, then a target to form
 "Use <item> with <target>" and hear a short response. Other verbs give a short
 response. Inventory survives room changes and clears when the game is restarted.
 It uses no browser storage.
@@ -65,7 +65,7 @@ Series books sort by part; other topics sort by newest date. Books contain posts
 unless their filter sets another content type, such as `"type": "link"`.
 The window still opens the newest link.
 
-Click a book with **Walk to**, or choose **Open** or **Read**, to walk over and open its close-up. **Look at**
+Click a book with no verb selected, or choose **Open**, to walk over and open its close-up. **Look at**
 says the title and entry count. The first page shows the title and count, followed
 by post titles and dates. Titles wrap to two lines with an ellipsis. NF-Pixels uses 10 px body text with 13 px line height and 20 px titles.
 Entries have half a line of spacing, rounded to 7 game pixels. Font metrics fill
@@ -106,11 +106,9 @@ Bind room hotspots to content in `world.json`:
 
 The id refers to a hotspot in that room's `room.json`. Filters follow slot rules,
 but hotspots select the newest matching item by `date`, regardless of `part`.
-The label includes the item's title. **Look at** gives the title and note in at
-most two lines. **Open** opens `link`, or `url` when `link` is absent, in a new tab
+The label includes the item's title. **Look at** gives the hotspot’s own `look` line, falling back to the title and note in at most two lines. For items without a reader, **Open** opens `link`, or `url` when `link` is absent, in a new tab
 directly from the click with `noopener,noreferrer`. The character then walks to
-the hotspot and says "Let's see what's out there." Article books still use the
-embedded reader. Unbound hotspots and filters without matches keep their original
+the hotspot and says "Let's see what's out there." A bound item with a `reader`, including `about` and `talk`, opens the embedded reader with **Open** or a plain click. Unbound hotspots and filters without matches keep their original
 behavior. Link items carry the external URL in `link` and their note in
 `description`; content URLs resolve relative to `content.json` and require HTTP(S).
 The placeholder and real-art demo worlds bind the window to two sample links.
@@ -121,7 +119,7 @@ A hotspot can instead open a whole book:
 "hotspots": { "noticeboard": { "book": "links" } }
 ```
 
-The book id names `world.books`. **Read**, **Open**, or a click with **Walk to**
+The book id names `world.books`. **Open** or a click with no verb selected
 walks to the hotspot and opens that book. The second placeholder room, the
 harbour, has a notice board bound to a links book. Clicking an entry without a
 `reader` opens its `link` in a new tab with `rel="noopener"` and shows
@@ -151,6 +149,25 @@ The renderer uses the largest whole pixel scale that fits, centred with black ba
 - `dev/reader/`: readable sample articles.
 - `tools/make_placeholders.py`: regenerates demo data and `src/reader-frame.png` using Pillow and NumPy.
 - `tests/`: logic, asset, shader, simulated interaction, and browser checks.
+
+## Notice board, map and beacons
+
+The placeholder harbour has a notice board. Open it or click with no verb selected.
+Notices show titles and dates; hover lifts and accents a paper. Click to read Paolo's note, then choose **Go there** to open its link safely in a new tab.
+**Back** returns to the same page. **Older notices** and **Newer notices** page through the links.
+The route `#harbour/board/links/0` restores the board after Start. Board links also appear in the hidden accessible catalogue.
+
+Close boards and books with the bottom bar's **Close**, right click or Escape.
+Temporary messages replace the bar hint and expire without overlapping Close or sound.
+The placeholders live in `dev/data/board/`; their data format is in [CONTRACT.md](CONTRACT.md#notice-boards).
+
+Choose **Island map** in the study or harbour to visit the placeholder map.
+Map rooms set `"map": true`, draw no character or carried lantern, and do not walk.
+Hover a place to see **Go to <label>**, then click to travel with a fade.
+Arrival uses the destination exit back to the map, falling back to `spawn` when none exists.
+
+The harbour's lighthouse uses `light: "beacon"`: four seconds dark, then a smooth one-second flash, repeating every five seconds.
+**Use** says "Too far away." Found **about** and **talk** papers in the study open in the reader; **Look at** keeps their own descriptions.
 
 ## Sound
 
@@ -195,6 +212,7 @@ Checks:
 node tests/sound.mjs # mock AudioContext, mixing, spatial sound, fades, events and missing files
 node tests/panel.mjs # panel grid, boundaries and inventory icon sizing
 node tests/verb-menu.mjs # target verbs, edge placement, row hits
+node tests/board.mjs # board layout, paging, note view, footer replacement and beacon timing
 node tests/books.mjs # layout, routes, entry hits, font loading
 node tests/logic.mjs
 node tests/water.mjs # integer swell, mask bounds, glitter and reduced motion

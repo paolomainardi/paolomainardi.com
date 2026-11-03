@@ -4,15 +4,11 @@
   "start": "stone-house",
   "character": "character/character.json",
   "verbs": [
-    "Open",
-    "Close",
-    "Give",
-    "Take",
     "Look at",
-    "Talk to",
+    "Open",
     "Use",
-    "Read",
-    "Walk to"
+    "Take",
+    "Talk to"
   ],
   "objects": {
     "book": [
@@ -63,7 +59,7 @@
       "books": [],
       "hotspots": {
         "noticeboard": {
-          "book": "links"
+          "board": "links"
         }
       },
       "ambience": {
@@ -77,6 +73,61 @@
           {
             "sound": "sea",
             "at": "boat"
+          },
+          {
+            "sound": "wind"
+          }
+        ]
+      }
+    },
+    "lighthouse": {
+      "src": "rooms/lighthouse/room.json",
+      "books": [],
+      "hotspots": {
+        "letter": {
+          "content": {
+            "type": "about"
+          }
+        },
+        "logbook": {
+          "content": {
+            "type": "talk"
+          }
+        }
+      },
+      "ambience": {
+        "dusk": [
+          {
+            "sound": "sea"
+          }
+        ],
+        "night": [
+          {
+            "sound": "sea"
+          },
+          {
+            "sound": "wind"
+          },
+          {
+            "sound": "flame",
+            "at": "desk-lamp",
+            "light": "desk-lamp"
+          }
+        ]
+      }
+    },
+    "map": {
+      "src": "rooms/map/room.json",
+      "books": [],
+      "ambience": {
+        "dusk": [
+          {
+            "sound": "sea"
+          }
+        ],
+        "night": [
+          {
+            "sound": "sea"
           },
           {
             "sound": "wind"
@@ -138,13 +189,6 @@
         ]
       },
       "sprite": "objects/book-6.png"
-    },
-    "links": {
-      "title": "Links",
-      "content": {
-        "type": "link"
-      },
-      "sprite": "objects/book-1.png"
     }
   },
   "sounds": {
@@ -215,5 +259,14 @@
     "master": 0.5,
     "ambience": 0.8,
     "effects": 1.0
+  },
+  "boards": {
+    "links": {
+      "title": "Notices",
+      "content": {
+        "type": "link"
+      },
+      "board": "board/board.json"
+    }
   }
 }

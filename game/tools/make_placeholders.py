@@ -64,6 +64,46 @@ def generate_book():
     if not real.exists():
         shutil.copytree(folder, real)
 
+def generate_board_and_map():
+    folder = DATA / 'board'
+    folder.mkdir(parents=True, exist_ok=True)
+    board = Image.new('RGB', ROOM_SIZE, COLORS[14])
+    draw = ImageDraw.Draw(board)
+    draw.rectangle((40, 20, 600, 310), fill=COLORS[6])
+    draw.rectangle((48, 28, 592, 302), fill=COLORS[7])
+    draw.rectangle((65, 307, 80, 335), fill=COLORS[6])
+    draw.rectangle((560, 307, 575, 335), fill=COLORS[6])
+    board.save(folder / 'board.png')
+    Image.new('RGBA', (160, 112), COLORS[11]).save(folder / 'paper.png')
+    Image.new('RGBA', (5, 5), COLORS[21]).save(folder / 'pin.png')
+    note = Image.new('RGBA', ROOM_SIZE)
+    ImageDraw.Draw(note).rectangle((90, 20, 550, 318), fill=COLORS[11])
+    note.save(folder / 'note.png')
+    save_json(folder / 'board.json', dict(image='board.png', pin='pin.png',
+        notices=[dict(paper='paper.png', at=[60 + col * 180, 40 + row * 128],
+            text=[68 + col * 180, 52 + row * 128, 144, 88]) for row in range(2) for col in range(3)],
+        older=[470, 306, 110, 16], newer=[60, 306, 110, 16],
+        note=dict(image='note.png', text=[115, 42, 410, 224], go=[115, 287, 100, 18], back=[445, 287, 60, 18]),
+        ink=COLORS[1], faded=COLORS[6], accent=COLORS[21]))
+    folder = DATA / 'rooms/map'
+    folder.mkdir(parents=True, exist_ok=True)
+    chart = Image.new('RGB', ROOM_SIZE, COLORS[14])
+    draw = ImageDraw.Draw(chart)
+    draw.ellipse((70, 30, 570, 300), fill=COLORS[17])
+    draw.rectangle((170, 100, 220, 145), fill=COLORS[6])
+    draw.rectangle((400, 200, 460, 245), fill=COLORS[7])
+    chart.save(folder / 'albedo.png')
+    mask = Image.new('RGB', ROOM_SIZE)
+    draw = ImageDraw.Draw(mask)
+    draw.rectangle((170, 100, 220, 145), fill='#ff8000')
+    draw.rectangle((400, 200, 460, 245), fill='#00ffff')
+    mask.save(folder / 'objects.png')
+    save_json(folder / 'room.json', dict(name='Island', size=list(ROOM_SIZE), map=True,
+        albedo='albedo.png', objects='objects.png',
+        states={s: dict(unlit='albedo.png', lights={}) for s in ['dusk', 'night']},
+        items=[dict(id='study', kind='exit', label='Study', to='stone-house', color='#ff8000'),
+               dict(id='harbour', kind='exit', label='Harbour', to='harbour', color='#00ffff')]))
+
 def generate():
     room_dir = DATA / 'rooms/stone-house'
     char_dir = DATA / 'character'
@@ -145,7 +185,12 @@ def generate():
     m.rectangle((116, 63, 176, 123), fill='#00ffff')
     items.append(dict(id='window', kind='hotspot', label='Window', look='The sea, calm tonight.', color='#00ffff'))
     objects = objects.resize(ROOM_SIZE, Image.Resampling.NEAREST)
-    ImageDraw.Draw(objects).rectangle((0, 308, 639, 359), fill='#000000')
+    for name, color, rect in [('about', '#00ff80', (270, 170, 290, 185)), ('talk', '#0080ff', (300, 170, 320, 185))]:
+        items.append(dict(id=name, kind='hotspot', label=f'{name.title()} paper', look=f'A found {name} paper.', color=color))
+        ImageDraw.Draw(objects).rectangle(rect, fill=color)
+    items.append(dict(id='island', kind='exit', label='Island map', to='map', color='#8000ff'))
+    ImageDraw.Draw(objects).rectangle((5, 280, 25, 305), fill='#8000ff')
+    ImageDraw.Draw(objects).rectangle((0, 324, 639, 359), fill='#000000')
     objects.save(room_dir / 'objects.png')
     water = Image.new('RGB', DRAWING_SIZE)
     w = ImageDraw.Draw(water)
@@ -178,17 +223,25 @@ def generate():
     quantize(np.array(scene) * 0.5).save(harbour / 'night-unlit.png')
     mask = Image.new('RGB', ROOM_SIZE)
     hm = ImageDraw.Draw(mask)
-    hm.rectangle((0, 245, 639, 307), fill='#00ff00')
+    hm.rectangle((0, 245, 639, 323), fill='#00ff00')
     hm.rectangle((532, 95, 612, 244), fill='#ff8000')
     hm.rectangle((240, 110, 390, 204), fill='#00ffff')
+    hm.rectangle((10, 275, 30, 300), fill='#8000ff')
+    hm.rectangle((90, 60, 98, 70), fill='#ffff00')
     mask.save(harbour / 'objects.png')
+    for state in ['dusk', 'night']:
+        lit = Image.open(harbour / f'{state}-unlit.png').copy()
+        ImageDraw.Draw(lit).ellipse((80, 50, 108, 80), fill=COLORS[25])
+        lit.save(harbour / f'{state}-beacon.png')
     save_json(harbour / 'room.json', dict(name='harbour', size=list(ROOM_SIZE),
         albedo='albedo.png', objects='objects.png', spawn=[320, 280],
         depth=dict(far=[245, 0.7], near=[307, 1.0]),
-        states={s: dict(unlit=f'{s}-unlit.png', lights={}) for s in ('dusk', 'night')},
+        states={s: dict(unlit=f'{s}-unlit.png', lights={'beacon': f'{s}-beacon.png'}) for s in ('dusk', 'night')},
         items=[dict(id='floor', kind='walkable', color='#00ff00'),
                dict(id='study-door', kind='exit', label='Study door', to='stone-house', color='#ff8000'),
-               dict(id='noticeboard', kind='hotspot', label='Notice board', color='#00ffff')]))
+               dict(id='noticeboard', kind='hotspot', label='Notice board', color='#00ffff'),
+               dict(id='island', kind='exit', label='Island map', to='map', color='#8000ff'),
+               dict(id='beacon', kind='light', label='Lighthouse', light='beacon', color='#ffff00')]))
     sheet = Image.new('RGBA', (192, 240))
     s = ImageDraw.Draw(sheet)
     glow = Image.new('RGBA', sheet.size)
@@ -237,6 +290,7 @@ def generate():
     for direction, row in [('side', 1), ('back', 3)]:
         character['animations'][f'idle-{direction}'] = dict(row=row, frames=1, fps=1)
     save_json(char_dir / 'character.json', character)
+    generate_board_and_map()
     generate_book()
     books = []
     for name, dark, light in [('book', 20, 22), ('book-green', 14, 16), ('book-blue', 28, 29)]:
@@ -256,11 +310,12 @@ def generate():
         f.rectangle((inset, inset, 11-inset, 11-inset), outline=COLORS[color])
     frame.save(ROOT.parent / 'src/reader-frame.png')
     save_json(DATA / 'world.json', dict(title='The engineer\'s study', palette='palette.png', start='stone-house',
-        character='character/character.json', verbs=['Open', 'Close', 'Give', 'Take', 'Look at', 'Talk to', 'Use', 'Read', 'Walk to'], objects=dict(book=books),
+        character='character/character.json', verbs=['Look at', 'Open', 'Use', 'Take', 'Talk to'], objects=dict(book=books),
         sounds={'sea': {'synth': 'surf', 'volume': 0.5, 'loop': True}, 'wind': {'synth': 'wind', 'volume': 0.3, 'loop': True}, 'flame': {'synth': 'crackle', 'volume': 0.25, 'loop': True}, 'step': {'synth': 'step', 'volume': 0.9}, 'page': {'synth': 'page', 'volume': 0.6}, 'click': {'synth': 'click', 'volume': 0.4}, 'door': {'synth': 'creak', 'volume': 0.5}, 'flare': {'synth': 'whoosh', 'volume': 0.5, 'params': {'frequency': 900, 'duration': 0.35}}, 'gust': {'synth': 'whoosh', 'volume': 0.4, 'params': {'frequency': 350, 'duration': 1.2}}},
         events={'step': 'step', 'page-turn': 'page', 'book-open': 'page', 'book-close': 'page', 'lamp': 'click', 'menu': 'click', 'door': 'door', 'lantern': 'flare', 'time': 'gust'},
         mix={'master': 0.5, 'ambience': 0.8, 'effects': 1.0},
         book='book/book.json',
+        boards={'links': dict(title='Notices', content=dict(type='link'), board='board/board.json')},
         books={key: dict(title=title, content=content, sprite=books[i % len(books)])
                for i, (key, title, content) in enumerate([
                    ('workstation', 'Workstation', dict(series='workstation')),
@@ -273,9 +328,11 @@ def generate():
         rooms={'stone-house': dict(src='rooms/stone-house/room.json', books=['workstation', 'linux', 'ai', 'docker', 'security', 'personal'],
             ambience=dict(dusk=[dict(sound='sea', at='window')],
                 night=[dict(sound='sea', at='window'), dict(sound='wind'), dict(sound='flame', at='oil', light='oil')]),
-            hotspots=dict(window=dict(content=dict(type='link')))),
+            hotspots=dict(window=dict(content=dict(type='link')),
+                about=dict(content=dict(type='about')), talk=dict(content=dict(type='talk')))),
             'harbour': dict(src='rooms/harbour/room.json', books=[],
-                hotspots=dict(noticeboard=dict(book='links')))}))
+                hotspots=dict(noticeboard=dict(board='links'))),
+            'map': dict(src='rooms/map/room.json', books=[])}))
     titles = ['A room of one\'s own', 'Choosing the hardware', 'Linux on the desk', 'Containers at home', 'A quieter workstation', 'The finished build']
     content = []
     for i, title in enumerate(titles, 1):
@@ -307,6 +364,10 @@ def generate():
              description='Follow kernel releases and development.', date='2026-10-25',
              tags=['linux'], link='https://www.kernel.org/', url='/links/linux-kernel/'),
     ])
+    for kind in ['about', 'talk']:
+        content.append(dict(id=f'found-{kind}', type=kind, title=f'Found {kind} paper',
+            description=f'A {kind} paper from the study.', date='2026-11-01',
+            reader='../reader/workstation-1.html', url='../reader/workstation-1.html'))
     save_json(DATA / 'content.json', dict(items=content))
     print(f'Generated placeholder assets, book close-up, 22 posts and two links in {ROOT}')
 

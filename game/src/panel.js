@@ -1,23 +1,23 @@
 export function layoutPanel([width, height], verbs) {
-  const top = height - 52;
-  const capacity = Math.max(1, Math.floor((width - 280) / 40));
+  const top = height - 36;
+  const capacity = Math.max(1, Math.floor((width - 344) / 32));
   return {
     top,
     verbs: verbs.map((label, i) => ({
       label,
-      x: 8 + (i % 3) * 76,
-      y: top + 16 + Math.floor(i / 3) * 12,
-      width: 76,
+      x: 8 + i * 60,
+      y: top + 20,
+      width: 60,
       height: 12,
     })),
     slots: Array.from({ length: capacity }, (_, i) => ({
-      x: 252 + i * 40,
+      x: 324 + i * 32,
       y: top + 16,
-      width: 36,
-      height: 34,
+      width: 28,
+      height: 18,
     })),
-    previous: { x: 236, y: top + 16, width: 16, height: 34 },
-    next: { x: width - 24, y: top + 16, width: 16, height: 34 },
+    previous: { x: 308, y: top + 16, width: 16, height: 18 },
+    next: { x: width - 24, y: top + 16, width: 16, height: 18 },
     sound: { x: width - 74, y: top + 4, width: 66, height: 8 },
   };
 }

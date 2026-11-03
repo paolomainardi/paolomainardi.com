@@ -11,14 +11,16 @@
       "unlit": "dusk-unlit.png",
       "lights": {
         "street-lamp": "dusk-street-lamp.png",
-        "door-lantern": "dusk-door-lantern.png"
+        "door-lantern": "dusk-door-lantern.png",
+        "beacon": "dusk-beacon.png"
       }
     },
     "night": {
       "unlit": "night-unlit.png",
       "lights": {
         "street-lamp": "night-street-lamp.png",
-        "door-lantern": "night-door-lantern.png"
+        "door-lantern": "night-door-lantern.png",
+        "beacon": "night-beacon.png"
       }
     }
   },
@@ -82,6 +84,21 @@
       "id": "cargo",
       "kind": "foreground",
       "color": "#8000ff"
+    },
+    {
+      "id": "beacon",
+      "kind": "light",
+      "color": "#ff8080",
+      "light": "beacon",
+      "label": "Lighthouse",
+      "tint": "#fffdb4"
+    },
+    {
+      "id": "path",
+      "kind": "exit",
+      "color": "#ff4000",
+      "to": "map",
+      "label": "Island path"
     }
   ],
   "depth": {

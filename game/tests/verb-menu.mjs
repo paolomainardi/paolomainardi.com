@@ -3,14 +3,14 @@ import { readFileSync } from "node:fs";
 import { bookFonts } from "../src/book.js";
 import { context2D } from "./text-fixture.mjs";
 import { targetVerbs, layoutMenu, menuHit } from "../src/verb-menu.js";
-const verbs = ["Walk to", "Look at", "Open", "Use", "Talk to", "Take"];
+const verbs = ["Look at", "Open", "Use", "Take", "Talk to"];
 for (const [target, expected] of [
-  [{ kind: "hotspot" }, ["Walk to", "Look at"]],
-  [{ kind: "hotspot", content: {} }, ["Walk to", "Look at", "Open"]],
-  [{ kind: "light" }, ["Walk to", "Look at", "Use"]],
-  [{ kind: "exit" }, ["Walk to", "Look at", "Use"]],
-  [{ kind: "content" }, ["Walk to", "Look at", "Open", "Take"]],
-  [{ kind: "book" }, ["Walk to", "Look at", "Open", "Take"]],
+  [{ kind: "hotspot" }, ["Look at"]],
+  [{ kind: "hotspot", content: {} }, ["Look at", "Open"]],
+  [{ kind: "light" }, ["Look at", "Use"]],
+  [{ kind: "exit" }, ["Look at", "Use"]],
+  [{ kind: "content" }, ["Look at", "Open", "Take"]],
+  [{ kind: "book" }, ["Look at", "Open", "Take"]],
 ]) {
   assert.deepEqual(targetVerbs(verbs, target), expected);
   assert.deepEqual(
@@ -55,27 +55,19 @@ console.log(
   "Target verbs, world ordering, edge placement, font layouts and row hits passed.",
 );
 
-const newVerbs = [
-  "Open",
-  "Close",
-  "Give",
-  "Take",
-  "Look at",
-  "Talk to",
-  "Use",
-  "Read",
-  "Walk to",
-];
+const newVerbs = ["Open", "Close", "Give", "Take", "Look at", "Talk to", "Use"];
 assert.deepEqual(targetVerbs(newVerbs, { kind: "hotspot", book: {} }), [
   "Open",
   "Look at",
-  "Read",
-  "Walk to",
 ]);
 assert.deepEqual(targetVerbs(newVerbs, { kind: "inventory" }), [
   "Open",
   "Look at",
   "Use",
-  "Read",
-  "Walk to",
 ]);
+
+assert.deepEqual(targetVerbs(verbs, { kind: "hotspot", board: {} }), [
+  "Look at",
+  "Open",
+]);
+assert(!targetVerbs(["Close", "Give", "Read"], { kind: "content" }).length);

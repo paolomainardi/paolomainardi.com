@@ -1,0 +1,36 @@
+{
+  "name": "Island",
+  "size": [
+    640,
+    360
+  ],
+  "map": true,
+  "albedo": "albedo.png",
+  "objects": "objects.png",
+  "states": {
+    "dusk": {
+      "unlit": "albedo.png",
+      "lights": {}
+    },
+    "night": {
+      "unlit": "albedo.png",
+      "lights": {}
+    }
+  },
+  "items": [
+    {
+      "id": "study",
+      "kind": "exit",
+      "label": "Study",
+      "to": "stone-house",
+      "color": "#ff8000"
+    },
+    {
+      "id": "harbour",
+      "kind": "exit",
+      "label": "Harbour",
+      "to": "harbour",
+      "color": "#00ffff"
+    }
+  ]
+}

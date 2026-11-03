@@ -162,10 +162,13 @@ export function parseRoute(hash, start) {
     const parts = hash.replace(/^#/, "").split("/");
     return {
       room: decodeURIComponent(parts[0] || start),
+      board: parts[1] === "board" ? decodeURIComponent(parts[2] || "") : null,
       book: parts[1] === "book" ? decodeURIComponent(parts[2] || "") : null,
       spread: /^\d+$/.test(parts[3] || "") ? Number(parts[3]) : 0,
       item:
-        parts[1] && parts[1] !== "book" ? decodeURIComponent(parts[1]) : null,
+        parts[1] && !["book", "board"].includes(parts[1])
+          ? decodeURIComponent(parts[1])
+          : null,
     };
   } catch {
     return { room: start, book: null, spread: 0, item: null };

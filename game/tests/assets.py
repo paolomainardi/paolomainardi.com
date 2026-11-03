@@ -42,7 +42,7 @@ for room_id, config in world['rooms'].items():
         assert np.any(np.all(mask == color, axis=2)), item['id']
         assert 'pool' not in item
     assert sum(i['kind'] == 'slot' for i in room['items']) == (6 if room_id == 'stone-house' else 0)
-    assert not np.any(np.all(mask[308:] == (0, 255, 0), axis=2))
+    assert not np.any(np.all(mask[324:] == (0, 255, 0), axis=2))
 character_path = data / world['character']
 character = load(character_path)
 sheet = Image.open(character_path.parent / character['sheet']).convert('RGBA')
@@ -144,5 +144,33 @@ for folder in [data / 'book', real / 'book']:
 shelf = real_world['rooms']['stone-house']['books']
 assert shelf == ['workstation', 'linux', 'ai', 'docker', 'security', 'personal']
 assert [real_world['books'][b]['sprite'] for b in shelf] == [f'objects/book-{i}.png' for i in range(1, 7)]
-assert real_world['rooms']['harbour']['hotspots']['noticeboard']['book'] == 'links'
+assert real_world['rooms']['harbour']['hotspots']['noticeboard']['board'] == 'links'
+assert set(real_world['rooms']) >= {'stone-house', 'harbour', 'lighthouse', 'map'}
 print('Book frame, turn strip, NF-Pixels and OFL licence, sizes, palette curls, and real shelf order passed.')
+
+assert world['verbs'] == ['Look at', 'Open', 'Use', 'Take', 'Talk to']
+assert real_world['verbs'] == world['verbs']
+board_path = data / world['boards']['links']['board']
+board = load(board_path)
+assert 6 <= len(board['notices']) <= 8
+assert world['rooms']['harbour']['hotspots']['noticeboard'] == {'board': 'links'}
+assert Image.open(board_path.parent / board['image']).size == (640, 360)
+assert Image.open(board_path.parent / board['note']['image']).size == (640, 360)
+for file in {board['image'], board['pin'], board['note']['image'], *[notice['paper'] for notice in board['notices']]}:
+    pixels = np.array(Image.open(board_path.parent / file).convert('RGBA'))
+    assert set(map(tuple, pixels[..., :3][pixels[..., 3] > 0])) <= palette
+for notice in board['notices']:
+    x, y, width, height = notice['text']
+    px, py = notice['at']
+    pw, ph = Image.open(board_path.parent / notice['paper']).size
+    assert px <= x < x + width <= px + pw
+    assert py <= y < y + height <= py + ph <= 336
+map_room = load(data / world['rooms']['map']['src'])
+assert map_room['map'] is True
+assert all(item['kind'] == 'exit' for item in map_room['items'])
+assert 'depth' not in map_room and 'spawn' not in map_room
+for kind in ['about', 'talk']:
+    paper = next(item for item in items if item['type'] == kind)
+    assert (content_path.parent / paper['reader']).is_file()
+    assert world['rooms']['stone-house']['hotspots'][kind]['content'] == {'type': kind}
+print('Five verbs, board sprites and text areas, map without floor or depth, and found about/talk readers passed.')

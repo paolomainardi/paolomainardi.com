@@ -93,6 +93,27 @@
       "label": "Window",
       "look": "The sea, calm tonight.",
       "color": "#00ffff"
+    },
+    {
+      "id": "about",
+      "kind": "hotspot",
+      "label": "About paper",
+      "look": "A found about paper.",
+      "color": "#00ff80"
+    },
+    {
+      "id": "talk",
+      "kind": "hotspot",
+      "label": "Talk paper",
+      "look": "A found talk paper.",
+      "color": "#0080ff"
+    },
+    {
+      "id": "island",
+      "kind": "exit",
+      "label": "Island map",
+      "to": "map",
+      "color": "#8000ff"
     }
   ],
   "depth": {

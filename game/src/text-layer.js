@@ -1,3 +1,4 @@
+import { boardText } from "./board.js";
 import { measure } from "./book.js";
 
 export class TextLayer {
@@ -10,6 +11,9 @@ export class TextLayer {
     const [width, height] = game.room.size;
     const key = [
       game.activeBook,
+      game.activeBoard,
+      game.boardPage,
+      game.boardNote,
       game.spread,
       game.hover,
       game.menu,
@@ -71,16 +75,21 @@ export class TextLayer {
         );
       }
     }
+    if (game.activeBoard) {
+      for (const line of boardText(
+        game.activeBoard,
+        game.boardPage,
+        game.boardNote,
+        game.hover,
+        book.fonts,
+      ))
+        text(line.font, line.value, line.x, line.y, line.color);
+    }
     const menu = game.menu;
     if (menu) {
       text(book.fonts.label, menu.header, menu.x + 6, menu.y + 4, book.faded);
       ctx.fillStyle = book.ink;
-      ctx.fillRect(
-        menu.x + 6,
-        menu.y + menu.rowHeight + 2,
-        menu.width - 12,
-        1,
-      );
+      ctx.fillRect(menu.x + 6, menu.y + menu.rowHeight + 2, menu.width - 12, 1);
       menu.verbs.forEach((verb, i) =>
         text(
           book.fonts.body,
