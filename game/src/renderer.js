@@ -651,6 +651,15 @@ void main(){
     this.renderFooter(game);
     gl.disable(gl.BLEND);
     this.into(this.scene);
+    if (game.inventoryNote) {
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      const art = game.activeBoard.art,
+        note = art.sprites[art.note.image];
+      this.sprite(note.texture, note.size, [0, 0, ...note.size]);
+      this.renderFooter(game);
+      gl.disable(gl.BLEND);
+    }
     this.compositeText(game);
     this.into(null);
     this.use(this.programs.present);
@@ -757,7 +766,7 @@ void main(){
     this.scale = scale;
   }
   render(game) {
-    if (game.activeBoard) {
+    if (game.activeBoard && !game.inventoryNote) {
       this.renderBoard(game);
       return;
     }
@@ -872,7 +881,7 @@ void main(){
       ui = game.uiScale,
       margin = width / 80,
       sentenceY = 9 * pixelScale;
-    this.renderPanel(game);
+    if (!game.inventoryNote) this.renderPanel(game);
     if (!game.room.map && game.speech && game.speechUntil > game.elapsed) {
       const lines = game.speechLines,
         top = Math.max(
@@ -936,6 +945,15 @@ void main(){
       this.draw();
     }
     this.into(this.scene);
+    if (game.inventoryNote) {
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      const art = game.activeBoard.art,
+        note = art.sprites[art.note.image];
+      this.sprite(note.texture, note.size, [0, 0, ...note.size]);
+      this.renderFooter(game);
+      gl.disable(gl.BLEND);
+    }
     this.compositeText(game);
     this.into(null);
     this.use(this.programs.present);
@@ -980,13 +998,26 @@ void main(){
           ? [0.32, 0.18, 0.24, 1]
           : [0.09, 0.1, 0.14, 1],
       );
-      if (item)
+      if (item) {
         this.sprite(
           item.sprite.texture,
           item.sprite.size,
           inventoryIcon(item.sprite, slot),
           [0, 0, ...item.sprite.size],
         );
+        if (item.pin) {
+          const [x, y, w] = inventoryIcon(item.sprite, slot);
+          const divisor = Math.max(1, Math.ceil(item.sprite.size[0] / w));
+          const pw = Math.max(1, Math.floor(item.pin.size[0] / divisor));
+          const ph = Math.max(1, Math.floor(item.pin.size[1] / divisor));
+          this.sprite(item.pin.texture, item.pin.size, [
+            x + Math.floor((w - pw) / 2),
+            y,
+            pw,
+            ph,
+          ]);
+        }
+      }
     });
     if (game.inventoryOffset > 0)
       this.text("<", game.panel.previous.x + 4, top + 21, accent);

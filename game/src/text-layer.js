@@ -14,6 +14,7 @@ export class TextLayer {
       game.activeBoard,
       game.boardPage,
       game.boardNote,
+      game.inventoryNote,
       game.spread,
       game.hover,
       game.menu,
@@ -82,6 +83,7 @@ export class TextLayer {
         game.boardNote,
         game.hover,
         book.fonts,
+        !game.inventoryNote,
       ))
         text(line.font, line.value, line.x, line.y, line.color);
     }

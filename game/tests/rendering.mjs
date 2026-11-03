@@ -426,3 +426,40 @@ assert(
   !calls.some((call) => call.type === "sprite" && call.args[0] === texture),
 );
 assert(!calls.some((call) => call.type === "sprite" && call.args[6]?.emission));
+
+// Notice inventory icons keep the paper and pin on integer coordinates.
+iconItem.pin = { texture: {}, size: [7, 7] };
+calls.length = 0;
+renderer.renderPanel(game);
+const pinDraw = calls.find(
+  (call) => call.type === "sprite" && call.args[0] === iconItem.pin.texture,
+);
+assert(pinDraw);
+assert(pinDraw.args[2].every(Number.isInteger));
+const noteTexture = {};
+game.activeBoard = {
+  art: {
+    note: { image: "note.png" },
+    sprites: { "note.png": { texture: noteTexture, size: [640, 360] } },
+  },
+};
+game.inventoryNote = true;
+game.boardNote = { id: "carried-note" };
+renderer.renderBoard = () =>
+  assert.fail("Carried note must keep current room behind it");
+renderer.renderFooter = () => calls.push({ type: "footer" });
+calls.length = 0;
+renderer.render(game);
+assert(
+  calls.some((call) => call.type === "sprite" && call.args[0] === noteTexture),
+);
+assert(calls.some((call) => call.type === "footer"));
+assert.equal(
+  calls.filter((call) => call.type === "text" && call.args[0] === "Open")
+    .length,
+  0,
+  "Carried note hides verb panel",
+);
+console.log(
+  "Notice paper and pin icons and current-room note overlay passed (mock GPU).",
+);

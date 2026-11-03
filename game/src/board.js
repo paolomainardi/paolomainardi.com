@@ -52,11 +52,19 @@ export function boardEntries(board, page) {
     .map((item, i) => ({ item, ...board.art.notices[i] }));
 }
 
-export function boardHit(board, page, note, x, y) {
+export function noteTakeRect(art) {
+  if (art.note.take) return art.note.take;
+  const [gx, gy, gw, gh] = art.note.go,
+    [bx] = art.note.back;
+  return [Math.round((gx + gw + bx - 80) / 2), gy, 80, gh];
+}
+
+export function boardHit(board, page, note, x, y, canTake = true) {
   const hit = ([px, py, w, h]) =>
     x >= px && x < px + w && y >= py && y < py + h;
   if (note) {
     if (hit(board.art.note.go)) return "go";
+    if (canTake && hit(noteTakeRect(board.art))) return "take";
     if (hit(board.art.note.back)) return "back";
     return null;
   }
@@ -69,7 +77,7 @@ export function boardHit(board, page, note, x, y) {
   );
 }
 
-export function boardText(board, page, note, hover, fonts) {
+export function boardText(board, page, note, hover, fonts, canTake = true) {
   const art = board.art,
     lines = [];
   const add = (font, value, x, y, color) =>
@@ -100,14 +108,23 @@ export function boardText(board, page, note, hover, fonts) {
     const dateY = y + titles.length * title.lineHeight;
     add(fonts.label, item.date || "", x, dateY, art.faded);
     if (full) {
-      const bodyY = dateY + fonts.label.lineHeight * 2;
+      const host =
+        item.link || item.url ? new URL(item.link || item.url).hostname : "";
+      add(fonts.label, host, x, dateY + fonts.label.lineHeight, art.faded);
+      const bodyY = dateY + fonts.label.lineHeight * 3;
       wrapText(
         fonts.body,
-        item.description || "",
+        item.description || "No note on this one. Worth a look.",
         width,
         Math.max(1, Math.floor((y + height - bodyY) / fonts.body.lineHeight)),
       ).forEach((line, i) =>
-        add(fonts.body, line, x, bodyY + i * fonts.body.lineHeight, art.ink),
+        add(
+          fonts.body,
+          line,
+          x,
+          bodyY + i * fonts.body.lineHeight,
+          item.description ? art.ink : art.faded,
+        ),
       );
     }
   };
@@ -115,12 +132,13 @@ export function boardText(board, page, note, hover, fonts) {
     paper(note, art.note.text, false, true);
     for (const [key, label] of [
       ["go", "Go there"],
+      ...(canTake ? [["take", "Take it"]] : []),
       ["back", "Back"],
     ])
       add(
         fonts.body,
         label,
-        ...art.note[key].slice(0, 2),
+        ...(key === "take" ? noteTakeRect(art) : art.note[key]).slice(0, 2),
         hover === key ? art.accent : art.ink,
       );
   } else {
@@ -128,7 +146,12 @@ export function boardText(board, page, note, hover, fonts) {
       paper(entry.item, entry.text, hover === entry.item, false);
     // The paging papers are part of the board drawing: an inactive one says why, in faded ink.
     for (const [key, label, idle, visible] of [
-      ["older", "Older notices", "No older notices", page < boardPage(board, Infinity)],
+      [
+        "older",
+        "Older notices",
+        "No older notices",
+        page < boardPage(board, Infinity),
+      ],
       ["newer", "Newer notices", "Latest notices", page > 0],
     ])
       add(

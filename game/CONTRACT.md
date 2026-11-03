@@ -394,6 +394,7 @@ Items sort by date, newest first, regardless of `part`. Board links join the hid
     "image": "note.png",
     "text": [115, 42, 410, 224],
     "go": [115, 287, 100, 18],
+    "take": [290, 287, 80, 18],
     "back": [445, 287, 60, 18]
   },
   "ink": "#1d202f",
@@ -407,8 +408,10 @@ Items sort by date, newest first, regardless of `part`. Board links join the hid
   The engine draws the paper and a pin at its top centre, followed by the wrapped title and date. Titles truncate with an ellipsis to leave room for the date.
 - Hover lifts the paper, pin and text by one game pixel and tints the paper and title with `accent`.
 - `older` and `newer` are page control rectangles. Each page holds one board-full. A control hides when there is nothing on its side.
-- Clicking a notice draws `note.image`, a 640×360 transparent overlay containing a large paper. Its `text` rectangle holds the title, date and the item's `description` as Paolo's note, wrapped to fit.
+- Clicking a notice draws `note.image`, a 640×360 transparent overlay containing a large paper. Its `text` rectangle holds the title, date, faded link hostname and the item's `description` as Paolo's note, wrapped to fit. Without a description it shows "No note on this one. Worth a look." in faded ink.
   `go` opens `link` in a new tab with `rel="noopener"`; `back` returns to the same board page.
+- Optional `note.take` is a `[x, y, width, height]` rectangle for **Take it**. Without it, an 80-pixel-wide rectangle is centred in the gap between `go` and `back`, using `go`'s y and height. It copies the notice into session inventory and says "I'll keep this one." The board keeps its copy. Repeating it says "I already have it."
+- Notice inventory icons use the paper sprite from the notice's board slot, reduced by an integer divisor, with its pin. Inventory arrows scroll both books and notices. **Look at** says the notice title. **Open** or a plain inventory click shows the same note over the current room, with **Go there** and **Back** only. Back, Close, Escape and right click return to the current room. Inventory clears when the game restarts and uses no storage.
 - Text uses the book's NF-Pixels font and sizes. Supply `world.book` with the shared font definition.
 
 The route is `#<room>/board/<id>/<page>` with zero-based pages clamped to board bounds.

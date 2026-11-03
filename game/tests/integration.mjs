@@ -1345,9 +1345,38 @@ tap(...notices.art.newer.slice(0, 2));
 assert.equal(adventure.state.page, 1);
 tap(...notices.art.notices[0].at);
 assert.equal(adventure.state.note, "notice-6");
+const boardModule = await moduleAt("https://adventure.test/src/board.js");
+const takeRect = boardModule.namespace.noteTakeRect(notices.art);
+const beforeTaking = adventure.state.inventory.length;
+tap(...takeRect.slice(0, 2));
+assert.equal(rendered.speech, "I'll keep this one.");
+assert.equal(adventure.state.inventory.length, beforeTaking + 1);
+assert.equal(notices.items.length, 14, "Taken notice stays on board");
+let taken = rendered.inventory.at(-1);
+assert.equal(taken.sprite, notices.art.sprites[notices.art.notices[0].paper]);
+assert.equal(taken.pin, notices.art.sprites[notices.art.pin]);
+tap(...takeRect.slice(0, 2));
+assert.equal(rendered.speech, "I already have it.");
+assert.equal(adventure.state.inventory.length, beforeTaking + 1);
 tap(...notices.art.note.back.slice(0, 2));
 assert.equal(adventure.state.note, null);
 assert.equal(adventure.state.page, 1);
+// Fill the mixed inventory by taking each distinct notice through the board UI.
+for (let page = 0; page <= 2; page++) {
+  while (rendered.boardPage > page) tap(...notices.art.newer.slice(0, 2));
+  while (rendered.boardPage < page) tap(...notices.art.older.slice(0, 2));
+  const count = Math.min(
+    notices.art.notices.length,
+    notices.items.length - page * notices.art.notices.length,
+  );
+  for (let i = 0; i < count; i++) {
+    tap(...notices.art.notices[i].at);
+    tap(...takeRect.slice(0, 2));
+    tap(...notices.art.note.back.slice(0, 2));
+  }
+}
+assert.equal(adventure.state.inventory.length, beforeTaking + 14);
+taken = rendered.inventory.at(-1);
 event(adventureRoot, "contextmenu");
 assert.equal(adventure.state.board, null);
 location.hash = "#harbour/board/links/999";
@@ -1363,6 +1392,50 @@ assert(
     .at(-1)
     .children.every((row) => row.children[0].href.startsWith("https://")),
 );
+// Carry a notice into another room, then open it without walking or showing the board.
+location.hash = "#stone-house";
+event(window, "hashchange");
+await new Promise(setImmediate);
+step();
+rendered.inventoryOffset = 0;
+while (
+  rendered.inventoryOffset + rendered.panel.slots.length <
+  rendered.inventory.length
+)
+  tap(rendered.panel.next.x + 1, rendered.panel.next.y + 1);
+assert(
+  rendered.inventoryOffset > 0,
+  "Scroll mixed inventory to carried notice",
+);
+const noticeSlot =
+  rendered.panel.slots[
+    (rendered.inventory.length - 1) % rendered.panel.slots.length
+  ];
+const noticePosition = JSON.stringify(adventure.state.position);
+for (const verb of ["Look at", "Open", "Walk to"]) {
+  select(verb);
+  tap(noticeSlot.x + 1, noticeSlot.y + 1);
+  assert.equal(adventure.state.room, "stone-house");
+  assert.equal(JSON.stringify(adventure.state.position), noticePosition);
+  assert.equal(adventure.state.walking, false);
+  if (verb === "Look at") assert.equal(rendered.speech, taken.note.title);
+  else {
+    assert.equal(adventure.state.note, taken.note.id);
+    assert.equal(rendered.inventoryNote, true);
+    const count = clickedLinks.length;
+    tap(...notices.art.note.go.slice(0, 2));
+    assert.equal(clickedLinks.length, count + 1);
+    assert.equal(clickedLinks.at(-1).href, taken.note.link);
+    assert.equal(clickedLinks.at(-1).rel, "noopener");
+    tap(...notices.art.note.back.slice(0, 2));
+    assert.equal(adventure.state.board, null);
+    assert.equal(location.hash, "#stone-house");
+  }
+}
+location.hash = "#harbour";
+event(window, "hashchange");
+await new Promise(setImmediate);
+step();
 // Beacon Use never toggles or starts a walk.
 const beaconTarget = rendered.room.items.find(
   (item) => item.light === "beacon",
@@ -1469,3 +1542,61 @@ fresh.destroy();
 console.log(
   "Panel edges, inventory actions and scrolling, book hotspots, safe link tabs, fades, matching exits, facing, spawn fallback and session reset passed.",
 );
+
+{
+  // Real lighthouse masks and bindings must open the found papers after arrival.
+  location.hash = "#lighthouse";
+  const realContainer = new Element("main");
+  const real = await module.namespace.boot({
+    world: "./real/world.json",
+    content: "./data/content.json",
+    element: realContainer,
+  });
+  const realRoot = realContainer.children[0],
+    realCanvas = realRoot.children[0];
+  event(realRoot.children[1].children[3], "click");
+  step();
+  for (const [id, kind] of [
+    ["letter", "about"],
+    ["logbook", "talk"],
+  ]) {
+    const paper = rendered.room.items.find((item) => item.id === id);
+    assert.equal(paper.content.type, kind);
+    const pixel = rendered.room.ids.findIndex(
+      (value) => rendered.room.items[value] === paper,
+    );
+    const x = pixel % 640,
+      y = Math.floor(pixel / 640);
+    for (const verb of [null, "Open"]) {
+      if (verb) {
+        const rect = rendered.verbRects.find((rect) => rect.label === verb);
+        event(realCanvas, "click", {
+          clientX: rect.x + 1,
+          clientY: rect.y + 1,
+        });
+      }
+      const tabs = opened.length;
+      event(realCanvas, "click", { clientX: x, clientY: y });
+      assert(real.state.walking, `${id} starts walking`);
+      assert.equal(real.state.reader, null, "Reader waits for arrival");
+      for (let i = 0; i < 600 && real.state.walking; i++) step();
+      assert.equal(
+        real.state.reader,
+        `found-${kind}`,
+        `${id}: ${verb || "plain click"}: ${rendered.speech}`,
+      );
+      assert.equal(realRoot.children[2].children[1].src, paper.content.reader);
+      assert.equal(opened.length, tabs);
+      event(realRoot.children[2], "keydown", { key: "Escape" });
+      if (verb) {
+        const rect = rendered.verbRects.find((rect) => rect.label === verb);
+        event(realCanvas, "click", {
+          clientX: rect.x + 1,
+          clientY: rect.y + 1,
+        });
+      }
+    }
+  }
+  real.destroy();
+  console.log("Real lighthouse letter and logbook readers passed.");
+}

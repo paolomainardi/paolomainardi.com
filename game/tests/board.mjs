@@ -6,6 +6,7 @@ import {
   boardEntries,
   boardHit,
   boardText,
+  noteTakeRect,
 } from "../src/board.js";
 import { bookFonts, parseRoute } from "../src/book.js";
 import { TextLayer } from "../src/text-layer.js";
@@ -140,4 +141,57 @@ assert(beacon(4.1) < beacon(4.2) && beacon(4.8) > beacon(4.9));
 assert.equal(beacon(9.5), beacon(4.5));
 console.log(
   "Board date order, paging, bounds, title truncation, note text, hover lift and tint, text caching, routes, footer replacement and beacon timing passed.",
+);
+
+const take = noteTakeRect(art);
+assert(take[0] >= art.note.go[0] + art.note.go[2]);
+assert(take[0] + take[2] <= art.note.back[0]);
+assert.equal(boardHit(board, 0, entry.item, ...take), "take");
+assert.equal(boardHit(board, 0, entry.item, ...take.slice(0, 2), false), null);
+const custom = { ...art, note: { ...art.note, take: [300, 280, 60, 14] } };
+assert.deepEqual(noteTakeRect(custom), custom.note.take);
+assert.equal(
+  boardHit({ ...board, art: custom }, 0, entry.item, 301, 281),
+  "take",
+);
+assert(note.some((line) => line.value === "Take it"));
+const blank = boardText(
+  board,
+  0,
+  {
+    ...entry.item,
+    title: "Blank",
+    description: undefined,
+    link: "https://zenodo.org/records/123",
+  },
+  null,
+  fonts,
+);
+const host = blank.find((line) => line.value === "zenodo.org");
+assert.equal(host.color, art.faded);
+assert.equal(
+  host.y,
+  blank.find((line) => line.value === entry.item.date).y +
+    fonts.label.lineHeight,
+);
+assert.equal(
+  blank
+    .filter(
+      (line) =>
+        line.font === fonts.body &&
+        !["Go there", "Take it", "Back"].includes(line.value),
+    )
+    .map((line) => line.value)
+    .join(" "),
+  "No note on this one. Worth a look.",
+);
+assert(
+  blank
+    .filter((line) => line.value.includes("No note"))
+    .every((line) => line.color === art.faded),
+);
+assert(
+  !boardText(board, 0, entry.item, null, fonts, false).some(
+    (line) => line.value === "Take it",
+  ),
 );

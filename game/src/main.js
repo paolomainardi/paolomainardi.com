@@ -317,6 +317,7 @@ export async function boot({ world, content, element }) {
       game.corner = 0;
       game.boardPage = boardPage(board, page);
       game.boardNote = null;
+      game.inventoryNote = false;
       game.menu = game.hover = game.pending = null;
       game.path = [];
       game.sentenceNotice = null;
@@ -326,6 +327,7 @@ export async function boot({ world, content, element }) {
       game.sound.event("book-open");
       game.menu = null;
       game.activeBoard = null;
+      game.inventoryNote = false;
       game.sentenceNotice = null;
       game.activeBook = book;
       game.spread = Math.max(
@@ -342,6 +344,7 @@ export async function boot({ world, content, element }) {
     function closeBook() {
       game.activeBoard = null;
       game.boardNote = null;
+      game.inventoryNote = false;
       game.sentenceNotice = null;
       game.sound.event("book-close");
       game.activeBook = null;
@@ -458,6 +461,7 @@ export async function boot({ world, content, element }) {
       game.activeBook = null;
       game.activeBoard = null;
       game.boardNote = null;
+      game.inventoryNote = false;
       game.turning = null;
       game.room = room;
       renderer.setRoom(room);
@@ -632,6 +636,7 @@ export async function boot({ world, content, element }) {
           game.boardNote,
           x,
           y,
+          !game.inventoryNote,
         );
         canvas.style.cursor = game.hover ? "pointer" : "crosshair";
         return;
@@ -698,6 +703,15 @@ export async function boot({ world, content, element }) {
         say("I can't do that.");
         return;
       }
+      if (target.note) {
+        if (verb === "Open") {
+          openBoard(target.board, 0, false);
+          game.boardNote = target.note;
+          game.inventoryNote = true;
+        } else if (verb === "Look at") say(target.note.title);
+        else say("I can't do that.");
+        return;
+      }
       if (target.board && verb === "Open") {
         openBoard(target.board);
         return;
@@ -710,7 +724,7 @@ export async function boot({ world, content, element }) {
         if (verb === "Look at")
           say(`${target.book.title}. ${target.book.items.length} entries.`);
         else if (verb === "Take" && target.kind === "book") {
-          if (game.inventory.some((item) => item.book.id === target.book.id))
+          if (game.inventory.some((item) => item.book?.id === target.book.id))
             say("I already have it.");
           else {
             game.inventory.push({ ...target, kind: "inventory" });
@@ -811,6 +825,7 @@ export async function boot({ world, content, element }) {
         return;
       }
       if (target.kind === "inventory") {
+        if (target.note && verb === "Walk to") verb = "Open";
         if (verb === "Use" || verb === "Walk to") {
           game.selectedItem = target;
           game.verb = "Use";
@@ -912,9 +927,33 @@ export async function boot({ world, content, element }) {
           game.boardNote,
           x,
           y,
+          !game.inventoryNote,
         );
-        if (hit === "back") game.boardNote = null;
-        else if (hit === "go") openReader({ ...game.boardNote, reader: null });
+        if (hit === "back") {
+          if (game.inventoryNote) closeBook();
+          else game.boardNote = null;
+        } else if (hit === "take") {
+          const note = game.boardNote;
+          if (game.inventory.some((item) => item.note?.id === note.id))
+            say("I already have it.");
+          else {
+            const board = game.activeBoard;
+            const entry =
+              board.art.notices[
+                board.items.indexOf(note) % board.art.notices.length
+              ];
+            game.inventory.push({
+              kind: "inventory",
+              label: note.title,
+              note,
+              board,
+              sprite: board.art.sprites[entry.paper],
+              pin: board.art.sprites[board.art.pin],
+            });
+            say("I'll keep this one.");
+          }
+        } else if (hit === "go")
+          openReader({ ...game.boardNote, reader: null });
         else if (hit === "older" || hit === "newer") {
           game.boardPage += hit === "older" ? 1 : -1;
           writeHash();
@@ -1063,11 +1102,12 @@ export async function boot({ world, content, element }) {
           return;
         }
         game.activeBoard = null;
+        game.inventoryNote = false;
         if (
           state.book &&
           (game.room.config.books?.includes(state.book) ||
             game.room.items.some((item) => item.book?.id === state.book) ||
-            game.inventory.some((item) => item.book.id === state.book))
+            game.inventory.some((item) => item.book?.id === state.book))
         ) {
           hideReader(false);
           openBook(game.books[state.book], state.spread, false);
@@ -1308,7 +1348,9 @@ export async function boot({ world, content, element }) {
           position: game.room.map ? null : [game.actor.x, game.actor.y],
           walking: game.path.length > 0,
           verb: game.verb,
-          inventory: game.inventory.map((item) => item.book.id),
+          inventory: game.inventory.map(
+            (item) => item.note?.id || item.book.id,
+          ),
           lamps: game.room.lights.map((l) => ({
             id: l.id,
             on: l.on,

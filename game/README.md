@@ -154,7 +154,11 @@ The renderer uses the largest whole pixel scale that fits, centred with black ba
 
 The placeholder harbour has a notice board. Open it or click with no verb selected.
 Notices show titles and dates; hover lifts and accents a paper. Click to read Paolo's note, then choose **Go there** to open its link safely in a new tab.
-**Back** returns to the same page. **Older notices** and **Newer notices** page through the links.
+**Take it** keeps a copy in the session inventory and says "I'll keep this one." The notice stays on the board. Taking it again says "I already have it."
+Paper icons use the board's paper sprite and pin, reduced to whole pixels. Inventory arrows scroll books and notices.
+**Open** or a plain click on a carried notice shows its note over the current room, with **Go there** and **Back**. **Look at** says its title.
+Every note shows the link hostname under its date in faded ink. Notes without a description say "No note on this one. Worth a look." in faded ink.
+**Back** returns to the same board page, or closes a carried note to the current room. **Older notices** and **Newer notices** page through the links.
 The route `#harbour/board/links/0` restores the board after Start. Board links also appear in the hidden accessible catalogue.
 
 Close boards and books with the bottom bar's **Close**, right click or Escape.
@@ -229,6 +233,8 @@ Hotspot checks cover newest-date selection independent of part, combined filters
 labels, short descriptions, direct-click tab opening, URL preference and fallback,
 missing URLs, unmatched filters, and preservation of article readers. The browser
 smoke check also checks a real popup, user activation, and its missing opener.
+
+The integration check covers taking notices, duplicate takes, carried-note actions across rooms, and session reset. It also uses the real lighthouse world and masks with the about/talk content fixture: plain clicks and **Open** walk to the letter and logbook before opening their embedded readers.
 
 The integration check uses real data and PNGs with simulated DOM/GPU interfaces. Set `ART_PYTHON` to another Pillow-enabled Python if needed. It does not verify rendered output.
 
