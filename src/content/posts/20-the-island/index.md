@@ -23,7 +23,15 @@ This site can now be browsed as a **point-and-click adventure** in the style of 
 - **A click** skips the intro, and **R** replays it.
 {{< /notice >}}
 
-It is built with **[Claude](https://www.anthropic.com/claude)** and **[Codex](https://openai.com/codex/)**, and the voice, the sound effects and the music come from **[ElevenLabs](https://elevenlabs.io/)**.
+It is built with:
+
+- **[Claude](https://www.anthropic.com/claude)** and **[Codex](https://openai.com/codex/)**, the agents that wrote the code and drew the art.
+- **[ElevenLabs](https://elevenlabs.io/)** for the voice, the sound effects and the music.
+- A **game engine** in plain JavaScript and **WebGL2**, configured by JSON, with no dependencies ([`game/`](https://github.com/paolomainardi/paolomainardi.com/blob/main/game)).
+- A **lighting engine** that composes one drawing per lamp in a shader.
+- A **sound engine** on **Web Audio**, with synthesized ambience, recorded effects and binaural music.
+- A **walk rig** in Python that moves a cut-out puppet with gait curves ([`rig_walk.py`](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/tools/rig_walk.py)).
+- **[Hugo](https://gohugo.io/)**, which builds the site and writes its content for the game.
 
 {{< notice note "Updated on 5 November 2026" >}}
 The island now has an intro and recorded sound effects, and this post covers them.
