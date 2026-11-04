@@ -65,7 +65,9 @@ A sound cue plays at its second of the shot. A click starts the game at any poin
 
 The music comes from [ElevenLabs Music](https://elevenlabs.io/music), and the browser plays it **binaurally**, through two Web Audio HRTF panners that slowly drift around your head.
 
-Choosing it was just taste. Sound, like art in general, needs good prompts, and when you are not a musician it is hard to describe in words what the model should produce. Most of the takes I discarded were my poor wording, not the model.
+{{< notice info >}}
+Music is hard to describe with a prompt. When you are not a musician, it is hard to put in words what the model should produce.
+{{< /notice >}}
 
 ## The island
 
