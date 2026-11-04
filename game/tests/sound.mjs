@@ -49,6 +49,12 @@ audio.visibility(true);
 assert.equal(audio.context.state, "suspended");
 audio.visibility(false);
 assert.equal(audio.context.state, "running");
+// A gesture wakes audio that iOS interrupted, and leaves running audio alone.
+audio.context.state = "interrupted";
+audio.wake();
+assert.equal(audio.context.state, "running");
+audio.wake();
+assert.equal(audio.context.state, "running");
 assert.deepEqual(soundPosition(room, game.actor, { at: "window" }), {
   gain: 1,
   pan: 0,

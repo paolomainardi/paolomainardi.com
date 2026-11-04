@@ -101,6 +101,8 @@ export async function startSession({
     on(document, "visibilitychange", () =>
       game.sound.visibility(document.hidden),
     );
+    on(root, "pointerdown", () => game.sound.wake());
+    on(root, "keydown", () => game.sound.wake());
     game.bookArt = await loadBook(resolve(game.world.book, worldURL), renderer);
     subscriptions.push(() => document.fonts.delete(game.bookArt.fontFace));
     for (const book of Object.values(game.books)) {

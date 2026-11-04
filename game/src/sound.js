@@ -84,6 +84,12 @@ export class SoundEngine {
     result?.catch((error) => this.warn("audio context", error));
   }
 
+  // iOS interrupts audio on lock or calls and only resumes it from a gesture.
+  wake() {
+    if (this.context && !this.disposed && this.context.state !== "running")
+      this.visibility(false);
+  }
+
   ramp(param, value, seconds = 0.08) {
     const now = this.context.currentTime;
     param.cancelScheduledValues(now);

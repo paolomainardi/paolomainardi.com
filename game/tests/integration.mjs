@@ -318,7 +318,12 @@ assert.equal(
 );
 assert.equal(requests.length, 0, "No data or drawings before Start");
 assert.equal(controller.state, null);
+// Start asks iOS for playback audio, so the silent switch does not mute it.
+const audioSession = { type: "auto" };
+context.navigator = { audioSession };
 event(cover.children[3], "click");
+assert.equal(audioSession.type, "playback");
+delete context.navigator;
 const firstReady = controller.ready;
 event(cover.children[3], "click");
 assert.equal(
