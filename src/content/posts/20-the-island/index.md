@@ -25,7 +25,7 @@ This site can now be browsed as a **point-and-click adventure** in the style of 
 
 It is built with:
 
-- **[Claude](https://www.anthropic.com/claude)** and **[Codex](https://openai.com/codex/)**, the agents that wrote the code and drew the art.
+- **OpenAI image models**, through **[Codex](https://openai.com/codex/)**, for the art.
 - **[ElevenLabs](https://elevenlabs.io/)** for the voice, the sound effects and the music.
 - A **game engine** in plain JavaScript and **[WebGL2](https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext)**, configured by JSON, with no dependencies ([`game/`](https://github.com/paolomainardi/paolomainardi.com/blob/main/game)).
 - A **[lighting engine](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/src/lighting.js)** that composes one drawing per lamp in a [shader](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/src/renderer.js).
