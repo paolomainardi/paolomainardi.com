@@ -380,7 +380,7 @@
     },
     "chatter": {
       "src": "sounds/chatter.mp3",
-      "volume": 0.38
+      "volume": 0.8
     }
   },
   "events": {

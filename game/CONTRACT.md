@@ -175,7 +175,7 @@ A room binding may include an `actors` list. Actors are loaded when entering tha
 ]
 ```
 
-All fields above are required; `chatter` is optional and names the longer sound played while the actor talks (2.6 s step, falling back to `meow` and 1.6 s); `meow` is optional and names a sound definition played when the actor is petted and every 15 to 40 seconds while it wanders, panned to its position. `id` must be nonempty and unique among room items and actors. `label` is the hover and menu name. `sheet` resolves from `world.json`; its image resolves from the sheet JSON. `look`, `pet` and `take` name existing voices; `sound` names an existing sound definition played on the effects bus.
+All fields above are required; `chatter` is optional and names the longer sound played while the actor talks (4 s step, falling back to `meow` and 1.6 s); `meow` is optional and names a sound definition played when the actor is petted and every 15 to 40 seconds while it wanders, panned to its position. `id` must be nonempty and unique among room items and actors. `label` is the hover and menu name. `sheet` resolves from `world.json`; its image resolves from the sheet JSON. `look`, `pet` and `take` name existing voices; `sound` names an existing sound definition played on the effects bus.
 
 `path` contains at least two finite points on connected walkable floor above the panel. Actors follow floor paths between successive waypoints and reverse at the ends. `speed` is a positive number of game pixels per second at depth scale 1. `sit` gives positive minimum and maximum rest seconds, with maximum at least minimum. Each arrival chooses a random rest. An idle gesture plays occasionally during that rest.
 

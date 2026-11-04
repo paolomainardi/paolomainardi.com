@@ -44,6 +44,11 @@ export function speechLines(font, text, width = 200, characters = 34) {
   return best[words.length].lines;
 }
 
+// Pixels from the anchor up to the top of the head; small sprites set `head`.
+function speakerHead(character) {
+  return character.head ?? character.anchor[1];
+}
+
 export function speechLayout(game) {
   if (!game.speech || game.speechUntil <= game.elapsed) return null;
   const font = game.bookArt.fonts.body;
@@ -72,10 +77,17 @@ export function speechLayout(game) {
     const head = game.room.map
       ? game.verbTop / 2
       : speaker.y -
-        (game.speechActor?.character || game.character).anchor[1] *
+        speakerHead(game.speechActor?.character || game.character) *
           depth(game, speaker);
     const half = Math.max(...lines.map((line) => font.measure(line))) / 2;
     center = game.room.map ? width / 2 : speaker.x;
+    // Keep another speaker's lines clear of the visitor standing beside them.
+    if (game.speechActor && !game.room.map) {
+      const reach = 30 * depth(game, game.actor) + half + 4;
+      const gap = center - game.actor.x;
+      if (Math.abs(gap) < reach)
+        center = game.actor.x + (gap < 0 ? -reach : reach);
+    }
     center = Math.max(1 + half, Math.min(width - 1 - half, center));
     top = head - 5 - blockHeight;
     if (top < 1) top = head + 5;
@@ -192,7 +204,7 @@ export class Speech {
     if (conversation.step === 0) {
       // A talking cat chatters for longer than a single meow.
       const sound = actor.chatter || actor.meow;
-      this.say(exchange.meow, null, actor, actor.chatter ? 2.6 : 1.6);
+      this.say(exchange.meow, null, actor, actor.chatter ? 4 : 1.6);
       if (sound) this.game.sound.play(sound, this.game.sound.effects);
     } else if (conversation.step === 1) this.say(exchange.words, null, actor);
     else if (conversation.step === 2) this.say(null, exchange.reply);

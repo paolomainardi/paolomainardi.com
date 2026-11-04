@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { Speech, speechLayout } from "../src/speech.js";
+import { depth } from "../src/lighting.js";
 import { createActor, advanceActors, validateActors } from "../src/actors.js";
 import { bookFonts } from "../src/book.js";
 import { TextLayer } from "../src/text-layer.js";
@@ -86,12 +87,12 @@ for (let i = 0; i < 4; i++) {
   speech.talk(actor);
   const position = [actor.x, actor.y];
   assert.equal(game.speech, exchange.meow);
-  assert(Math.abs(game.speechUntil - game.elapsed - 2.6) < 1e-10);
+  assert(Math.abs(game.speechUntil - game.elapsed - 4) < 1e-10);
   assert.equal(game.speechActor, actor);
   assert.equal(live.textContent, exchange.meow);
   assert.equal(actor.animation, "sit");
   assert(actor.mirror);
-  advance(2.59);
+  advance(3.99);
   assert.equal(game.speech, exchange.meow);
   assert.deepEqual([actor.x, actor.y], position);
   advance(0.011);
@@ -159,8 +160,18 @@ assert(
   layer.context.calls.slice(-9, -1).every((call) => call.color === "#1e1b17"),
 );
 assert(!layer.update(game));
-actor.x += 10;
+game.actor.x += 10;
 assert(layer.update(game), "Cat subtitle placement invalidates cached text");
+// Her lines stay clear of the visitor standing beside her.
+const clear = speechLayout(game);
+const visitorHalf = 30 * depth(game, game.actor);
+assert(
+  clear.rows.every(
+    (row) =>
+      row.x >= game.actor.x + visitorHalf ||
+      row.x + clear.font.measure(row.line) <= game.actor.x - visitorHalf,
+  ),
+);
 speech.nextTalk();
 assert(layer.update(game));
 speech.nextTalk();
