@@ -83,6 +83,9 @@ export async function boot({ world, content, element }) {
     start.disabled = windowed.disabled = true;
     start.textContent = "Loading…";
     const Context = globalThis.AudioContext || globalThis.webkitAudioContext;
+    // iOS mutes page audio with the silent switch unless it is playback audio.
+    const session = globalThis.navigator?.audioSession;
+    if (session) session.type = "playback";
     if (Context) {
       soundContext = new Context();
       soundContext.resume()?.catch(() => {});
