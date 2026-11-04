@@ -77,7 +77,11 @@ The music bus is split into its left and right channels, and each one feeds a **
 
 ```js
 binaural(c) {
-  if (!c.createPanner || !c.createChannelSplitter || !c.createOscillator)
+  if (
+    !c.createPanner ||
+    !c.createChannelSplitter ||
+    !c.createOscillator
+  )
     return null;
   const split = c.createChannelSplitter(2);
   [-1, 1].forEach((side, channel) => {
@@ -85,8 +89,8 @@ binaural(c) {
     panner.panningModel = "HRTF";
     panner.positionX.value = side * Math.sin(0.7);
     panner.positionZ.value = -Math.cos(0.7);
-    const drift = c.createOscillator(),
-      depth = c.createGain();
+    const drift = c.createOscillator();
+    const depth = c.createGain();
     drift.frequency.value = 0.04;
     depth.gain.value = side * 0.25;
     drift.connect(depth);
@@ -98,10 +102,6 @@ binaural(c) {
   return split;
 }
 ```
-
-{{< notice info >}}
-Music is hard to describe with a prompt. When you are not a musician, it is hard to put in words what the model should produce.
-{{< /notice >}}
 
 ## The island
 
