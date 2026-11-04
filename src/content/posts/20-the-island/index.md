@@ -158,4 +158,4 @@ The hard part of AI voices is expression. Tags for pauses and emotions ended up 
 
 All of this was a lot of fun. It started with plain [images](/posts/how-the-image-engine-works/) for the covers, then they became animations, then shaders with lamps you can switch on, a [Halloween scene](/posts/what-the-cover-engine-learned-on-halloween/), and in the end a game engine. Every step opened the next one, and the creative flow seemed endless.
 
-It is a new way to be in the flow, in the AI era.
+It is a new way to be in the flow, in the AI era, and I am really liking it.
