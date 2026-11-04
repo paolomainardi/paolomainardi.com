@@ -72,6 +72,7 @@ export class AudioContext {
   }
   createPanner() {
     const node = this.node();
+    delete node.pan;
     node.positionX = new AudioParam(0);
     node.positionY = new AudioParam(0);
     node.positionZ = new AudioParam(0);
