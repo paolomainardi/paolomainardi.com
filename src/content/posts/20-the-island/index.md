@@ -90,16 +90,6 @@ The island is the world of the covers, the sea, the stone house, the lighthouses
 
 Articles open in a reader at the browser's own resolution, with the site's fonts, and every close-up shows which section of the site you are in, with a link to the normal page. The things you take go in the **inventory** and stay there on your next visit. It is the second thing on this site that uses the browser's storage, and **Forget** empties it.
 
-### Rosa
-
-**Rosa** is a tuxedo cat with a rose collar, the mayor of the harbour. She wanders the quay, sits down when she likes, and meows now and then. You can look at her, pet her and talk to her, and the visitor always turns to face her first.
-
-Talking to her is a small joke from [Monkey Island 2](https://en.wikipedia.org/wiki/Monkey_Island_2:_LeChuck%27s_Revenge): she meows, and then her meows turn into words.
-
-> Meow. Mrrp… meow meow.
->
-> About time. They all went up to the lighthouse… and nobody fed me.
-
 {{< figure src="/images/posts/20-the-island/lighthouse.webp" caption="The top of the lighthouse, where the letter and the logbook wait on the desk." >}}
 
 ## How it is drawn
