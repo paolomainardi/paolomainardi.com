@@ -85,6 +85,7 @@ Object.assign(renderer, {
   },
 });
 const game = {
+  actor: { y: 0 },
   time: "dusk",
   elapsed: 2,
   room: { lights: [] },

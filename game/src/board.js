@@ -152,14 +152,14 @@ export function boardText(board, page, note, hover, fonts, canTake = true) {
     paper(note, art.note.text, false, true);
     for (const [key, label] of [
       ["go", "Go there"],
-      ...(canTake ? [["take", "Take it"]] : []),
+      ["take", canTake ? "Take it" : "In your pocket"],
       ["back", "Back"],
     ])
       add(
         fonts.body,
         label,
         ...(key === "take" ? noteTakeRect(art) : art.note[key]).slice(0, 2),
-        hover === key ? art.accent : art.ink,
+        key === "take" && !canTake ? art.faded : hover === key ? art.accent : art.ink,
       );
   } else {
     const box = boardTitleBox(board, art, fonts);
@@ -186,7 +186,7 @@ export function boardText(board, page, note, hover, fonts, canTake = true) {
         fonts.body,
         visible ? label : idle,
         ...art[key].slice(0, 2),
-        !visible ? art.faded : hover === key ? art.accent : art.ink,
+        !visible ? art.faded : key === "take" && !canTake ? art.faded : hover === key ? art.accent : art.ink,
       );
   }
   return lines;

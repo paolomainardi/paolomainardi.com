@@ -6,12 +6,13 @@ export function targetVerbs(verbs, target) {
     if (verb === "Walk to" || verb === "Look at") return true;
     if (verb === "Use")
       return ["light", "exit", "inventory"].includes(target.kind);
-    if (verb === "Take") return ["book", "content"].includes(target.kind);
+    if (verb === "Take") return ["book", "content"].includes(target.kind) ||
+      (target.kind === "hotspot" && (target.board || ["noticeboard", "letter", "logbook"].includes(target.id)));
     if (verb === "Open")
       return (
         ["book", "content", "inventory"].includes(target.kind) ||
         (target.kind === "hotspot" &&
-          !!(target.content || target.book || target.board))
+          !!(target.content || target.book || target.board || target.go))
       );
     return false;
   });
@@ -61,3 +62,12 @@ export function menuHit(menu, x, y) {
   const row = Math.floor((y - menu.y - menu.listTop) / menu.rowHeight);
   return row >= 0 && row < menu.verbs.length ? row : -1;
 }
+
+export function exitCursor(target, [width, height]) {
+  const [x, y] = target.position;
+  const edges = [x, width - x, y, height - y];
+  const angle = [180, 0, 270, 90][edges.indexOf(Math.min(...edges))];
+  const arrow = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path transform="rotate(${angle} 12 12)" d="M3 8h9V3l9 9-9 9v-5H3z" fill="#f5e3b8" stroke="#1d202f" stroke-width="2"/></svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(arrow)}") 12 12, pointer`;
+}
+

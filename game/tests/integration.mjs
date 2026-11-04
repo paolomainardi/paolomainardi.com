@@ -1293,6 +1293,12 @@ assert.equal(rendered.actor.mirror, true, "Arrival faces left into harbour");
 assert.deepEqual(Array.from(adventure.state.inventory), ["workstation"]);
 const board = rendered.room.items.find((item) => item.id === "noticeboard");
 assert.equal(board.board.id, "links");
+select("Take");
+tap(...board.position);
+arrive();
+assert.equal(rendered.speech, "Open it and pick a notice.");
+assert.equal(adventure.state.board, null);
+
 for (const verb of ["Open", "Walk to"]) {
   select(verb);
   tap(...board.position);
@@ -1396,6 +1402,7 @@ const takeRect = boardModule.namespace.noteTakeRect(notices.art);
 const beforeTaking = adventure.state.inventory.length;
 tap(...takeRect.slice(0, 2));
 assert.equal(rendered.speech, "I'll keep this one.");
+assert.equal(rendered.speechUntil - rendered.elapsed, 3);
 assert.equal(adventure.state.inventory.length, beforeTaking + 1);
 assert.deepEqual(JSON.parse(stored.get(inventoryKey)).at(-1), {
   kind: "notice",
@@ -1406,7 +1413,7 @@ let taken = rendered.inventory.at(-1);
 assert.equal(taken.sprite, notices.art.sprites[notices.art.notices[0].paper]);
 assert.equal(taken.pin, notices.art.sprites[notices.art.pin]);
 tap(...takeRect.slice(0, 2));
-assert.equal(rendered.speech, "I already have it.");
+assert.equal(rendered.speech, "I'll keep this one.", "Inactive take does not speak again");
 assert.equal(adventure.state.inventory.length, beforeTaking + 1);
 tap(...notices.art.note.back.slice(0, 2));
 assert.equal(adventure.state.note, null);
@@ -1741,6 +1748,14 @@ console.log(
   ]) {
     const paper = rendered.room.items.find((item) => item.id === id);
     assert.equal(paper.content.type, kind);
+    const take = rendered.verbRects.find((rect) => rect.label === "Take");
+    event(realCanvas, "click", { clientX: take.x + 1, clientY: take.y + 1 });
+    const takePixel = rendered.room.ids.findIndex((value) => rendered.room.items[value] === paper);
+    event(realCanvas, "click", { clientX: takePixel % 640, clientY: Math.floor(takePixel / 640) });
+    for (let i = 0; i < 600 && real.state.walking; i++) step();
+    assert.equal(rendered.speech, "It belongs to the keeper.");
+    assert.equal(real.state.reader, null);
+    event(realCanvas, "click", { clientX: take.x + 1, clientY: take.y + 1 });
     const pixel = rendered.room.ids.findIndex(
       (value) => rendered.room.items[value] === paper,
     );
@@ -1765,6 +1780,9 @@ console.log(
         `${id}: ${verb || "plain click"}: ${rendered.speech}`,
       );
       assert.equal(realRoot.children[2].children[1].src, paper.content.reader);
+      const elapsed = rendered.elapsed;
+      for (let i = 0; i < 200; i++) step();
+      assert(rendered.elapsed >= elapsed + 3, "Reader keeps feedback expiry clock running");
       assert.equal(opened.length, tabs);
       event(realRoot.children[2], "keydown", { key: "Escape" });
       if (verb) {
@@ -1773,6 +1791,72 @@ console.log(
           clientX: rect.x + 1,
           clientY: rect.y + 1,
         });
+      }
+    }
+  }
+  // Direct lighthouse travel uses the path exit, with the normal fade, bypassing the map.
+  const realTap = (x, y) => event(realCanvas, "click", { clientX: x, clientY: y });
+  const enterRoom = async (id) => {
+    location.hash = `#${id}`;
+    event(window, "hashchange");
+    await new Promise(setImmediate);
+    step();
+  };
+  const itemPixel = (item) => {
+    const i = rendered.room.ids.findIndex((value) => rendered.room.items[value] === item);
+    return [i % 640, Math.floor(i / 640)];
+  };
+  for (const verb of [null, "Open", "Walk to"]) {
+    await enterRoom("harbour");
+    rendered.verb = verb;
+    const target = rendered.room.items.find((item) => item.id === "lighthouse");
+    const path = rendered.room.items.find((item) => item.id === "path");
+    assert.equal(target.via, path);
+    assert.equal(path.to, "map");
+    rendered.speechUntil = 0;
+    rendered.verb = null;
+    const [px, py] = itemPixel(path);
+    event(realCanvas, "pointermove", { clientX: px, clientY: py });
+    assert.equal(rendered.sentence(), "Walk to Island path");
+    assert(decodeURIComponent(realCanvas.style.cursor).includes("rotate(0 12 12)"));
+    rendered.verb = "Look at";
+    realTap(...itemPixel(target));
+    for (let i = 0; i < 600 && real.state.walking; i++) step();
+    assert.equal(rendered.speech, target.look);
+    assert.equal(real.state.room, "harbour");
+    rendered.verb = verb;
+    realTap(...itemPixel(target));
+    assert.equal(rendered.pending.target, target);
+    assert.equal(rendered.pending.target.via.id, "path");
+    for (let i = 0; i < 600 && real.state.walking; i++) step();
+    assert.equal(rendered.transition.to, "lighthouse");
+    const pathPoint = pathfinding.namespace.nearestWalkable(rendered.room.walkable, ...path.position, rendered.room.size);
+    assert.deepEqual(Array.from(real.state.position), Array.from(pathPoint));
+    for (let i = 0; i < 100 && rendered.transition; i++) {
+      step();
+      await new Promise(setImmediate);
+    }
+    assert.equal(real.state.room, "lighthouse");
+    assert.equal(location.hash, "#lighthouse");
+    assert.equal(rendered.room.items.find((item) => item.id === "stairs").to, "map");
+  }
+  // Baselines come from the lowest mask row of each real foreground item.
+  for (const [room, ids] of [["harbour", ["cargo", "quay-posts"]], ["stone-house", ["chair"]]]) {
+    await enterRoom(room);
+    for (const id of ids) {
+      const item = rendered.room.items.find((item) => item.id === id);
+      const index = rendered.room.items.indexOf(item);
+      const pixels = Array.from(rendered.room.ids).flatMap((value, i) => value === index ? [i] : []);
+      const baseline = Math.max(...pixels.map((i) => Math.floor(i / 640)));
+      assert.equal(item.baseline, baseline);
+      for (const i of pixels) {
+        const mask = rendered.room.foreground.slice(i * 4, i * 4 + 4);
+        assert.equal(mask[0] * 256 + mask[1], baseline);
+        assert.equal(mask[3], 255);
+      }
+      for (const feet of [baseline - 1, baseline, baseline + 1]) {
+        const mask = rendered.room.foreground.slice(pixels[0] * 4, pixels[0] * 4 + 4);
+        assert.equal(feet < mask[0] * 256 + mask[1], feet < baseline);
       }
     }
   }

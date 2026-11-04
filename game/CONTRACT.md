@@ -119,6 +119,14 @@ A hotspot binding can instead name a book: `"hotspots": { "noticeboard":
 entry in `world.books`. **Open** or a plain click opens the
 book after walking to the hotspot. Hotspot books also support book hash routes.
 
+A hotspot can travel directly: `"hotspots": { "lighthouse": { "go": "lighthouse", "via": "path" } }`.
+`go` must name a world room and `via` must name an exit in the current room.
+**Walk to**, **Open** and a plain click walk to that exit, then fade into `go`, bypassing the exit's `to`.
+**Look at** keeps the hotspot's look line. The lighthouse stairs remain a regular exit to the map.
+
+In rooms, **Take** on a notice board says "Open it and pick a notice.".
+**Take** on the lighthouse letter or logbook says "It belongs to the keeper.".
+
 A bound hotspot's label becomes `<hotspot label>: <item title>`. **Look at** says the hotspot's own `look` line, falling back to the item's title and description, shortened to two lines.
 If the item has a `reader`, **Open** or a plain click opens the embedded reader after walking to it.
 This applies to `about` and `talk` items as well as posts. Reader hash routes also restore hotspot items.
@@ -194,6 +202,7 @@ Looking at a hotspot or loading a room never opens a tab.
   Unlit and all lamp layers share the water displacement; lamp pool drift does not move water samples outside the mask. The effects run before lighting composition and the usual palette lookup and dithering. No water colour is synthesized. Omitting `water` preserves the existing room rendering.
 - `objects.png`: 640×360, each item painted in its flat `color` on black (#000000).
   A pixel belongs to at most one item.
+- `foreground`: the lowest painted row of each item in `objects.png` is its baseline, computed at load. The item covers the character only while the feet's y is strictly smaller than that baseline. Equal or larger y draws the character in front. The same rule masks the lantern flame emission and glow. A packed two-byte baseline texture keeps the comparison per pixel without per-item draw calls.
 - `slot`: a free place for one content object. The object stands on the bottom
   centre of the painted area.
 - `light`: the painted area is the lamp itself (bulb, flame, glass). `light` is
@@ -203,6 +212,8 @@ Looking at a hotspot or loading a room never opens a tab.
 - `depth`: at screen y `far[0]` the character is drawn at scale `far[1]`, at y
   `near[0]` at scale `near[1]`, linear in between.
 - `spawn`: where the character's feet start when no matching entrance exists.
+
+Hovering an exit shows **Walk to <label>** with no verb selected. Its cursor points towards the nearest frame edge.
 
 Using or walking to an exit travels to the room named by its `to`. Travel fades
 to black over 0.15 seconds, loads the room, then fades back over 0.15 seconds.
@@ -424,11 +435,11 @@ Items sort by date, newest first, regardless of `part`. Board links join the hid
 - Clicking a notice draws `note.image`, a 640×360 transparent overlay containing a large paper. Its `text` rectangle holds the title, date, faded link hostname and the item's `description` as Paolo's note, wrapped to fit. Without a description it shows "No note on this one. Worth a look." in faded ink.
   `go` opens `link` in a new tab with `rel="noopener"`; `back` returns to the same board page.
 - Optional `note.take` is a `[x, y, width, height]` rectangle for **Take it**. Without it, an 80-pixel-wide rectangle is centred in the gap between `go` and `back`, using `go`'s y and height. It copies the notice into inventory and says "I'll keep this one." The board keeps its copy. Repeating it says "I already have it."
-- Notice inventory icons use the paper sprite from the notice's board slot, reduced by an integer divisor, with its pin. Inventory arrows scroll both books and notices. **Look at** says the notice title. **Open** or a plain inventory click shows the same note over the current room, with **Go there** and **Back** only. Back, Close, Escape and right click return to the current room. Carried notices persist under `adventure.inventory` with books; **Forget** clears both.
+- Notice inventory icons use the paper sprite from the notice's board slot, reduced by an integer divisor, with its pin. Inventory arrows scroll both books and notices. **Look at** says the notice title. **Open** or a plain inventory click shows the same note over the current room, with **Go there**, faded inactive **In your pocket**, and **Back**. Back, Close, Escape and right click return to the current room. Carried notices persist under `adventure.inventory` with books; **Forget** clears both.
 - Text uses the book's NF-Pixels font and sizes. Supply `world.book` with the shared font definition.
 
 The route is `#<room>/board/<id>/<page>` with zero-based pages clamped to board bounds.
-The bottom bar's **Close**, right click and Escape return to the room. The bar reserves separate places for Close, one hint or temporary message, and sound.
+The bottom bar's **Close**, right click and Escape return to the room. The bar reserves separate places for Close, one hint or temporary message, the site path and sound. Messages spoken while a book, board, note or reader is open replace the hint for three seconds. They truncate to the available space and never draw as speech over the close-up. The hint returns after expiry, including while the reader is open.
 A temporary message replaces the hint and expires while the close-up stays open. Book close-ups use the same bar.
 
 ## Site paths in world.json

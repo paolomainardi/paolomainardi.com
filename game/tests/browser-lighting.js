@@ -37,6 +37,7 @@ async (page) => {
     let hand = 0;
     const game = {
       room,
+      actor: { y: 3 },
       time: "night",
       lanternRadius: 90,
       lanternPosition: () => [1.5, 2.5],

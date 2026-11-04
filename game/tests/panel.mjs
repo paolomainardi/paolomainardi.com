@@ -73,7 +73,7 @@ for (const width of [320, 640, 960]) {
     const rect = siteLayout(game);
     assert(rect.x >= 152);
     assert(rect.x + rect.width <= width - 82);
-    assert.equal(rect.y, state.readerItem ? 328 : 344);
+    assert.equal(rect.y, 344);
     assert(inside(rect, rect.x, rect.y));
   }
 }

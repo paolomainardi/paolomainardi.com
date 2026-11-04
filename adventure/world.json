@@ -60,6 +60,10 @@
       "hotspots": {
         "noticeboard": {
           "board": "links"
+        },
+        "lighthouse": {
+          "go": "lighthouse",
+          "via": "path"
         }
       },
       "ambience": {

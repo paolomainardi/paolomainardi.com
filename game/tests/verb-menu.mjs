@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { bookFonts } from "../src/book.js";
 import { context2D } from "./text-fixture.mjs";
-import { targetVerbs, layoutMenu, menuHit } from "../src/verb-menu.js";
+import { targetVerbs, layoutMenu, menuHit, exitCursor } from "../src/verb-menu.js";
 const verbs = ["Look at", "Open", "Use", "Take", "Talk to"];
 for (const [target, expected] of [
   [{ kind: "hotspot" }, ["Look at"]],
@@ -69,5 +69,15 @@ assert.deepEqual(targetVerbs(newVerbs, { kind: "inventory" }), [
 assert.deepEqual(targetVerbs(verbs, { kind: "hotspot", board: {} }), [
   "Look at",
   "Open",
+  "Take",
 ]);
 assert(!targetVerbs(["Close", "Give", "Read"], { kind: "content" }).length);
+
+assert.deepEqual(targetVerbs(verbs, { kind: "hotspot", go: "lighthouse" }), ["Look at", "Open"]);
+for (const [position, cursor] of [
+  [[1, 180], 180], [[639, 180], 0],
+  [[320, 1], 270], [[320, 359], 90],
+]) assert(decodeURIComponent(exitCursor({ position }, [640, 360])).includes(`rotate(${cursor} 12 12)`));
+
+for (const id of ["noticeboard", "letter", "logbook"])
+  assert(targetVerbs(verbs, { kind: "hotspot", id, content: {} }).includes("Take"));

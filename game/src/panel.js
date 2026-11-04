@@ -69,7 +69,7 @@ export function siteLayout(game) {
     path,
     label,
     x: right - label.length * 6,
-    y: game.activeBook || game.activeBoard ? height - 16 : height - 32,
+    y: game.activeBook || game.activeBoard || game.readerItem ? height - 16 : height - 32,
     width: label.length * 6,
     height: 8,
   };

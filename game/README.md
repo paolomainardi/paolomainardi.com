@@ -35,7 +35,7 @@ Hover and selected verbs use rose. Panel clicks never walk, and floor can reach 
 Unsupported actions say "I can't do that."
 
 **Take** copies a topic book into the inventory while leaving its shelf
-copy in place. Taking it again says "I already have it." Icons use each book's
+copy in place. Once carried, **Take it** becomes **In your pocket**, faded and inactive. Icons use each book's
 sprite, reduced by an integer divisor into whole pixels. Arrows scroll full
 inventories. **Look at** describes an item; **Open** opens its book.
 Select **Use** or leave the verb unselected, click an inventory item, then a target to form
@@ -161,15 +161,15 @@ The renderer uses the largest whole pixel scale that fits, centred with black ba
 
 The placeholder harbour has a notice board. Open it or click with no verb selected.
 Notices show titles and dates; hover lifts and accents a paper. Click to read Paolo's note, then choose **Go there** to open its link safely in a new tab.
-**Take it** keeps a copy in the inventory and says "I'll keep this one." The notice stays on the board. Taking it again says "I already have it."
+**Take it** keeps a copy in the inventory and says "I'll keep this one." The notice stays on the board. Once carried, **Take it** becomes **In your pocket**, faded and inactive.
 Paper icons use the board's paper sprite and pin, reduced to whole pixels. Inventory arrows scroll books and notices.
-**Open** or a plain click on a carried notice shows its note over the current room, with **Go there** and **Back**. **Look at** says its title.
+**Open** or a plain click on a carried notice shows its note over the current room, with **Go there**, faded inactive **In your pocket**, and **Back**. **Look at** says its title.
 Every note shows the link hostname under its date in faded ink. Notes without a description say "No note on this one. Worth a look." in faded ink.
 **Back** returns to the same board page, or closes a carried note to the current room. **Older notices** and **Newer notices** page through the links.
 The route `#harbour/board/links/0` restores the board after Start. Board links also appear in the hidden accessible catalogue.
 
 Close boards and books with the bottom bar's **Close**, right click or Escape.
-Temporary messages replace the bar hint and expire without overlapping Close or sound.
+Messages spoken inside books, boards, notes and readers replace the bar hint for three seconds. They leave separate space for Close, the site path and sound.
 Boards show their title in the book title font and an optional faded subtitle above the notices. The subtitle wraps to two lines. An optional `title` rectangle in the board art contract sets the heading area.
 
 Add `site` to a world book, board or content-bound hotspot, for example `"site": "/links/"`. The open view shows this path before Sound in the bottom bar. Hover highlights it and shows "Open <path> on the site"; clicking opens a new tab with `noopener`. Paths resolve against the page origin, including when world assets live elsewhere. The accessible catalogue includes the same links. Long paths truncate to keep controls separate. Rooms show no path.
@@ -180,6 +180,12 @@ Choose **Island map** in the study or harbour to visit the placeholder map.
 Map rooms set `"map": true`, draw no character or carried lantern, and do not walk.
 Hover a place to see **Go to <label>**, then click to travel with a fade.
 Arrival uses the destination exit back to the map, falling back to `spawn` when none exists.
+
+In the real-art harbour, a plain click, **Walk to** or **Open** on the distant lighthouse walks to **Island path**, then fades directly to the lighthouse. **Look at** keeps its description. Configure this with `"hotspots": { "lighthouse": { "go": "lighthouse", "via": "path" } }` in the room's world binding. The stairs still lead to the map. Exit cursors point towards the nearest frame edge; hovering the path with no verb selected says "Walk to Island path".
+
+**Take** on a room's notice board says "Open it and pick a notice." **Take** on the lighthouse letter or logbook says "It belongs to the keeper."
+
+Foreground items use their lowest painted mask row as a baseline. They cover the character and lantern glow only when the character's feet are behind that baseline. At or in front of it, the character stays visible. Each item's baseline is computed once when the room loads.
 
 The harbour's lighthouse uses `light: "beacon"`: four seconds dark, then a smooth one-second flash, repeating every five seconds.
 **Use** says "Too far away." Found **about** and **talk** papers in the study open in the reader; **Look at** keeps their own descriptions.
@@ -245,7 +251,7 @@ labels, short descriptions, direct-click tab opening, URL preference and fallbac
 missing URLs, unmatched filters, and preservation of article readers. The browser
 smoke check also checks a real popup, user activation, and its missing opener.
 
-The integration check covers taking notices, duplicate takes, carried-note actions across rooms, inventory restoration, stale identifiers, corrupt JSON, storage failures, and Forget. It also uses the real lighthouse world and masks with the about/talk content fixture: plain clicks and **Open** walk to the letter and logbook before opening their embedded readers.
+The integration check covers taking notices, inactive carried-note controls, carried-note actions across rooms, inventory restoration, stale identifiers, corrupt JSON, storage failures, and Forget. It also uses the real lighthouse world and masks with the about/talk content fixture: plain clicks and **Open** walk to the letter and logbook before opening their embedded readers.
 
 The integration check uses real data and PNGs with simulated DOM/GPU interfaces. Set `ART_PYTHON` to another Pillow-enabled Python if needed. It does not verify rendered output.
 
@@ -257,9 +263,12 @@ playwright-cli -s=adventure run-code --filename=tests/browser-site.js
 playwright-cli -s=adventure run-code --filename=tests/browser-books.js
 playwright-cli -s=adventure run-code --filename=tests/browser-smoke.js
 playwright-cli -s=adventure run-code --filename=tests/browser-lighting.js
+playwright-cli -s=adventure run-code --filename=tests/browser-depth.js
 playwright-cli -s=adventure run-code --filename=tests/browser-640.js
 playwright-cli -s=adventure close
 ```
+
+The depth browser check tests real harbour cargo and quay-post masks and the study chair, with feet behind, equal to and in front of their baselines. It checks foreground drawing, flame emission and lantern glow.
 
 The browser checks cover rendered linear light sums, independent lamp switches, fractional fades, albedo lighting, flame dimming and bloom sources, plus walking, lamp switching, readers, iframe Escape, hashes, integer scaling, overflow, and WebGL errors. It saves dusk/night screenshots at four widths under `.playwright-cli/`.
 

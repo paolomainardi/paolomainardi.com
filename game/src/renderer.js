@@ -12,6 +12,13 @@ void main(){
   vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);
   uv=p; gl_Position=vec4(p*2.-1.,0.,1.);
 }`;
+const foregroundDepth = `
+uniform float uFeet;
+bool covered(vec2 at){
+ vec4 mask=texture(uForeground,at);
+ float baseline=dot(round(mask.rg*255.),vec2(256.,1.));
+ return mask.a>.5&&uFeet<baseline;
+}`;
 const common = `
 precision highp float;
 precision highp sampler2DArray;
@@ -24,6 +31,7 @@ uniform int uCount;
 uniform vec3 uLantern;
 uniform vec2 uSize;
 uniform float uLanternRadius;
+${foregroundDepth}
 const float bayer[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
 float threshold(vec2 p){ivec2 q=ivec2(floor(p))%4;return (bayer[q.y*4+q.x]+.5)/16.;}
 vec3 linearColour(vec3 c){return mix(c/12.92,pow((c+.055)/1.055,vec3(2.4)),step(vec3(.04045),c));}
@@ -64,7 +72,7 @@ export class Renderer {
     this.text(
       game.sound.muted ? "Sound: off" : "Sound: on",
       game.soundRect.x,
-      game.activeBook || game.activeBoard
+      game.activeBook || game.activeBoard || game.readerItem
         ? game.room.size[1] - 16
         : game.soundRect.y,
     );
@@ -86,7 +94,7 @@ export class Renderer {
     this.programs = {};
     this.programs.room = this.program(
       common +
-        `uniform bool uFront;void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;if(uFront&&texture(uForeground,p/uSize).a<.5)discard;color=vec4(drawing(p),1.);}`,
+        `uniform bool uFront;void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;if(uFront&&!covered(p/uSize))discard;color=vec4(drawing(p),1.);}`,
     );
     this.programs.sprite = this.program(`#version 300 es
 precision highp float;
@@ -97,6 +105,7 @@ uniform vec2 uImageSize,uSize;
 uniform float uMirror,uRim,uFlame,uHandRadius,uRimOffset;
 uniform vec2 uHand;
 uniform bool uCharacter,uEmission;
+${foregroundDepth}
 void main(){
  vec2 p=vec2(uv.x,1.-uv.y)*uSize,q=(p-uRect.xy)/uRect.zw;
  if(any(lessThan(q,vec2(0)))||any(greaterThanEqual(q,vec2(1))))discard;
@@ -111,7 +120,7 @@ void main(){
    float hand=(1.-smoothstep(0.,uHandRadius,distance(p,uHand)))*uFlame;
    rgb+=c.rgb*vec3(.18,.10,.025)*hand;
    rgb=mix(rgb,mix(c.rgb*.25,vec3(1.,.8,.4)*(1.+uFlame*.35),step(.01,uFlame)),glow);
-   if(uEmission){if(texture(uForeground,p/uSize).a>.5)discard; color=vec4(vec3(1.,.7,.32)*glow*uFlame,c.a);return;}
+   if(uEmission){if(covered(p/uSize))discard; color=vec4(vec3(1.,.7,.32)*glow*uFlame,c.a);return;}
  }
  color=vec4(rgb,c.a*uTint.a);
 }`);
@@ -130,7 +139,7 @@ void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;vec3 c=vec3(0);
  for(int i=0;i<uCount;i++){vec4 info=texelFetch(uData,ivec2(i,0),0);vec3 tint=texelFetch(uData,ivec2(i,1),0).rgb;
  vec3 warm=mix(tint/max(max(tint.r,tint.g),max(tint.b,.001)),vec3(1.,.7,.32),.25);
  c+=texture(uMasks,vec3(p/uSize,float(i))).r*info.z*warm;}
- c+=vec3(1.,.7,.32)*max(0.,1.-distance(p,uLantern.xy)/(uSize.x/80.))*uLantern.z;
+ if(!covered(p/uSize))c+=vec3(1.,.7,.32)*max(0.,1.-distance(p,uLantern.xy)/(uSize.x/80.))*uLantern.z;
  color=vec4(c,1.);
 }`);
     this.programs.blur = this.program(`#version 300 es
@@ -469,6 +478,7 @@ void main(){
     this.bind("uAlbedo", this.albedo, 0);
     this.bind("uUnlit", state.unlit, 1);
     this.bind("uForeground", this.foreground, 2);
+    this.uniform("uFeet", game.actor.y);
     this.bind("uLights", state.lights, 3, gl.TEXTURE_2D_ARRAY);
     this.bind("uMasks", this.masks, 5, gl.TEXTURE_2D_ARRAY);
     this.bind("uData", this.data, 4);
@@ -522,6 +532,7 @@ void main(){
         1,
       );
       this.bind("uForeground", this.foreground, 2);
+      this.uniform("uFeet", character.game.actor.y);
       this.uniform("uFlame", character.game.lanternStrength());
       this.uniform("uHand", character.game.lanternPosition());
       this.uniform("uHandRadius", character.game.lanternRadius);
@@ -663,12 +674,14 @@ void main(){
     this.renderFooter(game);
     gl.disable(gl.BLEND);
     this.into(this.scene);
-    if (game.inventoryNote) {
+    if (game.inventoryNote || game.readerItem) {
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      const art = game.activeBoard.art,
-        note = art.sprites[art.note.image];
-      this.sprite(note.texture, note.size, [0, 0, ...note.size]);
+      if (game.inventoryNote) {
+        const art = game.activeBoard.art,
+          note = art.sprites[art.note.image];
+        this.sprite(note.texture, note.size, [0, 0, ...note.size]);
+      }
       this.renderFooter(game);
       gl.disable(gl.BLEND);
     }
@@ -692,8 +705,8 @@ void main(){
     const message =
       game.siteHover && site
         ? `Open ${site.path} on the site`
-        : game.sentenceNotice && game.speechUntil > game.elapsed
-          ? game.sentenceNotice
+        : (game.sentenceNotice || game.speech) && game.speechUntil > game.elapsed
+          ? game.sentenceNotice || game.speech
           : "or right click, Esc";
     this.text(
       wrap(
@@ -917,8 +930,8 @@ void main(){
       ui = game.uiScale,
       margin = width / 80,
       sentenceY = 9 * pixelScale;
-    if (!game.inventoryNote) this.renderPanel(game);
-    if (!game.room.map && game.speech && game.speechUntil > game.elapsed) {
+    if (!game.inventoryNote && !game.readerItem) this.renderPanel(game);
+    if (!game.room.map && !game.inventoryNote && !game.readerItem && game.speech && game.speechUntil > game.elapsed) {
       const lines = game.speechLines,
         top = Math.max(
           sentenceY + 8 * pixelScale,
@@ -981,12 +994,14 @@ void main(){
       this.draw();
     }
     this.into(this.scene);
-    if (game.inventoryNote) {
+    if (game.inventoryNote || game.readerItem) {
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      const art = game.activeBoard.art,
-        note = art.sprites[art.note.image];
-      this.sprite(note.texture, note.size, [0, 0, ...note.size]);
+      if (game.inventoryNote) {
+        const art = game.activeBoard.art,
+          note = art.sprites[art.note.image];
+        this.sprite(note.texture, note.size, [0, 0, ...note.size]);
+      }
       this.renderFooter(game);
       gl.disable(gl.BLEND);
     }

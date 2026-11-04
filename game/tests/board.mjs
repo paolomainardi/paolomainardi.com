@@ -255,3 +255,30 @@ for (const path of [
     if (hover) assert(sentence[0].startsWith("Open"));
   }
 }
+
+const pocket = boardText(board, 0, entry.item, "take", fonts, false);
+assert(pocket.some((line) => line.value === "In your pocket" && line.color === art.faded));
+game.inventory = [];
+game.boardNote = entry.item;
+layer.update(game);
+game.inventory.push({ note: entry.item });
+assert(layer.update(game), "Taking a notice invalidates the text cache");
+assert(canvas.getContext().calls.some((c) => c.args[0] === "In your pocket"));
+for (const mode of ["activeBook", "activeBoard", "readerItem"]) {
+  const view = {
+    room: { size: [640, 360] }, [mode]: { site: "/links/" },
+    readerSite: mode === "readerItem" ? "/about/" : null,
+    speech: "I'll keep this one.", speechUntil: 4, elapsed: 1,
+  };
+  texts.length = 0;
+  renderer.renderFooter(view);
+  assert(texts.some((row) => row[0] === view.speech));
+  assert(!texts.some((row) => row[0] === "or right click, Esc"));
+  const sorted = texts.toSorted((a, b) => a[1] - b[1]);
+  for (let i = 1; i < sorted.length; i++)
+    assert(sorted[i - 1][1] + sorted[i - 1][0].length * 6 < sorted[i][1]);
+  view.elapsed = 5;
+  texts.length = 0;
+  renderer.renderFooter(view);
+  assert(texts.some((row) => row[0] === "or right click, Esc"));
+}

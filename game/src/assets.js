@@ -194,12 +194,17 @@ export async function loadRoom(world, worldURL, id, renderer) {
     b[2] = Math.max(b[2], x);
     b[3] = Math.max(b[3], y);
     if (item.kind === "walkable") walkable[i] = 1;
-    if (item.kind === "foreground") foreground.set([255, 255, 255, 255], i * 4);
   }
   room.items.forEach((item, i) => {
     item.bounds = bounds[i];
+    if (item.kind === "foreground") item.baseline = bounds[i][3];
     item.position = [(bounds[i][0] + bounds[i][2]) / 2, bounds[i][3]];
   });
+  for (let i = 0; i < ids.length; i++) {
+    const item = room.items[ids[i]];
+    if (item?.kind === "foreground")
+      foreground.set([item.baseline >> 8, item.baseline & 255, 0, 255], i * 4);
+  }
   for (const light of lights) {
     light.position = room.items.find((item) => item.id === light.id).position;
   }

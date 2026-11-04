@@ -463,3 +463,17 @@ assert.equal(
 console.log(
   "Notice paper and pin icons and current-room note overlay passed (mock GPU).",
 );
+
+// Reader feedback uses the close-up footer and hides room speech and verbs.
+game.inventoryNote = false;
+game.activeBoard = null;
+game.readerItem = { id: "reader" };
+game.room.map = false;
+game.speech = "Reader feedback";
+game.speechLines = [game.speech];
+game.elapsed = 1;
+game.speechUntil = 4;
+calls.length = 0;
+renderer.render(game);
+assert(calls.some((call) => call.type === "footer"));
+assert(!calls.some((call) => call.type === "text" && ["Open", game.speech].includes(call.args[0])));

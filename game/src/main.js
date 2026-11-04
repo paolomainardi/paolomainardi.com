@@ -12,7 +12,7 @@ import {
   bookRoute,
 } from "./book.js";
 import { layoutPanel, inside, siteLayout } from "./panel.js";
-import { targetVerbs, layoutMenu, menuHit } from "./verb-menu.js";
+import { targetVerbs, layoutMenu, menuHit, exitCursor } from "./verb-menu.js";
 import { Renderer } from "./renderer.js";
 import { loadWorld, loadRoom, matchingItems, resolve } from "./assets.js";
 import { findPath, nearestWalkable } from "./pathfinding.js";
@@ -394,7 +394,8 @@ export async function boot({ world, content, element }) {
         2,
       );
       game.speechUntil =
-        game.elapsed + Math.max(3.5, String(text).length * 0.055);
+        game.elapsed + (game.activeBook || game.activeBoard || game.readerItem
+          ? 3 : Math.max(3.5, String(text).length * 0.055));
       live.textContent = String(text);
     }
     function hashState() {
@@ -412,6 +413,7 @@ export async function boot({ world, content, element }) {
       game.siteHover = false;
       game.activeBook = null;
       game.activeBoard = board;
+      game.speech = null;
       game.turning = null;
       game.corner = 0;
       game.boardPage = boardPage(board, page);
@@ -430,6 +432,7 @@ export async function boot({ world, content, element }) {
       game.inventoryNote = false;
       game.sentenceNotice = null;
       game.activeBook = book;
+      game.speech = null;
       game.spread = Math.max(
         0,
         Math.min(Math.floor(spread), book.pages.length / 2 - 1),
@@ -496,6 +499,8 @@ export async function boot({ world, content, element }) {
       game.path = [];
       game.pending = null;
       game.readerItem = item;
+      game.speech = null;
+      game.sentenceNotice = null;
       game.readerSite =
         [...game.objects, ...game.room.items].find(
           (object) => object.content === item,
@@ -621,6 +626,14 @@ export async function boot({ world, content, element }) {
       )) {
         const binding = room.config.hotspots?.[hotspot.id];
         if (!binding) continue;
+        if (binding.go) {
+          const via = room.items.find((item) => item.id === binding.via && item.kind === "exit");
+          if (!game.world.rooms[binding.go] || !via)
+            throw new Error(`Invalid travel hotspot: ${hotspot.id}`);
+          hotspot.go = binding.go;
+          hotspot.via = via;
+          continue;
+        }
         if (binding.board) {
           hotspot.board = game.boards[binding.board];
           if (!hotspot.board)
@@ -766,7 +779,7 @@ export async function boot({ world, content, element }) {
           game.boardNote,
           x,
           y,
-          !game.inventoryNote,
+          !game.inventoryNote && !game.inventory.some((item) => item.note?.id === game.boardNote?.id),
         );
         canvas.style.cursor = game.hover ? "pointer" : "crosshair";
         return;
@@ -799,7 +812,9 @@ export async function boot({ world, content, element }) {
           ? game.inventory[game.inventoryOffset + slot] || null
           : hit(x, y);
       canvas.style.cursor =
-        game.hover ||
+        game.hover?.kind === "exit"
+          ? exitCursor(game.hover, game.room.size)
+          : game.hover ||
         game.corner ||
         (!game.activeBook && inside(game.panel.forget, x, y))
           ? "pointer"
@@ -846,6 +861,15 @@ export async function boot({ world, content, element }) {
           game.inventoryNote = true;
         } else if (verb === "Look at") say(target.note.title);
         else say("I can't do that.");
+        return;
+      }
+      if (verb === "Take" && target.kind === "hotspot") {
+        if (target.board || target.book) say("Open it and pick a notice.");
+        else if (target.content) say("It belongs to the keeper.");
+        return;
+      }
+      if (target.go && (verb === "Open" || verb === "Walk to")) {
+        act({ ...target.via, to: target.go }, "Walk to");
         return;
       }
       if (target.board && verb === "Open") {
@@ -974,9 +998,10 @@ export async function boot({ world, content, element }) {
         if (url && !target.content.reader && !running)
           window.open(url, "_blank", "noopener,noreferrer");
       }
+      const travel = target.go && (verb === "Open" || verb === "Walk to");
       walk(
-        target.position,
-        verb === "Walk to" && target.kind !== "exit" ? null : { target, verb },
+        travel ? target.via.position : target.position,
+        verb === "Walk to" && target.kind !== "exit" && !travel ? null : { target, verb },
         running,
       );
     }
@@ -1044,8 +1069,12 @@ export async function boot({ world, content, element }) {
         link.remove();
         return;
       }
-      if (!game.started || game.readerItem || game.loading || game.transition)
+      if (game.started && game.readerItem) {
+        const [x, y] = point(event);
+        if (y >= game.room.size[1] - 24 && x >= 8 && x < 60) hideReader();
         return;
+      }
+      if (!game.started || game.loading || game.transition) return;
       root.focus({ preventScroll: true });
       const [x, y] = point(event);
       if (
@@ -1075,7 +1104,7 @@ export async function boot({ world, content, element }) {
           game.boardNote,
           x,
           y,
-          !game.inventoryNote,
+          !game.inventoryNote && !game.inventory.some((item) => item.note?.id === game.boardNote?.id),
         );
         if (hit === "back") {
           if (game.inventoryNote) closeBook();
@@ -1369,7 +1398,7 @@ export async function boot({ world, content, element }) {
             }
           }
         }
-        if (game.started && !game.readerItem) game.elapsed += dt;
+        if (game.started) game.elapsed += dt;
         if (
           game.started &&
           !game.readerItem &&
