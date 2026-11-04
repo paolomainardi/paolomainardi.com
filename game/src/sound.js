@@ -89,7 +89,12 @@ export class SoundEngine {
 
   // Two virtual speakers before the listener, drifting slowly: binaural on headphones.
   binaural(c) {
-    if (!c.createPanner || !c.createChannelSplitter || !c.createOscillator)
+    if (
+      !c.createPanner ||
+      !c.createChannelSplitter ||
+      !c.createOscillator ||
+      !c.createPanner().positionX
+    )
       return null;
     const split = c.createChannelSplitter(2);
     [-1, 1].forEach((side, channel) => {
