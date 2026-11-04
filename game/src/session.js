@@ -31,7 +31,7 @@ import {
 } from "./assets.js";
 import { findPath, nearestWalkable } from "./pathfinding.js";
 import { Speech } from "./speech.js";
-import { currentTime, updateLamps } from "./lighting.js";
+import { updateLamps } from "./lighting.js";
 import { advanceActor, idleAnimation } from "./animation.js";
 import { SoundEngine } from "./sound.js";
 
@@ -74,10 +74,9 @@ export async function startSession({
       root,
       canvas,
       readerItem: null,
-      time: currentTime(),
+      time: "night",
       lantern: true,
       bloom: true,
-      timeOverride: false,
       elapsed: 0,
       verb: null,
       hover: null,
@@ -585,7 +584,7 @@ export async function startSession({
         return;
       }
       if (target.kind === "exit") {
-        if (verb === "Use" || verb === "Walk to") {
+        if (verb === "Use" || verb === "Walk to" || verb === "Open") {
           if (!Object.hasOwn(game.world.rooms, target.to)) {
             say(`That way lies ${target.to}.`);
             return;
@@ -709,7 +708,16 @@ export async function startSession({
         chooseTarget(menu.target, menu.verbs[index]);
       }
     }
+    function toggleTime() {
+      game.time = game.time === "night" ? "dusk" : "night";
+      game.sound.event("time");
+      say(
+        game.time === "night" ? "Night already…" : "The sun is going down.",
+        game.time === "night" ? "common-night" : "common-dusk",
+      );
+    }
     let suppressBookClick = false;
+    let lastVerb = null;
     on(canvas, "pointerdown", (event) => {
       suppressBookClick = false;
       if (
@@ -847,6 +855,10 @@ export async function startSession({
         return;
       }
       if (y >= game.verbTop) {
+        if (inside(game.panel.time, x, y)) {
+          toggleTime();
+          return;
+        }
         if (
           game.inventory.some((item) => !item.pocket) &&
           inside(game.panel.forget, x, y)
@@ -863,7 +875,11 @@ export async function startSession({
         }
         const slot = game.panel.slots.findIndex((rect) => inside(rect, x, y));
         const item = slot >= 0 && game.inventory[game.inventoryOffset + slot];
-        if (item) chooseTarget(item, game.verb);
+        if (item) {
+          const verb = game.verb;
+          game.verb = null;
+          chooseTarget(item, verb);
+        }
         if (inside(game.panel.previous, x, y))
           game.inventoryOffset = Math.max(
             0,
@@ -879,7 +895,11 @@ export async function startSession({
       const target = hit(x, y);
       game.hover = target;
       if (target) {
-        chooseTarget(target, game.verb, event.detail >= 2);
+        // A double click repeats the first click's verb, running.
+        const verb = event.detail >= 2 ? lastVerb : game.verb;
+        lastVerb = verb;
+        game.verb = null;
+        chooseTarget(target, verb, event.detail >= 2);
       } else if (
         x >= 0 &&
         x < game.room.size[0] &&
@@ -928,15 +948,7 @@ export async function startSession({
         if (event.key === "ArrowRight") turnBook(1);
         return;
       }
-      if (event.key.toLowerCase() === "t") {
-        game.timeOverride = true;
-        game.time = game.time === "night" ? "dusk" : "night";
-        game.sound.event("time");
-        say(
-          game.time === "night" ? "Night already…" : "The sun is going down.",
-          game.time === "night" ? "common-night" : "common-dusk",
-        );
-      }
+      if (event.key.toLowerCase() === "t") toggleTime();
       if (event.key.toLowerCase() === "l") {
         game.lantern = !game.lantern;
         game.sound.event("lantern");
@@ -1031,7 +1043,6 @@ export async function startSession({
         }
         game.elapsed += dt;
         if (!game.readerItem && !game.activeBook && !game.activeBoard) {
-          if (!game.timeOverride) game.time = currentTime();
           updateLamps(game, dt);
           for (const contact of advanceActor(game, dt))
             game.sound.event("step", contact);

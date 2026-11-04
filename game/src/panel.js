@@ -21,6 +21,7 @@ export function layoutPanel([width, height], verbs) {
     next: { x: width - 72, y: top + 16, width: 16, height: 18 },
     forget: { x: width - 44, y: top + 21, width: 36, height: 8 },
     sound: { x: width - 74, y: top + 4, width: 66, height: 8 },
+    time: { x: width - 154, y: top + 4, width: 72, height: 8 },
   };
 }
 

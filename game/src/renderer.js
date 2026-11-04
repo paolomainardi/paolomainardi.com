@@ -1036,11 +1036,16 @@ void main(){
     this.text(
       wrap(
         sentence(game),
-        Math.max(1, Math.floor(((site?.x ?? width - 82) - 16) / 6)),
+        Math.max(1, Math.floor(((site?.x ?? width - 162) - 16) / 6)),
         1,
       )[0],
       8,
       top + 4,
+    );
+    this.text(
+      game.time === "night" ? "Time: night" : "Time: dusk",
+      game.panel.time.x,
+      game.panel.time.y,
     );
     this.soundLabel(game);
     for (const verb of game.verbRects)

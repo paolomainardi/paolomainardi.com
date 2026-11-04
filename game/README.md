@@ -108,18 +108,18 @@ Unsupported actions give a short response.
 
 Right-click a target for its supported actions in world order. Click an action or use Up/Down and Enter. Escape, an outside click or an empty-floor right-click closes the menu.
 
-The selected panel verb stays unchanged.
+A panel verb applies to one target, then the verb returns to **Walk to**. Exits accept Walk to, Open and Use.
 
-| Key        | Action                                     |
-| ---------- | ------------------------------------------ |
-| `T`        | Override local time and switch dusk/night. |
-| `L`        | Toggle the carried lantern.                |
-| `G`        | Toggle bloom.                              |
-| `M`        | Toggle sound.                              |
-| Escape     | Close the menu, book, board or reader.     |
-| Left/Right | Turn an open book's spread.                |
+| Key        | Action                                 |
+| ---------- | -------------------------------------- |
+| `T`        | Switch between night and dusk.         |
+| `L`        | Toggle the carried lantern.            |
+| `G`        | Toggle bloom.                          |
+| `M`        | Toggle sound.                          |
+| Escape     | Close the menu, book, board or reader. |
+| Left/Right | Turn an open book's spread.            |
 
-Dusk runs from 06:00 through 19:59 in the visitor's local time; night covers the other hours. Room simulation follows the clock until `T` overrides it.
+Every visit starts at night. The **Time** control in the panel, or `T`, switches between night and dusk.
 
 ## Rooms and travel
 

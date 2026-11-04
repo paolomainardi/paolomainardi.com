@@ -18,7 +18,7 @@ for (const [target, expected] of [
     ["Look at", "Open", "Take"],
   ],
   [{ kind: "light" }, ["Look at", "Use"]],
-  [{ kind: "exit" }, ["Look at", "Use"]],
+  [{ kind: "exit" }, ["Look at", "Open", "Use"]],
   [{ kind: "book" }, ["Look at", "Open", "Take"]],
 ]) {
   assert.deepEqual(targetVerbs(verbs, target), expected);
