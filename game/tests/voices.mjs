@@ -144,20 +144,31 @@ try {
   console.warn = oldWarn;
 }
 
-// Every shipped line has its recording and every place line is bound.
+// Existing lines have recordings. The three cat recordings are commissioned separately.
+// Every place line, including actor replies, must remain bound.
 const real = JSON.parse(
   readFileSync(new URL("../dev/real/world.json", import.meta.url)),
 );
 const ids = Object.keys(real.voices);
+const pendingRecordings = new Set([
+  "harbour-cat",
+  "harbour-cat-pet",
+  "harbour-cat-take",
+]);
 for (const id of ids) {
   assert.equal(real.voices[id].src, `voices/${id}.mp3`);
   assert(
-    existsSync(new URL(`../dev/real/${real.voices[id].src}`, import.meta.url)),
+    pendingRecordings.has(id) ||
+      existsSync(
+        new URL(`../dev/real/${real.voices[id].src}`, import.meta.url),
+      ),
   );
 }
 const bound = new Set((real.pocket || []).map((item) => item.look));
 for (const room of Object.values(real.rooms)) {
   bound.add(room.enter);
+  for (const actor of room.actors || [])
+    [actor.look, actor.pet, actor.take].forEach((id) => bound.add(id));
   Object.values(room.looks || {}).forEach((id) => bound.add(id));
   Object.values(room.hotspots || {}).forEach((binding) => {
     if (binding.look) bound.add(binding.look);
@@ -179,6 +190,9 @@ for (const variant of ["data", "real"]) {
       readFileSync(new URL(`../dev/${variant}/${room.src}`, import.meta.url)),
     );
     if (room.enter) assert(fixture.voices[room.enter]);
+    for (const actor of room.actors || [])
+      for (const id of [actor.look, actor.pet, actor.take])
+        assert(fixture.voices[id]);
     for (const [item, id] of Object.entries(room.looks || {})) {
       assert(
         drawing.items.some((target) => target.id === item) ||

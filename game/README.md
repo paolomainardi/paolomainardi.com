@@ -44,6 +44,7 @@ URLs resolve against the document base URL. See [CONTRACT.md](CONTRACT.md) for t
 | `src/lighting.js`    | Depth, lantern position, CPU light sampling and per-frame lamp updates.               |
 | `src/water.js`       | Connected water spans, integer swell and painted reflection sampling.                 |
 | `src/pathfinding.js` | Nearest floor point, eight-direction A\* and path smoothing.                          |
+| `src/actors.js`      | Room actors, waypoint walks, rests, petting and sprite bounds.                        |
 | `src/animation.js`   | Walking steps, foot contacts and frame selection.                                     |
 | `src/book.js`        | Font loading, pagination, entry hits, page drags.                                     |
 | `src/board.js`       | Board artwork, notice paging, heading layout and note text.                           |
@@ -133,6 +134,16 @@ A travel hotspot can walk through a named exit but choose a different destinatio
 
 Use [Adding a room](docs/adding-a-room.md) for the drawing-to-world workflow. Use [Character walking](docs/character-walk.md) to build distance-based walks from standing poses.
 
+## The harbour cat
+
+The tuxedo cat walks between quay waypoints, rests and sometimes plays an idle gesture. It shares the visitor's depth scale, lighting, shadow and foreground masks. Characters draw in feet order.
+
+Hover shows **Cat**. Look at describes it; Take explains that cats belong to themselves. A plain click, Talk to or Use walks the visitor beside it, then the cat turns towards the visitor and plays a three-second pet animation with pixel hearts, a meow, a synthesized purr and a voice line. While it wanders it meows every 15 to 40 seconds, from where it stands; the meow is a CC0 recording. Open gives the usual refusal.
+
+The cat waits while the visitor approaches. It pauses in books, boards, readers and hidden tabs. Reduced motion keeps it seated and shows still hearts during petting. Actor state lasts only until leaving the room.
+
+Both demo worlds bind the cat in `rooms.harbour.actors`. Its sheet uses the visitor's cell format with `walk-side`, `sit`, `idle` and `pet` animations. The placeholder world uses fixture art; the real world loads the supplied tuxedo sheet. The three `harbour-cat*` recordings are optional and will be added later.
+
 ## Books, boards and readers
 
 A topic book uses a content filter. Series sort by part; other books sort by newest date and default to posts. Entries wrap to two title lines, followed by a date.
@@ -176,7 +187,7 @@ Only inventory persists, under `localStorage` key `adventure.inventory`, as a li
 
 Invalid JSON is ignored. Unavailable storage leaves a session-only inventory. **Forget** removes collected books and notices and removes the key. Permanent pocket items survive Forget and never enter storage. Forget appears only when collected items are present.
 
-Position, lamp state, time overrides and mute are not stored.
+Position, lamp state, time overrides, room actors and mute are not stored.
 
 ## Sound and accessibility
 
@@ -198,7 +209,7 @@ The title uses native buttons. A hidden navigation list exposes book and board l
 
 The reader is a labelled dialog with a Close button, iframe Escape handling and focus return. Keyboard menus and page turns work, but movement and most canvas controls still require a pointer.
 
-The engine is not a fully keyboard-accessible game. Reduced motion disables water motion; it does not disable every animation.
+The engine is not a fully keyboard-accessible game. Reduced motion disables water motion and keeps room actors seated; it does not disable every animation.
 
 NF-Pixels is bundled unmodified under SIL OFL 1.1 beside each font file. [CREDITS.md](CREDITS.md) lists every third-party asset and its licence.
 

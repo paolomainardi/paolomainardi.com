@@ -1,4 +1,5 @@
 // Load a world and coordinate room state, interactions, audio, and the frame loop.
+import { advanceActors, actorRect, petActor } from "./actors.js";
 import { catalogue, siteURL, openLink } from "./catalogue.js";
 import {
   restoreInventory,
@@ -31,7 +32,7 @@ import {
 } from "./assets.js";
 import { findPath, nearestWalkable } from "./pathfinding.js";
 import { Speech } from "./speech.js";
-import { updateLamps } from "./lighting.js";
+import { updateLamps, depth } from "./lighting.js";
 import { advanceActor, idleAnimation } from "./animation.js";
 import { SoundEngine } from "./sound.js";
 
@@ -141,6 +142,9 @@ export async function startSession({
       ? renderer.texture(game.character.glow)
       : null;
     flameCentroids(game.character, renderer);
+    const motionPreference = globalThis.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    );
     const labels = game.world.verbs;
     const speech = new Speech(game, live);
     const say = (text, id) => speech.say(text, id);
@@ -317,7 +321,12 @@ export async function startSession({
       game.inventoryNote = false;
       game.turning = null;
       game.room = room;
+      game.actors = room.actors;
+      for (const actor of game.actors)
+        actor.character.texture = renderer.texture(actor.character.sheet);
       renderer.setRoom(room);
+      for (const actor of game.actors)
+        renderer.roomTextures?.push(actor.character.texture);
       fit();
       const [width] = room.size;
       game.pixelScale = width / 480;
@@ -383,6 +392,10 @@ export async function startSession({
     function hit(px, py) {
       if (px < 0 || py < 0 || px >= game.room.size[0] || py >= game.verbTop)
         return null;
+      for (const actor of [...game.actors].sort((a, b) => b.y - a.y)) {
+        const [x, y, width, height] = actorRect(game, actor);
+        if (inside(rectangle(x, y, width, height), px, py)) return actor;
+      }
       for (const object of game.objects) {
         const [x0, y0, x1, y1] = object.bounds;
         const sprite = object.sprite.size,
@@ -522,6 +535,20 @@ export async function startSession({
         );
     });
     function act(target, verb) {
+      if (target.kind === "actor") {
+        if (verb === "Look at") say(null, target.look);
+        else if (verb === "Take") say(null, target.take);
+        else if (["Walk to", "Use", "Talk to"].includes(verb))
+          petActor(
+            target,
+            game.sound,
+            say,
+            !!motionPreference?.matches,
+            game.actor.x,
+          );
+        else say("I can't do that.", "common-cant");
+        return;
+      }
       if (target.pocket) {
         if (verb === "Look at") say("Nothing unusual.", target.look);
         else if (verb === "Take") say("I already have it.", "common-have-it");
@@ -683,6 +710,30 @@ export async function startSession({
           game.selectedItem = target;
           game.verb = "Use";
         } else act(target, verb);
+        return;
+      }
+      if (target.kind === "actor") {
+        if (["Look at", "Take"].includes(verb)) {
+          act(target, verb);
+          return;
+        }
+        if (target.petting) return;
+        walk(
+          [
+            target.x +
+              (game.actor.x < target.x ? -1 : 1) *
+                (target.character.frame[0] / 2 + game.character.frame[0] / 3) *
+                depth(game, target),
+            target.y,
+          ],
+          { target, verb },
+          running,
+        );
+        if (game.pending) {
+          target.held = true;
+          target.animation = "sit";
+          target.clock = 0;
+        }
         return;
       }
       if (verb === "Open" && target.kind === "hotspot" && target.content) {
@@ -1043,6 +1094,7 @@ export async function startSession({
         }
         game.elapsed += dt;
         if (!game.readerItem && !game.activeBook && !game.activeBoard) {
+          advanceActors(game, dt, !!motionPreference?.matches);
           updateLamps(game, dt);
           for (const contact of advanceActor(game, dt))
             game.sound.event("step", contact);

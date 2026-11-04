@@ -1,3 +1,4 @@
+import { actorRect, petHearts } from "./actors.js";
 // Composite room drawings, sprites, text, palette mapping, and bloom with WebGL2.
 import {
   depth,
@@ -141,6 +142,7 @@ void main(){
  float edge=1.-texture(uImage,tex+delta).a;
  vec3 rgb=c.rgb*uTint.rgb+vec3(.42,.24,.07)*edge*abs(uRim);
  if(uCharacter){
+   if(covered(p/uSize))discard;
    float glow=texture(uSpriteGlow,tex).r*texture(uSpriteGlow,tex).a;
    float hand=(1.-smoothstep(0.,uHandRadius,distance(p,uHand)))*uFlame;
    rgb+=c.rgb*vec3(.18,.10,.025)*hand;
@@ -157,6 +159,7 @@ uniform vec2 uShadowSize;
 void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;vec2 d=p-uShadow.xy;
  float t=clamp(dot(d,uShadow.zw)/max(dot(uShadow.zw,uShadow.zw),1.),0.,1.);
  float r=length((d-uShadow.zw*t)/uShadowSize);
+ if(covered(p/uSize))discard;
  float a=max(0.,1.-r)*(.28-.16*t);if(a<threshold(p)*.5)discard;color=vec4(0.,0.,0.,.26);
 }`);
     // Collect lamp masks and visible lantern emission before blur.
@@ -571,11 +574,12 @@ void main(){
     if (character) {
       this.bind(
         "uSpriteGlow",
-        character.game.character.glowTexture || this.black,
+        (character.character || character.game.character).glowTexture ||
+          this.black,
         1,
       );
       this.bind("uForeground", this.foreground, 2);
-      this.uniform("uFeet", character.game.actor.y);
+      this.uniform("uFeet", (character.actor || character.game.actor).y);
       this.uniform("uFlame", lanternStrength(character.game));
       this.uniform("uHand", lanternPosition(character.game));
       this.uniform("uHandRadius", character.game.lanternRadius);
@@ -900,77 +904,43 @@ void main(){
         [0.75 + light * 0.25, 0.73 + light * 0.27, 0.73 + light * 0.25, 1],
       );
     }
-    let rect, frame, animation;
-    const actor = game.actor;
-    if (!game.room.map) {
-      const scale = depth(game),
-        lamp = nearestLamp(game);
-      const dx = lamp ? actor.x - lamp.position[0] : 10,
-        dy = lamp ? actor.y - lamp.position[1] : 8,
-        len = Math.hypot(dx, dy) || 1;
-      this.use(this.programs.shadow);
-      this.uniform("uShadow", [
-        actor.x,
-        actor.y,
-        (dx / len) * game.character.frame[0] * 0.7 * scale,
-        (dy / len) * game.character.frame[1] * 0.2 * scale,
-      ]);
-      this.uniform("uShadowSize", [
-        game.character.frame[0] * 0.28 * scale,
-        game.character.frame[1] * 0.06 * scale,
-      ]);
-      this.draw();
-      animation = game.character.animations[actor.animation];
-      frame = (animation.start || 0) + animationFrame(actor, animation);
-      const sources = lightSourcesAt(game, actor.x, actor.y);
-      let brightest = null,
-        red = 0,
-        green = 0,
-        blue = 0;
-      for (const light of sources) {
-        if (light.strength > (brightest?.strength || 0)) brightest = light;
-        const strength = light.strength / Math.max(...light.tint, 0.001);
-        red += strength * light.tint[0];
-        green += strength * light.tint[1];
-        blue += strength * light.tint[2];
-      }
-      const tint = [0, 0, 0, 1];
-      tint[0] = 0.7 + 0.3 * Math.min(1, red);
-      tint[1] = 0.7 + 0.3 * Math.min(1, green);
-      tint[2] = 0.7 + 0.3 * Math.min(1, blue);
-      rect = [0, 0, 0, 0];
-      rect[0] = Math.round(
-        actor.x -
-          (actor.mirror
-            ? game.character.frame[0] - game.character.anchor[0]
-            : game.character.anchor[0]) *
-            scale,
-      );
-      rect[1] = Math.round(actor.y - game.character.anchor[1] * scale);
-      rect[2] = Math.round(game.character.frame[0] * scale);
-      rect[3] = Math.round(game.character.frame[1] * scale);
-      this.sprite(
-        game.character.texture,
-        game.character.size,
-        rect,
-        [
-          frame * game.character.frame[0],
-          animation.row * game.character.frame[1],
-          ...game.character.frame,
-        ],
-        tint,
-        actor.mirror,
-        brightest
-          ? Math.sign(brightest.position[0] - actor.x) *
-              Math.min(1, brightest.strength * 1.5)
-          : 0,
-        { game },
-      );
-    }
     this.use(this.programs.room);
     this.lighting(game);
     this.integer("uFront", 1);
     this.draw();
+    let rect, frame, animation;
+    const actor = game.actor;
+    if (!game.room.map) {
+      const cast = [
+        { actor, character: game.character },
+        ...(game.actors || []).map((actor) => ({
+          actor,
+          character: actor.character,
+        })),
+      ];
+      cast.sort((a, b) => a.actor.y - b.actor.y);
+      for (const entry of cast) {
+        const result = this.renderActor(game, entry.actor, entry.character);
+        if (entry.actor === actor) ({ rect, frame, animation } = result);
+      }
+    }
+    for (const cat of game.actors || []) {
+      for (const [x, y, alpha] of petHearts(
+        game,
+        cat,
+        this.motionPreference?.matches,
+      )) {
+        for (const [dx, dy, w] of [
+          [0, 0, 2],
+          [3, 0, 2],
+          [-1, 1, 7],
+          [0, 2, 5],
+          [1, 3, 3],
+          [2, 4, 1],
+        ])
+          this.rect(x + dx, y + dy, w, 1, [0.9, 0.64, 0.7, alpha]);
+      }
+    }
     const pixelScale = game.pixelScale;
     if (!game.inventoryNote && !game.readerItem) this.renderPanel(game);
     if (game.menu) this.renderMenu(game);
@@ -1026,6 +996,64 @@ void main(){
     }
     this.compositeText(game);
     this.present(game.bloom);
+  }
+  renderActor(game, actor, character) {
+    const scale = depth(game, actor),
+      lamp = nearestLamp(game, actor);
+    const dx = lamp ? actor.x - lamp.position[0] : 10,
+      dy = lamp ? actor.y - lamp.position[1] : 8,
+      len = Math.hypot(dx, dy) || 1;
+    this.use(this.programs.shadow);
+    this.bind("uForeground", this.foreground, 2);
+    this.uniform("uFeet", actor.y);
+    this.uniform("uShadow", [
+      actor.x,
+      actor.y,
+      (dx / len) * character.frame[0] * 0.7 * scale,
+      (dy / len) * character.frame[1] * 0.2 * scale,
+    ]);
+    this.uniform("uShadowSize", [
+      character.frame[0] * 0.28 * scale,
+      character.frame[1] * 0.06 * scale,
+    ]);
+    this.draw();
+    const animation = character.animations[actor.animation];
+    const frame = (animation.start || 0) + animationFrame(actor, animation);
+    const sources = lightSourcesAt(game, actor.x, actor.y);
+    let brightest = null,
+      red = 0,
+      green = 0,
+      blue = 0;
+    for (const light of sources) {
+      if (light.strength > (brightest?.strength || 0)) brightest = light;
+      const strength = light.strength / Math.max(...light.tint, 0.001);
+      red += strength * light.tint[0];
+      green += strength * light.tint[1];
+      blue += strength * light.tint[2];
+    }
+    const tint = [0, 0, 0, 1];
+    tint[0] = 0.7 + 0.3 * Math.min(1, red);
+    tint[1] = 0.7 + 0.3 * Math.min(1, green);
+    tint[2] = 0.7 + 0.3 * Math.min(1, blue);
+    const rect = actorRect(game, { ...actor, character });
+    this.sprite(
+      character.texture,
+      character.size,
+      rect,
+      [
+        frame * character.frame[0],
+        animation.row * character.frame[1],
+        ...character.frame,
+      ],
+      tint,
+      actor.mirror,
+      brightest
+        ? Math.sign(brightest.position[0] - actor.x) *
+            Math.min(1, brightest.strength * 1.5)
+        : 0,
+      { game, actor, character },
+    );
+    return { rect, frame, animation };
   }
   renderPanel(game) {
     const width = game.room.size[0],

@@ -58,6 +58,10 @@
         "frequency": 350,
         "duration": 1.2
       }
+    },
+    "purr": {
+      "synth": "purr",
+      "volume": 0.8
     }
   },
   "events": {
@@ -218,7 +222,37 @@
         "noticeboard": {
           "board": "links"
         }
-      }
+      },
+      "actors": [
+        {
+          "id": "cat",
+          "label": "Cat",
+          "sheet": "cat/cat.json",
+          "path": [
+            [
+              330,
+              288
+            ],
+            [
+              440,
+              292
+            ],
+            [
+              540,
+              286
+            ]
+          ],
+          "speed": 28,
+          "sit": [
+            4,
+            9
+          ],
+          "look": "harbour-cat",
+          "pet": "harbour-cat-pet",
+          "take": "harbour-cat-take",
+          "sound": "purr"
+        }
+      ]
     },
     "map": {
       "src": "rooms/map/room.json",
@@ -249,6 +283,18 @@
     "common-already-map": {
       "text": "I'm already looking at it.",
       "src": "voices/common-already-map.mp3"
+    },
+    "harbour-cat": {
+      "text": "A tuxedo cat. The only one here who isn't hiding.",
+      "src": "voices/harbour-cat.mp3"
+    },
+    "harbour-cat-pet": {
+      "text": "Hello, friend. At least someone's glad to see me.",
+      "src": "voices/harbour-cat-pet.mp3"
+    },
+    "harbour-cat-take": {
+      "text": "Take a cat? Cats belong only to themselves.",
+      "src": "voices/harbour-cat-take.mp3"
     }
   },
   "pocket": [

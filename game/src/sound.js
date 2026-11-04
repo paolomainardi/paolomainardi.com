@@ -1,6 +1,7 @@
 // Mix world-defined ambience and effects, and manage their audio-context lifetime.
 import { resolve } from "./assets.js";
 const presets = {
+  purr: { frequency: 320, duration: 2.6, level: 0.22 },
   surf: { frequency: 650, duration: 4, level: 0.32 },
   wind: { frequency: 280, duration: 4, level: 0.22 },
   crackle: { frequency: 1800, duration: 4, level: 0.09 },
@@ -232,10 +233,22 @@ export class SoundEngine {
         c.sampleRate,
       );
       const data = source.buffer.getChannelData(0);
-      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      let last = 0;
+      for (let i = 0; i < data.length; i++) {
+        if (definition.synth === "purr") {
+          last = (last + 0.04 * (Math.random() * 2 - 1)) / 1.04;
+          const t = i / c.sampleRate;
+          const breath =
+            0.35 + 0.65 * Math.sin((Math.PI * (t % 1.3)) / 1.3) ** 2;
+          data[i] =
+            last * 3.5 * (0.5 + 0.5 * Math.sin(t * 24 * Math.PI * 2)) * breath;
+        } else data[i] = Math.random() * 2 - 1;
+      }
       const filter = c.createBiquadFilter();
       nodes.push(filter);
-      filter.type = definition.synth === "surf" ? "lowpass" : "bandpass";
+      filter.type = ["surf", "purr"].includes(definition.synth)
+        ? "lowpass"
+        : "bandpass";
       filter.frequency.value = params.frequency ?? preset.frequency;
       filter.Q.value =
         definition.synth === "creak"
@@ -243,10 +256,16 @@ export class SoundEngine {
           : definition.synth === "step"
             ? 1.4
             : 0.7;
-      source.playbackRate.value = 0.9 + Math.random() * 0.2;
+      source.playbackRate.value =
+        definition.synth === "purr" ? 1 : 0.9 + Math.random() * 0.2;
       source.connect(filter);
       filter.connect(envelope);
-      if (loop) {
+      if (definition.synth === "purr" && !loop) {
+        envelope.gain.setValueAtTime(0, now);
+        envelope.gain.linearRampToValueAtTime(preset.level, now + 0.15);
+        envelope.gain.setValueAtTime(preset.level, now + duration - 0.15);
+        envelope.gain.linearRampToValueAtTime(0, now + duration);
+      } else if (loop) {
         envelope.gain.value = preset.level;
       } else {
         const level = preset.level * (0.8 + Math.random() * 0.2);

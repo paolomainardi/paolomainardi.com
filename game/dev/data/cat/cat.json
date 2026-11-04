@@ -1,0 +1,34 @@
+{
+  "sheet": "placeholder.png",
+  "frame": [
+    48,
+    32
+  ],
+  "anchor": [
+    24,
+    30
+  ],
+  "animations": {
+    "walk-side": {
+      "row": 0,
+      "frames": 4,
+      "fps": 5,
+      "stride": 36
+    },
+    "sit": {
+      "row": 1,
+      "frames": 4,
+      "fps": 3
+    },
+    "idle": {
+      "row": 2,
+      "frames": 4,
+      "fps": 3
+    },
+    "pet": {
+      "row": 3,
+      "frames": 4,
+      "fps": 3
+    }
+  }
+}

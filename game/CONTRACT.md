@@ -154,6 +154,39 @@ An unmatched content filter keeps the original hotspot label and description. Ta
 
 External hotspot links open during the original click to retain browser activation; arrival supplies feedback. The second click of a double-click does not open another tab.
 
+### Room actors
+
+A room binding may include an `actors` list. Actors are loaded when entering that room and reset on re-entry. They never enter inventory or storage. Map rooms cannot have actors.
+
+```json
+"actors": [
+  {
+    "id": "cat",
+    "label": "Cat",
+    "sheet": "cat/cat.json",
+    "path": [[330, 288], [440, 292], [540, 286]],
+    "speed": 28,
+    "sit": [4, 9],
+    "look": "harbour-cat",
+    "pet": "harbour-cat-pet",
+    "take": "harbour-cat-take",
+    "sound": "purr"
+  }
+]
+```
+
+All fields above are required; `meow` is optional and names a sound definition played when the actor is petted and every 15 to 40 seconds while it wanders, panned to its position. `id` must be nonempty and unique among room items and actors. `label` is the hover and menu name. `sheet` resolves from `world.json`; its image resolves from the sheet JSON. `look`, `pet` and `take` name existing voices; `sound` names an existing sound definition played on the effects bus.
+
+`path` contains at least two finite points on connected walkable floor above the panel. Actors follow floor paths between successive waypoints and reverse at the ends. `speed` is a positive number of game pixels per second at depth scale 1. `sit` gives positive minimum and maximum rest seconds, with maximum at least minimum. Each arrival chooses a random rest. An idle gesture plays occasionally during that rest.
+
+The sheet uses `frame`, `anchor` and `animations` as described under `character.json`. Required animations are `walk-side`, `sit`, `idle` and `pet`. Cells must fit inside the image, rates and frame counts must be positive, and `walk-side` requires positive `stride`. Side art faces right. Distance and depth advance the walk cycle; other animations use elapsed time.
+
+Actors share visitor scaling, lamp tint, lantern light at night, shadows and foreground baselines. Characters sort by feet position. Each character applies its own foreground mask.
+
+Look at and Take say their configured voices. Talk to, Use and the default click hold the actor seated while the visitor approaches, then play `pet` for three seconds with rising pixel hearts, the configured sound and the `pet` voice. The actor resumes its route afterward. Open gives `common-cant`. The right-click menu offers Look at, Use, Take and Talk to in world verb order.
+
+Books, boards, readers and hidden tabs pause actors. Reduced motion keeps them seated, including during petting, with static hearts. Actor state is never saved.
+
 ### Books, boards and site paths
 
 | Binding       | Fields                                                                                    |
@@ -169,7 +202,7 @@ Paths are also present in the accessible catalogue. Long labels truncate to leav
 
 Use `Look at`, `Open`, `Use`, `Take`, `Talk to`. Labels are action identifiers, not translatable display strings. Unsupported actions respond without changing the world.
 
-No selected verb means `Walk to`. The context menu filters this list for each target; `Talk to` currently has no implemented target action.
+No selected verb means `Walk to`. The context menu filters this list for each target; `Talk to` pets a room actor.
 
 **Take** copies a topic book. Board hotspots prompt the visitor to open the board and pick a notice. Content-bound hotspots give the keeper response, including when their filter matches nothing.
 
@@ -375,6 +408,8 @@ The book's shared fonts are required for board text.
 
 ## Sounds
 
+The `purr` generator filters soft noise with a 24 Hz rumble and two breathing envelopes. Use `{"synth":"purr"}` in `world.sounds`; an actor's `sound` names that definition.
+
 Sounds live in `world.sounds`; no separate sound JSON is loaded. The shipped real world uses WAV footstep files plus synthesized ambience and effects.
 
 | Sound definition field | Meaning                                                                                                              |
@@ -388,6 +423,7 @@ Sounds live in `world.sounds`; no separate sound JSON is loaded. The shipped rea
 
 | Generator | Filter frequency | Duration | Base level |
 | --------- | ---------------- | -------- | ---------- |
+| `purr`    | 320 Hz lowpass   | 2.6 s    | 0.22       |
 | `surf`    | 650 Hz           | 4 s      | 0.32       |
 | `wind`    | 280 Hz           | 4 s      | 0.22       |
 | `crackle` | 1800 Hz          | 4 s      | 0.09       |
@@ -431,6 +467,6 @@ The fixed answers use `common-cant`, `common-lamp-on`, `common-lamp-off`, `commo
 
 ## Validation boundary
 
-The loader checks fetch status, URL protocols, reader origin, palette-strip dimensions, room-image dimensions, required lamp drawings and character-glow dimensions. It is not a complete schema validator. Authors must check ids, colours, animation bounds, floor connectivity, page fit and control geometry.
+The loader checks fetch status, URL protocols, reader origin, palette-strip dimensions, room-image dimensions, required lamp drawings, character-glow dimensions and room actor configuration and sheet bounds. It is not a complete schema validator. Authors must check ids, colours, animation bounds, floor connectivity, page fit and control geometry.
 
 Use `tests/assets.py`, the JavaScript suite and browser checks described in [README.md](README.md#checks-and-tools).
