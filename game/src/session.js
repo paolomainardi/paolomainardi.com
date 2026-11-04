@@ -1168,7 +1168,10 @@ export async function startSession({
         updateLamps(game, dt);
         game.sound.update(game);
         renderer.render(game);
-        if (game.intro.update(dt)) nextIntroShot();
+        const nextShot = game.intro.update(dt);
+        for (const cue of game.intro.due)
+          game.sound.play(cue.sound, game.sound.effects, cue.volume ?? 1);
+        if (nextShot) nextIntroShot();
       } else if (!game.loading && !game.intro) {
         enterSpeech();
         if (!game.readerItem && game.activeBook && game.turning) {

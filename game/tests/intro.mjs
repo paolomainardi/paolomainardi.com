@@ -152,3 +152,24 @@ assert.equal(pending.musicVoice, undefined);
 assert([...pending.voices].every((voice) => voice.source.stopTime === 0));
 pending.destroy();
 console.log("Music default gain and skip during pending decode passed.");
+
+// A shot's sound cue plays once, when its time is reached.
+{
+  const cueIntro = new Intro({
+    shots: [
+      {
+        room: "a",
+        time: "night",
+        seconds: 5,
+        lines: [],
+        sounds: [{ sound: "meow", at: 3, volume: 0.6 }],
+      },
+    ],
+  });
+  const fired = [];
+  for (let i = 0; i < 50; i++) {
+    cueIntro.update(0.1);
+    fired.push(...cueIntro.due);
+  }
+  assert.deepEqual(fired, [{ sound: "meow", at: 3, volume: 0.6 }]);
+}

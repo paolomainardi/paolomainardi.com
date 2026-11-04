@@ -649,6 +649,13 @@
         "seconds": 8,
         "lines": [
           "An island made of posts, links and lamps"
+        ],
+        "sounds": [
+          {
+            "sound": "meow",
+            "at": 3,
+            "volume": 0.6
+          }
         ]
       },
       {

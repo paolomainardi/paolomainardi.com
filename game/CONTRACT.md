@@ -456,7 +456,9 @@ Rooms keep their lights, water, beacon and actors. The intro hides the visitor, 
 
 Click, Escape or Enter skips any shot, including during room loading, and restores normal startup with entry speech. Music fades out over one second. M toggles mute without skipping.
 
-Optional `music` names a `sounds` entry with a single file `src` and no looping. It plays once on its own bus, connected to master, using `mix.music` (default 0.7). Missing music files stay silent without an engine warning. Pending music loads cannot begin after a skip or destruction. Music does not duck with speech or readers. `mix.music`, when supplied with an intro, must be finite and non-negative.
+A shot's optional `sounds` lists cues `{ "sound": "meow", "at": 3, "volume": 0.6 }`: each names a `sounds` entry and plays once on the effects bus `at` seconds into the shot (before its end), at `volume` (default 1).
+
+Optional `music` names a `sounds` entry with a single file `src` and no looping. It plays once on its own bus, through two HRTF panners in front of the listener (plain stereo where unsupported), using `mix.music` (default 0.7). Missing music files stay silent without an engine warning. Pending music loads cannot begin after a skip or destruction. Music does not duck with speech or readers. `mix.music`, when supplied with an intro, must be finite and non-negative.
 
 ## Sounds
 

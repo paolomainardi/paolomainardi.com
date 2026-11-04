@@ -29,7 +29,18 @@ export function validateIntro(world) {
       shot.seconds <= 0 ||
       !Array.isArray(shot.lines) ||
       !shot.lines.every((line) => typeof line === "string") ||
-      (shot.title !== undefined && typeof shot.title !== "boolean")
+      (shot.title !== undefined && typeof shot.title !== "boolean") ||
+      (shot.sounds !== undefined &&
+        (!Array.isArray(shot.sounds) ||
+          !shot.sounds.every(
+            (cue) =>
+              Object.hasOwn(world.sounds || {}, cue?.sound) &&
+              Number.isFinite(cue.at) &&
+              cue.at >= 0 &&
+              cue.at < shot.seconds &&
+              (cue.volume === undefined ||
+                (Number.isFinite(cue.volume) && cue.volume >= 0)),
+          )))
     )
       throw new Error(
         "Invalid intro shot: room, time, positive seconds and text lines are required.",
@@ -47,7 +58,12 @@ export class Intro {
     return this.config.shots[this.index];
   }
   update(dt) {
+    const before = this.elapsed;
     this.elapsed += dt;
+    // Sound cues whose time falls within this step, played by the session.
+    this.due = (this.shot.sounds || []).filter(
+      (cue) => cue.at >= before && cue.at < this.elapsed,
+    );
     return (
       this.elapsed >= this.shot.seconds &&
       this.index < this.config.shots.length - 1
