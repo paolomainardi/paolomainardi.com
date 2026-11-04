@@ -182,8 +182,12 @@ isHTML = true
 permalinkable = false
 notAlternative = true
 
-[outputFormats.json]
+# The adventure's content list, written only for /play/.
+[outputFormats.adventure]
+mediaType = "application/json"
 baseName = "content"
+isPlainText = true
+notAlternative = true
 
 [[cascade]]
 outputs = ["html", "markdown", "reader"]

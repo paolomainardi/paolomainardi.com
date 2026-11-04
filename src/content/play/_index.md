@@ -1,6 +1,6 @@
 ---
 title: Adventure
-outputs: [html, json]
+outputs: [html, adventure]
 sitemap:
   disable: true
 build:

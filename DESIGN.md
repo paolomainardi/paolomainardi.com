@@ -405,16 +405,16 @@ and every one of those labels falls back inline, above the block it belongs to.
 
 Breakpoints, and what each one is for:
 
-| Width  | What changes                                                  |
-| :----- | :------------------------------------------------------------ |
-| 560px  | Contents rows stack, the dotted leader is dropped             |
-| 640px  | Post navigation goes to one column                            |
-| 768px  | Phone type scale, the header stacks into two rows             |
-| 900px  | The contents block opens, and goes to two columns             |
-| 1200px | The apparatus margin opens, the section rail replaces the bar |
-| 1280px | Body type steps up to 21px                                    |
-| 1560px | The section rail shows the current section name               |
-| 1700px | Body type steps up to 22px                                    |
+| Width  | What changes                                                |
+| :----- | :---------------------------------------------------------- |
+| 560px  | Contents rows stack, the dotted leader is dropped            |
+| 640px  | Post navigation goes to one column                           |
+| 768px  | Phone type scale, the header stacks into two rows            |
+| 900px  | The contents block opens, and goes to two columns            |
+| 1200px | The apparatus margin opens, the section rail replaces the bar|
+| 1280px | Body type steps up to 21px                                   |
+| 1560px | The section rail shows the current section name              |
+| 1700px | Body type steps up to 22px                                   |
 
 The page has one header. There is no second running head inside the page.
 
