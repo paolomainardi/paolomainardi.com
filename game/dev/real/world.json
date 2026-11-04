@@ -419,7 +419,7 @@
       "src": "voices/book-personal.mp3"
     },
     "harbour-enter": {
-      "text": "Salt air\u2026 and nobody around. Notes on a board, a boat tied up, a light on the point. Very welcoming, for a ghost town.",
+      "text": "Salt air\u2026 and nobody around. Except a cat, sitting there like the mayor of this place. I'd better introduce myself.",
       "src": "voices/harbour-enter.mp3"
     },
     "harbour-noticeboard": {
@@ -539,15 +539,15 @@
       "src": "voices/common-already-map.mp3"
     },
     "harbour-cat": {
-      "text": "A tuxedo cat. The only one here who isn't hiding.",
+      "text": "The mayor of the harbour, I presume. Black tie, white shirt\u2026 always dressed for office.",
       "src": "voices/harbour-cat.mp3"
     },
     "harbour-cat-pet": {
-      "text": "Hello, friend. At least someone's glad to see me.",
+      "text": "Pleased to meet you, Mister Mayor. The island is in good paws.",
       "src": "voices/harbour-cat-pet.mp3"
     },
     "harbour-cat-take": {
-      "text": "Take a cat? Cats belong only to themselves.",
+      "text": "Kidnap the mayor? I'd never get off this island.",
       "src": "voices/harbour-cat-take.mp3"
     }
   },
