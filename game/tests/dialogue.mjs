@@ -86,12 +86,12 @@ for (let i = 0; i < 4; i++) {
   speech.talk(actor);
   const position = [actor.x, actor.y];
   assert.equal(game.speech, exchange.meow);
-  assert(Math.abs(game.speechUntil - game.elapsed - 1.6) < 1e-10);
+  assert(Math.abs(game.speechUntil - game.elapsed - 2.6) < 1e-10);
   assert.equal(game.speechActor, actor);
   assert.equal(live.textContent, exchange.meow);
   assert.equal(actor.animation, "sit");
   assert(actor.mirror);
-  advance(1.59);
+  advance(2.59);
   assert.equal(game.speech, exchange.meow);
   assert.deepEqual([actor.x, actor.y], position);
   advance(0.011);
@@ -114,7 +114,7 @@ for (let i = 0; i < 4; i++) {
   assert.equal(game.speech, null);
   assert.equal(actor.held, false);
 }
-assert.deepEqual(sounds, Array(4).fill(actor.meow));
+assert.deepEqual(sounds, Array(4).fill(actor.chatter));
 advance(5);
 advance(0.1);
 assert.equal(actor.animation, "walk-side", "Wandering resumes");

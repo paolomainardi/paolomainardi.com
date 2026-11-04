@@ -190,8 +190,10 @@ export class Speech {
     const { actor, exchange } = conversation;
     conversation.step++;
     if (conversation.step === 0) {
-      this.say(exchange.meow, null, actor, 1.6);
-      if (actor.meow) this.game.sound.play(actor.meow, this.game.sound.effects);
+      // A talking cat chatters for longer than a single meow.
+      const sound = actor.chatter || actor.meow;
+      this.say(exchange.meow, null, actor, actor.chatter ? 2.6 : 1.6);
+      if (sound) this.game.sound.play(sound, this.game.sound.effects);
     } else if (conversation.step === 1) this.say(exchange.words, null, actor);
     else if (conversation.step === 2) this.say(null, exchange.reply);
     else if (conversation.step === 3) this.say(exchange.end, null, actor, 1.2);
