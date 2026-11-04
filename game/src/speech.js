@@ -208,9 +208,12 @@ export class Speech {
       this.say(exchange.meow, null, actor, actor.chatter ? 4 : 1.6);
       play(actor.chatter || actor.meow);
     } else if (conversation.step === 1) {
-      // She keeps chattering, differently, while the visitor reads her words.
+      // She keeps chattering, differently, after a short breath.
       this.say(exchange.words, null, actor);
-      play(actor.chatterWords || actor.chatter);
+      conversation.delayed = {
+        id: actor.chatterWords || actor.chatter,
+        at: this.game.elapsed + 0.6,
+      };
     } else if (conversation.step === 2) this.say(null, exchange.reply);
     else if (conversation.step === 3) {
       this.say(exchange.end, null, actor, 1.2);
@@ -219,7 +222,13 @@ export class Speech {
   }
 
   update() {
-    if (!this.game.conversation) return;
+    const conversation = this.game.conversation;
+    if (!conversation) return;
+    if (conversation.delayed && this.game.elapsed >= conversation.delayed.at) {
+      const { id } = conversation.delayed;
+      conversation.delayed = null;
+      if (id) this.game.sound.play(id, this.game.sound.effects);
+    }
     if (
       this.game.path.length ||
       this.game.activeBook ||

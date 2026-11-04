@@ -99,7 +99,11 @@ for (let i = 0; i < 4; i++) {
   assert.equal(game.speech, exchange.words);
   const reading = Math.max(3.5, exchange.words.length * 0.055);
   assert(Math.abs(game.speechUntil - game.elapsed - reading) < 1e-10);
-  advance(reading - 0.01);
+  // The second chatter waits for a short breath after the first.
+  assert.notEqual(sounds.at(-1), actor.chatterWords);
+  advance(0.65);
+  assert.equal(sounds.at(-1), actor.chatterWords);
+  advance(reading - 0.65 - 0.01);
   assert.equal(game.speech, exchange.words);
   advance(0.011);
   await new Promise(setImmediate);
