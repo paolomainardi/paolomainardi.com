@@ -88,13 +88,13 @@
       "ambience": {
         "dusk": [
           {
-            "sound": "sea",
+            "sound": "harbour",
             "at": "boat"
           }
         ],
         "night": [
           {
-            "sound": "sea",
+            "sound": "harbour",
             "at": "boat"
           },
           {
@@ -165,15 +165,12 @@
       "ambience": {
         "dusk": [
           {
-            "sound": "sea"
+            "sound": "lighthouse"
           }
         ],
         "night": [
           {
-            "sound": "sea"
-          },
-          {
-            "sound": "wind"
+            "sound": "lighthouse"
           },
           {
             "sound": "flame",
@@ -309,8 +306,8 @@
       "volume": 0.4
     },
     "door": {
-      "synth": "creak",
-      "volume": 0.5
+      "src": "sounds/door.mp3",
+      "volume": 0.6
     },
     "flare": {
       "synth": "whoosh",
@@ -329,24 +326,47 @@
       }
     },
     "purr": {
-      "synth": "purr",
+      "src": "sounds/purr.mp3",
       "volume": 0.8
     },
     "meow": {
-      "src": "sounds/cat-mewpurr.wav",
+      "src": "sounds/meow.mp3",
       "volume": 0.7
+    },
+    "book": {
+      "src": "sounds/book.mp3",
+      "volume": 0.6
+    },
+    "lamp": {
+      "src": "sounds/lamp.mp3",
+      "volume": 0.6
+    },
+    "paper": {
+      "src": "sounds/paper.mp3",
+      "volume": 0.6
+    },
+    "harbour": {
+      "src": "sounds/harbour.wav",
+      "volume": 0.5,
+      "loop": true
+    },
+    "lighthouse": {
+      "src": "sounds/lighthouse.wav",
+      "volume": 0.45,
+      "loop": true
     }
   },
   "events": {
     "step": "step",
     "page-turn": "page",
-    "book-open": "page",
+    "book-open": "book",
     "book-close": "page",
-    "lamp": "click",
+    "lamp": "lamp",
     "menu": "click",
     "door": "door",
     "lantern": "flare",
-    "time": "gust"
+    "time": "gust",
+    "paper": "paper"
   },
   "mix": {
     "master": 0.5,

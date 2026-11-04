@@ -1539,14 +1539,24 @@ tap(...notices.art.older.slice(0, 2));
 assert.equal(adventure.state.page, 2, "Last page cannot advance");
 tap(...notices.art.newer.slice(0, 2));
 assert.equal(adventure.state.page, 1);
+// Opening and taking a notice both rustle paper.
+const paperEvents = [];
+const noticeSound = rendered.sound.event.bind(rendered.sound);
+rendered.sound.event = (name, ...rest) => {
+  paperEvents.push(name);
+  return noticeSound(name, ...rest);
+};
 tap(...notices.art.notices[0].at);
 assert.equal(adventure.state.note, "notice-6");
+assert.deepEqual(paperEvents, ["paper"]);
 const boardModule = await moduleAt("https://adventure.test/src/board.js");
 const takeRect = boardModule.namespace.noteTakeRect(notices.art);
 const beforeTaking = adventure.state.inventory.length;
 tap(takeRect.x, takeRect.y);
 assert.equal(rendered.speech, "I'll keep this one.");
 assert(Math.abs(rendered.speechUntil - rendered.elapsed - 3.5) < 1e-9);
+assert.deepEqual(paperEvents, ["paper", "paper"]);
+rendered.sound.event = noticeSound;
 assert.equal(adventure.state.inventory.length, beforeTaking + 1);
 assert.deepEqual(JSON.parse(stored.get(inventoryKey)).at(-1), {
   kind: "notice",

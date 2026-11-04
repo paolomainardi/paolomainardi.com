@@ -864,6 +864,7 @@ export async function startSession({
           if (game.inventoryNote) closeBook();
           else game.boardNote = null;
         } else if (hit === "take") {
+          game.sound.event("paper");
           const note = game.boardNote;
           if (game.inventory.some((item) => item.note?.id === note.id))
             say("I already have it.", "common-have-it");
@@ -878,7 +879,10 @@ export async function startSession({
         else if (hit === "older" || hit === "newer") {
           game.boardPage += hit === "older" ? 1 : -1;
           writeHash(game);
-        } else if (hit) game.boardNote = hit;
+        } else if (hit) {
+          game.sound.event("paper");
+          game.boardNote = hit;
+        }
         game.hover = null;
         return;
       }
