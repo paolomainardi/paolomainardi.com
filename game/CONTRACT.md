@@ -93,7 +93,7 @@ The reader's website link is hidden without `url`. Catalogue entries link to `li
 
 ```json
 {
-  "title": "The engineer's study",
+  "title": "The Context Island",
   "palette": "palette.png",
   "start": "study",
   "character": "character/character.json",

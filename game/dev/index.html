@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#11121d" />
     <link rel="icon" href="data:," />
-    <title>The engineer's study</title>
+    <title>The Context Island</title>
     <style>
       html,
       body {
@@ -27,6 +27,7 @@
       import { boot } from "../src/main.js";
       const data = new URLSearchParams(location.search).get("data") || "data";
       window.game = await boot({
+        title: "The Context Island",
         world: `./${data}/world.json`,
         content: "./data/content.json",
         element: document.getElementById("game"),

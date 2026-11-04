@@ -20,13 +20,14 @@ To embed the engine, give the container a width and height:
 import { boot } from "./src/main.js";
 
 const game = await boot({
+  title: "The Context Island",
   world: "./dev/real/world.json",
   content: "./dev/data/content.json",
   element: document.querySelector("#game"),
 });
 ```
 
-`boot` mounts the title screen and returns a controller. `game.state` is `null` until loading finishes after Start. `game.ready` is `null` before Start, then a promise that resolves when the first scene is ready or rejects on a load error.
+`boot` mounts the title screen, headed by the optional `title` (default "Adventure"), and returns a controller. `game.state` is `null` until loading finishes after Start. `game.ready` is `null` before Start, then a promise that resolves when the first scene is ready or rejects on a load error.
 
 `game.destroy()` removes the game, its stylesheet and listeners, stops audio, and releases the WebGL context.
 

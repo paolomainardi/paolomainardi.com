@@ -1,5 +1,5 @@
 ---
-title: Adventure
+title: The Context Island
 outputs: [html, adventure]
 sitemap:
   disable: true
