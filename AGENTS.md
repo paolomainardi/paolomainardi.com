@@ -270,7 +270,9 @@ actionlint, zizmor) are pinned by image digest. Workflows run with `contents: re
 check out without persisting the token.
 
 `firebase.json` sends security headers on every response (`nosniff`, a strict
-referrer policy, a closed permissions policy, and no framing). The repository
+referrer policy, a closed permissions policy, and no framing). The one
+exception is `reader.html`, which only the site itself may frame, because the
+adventure at `/play/` shows posts in an iframe. The repository
 has secret scanning with push protection and Dependabot alerts on, and no wiki.
 
 Links arrive through a daily Claude routine that follows

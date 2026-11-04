@@ -29,7 +29,7 @@ The feed contains data, not game instructions. World bindings choose where conte
 
 Posts get a `reader` output through the Hugo cascade. The about and talks pages declare their reader output in front matter. Theme templates `posts/single.reader.html`, `single.reader.html` and `talks.reader.html` render article content with the site's styles, canonical URL and `noindex, follow`, without navigation or scripts. Post covers are still images.
 
-The game opens these same-origin pages in a sandboxed iframe at normal browser resolution. The reader lowers sound and freezes movement; Close or Escape restores the underlying room or book. A separate website link opens the canonical page. The normal article URL remains canonical.
+The game opens these same-origin pages in a sandboxed iframe at normal browser resolution. `firebase.json` lets only the site itself frame `reader.html`; every other page refuses framing. The reader lowers sound and freezes movement; Close or Escape restores the underlying room or book. A separate website link opens the canonical page. The normal article URL remains canonical.
 
 ## Sound and voices
 
@@ -88,7 +88,9 @@ file).
   `outputs = ["html", "reader"]` line and its comment;
 - `AGENTS.md`: remove the adventure from the browser storage exceptions;
 - `DESIGN.md`: remove the **Adventure** paragraph;
-- `.gitignore`: remove the `src/assets/jsconfig.json` line.
+- `.gitignore`: remove the `src/assets/jsconfig.json` line;
+- `firebase.json`: drop the `reader.html` and `/` header rules and move the
+  two framing headers back into the `**` rule.
 
 `layouts/_partials/book/talks-list.html` can stay: the talks page uses it.
 
