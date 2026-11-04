@@ -327,11 +327,11 @@
     },
     "purr": {
       "src": "sounds/purr.mp3",
-      "volume": 0.8
+      "volume": 0.6
     },
     "meow": {
       "src": "sounds/meow.mp3",
-      "volume": 0.7
+      "volume": 0.5
     },
     "book": {
       "src": "sounds/book.mp3",
