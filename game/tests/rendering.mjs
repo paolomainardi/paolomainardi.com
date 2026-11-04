@@ -664,3 +664,32 @@ spriteRenderer.sprite(
 assert.deepEqual(spriteUniforms.uHand, [game.actor.x, game.actor.y]);
 assert.equal(spriteUniforms.uFlame, 0);
 assert.equal(spriteUniforms.uRimOffset, 4 / 3);
+
+// Each character keeps its own scale, lighting and foreground baseline.
+game.actors = [
+  { ...game.actor, y: 145, character: { ...game.character, texture: {} } },
+];
+for (const y of [145, 155]) {
+  game.actors[0].y = y;
+  calls.length = 0;
+  renderer.render(game);
+  const sprites = calls.filter(
+    (c) =>
+      c.type === "sprite" &&
+      [texture, game.actors[0].character.texture].includes(c.args[0]),
+  );
+  assert.deepEqual(
+    sprites.map((c) => c.args[0]),
+    y < game.actor.y
+      ? [game.actors[0].character.texture, texture]
+      : [texture, game.actors[0].character.texture],
+  );
+  assert.equal(
+    sprites.find((c) => c.args[0] === game.actors[0].character.texture).args[7]
+      .actor.y,
+    y,
+  );
+}
+console.log(
+  "Room actors sort with visitor by feet and keep separate foreground baselines.",
+);

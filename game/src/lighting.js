@@ -68,9 +68,9 @@ export function beacon(time) {
   return phase < 4 ? 0 : Math.sin((phase - 4) * Math.PI) ** 2;
 }
 
-export function depth(game) {
+export function depth(game, actor = game.actor) {
   const { far, near } = game.room.depth,
-    t = Math.max(0, Math.min(1, (game.actor.y - far[0]) / (near[0] - far[0])));
+    t = Math.max(0, Math.min(1, (actor.y - far[0]) / (near[0] - far[0])));
   return far[1] + (near[1] - far[1]) * t;
 }
 
@@ -99,14 +99,13 @@ export function lightAt(game, x, y) {
     lightSourcesAt(game, x, y).reduce((sum, light) => sum + light.strength, 0),
   );
 }
-export function nearestLamp(game) {
+export function nearestLamp(game, actor = game.actor) {
   let nearest = null,
     best = Infinity;
   for (const light of game.room.lights) {
     if (light.strength <= 0.05) continue;
     const distance =
-      (light.position[0] - game.actor.x) ** 2 +
-      (light.position[1] - game.actor.y) ** 2;
+      (light.position[0] - actor.x) ** 2 + (light.position[1] - actor.y) ** 2;
     if (distance < best) {
       best = distance;
       nearest = light;

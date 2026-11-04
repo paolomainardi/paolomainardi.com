@@ -1,4 +1,5 @@
 // Load world data and room drawings, and derive masks and content bindings.
+import { validateActors, validateActorSheet, createActor } from "./actors.js";
 import { buildWater } from "./water.js";
 
 export function resolve(path, base) {
@@ -214,8 +215,26 @@ export async function loadRoom(world, worldURL, id, renderer) {
   for (const light of lights) {
     light.position = room.items.find((item) => item.id === light.id).position;
   }
+  validateActors(config.actors === undefined ? [] : config.actors, world, {
+    ...room,
+    walkable,
+  });
+  const actors = await Promise.all(
+    (config.actors || []).map(async (actor) => {
+      const sheetURL = resolve(actor.sheet, worldURL);
+      const sheet = await json(sheetURL);
+      const bitmap = await image(resolve(sheet.sheet, sheetURL));
+      validateActorSheet(sheet, bitmap);
+      return createActor(actor, {
+        ...sheet,
+        sheet: bitmap,
+        size: [bitmap.width, bitmap.height],
+      });
+    }),
+  );
   return {
     ...room,
+    actors,
     id,
     config,
     states: Object.fromEntries(states),

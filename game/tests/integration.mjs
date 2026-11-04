@@ -132,7 +132,9 @@ class Renderer {
   }
 }
 const decodedImages = new Map();
+const motionPreference = { matches: false };
 const context = vm.createContext({
+  matchMedia: () => motionPreference,
   AudioContext,
   URL,
   FontFace: class {
@@ -1353,6 +1355,75 @@ assert.deepEqual(Array.from(adventure.state.position), [572, 245]);
 assert.equal(rendered.actor.animation, "idle-side");
 assert.equal(rendered.actor.mirror, true, "Arrival faces left into harbour");
 assert.deepEqual(Array.from(adventure.state.inventory), ["workstation"]);
+// The moving cat is a target, with petting after arrival and no inventory entry.
+const cat = rendered.actors[0];
+event(adventureCanvas, "pointermove", { clientX: cat.x, clientY: cat.y - 5 });
+assert.equal(rendered.hover, cat);
+event(adventureRoot, "contextmenu", { clientX: cat.x, clientY: cat.y - 5 });
+assert.equal(rendered.menu.target, cat);
+assert.deepEqual(Array.from(rendered.menu.verbs), [
+  "Look at",
+  "Use",
+  "Take",
+  "Talk to",
+]);
+event(adventureRoot, "keydown", { key: "Escape" });
+
+const catSound = [];
+const playSound = rendered.sound.play.bind(rendered.sound);
+rendered.sound.play = (id, bus, volume) => {
+  catSound.push({ id, bus });
+  return playSound(id, bus, volume);
+};
+for (const [verb, voice] of [
+  ["Look at", "harbour-cat"],
+  ["Take", "harbour-cat-take"],
+]) {
+  select(verb);
+  tap(cat.x, cat.y - 5);
+  arrive();
+  assert.equal(rendered.speech, rendered.world.voices[voice].text);
+  assert.equal(adventure.state.inventory.includes("cat"), false);
+}
+select("Open");
+tap(cat.x, cat.y - 5);
+assert.equal(rendered.speech, "I can't do that.");
+for (const verb of ["Talk to", "Use", "Walk to"]) {
+  select(verb);
+  tap(cat.x, cat.y - 5);
+  assert.equal(cat.held, true);
+  const heldX = cat.x;
+  step(5);
+  assert.equal(cat.x, heldX);
+  arrive();
+  step();
+  assert(cat.petting > 0 && cat.petting <= 3);
+  assert.equal(cat.animation, "pet");
+  assert.equal(rendered.speech, rendered.world.voices["harbour-cat-pet"].text);
+  assert(
+    catSound.some(
+      (entry) => entry.id === "purr" && entry.bus === rendered.sound.effects,
+    ),
+  );
+  document.hidden = true;
+  const petTime = cat.petting;
+  step(10);
+  assert.equal(cat.petting, petTime);
+  document.hidden = false;
+  step();
+  step(200);
+  assert.equal(cat.petting, 0);
+}
+motionPreference.matches = true;
+const stillX = cat.x;
+step(100);
+assert.equal(cat.x, stillX);
+assert.equal(cat.animation, "sit");
+motionPreference.matches = false;
+rendered.sound.play = playSound;
+console.log(
+  "Cat target verbs, approach, pet sequence, sound, speech, hidden pause and reduced motion passed.",
+);
 const board = rendered.room.items.find((item) => item.id === "noticeboard");
 assert.equal(board.board.id, "links");
 select("Take");
@@ -1367,6 +1438,12 @@ for (const verb of ["Open", "Walk to"]) {
   arrive();
   assert.equal(adventure.state.board, "links");
   assert.equal(location.hash, "#harbour/board/links/0");
+  const catClock = rendered.actors[0].clock;
+  const catPosition = [rendered.actors[0].x, rendered.actors[0].y];
+  step(20);
+  assert.equal(rendered.actors[0].clock, catClock);
+  assert.deepEqual([rendered.actors[0].x, rendered.actors[0].y], catPosition);
+
   event(adventureRoot, "keydown", { key: "Escape" });
 }
 select("Open");
@@ -1464,7 +1541,7 @@ const takeRect = boardModule.namespace.noteTakeRect(notices.art);
 const beforeTaking = adventure.state.inventory.length;
 tap(takeRect.x, takeRect.y);
 assert.equal(rendered.speech, "I'll keep this one.");
-assert.equal(rendered.speechUntil - rendered.elapsed, 3.5);
+assert(Math.abs(rendered.speechUntil - rendered.elapsed - 3.5) < 1e-9);
 assert.equal(adventure.state.inventory.length, beforeTaking + 1);
 assert.deepEqual(JSON.parse(stored.get(inventoryKey)).at(-1), {
   kind: "notice",
