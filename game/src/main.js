@@ -1,6 +1,14 @@
 // Mount the title screen and reader, then start and dispose the game session.
+import { setVersion, versioned } from "./assets.js";
+
 /** Boot an isolated game in a supplied container. URLs resolve against the document. */
-export async function boot({ world, content, element, title = "Adventure" }) {
+export async function boot({
+  world,
+  content,
+  element,
+  title = "Adventure",
+  version = "",
+}) {
   if (!(element instanceof HTMLElement))
     throw new Error("boot requires a container element.");
   const worldURL = new URL(world, document.baseURI).href,
@@ -11,9 +19,10 @@ export async function boot({ world, content, element, title = "Adventure" }) {
     )
   )
     throw new Error("Assets and readers require HTTP(S) URLs.");
+  setVersion(version);
   const style = document.createElement("link");
   style.rel = "stylesheet";
-  style.href = new URL("./style.css", import.meta.url).href;
+  style.href = versioned(new URL("./style.css", import.meta.url).href);
   document.head.append(style);
   const root = document.createElement("section");
   root.className = "adventure";

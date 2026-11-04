@@ -31,6 +31,8 @@ const game = await boot({
 
 `game.destroy()` removes the game, its stylesheet and listeners, stops audio, and releases the WebGL context.
 
+The optional `version` string is added as a `v` query parameter to the stylesheet and to every data, drawing, font and sound request. Pass a new value on each deploy, so returning visitors load the new files instead of cached ones.
+
 URLs resolve against the document base URL. See [CONTRACT.md](CONTRACT.md) for the data format.
 
 ## Opening credits

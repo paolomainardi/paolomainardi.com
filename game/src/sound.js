@@ -1,5 +1,5 @@
 // Mix world-defined ambience and effects, and manage their audio-context lifetime.
-import { resolve } from "./assets.js";
+import { resolve, versioned } from "./assets.js";
 const presets = {
   purr: { frequency: 320, duration: 2.6, level: 0.22 },
   surf: { frequency: 650, duration: 4, level: 0.32 },
@@ -220,7 +220,7 @@ export class SoundEngine {
     if (!this.buffers.has(url)) {
       this.buffers.set(
         url,
-        fetch(url)
+        fetch(versioned(url))
           .then((response) => {
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             return response.arrayBuffer();
