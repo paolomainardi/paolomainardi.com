@@ -206,8 +206,12 @@ export class Speech {
       const sound = actor.chatter || actor.meow;
       this.say(exchange.meow, null, actor, actor.chatter ? 4 : 1.6);
       if (sound) this.game.sound.play(sound, this.game.sound.effects);
-    } else if (conversation.step === 1) this.say(exchange.words, null, actor);
-    else if (conversation.step === 2) this.say(null, exchange.reply);
+    } else if (conversation.step === 1) {
+      // She keeps chattering while the visitor reads what she means.
+      this.say(exchange.words, null, actor);
+      if (actor.chatter)
+        this.game.sound.play(actor.chatter, this.game.sound.effects);
+    } else if (conversation.step === 2) this.say(null, exchange.reply);
     else if (conversation.step === 3) this.say(exchange.end, null, actor, 1.2);
     else this.clear();
   }
