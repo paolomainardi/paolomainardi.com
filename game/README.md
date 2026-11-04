@@ -35,7 +35,7 @@ URLs resolve against the document base URL. See [CONTRACT.md](CONTRACT.md) for t
 
 ## Opening credits
 
-A world can play an intro after either Start button. Living room scenes show sequential credits in the book font, without the visitor or panel. Shots cross-fade over 0.8 seconds; the last scene waits for input. Click, Escape or Enter starts play and fades the theme out over one second. M mutes every bus, including music. Reduced motion keeps the same shot and credit order without fades.
+A world can play an intro after either Start button. Living room scenes show sequential credits in the book font, without the visitor or panel. Shots cross-fade over 0.8 seconds; the last scene waits for input. Click, Escape or Enter starts play and fades the theme out over one second; R replays the intro from the first shot. M mutes every bus, including music. Reduced motion keeps the same shot and credit order without fades.
 
 The supplied worlds include an intro. A missing theme file stays silent.
 

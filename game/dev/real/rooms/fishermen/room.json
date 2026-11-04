@@ -4,16 +4,11 @@
     640,
     360
   ],
-  "map": false,
+  "map": true,
   "albedo": "albedo.png",
   "water": "water.png",
   "objects": "objects.png",
   "items": [
-    {
-      "id": "floor",
-      "kind": "walkable",
-      "color": "#00ff00"
-    },
     {
       "id": "left-lantern",
       "kind": "light",
@@ -66,19 +61,5 @@
         "beacon": "night-beacon.png"
       }
     }
-  },
-  "depth": {
-    "far": [
-      228,
-      0.36
-    ],
-    "near": [
-      258,
-      0.4
-    ]
-  },
-  "spawn": [
-    160,
-    240
-  ]
+  }
 }

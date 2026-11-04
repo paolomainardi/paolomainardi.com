@@ -403,6 +403,22 @@ export async function startSession({
         if (game.intro === intro) game.loading = false;
       }
     }
+    // R replays the intro from its first shot, with the music from the top.
+    async function replayIntro() {
+      const intro = (game.intro = new Intro(game.world.intro));
+      game.loading = true;
+      game.sound.stopMusic();
+      renderer.clearIntro();
+      try {
+        await changeRoom(intro.shot.room);
+        if (game.intro !== intro || lifecycle.disposed) return;
+        game.time = intro.shot.time;
+        if (game.world.intro.music)
+          game.sound.playMusic(game.world.intro.music);
+      } finally {
+        if (game.intro === intro) game.loading = false;
+      }
+    }
     async function finishIntro() {
       if (!game.intro) return;
       game.intro = null;
@@ -1056,6 +1072,8 @@ export async function startSession({
           event.preventDefault();
           finishIntro();
         }
+        if (event.key.toLowerCase() === "r" && !event.repeat && !game.loading)
+          replayIntro();
         return;
       }
       if (game.readerItem || game.loading || game.transition) return;

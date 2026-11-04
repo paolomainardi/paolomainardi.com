@@ -454,7 +454,7 @@ Optional `world.intro` plays after every Start, before restoring the initial roo
 
 Rooms keep their lights, water, beacon and actors. The intro hides the visitor, carried lantern, panel and hotspots, blocks game actions and suppresses entry speech. Intro-only rooms need no incoming exits. Shots cross-fade over 0.8 seconds using a captured outgoing frame over the living incoming scene. Loading pauses shot timing. Hidden tabs pause the intro. Reduced motion removes shot and text fades while keeping their order.
 
-Click, Escape or Enter skips any shot, including during room loading, and restores normal startup with entry speech. Music fades out over one second. M toggles mute without skipping.
+Click, Escape or Enter skips any shot, including during room loading, and restores normal startup with entry speech. Music fades out over one second. M toggles mute without skipping. R restarts the intro from its first shot, with the music from the top.
 
 A shot's optional `sounds` lists cues `{ "sound": "meow", "at": 3, "volume": 0.6 }`: each names a `sounds` entry and plays once on the effects bus `at` seconds into the shot (before its end), at `volume` (default 1).
 

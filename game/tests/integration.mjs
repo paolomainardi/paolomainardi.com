@@ -2488,6 +2488,12 @@ for (const skip of ["click", "Escape", "Enter", "border"]) {
     }
     step(1000);
     assert.equal(instance.state.intro, 3, "Last shot holds");
+    // R replays the intro from its first shot.
+    rawEvent(introRoot, "keydown", { key: "r" });
+    await flushIntro();
+    step();
+    assert.equal(instance.state.intro, 0, "R replays the intro");
+    assert.equal(instance.state.room, "map");
     rawEvent(introCanvas, "click", { clientX: 200, clientY: 280 });
   } else {
     // Skip while the next room is loading too.

@@ -44,7 +44,7 @@ The recordings were generated with ElevenLabs (`eleven_v4`, voice "Will", 44.1 k
 
 ## Intro
 
-Start plays a short intro before the first room, like the opening of Monkey Island 2. Four living scenes from the game (the map, the harbour, the agents' workshop and the lighthouse) carry fading credits and the title, over a theme generated with ElevenLabs Music. On headphones the theme is binaural: the browser places it on two virtual speakers in front of the listener. A click, Escape or Enter skips it. The shots live in `world.json` under `intro`.
+Start plays a short intro before the first room, like the opening of Monkey Island 2. Five living scenes (the island map, the harbour, the agents' workshop, the fishermen and the lighthouse) carry fading credits and the title, over a theme generated with ElevenLabs Music. On headphones the theme is binaural: the browser places it on two virtual speakers in front of the listener. A click, Escape or Enter skips it, and R replays it. The shots live in `world.json` under `intro`.
 
 ## Pocket map
 
