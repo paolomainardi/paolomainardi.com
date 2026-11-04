@@ -16,8 +16,8 @@
 {{- if not (and $webm $mp4 $poster) }}{{ errorf "video: missing webm, mp4 or poster in %s" .Page.File.Path }}{{ end -}}
 <figure class="clip">
   <video controls muted playsinline preload="none" poster="{{ $poster.RelPermalink }}" width="{{ $poster.Width }}" height="{{ $poster.Height }}" aria-label="{{ .Get "label" }}">
-    <source src="{{ $webm.RelPermalink }}" type="video/webm">
     <source src="{{ $mp4.RelPermalink }}" type="video/mp4">
+    <source src="{{ $webm.RelPermalink }}" type="video/webm">
   </video>
   {{- with .Inner }}
   <figcaption>{{ . | $.Page.RenderString }}</figcaption>
