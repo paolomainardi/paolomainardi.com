@@ -6,6 +6,7 @@ import { speechLines, speechLayout } from "../src/speech.js";
 import { bookFonts } from "../src/book.js";
 import { context2D } from "./text-fixture.mjs";
 import { Renderer } from "../src/renderer.js";
+import { Intro } from "../src/intro.js";
 
 // Exercise render placement without requiring a GPU. Use deliberately different
 // dimensions and an off-centre anchor to catch assumptions about the supplied art.
@@ -706,3 +707,16 @@ assert(
 );
 assert(!calls.some((c) => c.type === "text"));
 console.log("Intro renders room actors without visitor or panel.");
+// Reduced motion shows the title card dim at full strength from its first frame.
+game.intro = new Intro({
+  shots: [{ room: "a", time: "night", seconds: 4, title: true, lines: [] }],
+});
+renderer.motionPreference = { matches: true };
+calls.length = 0;
+renderer.render(game);
+assert(
+  calls.some(
+    (c) => c.type === "rect" && c.args[1] === 0 && c.args[4][3] === 0.55,
+  ),
+);
+console.log("Reduced motion keeps the title dim without a fade.");
