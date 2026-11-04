@@ -45,7 +45,7 @@ The site and the game share only the build. Hugo writes a `content.json` with po
 
 The island is the world of the covers, the sea, the stone house, the lighthouses and the rose container, reduced to 90s pixels. There are **four places** to visit.
 
-{{< figure src="/images/posts/20-the-island/study.webp" caption="The study at dusk. Each book on the shelf is a topic, and the laptop is still awake." >}}
+{{< figure src="/images/posts/20-the-island/study.webp" caption="The study at night. Each book on the shelf is a topic, and the laptop is still awake." >}}
 
 - The **study** in the stone house, where the bookshelf holds six topic books (Linux, AI, Docker, Security, Workstation and Personal). Each opens in a close-up with its table of contents, and the pages turn with a curl.
 - The **harbour**, where a **notice board** holds the links as pinned papers you can read, follow or take.
@@ -62,7 +62,11 @@ Articles open in a reader at the browser's own resolution, with the site's fonts
 
 The frame is **640×360** game pixels with **256 colours**, scaled by whole numbers, so it is three times bigger on a 1080p screen. We started at 320×180 with 32 colours. I found it too low, with too few colours, and I asked for 256, then for a higher resolution that still felt like the 90s.
 
-Light is the part I cared about most. Each room is drawn several times, with every lamp off and then with each lamp lit on its own, at dusk and at night. The **WebGL** shader adds the lamps you switch on, so a lamp lights the room the way the painter drew it. Oil lamps flicker, the lighthouse beacon flashes and at night the character's **lantern** throws a warm pool around him. The sea moves a pixel at a time, from pixels already in the drawing.
+Light is the part I cared about most. Each room is drawn several times, with every lamp off and then with each lamp lit on its own, at dusk and at night. The **WebGL** shader adds the lamps you switch on, so a lamp lights the room the way the painter drew it. Oil lamps flicker, the lighthouse beacon flashes and at night the character's **lantern** throws a warm pool around him. Every visit starts at night, where the lights show best, and the **Time** control in the panel switches to dusk.
+
+{{< compare before="/images/posts/20-the-island/harbour-dusk.webp" after="/images/posts/20-the-island/harbour.webp" before-label="Dusk" after-label="Night" alt="The harbour at dusk and at night" >}}
+The same harbour at dusk and at night. At night the street lamp, the door lantern and the lighthouse light the scene.
+{{< /compare >}} The sea moves a pixel at a time, from pixels already in the drawing.
 
 {{< figure src="/images/posts/20-the-island/map.webp" caption="The island map, with the stone house, the harbour and the lighthouse." >}}
 
@@ -88,7 +92,11 @@ Claude cannot hear, so I listened to every sound and every voice myself. The vis
 
 > Hello…? The lamp is still warm. Whoever lives here left a moment ago. Or maybe… they never really left.
 
-The issue with AI generated voices is expression. I asked for pauses, emotions and sounds like "mmmh", but they were added to every line and it became unnatural again. In the end only nine lines keep a hesitation. I chose the voice, **Will**, by taste, because it resembled the character we built and it worked better with a bit of irony. You can [listen to the study](/play/data/voices/study-enter.mp3) and to [the laptop](/play/data/voices/study-laptop.mp3).
+The issue with AI generated voices is expression. I asked for pauses, emotions and sounds like "mmmh", but they were added to every line and it became unnatural again. In the end only nine lines keep a hesitation.
+
+While I was writing this post, ElevenLabs released **Eleven v4**, which follows those tags much more closely. The first takes were whispering too much, because v4 took every "softly" literally. With lighter tags I really loved it, so all 43 lines are now recorded with v4.
+
+I chose the voice, **Will**, by taste, because it resembled the character we built and it worked better with a bit of irony. You can [listen to the study](/play/data/voices/study-enter.mp3) and to [the laptop](/play/data/voices/study-laptop.mp3).
 
 The subtitles use the book's pixel font, in a warm colour with a dark outline, above the character's head, as in the old games.
 
