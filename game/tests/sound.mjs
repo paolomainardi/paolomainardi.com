@@ -9,7 +9,7 @@ const world = JSON.parse(
 const audio = new SoundEngine(
   world,
   "https://example.test/data/world.json",
-  AudioContext,
+  new AudioContext(),
 );
 const room = {
   config: world.rooms["stone-house"],
@@ -26,8 +26,8 @@ audio.update(game);
 audio.visibility(false);
 assert.equal(
   AudioContext.instances.length,
-  0,
-  "No context or sound before Start",
+  1,
+  "Caller supplies context before Start",
 );
 audio.start();
 assert.equal(audio.context.state, "running");

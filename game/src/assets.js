@@ -41,11 +41,7 @@ export function matchingItems(items, filter = {}) {
     );
 }
 
-export async function loadWorld(
-  worldURL,
-  contentURL,
-  origin = new URL(contentURL).origin,
-) {
+export async function loadWorld(worldURL, contentURL, origin) {
   const [world, content] = await Promise.all([
     json(worldURL),
     json(contentURL),
@@ -69,26 +65,10 @@ export async function loadWorld(
   };
   const characterURL = resolve(world.character, worldURL);
   const character = await json(characterURL);
-  const [palette, sheet, glow, objects] = await Promise.all([
+  const [palette, sheet, glow] = await Promise.all([
     bitmap(world.palette, worldURL),
     bitmap(character.sheet, characterURL),
     character.glow ? bitmap(character.glow, characterURL) : null,
-    Promise.all(
-      Object.entries(world.objects || {}).map(async ([key, value]) => {
-        const paths = Array.isArray(value) ? value : [value];
-        if (
-          !paths.length ||
-          paths.some((path) => typeof path !== "string" || !path)
-        )
-          throw new Error(
-            `Object ${key} requires a sprite path or a non-empty list of sprite paths.`,
-          );
-        return [
-          key,
-          await Promise.all(paths.map((path) => bitmap(path, worldURL))),
-        ];
-      }),
-    ),
   ]);
   if (glow && (glow.width !== sheet.width || glow.height !== sheet.height))
     throw new Error("Character glow must match the sheet grid.");
@@ -97,7 +77,6 @@ export async function loadWorld(
     items,
     character: { ...character, sheet, glow },
     palette,
-    objects: Object.fromEntries(objects),
     books: Object.fromEntries(
       await Promise.all(
         Object.entries(world.books || {}).map(async ([id, book]) => [
@@ -238,4 +217,87 @@ export async function loadRoom(world, worldURL, id, renderer) {
     walkable,
     foreground,
   };
+}
+
+export function flameCentroids(character, renderer) {
+  if (character.glow) {
+    const pixels = renderer.pixels(character.glow);
+    character.flames = {};
+    for (const [name, animation] of Object.entries(character.animations)) {
+      character.flames[name] = [];
+      for (let frame = 0; frame < animation.frames; frame++) {
+        let sx = 0,
+          sy = 0,
+          weight = 0;
+        for (let y = 0; y < character.frame[1]; y++)
+          for (let x = 0; x < character.frame[0]; x++) {
+            const i =
+              ((animation.row * character.frame[1] + y) * character.size[0] +
+                ((animation.start || 0) + frame) * character.frame[0] +
+                x) *
+              4;
+            const w = ((pixels[i] / 255) * pixels[i + 3]) / 255;
+            sx += (x + 0.5) * w;
+            sy += (y + 0.5) * w;
+            weight += w;
+          }
+        character.flames[name].push(
+          weight
+            ? [
+                sx / weight - character.anchor[0],
+                sy / weight - character.anchor[1],
+              ]
+            : character.lantern,
+        );
+      }
+    }
+  }
+}
+
+export function bindRoom(game) {
+  const room = game.room;
+  for (const hotspot of room.items.filter((item) => item.kind === "hotspot")) {
+    const binding = room.config.hotspots?.[hotspot.id];
+    if (!binding) continue;
+    if (binding.go) {
+      const via = room.items.find(
+        (item) => item.id === binding.via && item.kind === "exit",
+      );
+      if (!Object.hasOwn(game.world.rooms, binding.go) || !via)
+        throw new Error(`Invalid travel hotspot: ${hotspot.id}`);
+      hotspot.go = binding.go;
+      hotspot.via = via;
+      continue;
+    }
+    if (binding.board) {
+      hotspot.board = game.boards[binding.board];
+      if (!hotspot.board) throw new Error(`Unknown board: ${binding.board}`);
+      continue;
+    }
+    hotspot.binding = "content";
+    const item = newest(matchingItems(game.items, binding.content))[0];
+    if (item) {
+      hotspot.content = item;
+      hotspot.site = binding.site;
+      hotspot.label = `${hotspot.label || hotspot.id}: ${item.title}`;
+    }
+  }
+  game.objects = room.items
+    .filter((item) => item.kind === "slot" && item.bounds[2] >= 0)
+    .slice(0, room.config.books?.length || 0)
+    .map((slot, i) => {
+      const book = game.books[room.config.books[i]];
+      if (!book) throw new Error(`Unknown book: ${room.config.books[i]}`);
+      return {
+        ...slot,
+        kind: "book",
+        label: book.title,
+        book,
+        sprite: book.sprite,
+      };
+    });
+}
+
+export function newest(items) {
+  return items.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 }

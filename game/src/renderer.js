@@ -1,17 +1,30 @@
 // Composite room drawings, sprites, text, palette mapping, and bloom with WebGL2.
+import {
+  depth,
+  lanternPosition,
+  lanternStrength,
+  lightAt,
+  nearestLamp,
+  lightSourcesAt,
+} from "./lighting.js";
 import { boardEntries, boardTitleBox } from "./board.js";
-import { inventoryIcon, siteLayout } from "./panel.js";
+import {
+  inventoryIcon,
+  footerLayout,
+  sentence,
+  siteSentence,
+} from "./panel.js";
 import { waterFrame, reflectionPeak } from "./water.js";
 import { TextLayer } from "./text-layer.js";
 import { animationFrame } from "./animation.js";
 import { fontPixels, wrap } from "./font.js";
 import { buildPaletteLookup, PALETTE_STEPS } from "./palette.js";
 
-// A full-screen triangle supplies UVs for each pass.
 const fontSize = [96, 48];
 const solidSize = [1, 1];
 const whiteTint = [1, 1, 1, 1];
 const textTint = [0.96, 0.89, 0.72, 1];
+// A full-screen triangle supplies UVs for each pass.
 const vertex = `#version 300 es
 out vec2 uv;
 void main(){
@@ -27,6 +40,7 @@ bool covered(vec2 at){
  return mask.a>.5&&uFeet<baseline;
 }`;
 // Combine independent lamp drawings and albedo-based lantern light in linear colour.
+const bayer = `const float bayer[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);`;
 const common = `
 precision highp float;
 precision highp sampler2DArray;
@@ -40,15 +54,17 @@ uniform vec3 uLantern;
 uniform vec2 uSize;
 uniform float uLanternRadius;
 ${foregroundDepth}
-const float bayer[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
+${bayer}
 float threshold(vec2 p){ivec2 q=ivec2(floor(p))%4;return (bayer[q.y*4+q.x]+.5)/16.;}
 vec3 linearColour(vec3 c){return mix(c/12.92,pow((c+.055)/1.055,vec3(2.4)),step(vec3(.04045),c));}
 vec3 screenColour(vec3 c){c=clamp(c,0.,1.);return mix(c*12.92,1.055*pow(c,vec3(1./2.4))-.055,step(vec3(.0031308),c));}
 float lantern(vec2 p){return (1.-smoothstep(0.,1.,distance(p,uLantern.xy)/uLanternRadius))*uLantern.z;}
 vec3 drawing(vec2 p){
+ // Water texels: red is displacement + 2, green is sparkle, blue marks water.
  vec4 water=uWaterMotion?texture(uWater,p/uSize):vec4(0.);
  vec2 source=p;
  if(water.b>.5)source.x+=round(water.r*255.)-2.;
+ // Reflection row: unlit peak first, followed by one peak per lamp.
  vec3 base=linearColour(water.g>.5?texelFetch(uReflection,ivec2(0,0),0).rgb:texture(uUnlit,source/uSize).rgb);
  for(int i=0;i<uCount;i++){
    vec4 info=texelFetch(uData,ivec2(i,0),0);
@@ -64,7 +80,7 @@ vec3 drawing(vec2 p){
 
 export class Renderer {
   siteLabel(game) {
-    const site = siteLayout(game);
+    const site = footerLayout(game).site;
     if (site)
       this.text(
         site.label,
@@ -76,13 +92,10 @@ export class Renderer {
   }
 
   soundLabel(game) {
-    if (!game.soundRect) return;
     this.text(
       game.sound.muted ? "Sound: off" : "Sound: on",
-      game.soundRect.x,
-      game.activeBook || game.activeBoard || game.readerItem
-        ? game.room.size[1] - 16
-        : game.soundRect.y,
+      footerLayout(game).sound.x,
+      footerLayout(game).sound.y,
     );
   }
 
@@ -101,7 +114,8 @@ export class Renderer {
     gl.bindVertexArray(gl.createVertexArray());
     this.programs = {};
     this.programs.room = this.program(
-      common +
+      "#version 300 es\n" +
+        common +
         `uniform bool uFront;void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;if(uFront&&!covered(p/uSize))discard;color=vec4(drawing(p),1.);}`,
     );
     // Sample nearest sprite cells, add rim and flame light, and optionally emit bloom.
@@ -121,6 +135,7 @@ void main(){
  if(uMirror>.5)q.x=1.-q.x;
  vec2 tex=(uSource.xy+floor(q*uSource.zw)+.5)/uImageSize;
  vec4 c=texture(uImage,tex);if(c.a<.01)discard;
+ // Offset one room pixel toward the lamp; glow mixes the flame over its sprite.
  vec2 delta=vec2(sign(uRim)*(uMirror>.5?-1.:1.)*uRimOffset/uImageSize.x,0);
  float edge=1.-texture(uImage,tex+delta).a;
  vec3 rgb=c.rgb*uTint.rgb+vec3(.42,.24,.07)*edge*abs(uRim);
@@ -160,9 +175,8 @@ void main(){color=texture(uImage,uv)*.227027;for(int i=1;i<=4;i++){float w=i==1?
     // Map the scene through the palette lookup and add screen-resolution bloom.
     this.programs.present = this.program(`#version 300 es
 precision highp float;precision highp sampler3D;in vec2 uv;out vec4 color;
-uniform sampler2D uImage,uGlow,uGlowCore;uniform sampler3D uPalette;uniform float uBloom,uDither,uScale;
-const float bayer[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
-void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(uImage,uv).rgb+uDither*((bayer[q.y*4+q.x]+.5)/16.-.5)/255.,0.,1.);vec3 mapped=texture(uPalette,(floor(c*${PALETTE_STEPS - 1}.+.5)+.5)/${PALETTE_STEPS}.).rgb;color=vec4(mapped+(texture(uGlow,uv).rgb*.45+texture(uGlowCore,uv).rgb*.12)*uBloom,1.);}`);
+uniform sampler2D uImage,uGlow,uGlowCore;uniform sampler3D uPalette;uniform float uBloom;
+void main(){vec3 c=clamp(texture(uImage,uv).rgb,0.,1.);vec3 mapped=texture(uPalette,(floor(c*${PALETTE_STEPS - 1}.+.5)+.5)/${PALETTE_STEPS}.).rgb;color=vec4(mapped+(texture(uGlow,uv).rgb*.45+texture(uGlowCore,uv).rgb*.12)*uBloom,1.);}`);
 
     // Mask cached page text beneath the turning leaf.
     this.programs.text = this.program(`#version 300 es
@@ -183,7 +197,7 @@ void main(){
  }
  color=texture(uImage,at);
 }`);
-    this.textLayer = new TextLayer();
+    this.textLayer = new TextLayer(document.createElement("canvas"));
     this.black = this.texture(new Uint8Array([0, 0, 0, 0]), 1, 1);
     this.white = this.texture(new Uint8Array([255, 255, 255, 255]), 1, 1);
     this.font = this.texture(fontPixels(), 96, 48);
@@ -200,12 +214,7 @@ void main(){
     };
     const p = gl.createProgram(),
       v = compile(gl.VERTEX_SHADER, vertex),
-      f = compile(
-        gl.FRAGMENT_SHADER,
-        fragment.startsWith("#version")
-          ? fragment
-          : "#version 300 es\n" + fragment,
-      );
+      f = compile(gl.FRAGMENT_SHADER, fragment);
     gl.attachShader(p, v);
     gl.attachShader(p, f);
     gl.linkProgram(p);
@@ -371,8 +380,6 @@ void main(){
       return t;
     };
     const count = Math.max(1, room.lights.length);
-    if (count > gl.getParameter(gl.MAX_ARRAY_TEXTURE_LAYERS))
-      throw new Error("Too many lamp drawings for this GPU.");
     const array = (pixels) => {
       const texture = keep(gl.createTexture());
       gl.bindTexture(gl.TEXTURE_2D_ARRAY, texture);
@@ -449,16 +456,10 @@ void main(){
       gl.texParameteri(gl.TEXTURE_2D, key, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    // uData rows: unused xy / strength z; tint rgba; drift xy.
     this.lightData = new Float32Array(count * 3 * 4);
     room.lights.forEach((light, i) => {
-      const offset = i * 4;
-      this.lightData[offset] = light.position[0];
-      this.lightData[offset + 1] = light.position[1];
-      const color = parseInt(light.tint.slice(1), 16);
-      this.lightData[(count + i) * 4] = ((color >> 16) & 255) / 255;
-      this.lightData[(count + i) * 4 + 1] = ((color >> 8) & 255) / 255;
-      this.lightData[(count + i) * 4 + 2] = (color & 255) / 255;
-      this.lightData[(count + i) * 4 + 3] = 1;
+      this.lightData.set(rgba(light.tint), (count + i) * 4);
     });
     gl.texImage2D(
       gl.TEXTURE_2D,
@@ -544,11 +545,7 @@ void main(){
     this.integer("uWaterMotion", moving ? 1 : 0);
     this.integer("uCount", game.room.lights.length);
     this.uniform("uLanternRadius", game.lanternRadius);
-    const lantern = (this.lanternUniform ||= [0, 0, 0]);
-    const position = game.lanternPosition(lantern);
-    lantern[0] = position[0];
-    lantern[1] = position[1];
-    lantern[2] = game.lanternStrength();
+    const lantern = [...lanternPosition(game), lanternStrength(game)];
     this.uniform("uLantern", lantern);
   }
   sprite(
@@ -562,7 +559,7 @@ void main(){
     character = null,
   ) {
     if (!source) {
-      source = this.spriteSource ||= [0, 0, 0, 0];
+      source = [0, 0, 0, 0];
       source[2] = size[0];
       source[3] = size[1];
     }
@@ -578,8 +575,8 @@ void main(){
       );
       this.bind("uForeground", this.foreground, 2);
       this.uniform("uFeet", character.game.actor.y);
-      this.uniform("uFlame", character.game.lanternStrength());
-      this.uniform("uHand", character.game.lanternPosition());
+      this.uniform("uFlame", lanternStrength(character.game));
+      this.uniform("uHand", lanternPosition(character.game));
       this.uniform("uHandRadius", character.game.lanternRadius);
     }
     this.uniform("uRect", rect);
@@ -588,23 +585,23 @@ void main(){
     this.uniform("uTint", tint);
     this.uniform("uMirror", mirror ? 1 : 0);
     this.uniform("uRim", rim);
-    this.uniform("uRimOffset", ((this.size[0] / 480) * source[2]) / rect[2]);
+    this.uniform("uRimOffset", (this.pixelScale * source[2]) / rect[2]);
     this.draw();
   }
   rect(x, y, w, h, tint) {
-    const rect = (this.solidRect ||= [0, 0, 0, 0]);
+    const rect = [0, 0, 0, 0];
     rect[0] = x;
     rect[1] = y;
     rect[2] = w;
     rect[3] = h;
     this.sprite(this.white, solidSize, rect, undefined, tint);
   }
-  text(text, x, y, tint = textTint, scale = 1) {
-    const rect = (this.glyphRect ||= [0, 0, 0, 0]);
-    const source = (this.glyphSource ||= [0, 0, 6, 8]);
+  text(text, x, y, tint = textTint) {
+    const rect = [0, 0, 0, 0];
+    const source = [0, 0, 6, 8];
     rect[1] = Math.round(y);
-    rect[2] = 6 * scale;
-    rect[3] = 8 * scale;
+    rect[2] = 6;
+    rect[3] = 8;
     for (const char of String(text)) {
       const code = char.charCodeAt(0),
         cell = char === "…" ? 127 : code >= 32 && code < 128 ? code : 63;
@@ -612,10 +609,11 @@ void main(){
       source[0] = ((cell - 32) % 16) * 6;
       source[1] = Math.floor((cell - 32) / 16) * 8;
       this.sprite(this.font, fontSize, rect, source, tint);
-      x += 6 * scale;
+      x += 6;
     }
   }
   compositeText(game) {
+    if (!game.activeBook && !game.activeBoard && !game.menu) return;
     const layer = this.textLayer;
     if (layer.update(game)) {
       if (!this.textTexture) this.textTexture = this.texture(layer.canvas);
@@ -631,20 +629,16 @@ void main(){
         );
       }
     }
-    if (!game.activeBook && !game.activeBoard && !game.menu) return;
     const gl = this.gl;
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     this.use(this.programs.text);
     this.bind("uImage", this.textTexture);
-    const turn = game.bookArt?.turn;
+    const turn = game.bookArt.turn;
     this.integer("uTurning", game.turning ? 1 : 0);
-    this.bind("uCover", turn?.texture || this.black, 1);
+    this.bind("uCover", turn.texture, 1);
     if (game.turning) {
-      const frame = Math.min(
-        turn.frames - 1,
-        Math.floor(game.turning.progress * turn.frames),
-      );
+      const frame = turnFrame(game);
       const previous = game.turning.direction < 0;
       this.integer("uPrevious", previous ? 1 : 0);
       this.uniform("uCoverRect", turn.rect);
@@ -661,16 +655,8 @@ void main(){
   }
   renderMenu(game) {
     const menu = game.menu;
-    const ink = game.bookArt?.ink || "#1d202f";
-    const accent = game.bookArt?.accent || "#8a5650";
-    const color = (hex) => [
-      ...hex
-        .slice(1)
-        .match(/../g)
-        .map((c) => parseInt(c, 16) / 255),
-      1,
-    ];
-    this.rect(menu.x, menu.y, menu.width, menu.height, color(ink));
+    const { ink } = game.bookArt;
+    this.rect(menu.x, menu.y, menu.width, menu.height, rgba(ink));
     this.rect(
       menu.x + 1,
       menu.y + 1,
@@ -678,17 +664,8 @@ void main(){
       menu.height - 2,
       [0.96, 0.89, 0.72, 1],
     );
-    if (!game.bookArt) {
-      [menu.header, ...menu.verbs].forEach((label, row) =>
-        this.text(
-          label,
-          menu.x + 6,
-          menu.y + (row ? menu.listTop + (row - 1) * menu.rowHeight : 4),
-          color(row > 0 && row - 1 === menu.selected ? accent : ink),
-        ),
-      );
-    }
   }
+
   renderBook(game) {
     const gl = this.gl,
       book = game.bookArt;
@@ -709,10 +686,7 @@ void main(){
     }
     if (game.turning) {
       const turn = book.turn;
-      const frame = Math.min(
-        turn.frames - 1,
-        Math.floor(game.turning.progress * turn.frames),
-      );
+      const frame = turnFrame(game);
       const previous = game.turning.direction < 0;
       this.sprite(
         turn.texture,
@@ -726,25 +700,28 @@ void main(){
     this.renderFooter(game);
     gl.disable(gl.BLEND);
     this.compositeText(game);
+    this.present(false);
+  }
+  present(bloom) {
+    const gl = this.gl;
     this.into(null);
     this.use(this.programs.present);
     this.bind("uImage", this.scene.texture);
-    this.bind("uGlow", this.black, 1);
+    this.bind("uGlow", bloom ? this.glow[0].texture : this.black, 1);
     this.bind("uPalette", this.lut, 2, gl.TEXTURE_3D);
-    this.bind("uGlowCore", this.black, 3);
-    this.uniform("uBloom", 0);
-    this.uniform("uDither", game.world?.dither === true ? 1 : 0);
-    this.uniform("uScale", this.scale);
+    this.bind("uGlowCore", bloom ? this.glow[2].texture : this.black, 3);
+    this.uniform("uBloom", bloom ? 1 : 0);
     this.draw();
   }
   renderFooter(game) {
-    const top = game.room.size[1] - 24;
+    const close = footerLayout(game).close,
+      top = close.y;
     this.rect(0, top, this.size[0], 24, [0.025, 0.03, 0.05, 0.85]);
-    this.text("Close", 8, top + 8);
+    this.text("Close", close.x, top + 8);
     const site = this.siteLabel(game);
     const message =
       game.siteHover && site
-        ? `Open ${site.path} on the site`
+        ? siteSentence(site)
         : (game.sentenceNotice || game.speech) &&
             game.speechUntil > game.elapsed
           ? game.sentenceNotice || game.speech
@@ -780,18 +757,10 @@ void main(){
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     let layout = this.boardLayout;
-    if (
-      !layout ||
-      layout.board !== board ||
-      layout.items !== board.items ||
-      layout.count !== board.items.length ||
-      layout.page !== game.boardPage
-    ) {
-      const rgb = art.accent.match(/\w\w/g).map((c) => parseInt(c, 16) / 255);
+    if (!layout || layout.board !== board || layout.page !== game.boardPage) {
+      const rgb = rgba(art.accent).slice(0, 3);
       layout = this.boardLayout = {
         board,
-        items: board.items,
-        count: board.items.length,
         page: game.boardPage,
         entries: boardEntries(board, game.boardPage),
         title: boardTitleBox(board, art, game.bookArt.fonts),
@@ -800,17 +769,12 @@ void main(){
     }
     const box = !game.boardNote && layout.title;
     if (box) {
-      const color = (hex) =>
-        hex
-          .match(/\w\w/g)
-          .map((c) => parseInt(c, 16) / 255)
-          .concat(1);
-      this.rect(box.x, box.y, box.w, box.h, color(art.ink));
+      this.rect(box.x, box.y, box.width, box.height, rgba(art.ink));
       this.rect(
         box.x + 1,
         box.y + 1,
-        box.w - 2,
-        box.h - 2,
+        box.width - 2,
+        box.height - 2,
         [0.96, 0.9, 0.78, 1],
       );
     }
@@ -832,16 +796,7 @@ void main(){
     this.renderFooter(game);
     gl.disable(gl.BLEND);
     this.compositeText(game);
-    this.into(null);
-    this.use(this.programs.present);
-    this.bind("uImage", this.scene.texture);
-    this.bind("uGlow", this.black, 1);
-    this.bind("uPalette", this.lut, 2, gl.TEXTURE_3D);
-    this.bind("uGlowCore", this.black, 3);
-    this.uniform("uBloom", 0);
-    this.uniform("uDither", game.world?.dither === true ? 1 : 0);
-    this.uniform("uScale", this.scale);
-    this.draw();
+    this.present(false);
   }
   resize(width, height) {
     const [frameWidth, frameHeight] = this.size;
@@ -856,7 +811,7 @@ void main(){
     this.canvas.style.width = `${w * fit}px`;
     this.canvas.style.height = `${h * fit}px`;
     if (this.canvas.width === w && this.canvas.height === h && this.glow)
-      return;
+      return scale * fit;
     this.canvas.width = w;
     this.canvas.height = h;
     if (this.glow)
@@ -866,8 +821,10 @@ void main(){
       }
     this.glow = [this.target(w, h), this.target(w, h), this.target(w, h)];
     this.scale = scale;
+    return scale * fit;
   }
   render(game) {
+    this.pixelScale = game.pixelScale;
     if (game.activeBoard && !game.inventoryNote) {
       this.renderBoard(game);
       return;
@@ -888,13 +845,13 @@ void main(){
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     for (const item of game.objects) {
       const object = item.sprite,
-        light = game.lightAt(...item.position);
+        light = lightAt(game, ...item.position);
       this.sprite(
         object.texture,
         object.size,
         [
           item.position[0] - object.size[0] / 2,
-          item.position[1] - object.size[1] + game.room.size[0] / 480,
+          item.position[1] - object.size[1] + game.pixelScale,
           ...object.size,
         ],
         undefined,
@@ -904,8 +861,8 @@ void main(){
     let rect, frame, animation;
     const actor = game.actor;
     if (!game.room.map) {
-      const scale = game.depth(),
-        lamp = game.nearestLamp();
+      const scale = depth(game),
+        lamp = nearestLamp(game);
       const dx = lamp ? actor.x - lamp.position[0] : 10,
         dy = lamp ? actor.y - lamp.position[1] : 8,
         len = Math.hypot(dx, dy) || 1;
@@ -923,7 +880,7 @@ void main(){
       this.draw();
       animation = game.character.animations[actor.animation];
       frame = (animation.start || 0) + animationFrame(actor, animation);
-      const sources = game.lightSourcesAt(actor.x, actor.y);
+      const sources = lightSourcesAt(game, actor.x, actor.y);
       let brightest = null,
         red = 0,
         green = 0,
@@ -935,11 +892,11 @@ void main(){
         green += strength * light.tint[1];
         blue += strength * light.tint[2];
       }
-      const tint = (this.actorTint ||= [0, 0, 0, 1]);
+      const tint = [0, 0, 0, 1];
       tint[0] = 0.7 + 0.3 * Math.min(1, red);
       tint[1] = 0.7 + 0.3 * Math.min(1, green);
       tint[2] = 0.7 + 0.3 * Math.min(1, blue);
-      rect = this.actorRect ||= [0, 0, 0, 0];
+      rect = [0, 0, 0, 0];
       rect[0] = Math.round(
         actor.x -
           (actor.mirror
@@ -973,8 +930,7 @@ void main(){
     this.integer("uFront", 1);
     this.draw();
     const [width] = game.room.size;
-    const pixelScale = width / 480,
-      ui = game.uiScale,
+    const pixelScale = game.pixelScale,
       margin = width / 80,
       sentenceY = 9 * pixelScale;
     if (!game.inventoryNote && !game.readerItem) this.renderPanel(game);
@@ -993,19 +949,16 @@ void main(){
       lines.forEach((line, i) => {
         const x = Math.max(
           margin,
-          Math.min(
-            width - margin - line.length * 6 * ui,
-            actor.x - line.length * 3 * ui,
-          ),
+          Math.min(width - margin - line.length * 6, actor.x - line.length * 3),
         );
         this.rect(
           x - 2 * pixelScale,
           top + i * 9 * pixelScale - pixelScale,
-          line.length * 6 * ui + 4 * pixelScale,
+          line.length * 6 + 4 * pixelScale,
           9 * pixelScale,
           [0.025, 0.03, 0.05, 0.85],
         );
-        this.text(line, x, top + i * 9 * pixelScale, undefined, ui);
+        this.text(line, x, top + i * 9 * pixelScale);
       });
     }
     if (game.menu) this.renderMenu(game);
@@ -1033,6 +986,7 @@ void main(){
       );
       gl.disable(gl.BLEND);
     }
+    // Ping-pong the blur through targets 0 and 1; target 2 stays sharp for uGlowCore.
     this.use(this.programs.blur);
     for (let i = 0; i < 4; i++) {
       this.into(this.glow[(i + 1) % 2]);
@@ -1059,16 +1013,7 @@ void main(){
       gl.disable(gl.BLEND);
     }
     this.compositeText(game);
-    this.into(null);
-    this.use(this.programs.present);
-    this.bind("uImage", this.scene.texture);
-    this.bind("uGlow", this.glow[0].texture, 1);
-    this.bind("uPalette", this.lut, 2, gl.TEXTURE_3D);
-    this.bind("uGlowCore", this.glow[2].texture, 3);
-    this.uniform("uBloom", game.bloom ? 1 : 0);
-    this.uniform("uDither", game.world?.dither === true ? 1 : 0);
-    this.uniform("uScale", this.scale);
-    this.draw();
+    this.present(game.bloom);
   }
   renderPanel(game) {
     const width = game.room.size[0],
@@ -1078,7 +1023,7 @@ void main(){
     const site = this.siteLabel(game);
     this.text(
       wrap(
-        game.sentence(),
+        sentence(game),
         Math.max(1, Math.floor(((site?.x ?? width - 82) - 16) / 6)),
         1,
       )[0],
@@ -1094,7 +1039,6 @@ void main(){
         game.verb === verb.label || game.panelHover === verb
           ? accent
           : [0.82, 0.83, 0.84, 1],
-        1,
       );
     game.panel.slots.forEach((slot, i) => {
       const item = game.inventory[game.inventoryOffset + i];
@@ -1145,4 +1089,21 @@ void main(){
     const extension = gl.getExtension("WEBGL_lose_context");
     extension?.loseContext();
   }
+}
+
+function rgba(hex) {
+  return [
+    ...hex
+      .slice(1)
+      .match(/../g)
+      .map((c) => parseInt(c, 16) / 255),
+    1,
+  ];
+}
+
+function turnFrame(game) {
+  return Math.min(
+    game.bookArt.turn.frames - 1,
+    Math.floor(game.turning.progress * game.bookArt.turn.frames),
+  );
 }

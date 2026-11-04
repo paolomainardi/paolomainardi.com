@@ -11,8 +11,7 @@ The engine is independent of Hugo. [Its README](../game/README.md) explains runn
 | Source                                     | Published result                                                                                         |
 | ------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
 | `game/src/`, mounted as `assets/game`      | Hugo bundles `main.js` as `/play/game/main.js` and publishes its stylesheet and reader border beside it. |
-| `game/dev/real/`, mounted as static assets | Artwork and data under `/play/data/`, excluding that directory's `world.json`.                           |
-| `adventure/world.json`, mounted separately | The site's `/play/data/world.json`.                                                                      |
+| `game/dev/real/`, mounted as static assets | Artwork and data, including `world.json`, under `/play/data/`.                                           |
 | Theme `layouts/play/list.json`             | `/play/content.json`.                                                                                    |
 | Theme reader templates                     | Script-free reader pages for posts, about and talks.                                                     |
 
@@ -34,15 +33,7 @@ The game opens these same-origin pages in a sandboxed iframe at normal browser r
 
 ## Site world
 
-`game/tools/site_world.py` reads `game/dev/real/world.json`, adds `type: "post"` to book filters that omit a type and writes `adventure/world.json`. An explicit type remains unchanged. Paths stay relative to the published world, so they continue to refer to `/play/data/` artwork.
-
-Run from the repository root after changing real-world bindings:
-
-```sh
-python3 game/tools/site_world.py adventure/world.json
-```
-
-The target file must exist in the mounted site tree before building Hugo. The tool accepts another output path; this is useful when checking generated data without updating the site copy.
+Hugo mounts `game/dev/real/` directly under `/play/data/`, including its world file. Book filters default to posts in the engine, so the site needs no generated world or second mount. Paths stay relative to the published world.
 
 The site world keeps game navigation separate from content production. Books have site destinations such as `/tags/linux/`; the board links to `/links/`; found papers link to `/about/` and `/talks/`. Visitors can open those normal pages from close-up footers.
 
@@ -61,7 +52,7 @@ file).
 
 **Delete:**
 
-- `game/` and `adventure/`
+- `game/`
 - `src/content/play/`
 - `src/themes/large-print/layouts/play/`
 - `src/themes/large-print/layouts/posts/single.reader.html`

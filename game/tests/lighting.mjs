@@ -27,12 +27,19 @@ const game = {
   room: {
     size: [1, 1],
     states: { night: state },
+    depth: { far: [0, 1], near: [1, 1] },
     lights: [
       { id: "red", position: [0, 0], drift: [0, 0], strength: 0.5 },
       { id: "blue", position: [1, 0], drift: [0, 0], strength: 1 },
     ],
   },
-  lanternPosition: () => [0, 0],
+  actor: { x: 0, y: 0, animation: "idle-front", clock: 0 },
+  character: {
+    lantern: [0, 0],
+    animations: { "idle-front": { frames: 1, fps: 1 } },
+  },
+  elapsed: 0,
+  lantern: false,
   lanternRadius: 90,
   lanternStrength: () => 0,
 };
@@ -46,8 +53,11 @@ game.room.lights[1].strength = 0;
 sources = lightSourcesAt(game, 0, 0);
 assert.equal(sources[1].strength, 0);
 assert.equal(sources[0].strength, delta * 0.5);
-game.lanternStrength = () => 0.9;
-assert.equal(lightSourcesAt(game, 45, 0)[2].strength, 0.45);
+game.lantern = true;
+assert.equal(
+  lightSourcesAt(game, 45, 0)[2].strength,
+  0.5 * flame(game.elapsed),
+);
 assert.equal(lightSourcesAt(game, 90, 0)[2].strength, 0);
 console.log(
   "Independent lamp drawings, linear brightness, fades, flame range, and smooth lantern falloff passed.",

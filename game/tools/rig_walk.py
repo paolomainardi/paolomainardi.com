@@ -39,18 +39,11 @@ def curve(keys, t):
 
 class Rig:
     def __init__(self, pose, rig, palette, arm=None):
-        self.arm = arm
-        self.src = pose
-        self.h, self.w = pose.shape[:2]
-        self.rig = rig
-        self.gait = {**GAIT, **rig.get("gait", {})}
-        self.palette = palette
+        self.setup(pose, rig, palette, {**GAIT, **rig.get("gait", {})}, arm)
         j = rig["joints"]
-        self.hip, self.knee, self.ankle, self.hem = j["hip"], j["knee"], j["ankle"], rig["hem"]
+        self.hip, self.knee, self.ankle = j["hip"], j["knee"], j["ankle"]
         self.l1 = self.knee[1] - self.hip[1]
         self.l2 = self.ankle[1] - self.knee[1]
-        self.body = pose.copy()
-        self.body[self.hem + 1:] = 0
         self.shin = self.cut(rig["shin"])
         coat = rig.get("coat_brightness")
         if coat:
@@ -63,6 +56,17 @@ class Rig:
         self.thigh = np.zeros_like(pose)
         self.thigh[self.hip[1] - 3:self.hip[1] - 3 + tall, x0:x1] = np.array(
             Image.fromarray(top).resize((x1 - x0, tall), Image.NEAREST))
+
+    def setup(self, pose, rig, palette, gait, arm=None):
+        self.arm = arm
+        self.src = pose
+        self.h, self.w = pose.shape[:2]
+        self.rig = rig
+        self.gait = gait
+        self.palette = palette
+        self.hem = rig["hem"]
+        self.body = pose.copy()
+        self.body[self.hem + 1:] = 0
         self.lantern = self.flame = None
         if "lantern" in rig:
             lx0, ly0, lx1, ly1 = rig["lantern"]["box"]
@@ -111,6 +115,9 @@ class Rig:
                   self.place(self.boot, self.ankle, foot, ankle)]
         return [self.to_palette(layer, shade) for layer in layers]
 
+    def lean(self, t):
+        return self.rig.get("upper", {}).get("lean", 2.4) * math.sin(math.radians(curve(self.gait["hip"], t + 0.5)))
+
     def upper(self, t):
         """The pose above the hem, with the hem swaying, a bob and a shoulder counter-sway, moved by whole rows."""
         r = self.rig.get("upper", {})
@@ -128,11 +135,9 @@ class Rig:
                 row[x0:x1 + s] = seg[-s:]
             b[y] = row
         bob = -round(r.get("bob", 2) / 2 * (1 - math.cos(4 * math.pi * t)))
-        lean = round(r.get("lean", 2.4) * math.sin(math.radians(curve(self.gait["hip"], t + 0.5))))
-        top = self.hem - 40
         out = np.zeros_like(b)
         for y in range(self.h):
-            s = round(lean * max(0.0, (top - y) / top))
+            s = round(round(self.lean(t)) * max(0.0, (self.hem - 40 - y) / (self.hem - 40)))
             out[y] = np.roll(b[y], s, axis=0) if s else b[y]
         return np.roll(out, bob, axis=0), bob
 
@@ -165,9 +170,7 @@ class Rig:
                 arm[elbow[1]:] = 0
                 bent = self.place(lower, elbow, -angle * 0.35, elbow)
                 arm[bent[..., 3] > 0] = bent[bent[..., 3] > 0]
-            lean = round(self.rig.get("upper", {}).get("lean", 2.4)
-                         * math.sin(math.radians(curve(self.gait["hip"], t + 0.5)))
-                         * max(0, (self.hem - 40 - shoulder[1]) / (self.hem - 40)))
+            lean = round(self.lean(t) * max(0, (self.hem - 40 - shoulder[1]) / (self.hem - 40)))
             over(self.place(arm, shoulder, angle, (shoulder[0] + lean, shoulder[1] + bob)))
         if self.lantern is not None:
             pivot = tuple(self.rig["lantern"]["pivot"])
@@ -200,8 +203,8 @@ class Rig:
 class DepthRig(Rig):
     """Project the same sagittal gait into the front or back image plane."""
 
-    def __init__(self, pose, rig, palette, direction, stride):
-        super().__init__(pose, rig, palette)
+    def __init__(self, pose, rig, palette, direction, stride, gait):
+        self.setup(pose, rig, palette, gait)
         self.direction, self.stride = direction, stride
         self.legs = []
         for spec in rig["legs"]:
@@ -310,13 +313,13 @@ def main():
     for view, direction in (("front", 1), ("back", -1)):
         if view not in rig:
             continue
-        config = {**rig[view], "gait": r.gait}
+        config = rig[view]
         idle = meta["animations"][config.get("pose", "idle-" + view)]
         col = idle.get("start", 0)
         pose = np.array(sheet.crop((col * fw, idle["row"] * fh,
                                     (col + 1) * fw, (idle["row"] + 1) * fh)))
         depth_stride = stride * config.get("stride_scale", .5)
-        depth = DepthRig(pose, config, palette, direction, depth_stride)
+        depth = DepthRig(pose, config, palette, direction, depth_stride, r.gait)
         walks[view] = ([depth.frame(t, i / n) for i, t in enumerate(phases)], depth_stride)
 
     width = max(sheet.width, n * fw)

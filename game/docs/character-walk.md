@@ -85,7 +85,7 @@ The shipped sources are `clean-side.png` and `near-arm.png`, in 128×234 cells. 
 
 ## Front and back views
 
-Optional `front` and `back` objects use the same side gait and distance-sampled phases. Each has its own standing `pose`, `hem`, reference `joints`, `shin`, `boot`, and two `legs`. Each leg supplies hip/knee/ankle joints and thigh/shin/boot boxes. Optional `arms` supply exposed boxes, pivots and small swing angles. Optional `lantern` follows the side format.
+Optional `front` and `back` objects use the same side gait and distance-sampled phases. Each has its own standing `pose`, `hem` and two `legs`. Each leg supplies hip/knee/ankle joints and thigh/shin/boot boxes. Optional `arms` supply exposed boxes, pivots and small swing angles. Optional `lantern` follows the side format.
 
 Thigh and shin project vertically through the cosines of their sagittal angles. The hips sway one pixel. During the half-cycle stance, the foot retreats by `stride / frames` per frame. A correction hidden beneath the coat keeps contact while the knee bends. Swing returns the foot with a small lift; boots do not inherit hip sway. Front and back reverse the depth sign.
 

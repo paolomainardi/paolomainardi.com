@@ -278,10 +278,9 @@ def generate():
                                 (column * CHARACTER_FRAME[0], row * CHARACTER_FRAME[1]))
     expanded.save(char_dir / 'sheet.png')
     expanded_glow.save(char_dir / 'glow.png')
-    save_json(char_dir / 'character.json', dict(sheet='sheet.png', glow='glow.png', frame=list(CHARACTER_FRAME), anchor=[64, 233], lantern=[46, -73], animations={
+    character = dict(sheet='sheet.png', glow='glow.png', frame=list(CHARACTER_FRAME), anchor=[64, 233], lantern=[46, -73], animations={
         name: dict(row=i, frames=n, fps=fps, **({'stride': 96} if name.startswith('walk-') else {})) for i, (name, n, fps) in enumerate([
-            ('idle-front', 1, 1), ('walk-side', 6, 8), ('walk-front', 4, 8), ('walk-back', 4, 8)])}))
-    character = json.loads((char_dir / 'character.json').read_text())
+            ('idle-front', 1, 1), ('walk-side', 6, 8), ('walk-front', 4, 8), ('walk-back', 4, 8)])})
     for direction, row in [('side', 1), ('back', 3)]:
         character['animations'][f'idle-{direction}'] = dict(row=row, frames=1, fps=1)
     save_json(char_dir / 'character.json', character)
@@ -305,7 +304,7 @@ def generate():
         f.rectangle((inset, inset, 11-inset, 11-inset), outline=COLORS[color])
     frame.save(ROOT.parent / 'src/reader-frame.png')
     save_json(DATA / 'world.json', dict(title='The engineer\'s study', palette='palette.png', start='stone-house',
-        character='character/character.json', verbs=['Look at', 'Open', 'Use', 'Take', 'Talk to'], objects=dict(book=books),
+        character='character/character.json', verbs=['Look at', 'Open', 'Use', 'Take', 'Talk to'],
         sounds={'sea': {'synth': 'surf', 'volume': 0.5, 'loop': True}, 'wind': {'synth': 'wind', 'volume': 0.3, 'loop': True}, 'flame': {'synth': 'crackle', 'volume': 0.25, 'loop': True}, 'step': {'synth': 'step', 'volume': 0.9}, 'page': {'synth': 'page', 'volume': 0.6}, 'click': {'synth': 'click', 'volume': 0.4}, 'door': {'synth': 'creak', 'volume': 0.5}, 'flare': {'synth': 'whoosh', 'volume': 0.5, 'params': {'frequency': 900, 'duration': 0.35}}, 'gust': {'synth': 'whoosh', 'volume': 0.4, 'params': {'frequency': 350, 'duration': 1.2}}},
         events={'step': 'step', 'page-turn': 'page', 'book-open': 'page', 'book-close': 'page', 'lamp': 'click', 'menu': 'click', 'door': 'door', 'lantern': 'flare', 'time': 'gust'},
         mix={'master': 0.5, 'ambience': 0.8, 'effects': 1.0},

@@ -38,10 +38,9 @@ export function buildWater(pixels, [width, height]) {
 }
 
 // Reuse one RGBA motion buffer for bounded displacement and reflection flags.
-export function waterFrame(water, seconds, reduced = false) {
+export function waterFrame(water, seconds) {
   const frame = water.frame;
   frame.fill(0);
-  if (reduced) return frame;
   // Four updates per second, with an eight-second swell and sparse sparkles.
   const tick = Math.floor(seconds * 4),
     t = tick / 4;

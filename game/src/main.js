@@ -1,4 +1,4 @@
-// Mount the title screen, load the world on Start, and coordinate game input and simulation.
+// Mount the title screen and reader, then start and dispose the game session.
 /** Boot an isolated game in a supplied container. URLs resolve against the document. */
 export async function boot({ world, content, element }) {
   if (!(element instanceof HTMLElement))
@@ -33,10 +33,8 @@ export async function boot({ world, content, element }) {
     "Click to walk. Double click to run. Choose a verb, then an object. T: dusk / night. L: lantern. G: bloom. M: sound.";
   const start = document.createElement("button");
   start.textContent = "Start";
-  start.disabled = false;
   const windowed = document.createElement("button");
   windowed.textContent = "Start in window";
-  windowed.disabled = false;
   cover.append(heading, help, start, windowed);
   root.append(canvas, cover);
   element.append(root);
@@ -94,6 +92,8 @@ export async function boot({ world, content, element }) {
     ready = import("./session.js")
       .then(({ startSession }) => {
         if (lifecycle.disposed) return null;
+        const context = soundContext;
+        soundContext = null;
         return startSession({
           worldURL,
           contentURL,
@@ -102,9 +102,6 @@ export async function boot({ world, content, element }) {
             canvas,
             cover,
             heading,
-            help,
-            start,
-            windowed,
             reader,
             close,
             iframe,
@@ -112,7 +109,7 @@ export async function boot({ world, content, element }) {
             live,
             fade,
           },
-          soundContext,
+          soundContext: context,
           subscriptions,
           on,
           lifecycle,
@@ -125,6 +122,7 @@ export async function boot({ world, content, element }) {
     ready.catch((error) => {
       if (lifecycle.disposed) return;
       soundContext?.close()?.catch(() => {});
+      soundContext = null;
       cover.hidden = false;
       start.hidden = windowed.hidden = true;
       heading.textContent = "The study could not open";
@@ -146,6 +144,7 @@ export async function boot({ world, content, element }) {
       else {
         subscriptions.splice(0).forEach((remove) => remove());
         soundContext?.close()?.catch(() => {});
+        soundContext = null;
         root.remove();
       }
       style.remove();

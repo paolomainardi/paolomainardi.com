@@ -1,8 +1,9 @@
 // Cache close-up and menu text on a transparent canvas at game resolution.
+import { canTake } from "./inventory.js";
 import { boardText } from "./board.js";
 
 export class TextLayer {
-  constructor(canvas = document.createElement("canvas")) {
+  constructor(canvas) {
     this.canvas = canvas;
     this.context = canvas.getContext("2d");
     this.key = [];
@@ -36,7 +37,6 @@ export class TextLayer {
     this.canvas.height = height;
     const ctx = this.context,
       book = game.bookArt;
-    if (!book) return true;
     const text = (font, value, x, y, color) => {
       ctx.font = font.css;
       ctx.fillStyle = color;
@@ -89,8 +89,7 @@ export class TextLayer {
         game.boardNote,
         game.hover,
         book.fonts,
-        !game.inventoryNote &&
-          !game.inventory?.some((item) => item.note?.id === game.boardNote?.id),
+        canTake(game),
       ))
         text(line.font, line.value, line.x, line.y, line.color);
     }

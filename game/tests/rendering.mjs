@@ -1,6 +1,6 @@
 // Check rendering behavior against the engine and shipped fixtures.
 import assert from "node:assert/strict";
-import { layoutPanel } from "../src/panel.js";
+import { layoutPanel, sentence } from "../src/panel.js";
 import { wrap } from "../src/font.js";
 import { Renderer } from "../src/renderer.js";
 
@@ -40,22 +40,30 @@ Object.assign(renderer, {
 const texture = {};
 const game = {
   objects: [],
-  room: { size: [640, 360] },
-  uiScale: 1,
+  room: {
+    size: [640, 360],
+    depth: { far: [0, 0.8], near: [360, 0.8] },
+    lights: [],
+    states: {
+      dusk: { unlitPixels: new Uint8Array(640 * 360 * 4), lightPixels: {} },
+    },
+  },
+  pixelScale: 4 / 3,
+  lanternRadius: 120,
+  time: "dusk",
+  soundRect: { x: 566, y: 328, width: 66, height: 8 },
+  sound: { muted: false },
+  hover: { label: "Window" },
   character: {
     texture,
     size: [120, 420],
     frame: [24, 60],
     anchor: [5, 58],
+    lantern: [0, 0],
     animations: { "walk-side": { row: 6, frames: 5, fps: 10 } },
   },
   actor: { x: 100, y: 150, animation: "walk-side", clock: 0.3, mirror: false },
-  depth: () => 0.8,
-  nearestLamp: () => null,
-  lightAt: () => 0.5,
-  lightSourcesAt: () => [],
   bloom: true,
-  sentence: () => "Walk to Window",
   panel: layoutPanel([640, 360], ["Open"]),
   inventory: [],
   inventoryOffset: 0,
@@ -77,15 +85,16 @@ for (const mirror of [false, true]) {
     "Unlit sprite keeps 70% of its colours",
   );
   assert.equal(uniforms.uBloom, 1);
+  assert.deepEqual(uniforms.uShadowSize, [24 * 0.28 * 0.8, 60 * 0.06 * 0.8]);
   const strips = calls.filter((c) => c.type === "rect");
   assert.equal(strips.length, 1 + game.panel.slots.length);
   assert.deepEqual(strips[0].args.slice(0, 4), [0, 324, 640, 36]);
   assert(strips[0].args[4][3] > 0 && strips[0].args[4][3] < 1);
-  const sentence = calls.filter(
-    (c) => c.type === "text" && c.args[0] === game.sentence(),
+  const sentenceCalls = calls.filter(
+    (c) => c.type === "text" && c.args[0] === sentence(game),
   );
-  assert.equal(sentence.length, 1, "Sentence stays inside the panel");
-  assert.deepEqual(sentence[0].args.slice(1, 3), [8, 328]);
+  assert.equal(sentenceCalls.length, 1, "Sentence stays inside the panel");
+  assert.deepEqual(sentenceCalls[0].args.slice(1, 3), [8, 328]);
 }
 console.log(
   "Swappable frame, anchor, animation, mirroring, sentence outline, and compact translucent UI passed (mock GPU).",
@@ -113,19 +122,23 @@ game.objects = [];
 
 // Sentence truncates to one row, leaving space for the sound control.
 for (const text of ["Walk to Window", "word ".repeat(80)]) {
-  const sentence = game.sentence;
-  game.sentence = () => text;
+  const verb = game.verb;
+  const hover = game.hover;
+  game.verb = text;
+  game.hover = null;
   calls.length = 0;
   renderer.render(game);
   const rows = calls.filter(
-    (call) => call.type === "text" && call.args[3] === undefined,
+    (call) =>
+      call.type === "text" && call.args[2] === 328 && call.args[1] === 8,
   );
   assert.deepEqual(
     rows.map((call) => call.args[0]),
     wrap(text, 91, 1),
   );
   assert(rows.every((call) => call.args[2] === 328));
-  game.sentence = sentence;
+  game.verb = verb;
+  game.hover = hover;
 }
 
 // Ellipsis has its own bitmap cell rather than the unsupported-character glyph.
@@ -203,9 +216,14 @@ console.log(
 );
 
 // A dark warm source still tints the actor; the strongest pool chooses the rim.
-game.lightSourcesAt = () => [
-  { position: [10, 50], strength: 0.2, tint: [1, 1, 1] },
-  { position: [130, 100], strength: 0.6, tint: [0.2, 0.12, 0.04] },
+const sample = (rgb) => {
+  const pixels = new Uint8Array(640 * 360 * 4);
+  for (let i = 0; i < pixels.length; i += 4) pixels.set([...rgb, 255], i);
+  return pixels;
+};
+game.room.states.dusk.lightPixels = { warm: sample([255, 200, 100]) };
+game.room.lights = [
+  { id: "warm", position: [130, 100], strength: 0.6, drift: [0, 0] },
 ];
 game.bloom = false;
 calls.length = 0;
@@ -225,12 +243,6 @@ console.log(
   "Character brightness floor, warm lighting, strongest rim, and bloom toggle passed (mock GPU).",
 );
 
-// Palette dither defaults off and only follows an explicit world opt-in.
-for (const dither of [undefined, false, true]) {
-  game.world = { dither };
-  renderer.render(game);
-  assert.equal(uniforms.uDither, dither === true ? 1 : 0);
-}
 // The flame uses the same sprite cell and mirror in the scene and bloom source.
 game.character.glowTexture = {};
 calls.length = 0;
@@ -260,9 +272,7 @@ for (const call of offsetCalls)
 delete sideAnimation.start;
 delete sideAnimation.stride;
 game.character.glowTexture = null;
-console.log(
-  "Optional palette dither and character flame bloom alignment passed (mock GPU).",
-);
+console.log("Character flame bloom alignment passed (mock GPU).");
 
 // Validate uploaded 64-cube contents against an independent exhaustive OKLab
 // reference at grid samples, including endpoints and both palette sizes.
@@ -360,6 +370,7 @@ console.log(
 
 // Menu draws above the scene with a one-pixel border and shared hover colours.
 const menuGame = {
+  bookArt: { ink: "#1d202f", accent: "#8a5650" },
   menu: {
     header: "Lamp",
     verbs: ["Look at", "Use"],
@@ -375,23 +386,12 @@ calls.length = 0;
 renderer.renderMenu(menuGame);
 assert.deepEqual(calls[0].args.slice(0, 4), [500, 300, 90, 48]);
 assert.deepEqual(calls[1].args.slice(0, 4), [501, 301, 88, 46]);
-const menuText = calls.filter((call) => call.type === "text");
-assert.deepEqual(
-  menuText.map((call) => call.args[0]),
-  ["Lamp", "Look at", "Use"],
-);
-assert.notDeepEqual(menuText[1].args[3], menuText[2].args[3]);
-calls.length = 0;
-menuGame.bookArt = { ink: "#1d202f", accent: "#8a5650" };
-renderer.renderMenu(menuGame);
 assert.equal(
   calls.filter((call) => call.type === "text").length,
   0,
   "NF-Pixels text uses the game-grid text layer",
 );
-console.log(
-  "Menu border, fallback font and separate text layer passed (mock GPU).",
-);
+console.log("Menu border and separate text layer passed (mock GPU).");
 
 // Inventory draws the item's own sprite and shares the verb highlight colour.
 const iconItem = { sprite: { texture: {}, size: [24, 36] } };
@@ -507,3 +507,42 @@ lamps.lights({ room: lampRoom });
 assert.equal(lampUploads.length, 2);
 assert.equal(lamps.lightData[2], 0.75);
 assert.equal(lamps.lightData[8], 0.5);
+
+// Room hover must not touch the Canvas 2D text layer or upload an empty texture.
+const roomText = Object.create(Renderer.prototype);
+roomText.textLayer = {
+  update() {
+    assert.fail("Room hover must not update text");
+  },
+};
+for (const hover of [null, { kind: "hotspot" }])
+  roomText.compositeText({ hover });
+
+// Exercise sprite uniforms with real state functions rather than mocked sprite calls.
+const spriteRenderer = Object.create(Renderer.prototype);
+const spriteUniforms = {};
+Object.assign(spriteRenderer, {
+  programs: {},
+  pixelScale: 4 / 3,
+  use() {},
+  bind() {},
+  integer() {},
+  draw() {},
+  uniform(name, value) {
+    spriteUniforms[name] = value;
+  },
+});
+game.character.glowTexture = null;
+spriteRenderer.sprite(
+  {},
+  [24, 60],
+  [0, 0, 24, 60],
+  undefined,
+  undefined,
+  false,
+  0,
+  { game },
+);
+assert.deepEqual(spriteUniforms.uHand, [game.actor.x, game.actor.y]);
+assert.equal(spriteUniforms.uFlame, 0);
+assert.equal(spriteUniforms.uRimOffset, 4 / 3);

@@ -10,13 +10,6 @@
     "Take",
     "Talk to"
   ],
-  "objects": {
-    "book": [
-      "objects/book.png",
-      "objects/book-green.png",
-      "objects/book-blue.png"
-    ]
-  },
   "sounds": {
     "sea": {
       "synth": "surf",

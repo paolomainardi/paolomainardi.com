@@ -60,15 +60,9 @@ for animation in character['animations'].values():
     assert (animation.get('start', 0) + animation['frames']) * character['frame'][0] <= sheet.width
 for name in ('walk-side', 'walk-front', 'walk-back'):
     assert character['animations'][name]['stride'] > 0
-for value in world['objects'].values():
-    for file in value if isinstance(value, list) else [value]:
-        image = Image.open(data / file).convert('RGBA')
-        assert all(pixel[3] == 0 or pixel[:3] in palette for pixel in image.getdata())
-books = [Image.open(data / file).convert('RGBA') for file in world['objects']['book']]
-assert len(books) == 3
+books = [Image.open(data / book['sprite']).convert('RGBA') for book in world['books'].values()]
 assert all(book.size == (24, 36) for book in books)
-assert len({book.tobytes() for book in books}) == 3
-assert all(book.getchannel('A').tobytes() == books[0].getchannel('A').tobytes() for book in books)
+assert all(pixel[3] == 0 or pixel[:3] in palette for book in books for pixel in book.getdata())
 content_path = data / 'content.json'
 items = load(content_path)['items']
 posts = [item for item in items if item['type'] == 'post']
@@ -119,10 +113,9 @@ assert sheet.size == glow.size == (128 * columns, 234 * rows)
 pixels = np.array(sheet)
 assert set(map(tuple, pixels[..., :3][pixels[..., 3] > 0])) <= real_palette
 assert np.all(pixels[..., 3][np.array(glow)[..., 3] > 0] > 0)
-for value in real_world['objects'].values():
-    for file in value if isinstance(value, list) else [value]:
-        pixels = np.array(Image.open(real / file).convert('RGBA'))
-        assert set(map(tuple, pixels[..., :3][pixels[..., 3] > 0])) <= real_palette
+for book in real_world['books'].values():
+    pixels = np.array(Image.open(real / book['sprite']).convert('RGBA'))
+    assert set(map(tuple, pixels[..., :3][pixels[..., 3] > 0])) <= real_palette
 print('Real 640×360 room, palette, masks, 128×234 character cells, glow, and books passed.')
 
 for folder in [data / 'book', real / 'book']:

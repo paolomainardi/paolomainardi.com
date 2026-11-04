@@ -1,3 +1,11 @@
+import {
+  depth as actorDepth,
+  lanternPosition,
+  lanternStrength,
+  lightAt,
+  lightSourcesAt,
+} from "../src/lighting.js";
+import { sentence } from "../src/panel.js";
 // Execute the real loader and game loop with generated PNGs, a DOM stand-in,
 // and a renderer stand-in. GPU output still needs a real browser visual pass.
 import assert from "node:assert/strict";
@@ -20,6 +28,7 @@ class Element extends EventTarget {
     this.children = [];
     this.style = {};
     this.attributes = {};
+    this.disabled = false;
     this.clientWidth = 960;
     this.clientHeight = 540;
   }
@@ -39,6 +48,11 @@ class Element extends EventTarget {
         href: this.href,
         target: this.target,
         rel: this.rel,
+      });
+    if (this.tagName === "a")
+      opened.push({
+        args: [this.href, this.target, "noopener,noreferrer"],
+        position: [rendered.actor.x, rendered.actor.y],
       });
     this.dispatchEvent(new Event("click"));
   }
@@ -69,6 +83,7 @@ document.fonts = {
   delete: (face) => fontFaces.delete(face),
 };
 document.head = new Element("head");
+document.body = new Element("body");
 document.createElement = (tag) => new Element(tag);
 const window = new EventTarget();
 const opened = [];
@@ -78,10 +93,8 @@ window.open = (...args) => {
   return null; // noopener may return null even when the browser opens the tab.
 };
 const location = { hash: "", origin: "https://adventure.test" };
-let singleContentMode = true;
 let animationStart = 0;
-let objectPaths,
-  contentOverride,
+let contentOverride,
   missingLampDrawings = false;
 const requests = [];
 let renderCount = 0;
@@ -105,7 +118,9 @@ class Renderer {
   }
   palette() {}
   setRoom() {}
-  resize() {}
+  resize() {
+    return 1;
+  }
   render(game) {
     renderCount++;
     rendered = game;
@@ -153,20 +168,6 @@ const context = vm.createContext({
       ok: true,
       json: async () => {
         const data = JSON.parse(readFileSync(path, "utf8"));
-        if (path.endsWith("/data/world.json") && singleContentMode) {
-          delete data.books;
-          delete data.book;
-          delete data.boards;
-          data.rooms["stone-house"].books = undefined;
-          data.rooms["stone-house"].content = { series: "workstation" };
-          data.rooms["stone-house"].object = "book";
-        }
-        if (path.endsWith("/data/content.json") && singleContentMode)
-          data.items = data.items.filter(
-            (item) => !item.part || item.part <= 6,
-          );
-        if (path.endsWith("/data/world.json") && objectPaths !== undefined)
-          data.objects.book = objectPaths;
         if (path.endsWith("/content.json") && contentOverride)
           data.items = contentOverride;
         if (path.endsWith("/room.json") && missingLampDrawings)
@@ -499,7 +500,7 @@ rendered.character.flames["walk-side"] = Array.from(
   { length: side.frames },
   (_, i) => [i * 10, -i],
 );
-assert.equal(rendered.lanternPosition()[0], rendered.actor.x + 20);
+assert.equal(lanternPosition(rendered)[0], rendered.actor.x + 20);
 assert.equal(animationFrame(rendered.actor, { frames: 6, fps: 8 }), 1);
 rendered.character.flames["walk-side"] = flames;
 Object.assign(rendered.actor, savedActor);
@@ -516,23 +517,7 @@ assert.equal(
   rendered.room.walkable.length,
   rendered.room.size[0] * rendered.room.size[1],
 );
-assert.equal(rendered.objects[0].label, "A room of one's own");
-assert.equal(rendered.objectSprites.length, 3);
-assert.deepEqual(
-  Array.from(rendered.objects, (object) =>
-    rendered.objectSprites.indexOf(object.sprite),
-  ),
-  [0, 1, 2, 0, 1, 2],
-  "Six occupied slots cycle through three sprites",
-);
-assert.equal(
-  new Set(rendered.objects.map((object) => object.sprite.texture)).size,
-  3,
-);
-assert.notDeepEqual(
-  rendered.objectSprites[0].texture.bitmap.data,
-  rendered.objectSprites[1].texture.bitmap.data,
-);
+assert.equal(rendered.objects[0].label, "Workstation");
 // Hit areas must use the assigned sprite, including pixels beyond the slot mask.
 const varied = rendered.objects[1],
   originalSize = varied.sprite.size;
@@ -544,6 +529,20 @@ event(canvas, "pointermove", {
   clientY: hitY,
 });
 assert.equal(rendered.hover, varied);
+const variedBounds = varied.bounds;
+varied.bounds = [-1, -1, -1, -1];
+for (const [x, y] of [
+  [varied.position[0], varied.position[1]],
+  [varied.position[0] + varied.sprite.size[0] / 2, varied.position[1] - 1],
+]) {
+  event(canvas, "pointermove", { clientX: x, clientY: y });
+  assert.notEqual(
+    rendered.hover,
+    varied,
+    "Sprite excludes bottom and right edges",
+  );
+}
+varied.bounds = variedBounds;
 varied.sprite.size = originalSize;
 event(canvas, "pointermove", {
   clientX: hitX,
@@ -559,7 +558,7 @@ assert(
 );
 click(150, 300);
 step(10);
-const expectedTravel = 120 * rendered.depth() * 0.16;
+const expectedTravel = 120 * actorDepth(rendered) * 0.16;
 assert(
   Math.abs(controller.state.position[0] - 120 - expectedTravel) < 0.001,
   "Walk at 120 pixels per second scaled by depth",
@@ -582,50 +581,52 @@ rendered.room.lights = [
 ];
 const savedTime = rendered.time;
 rendered.time = "dusk";
-assert.equal(rendered.lightAt(639, 359), 1);
-assert.equal(rendered.lightAt(1000, 1000), 1);
-assert.equal(rendered.lightAt(638, 359), 0);
-const sampled = rendered.lightSourcesAt(639, 359)[0];
+assert.equal(lightAt(rendered, 639, 359), 1);
+assert.equal(lightAt(rendered, 1000, 1000), 1);
+assert.equal(lightAt(rendered, 638, 359), 0);
+const sampled = lightSourcesAt(rendered, 639, 359)[0];
 assert(sampled.tint[0] > sampled.tint[1] && sampled.tint[1] > sampled.tint[2]);
 rendered.room.lights[0].drift = [1, 0];
-assert.equal(rendered.lightAt(638, 359), 1, "CPU sampling follows lamp drift");
+assert.equal(lightAt(rendered, 638, 359), 1, "CPU sampling follows lamp drift");
 sampleState.lightPixels = oldPixels;
 sampleState.unlitPixels = oldUnlit;
 rendered.room.lights = [];
 rendered.time = "night";
-const lanternPoint = rendered.lanternPosition();
+const lanternPoint = lanternPosition(rendered);
 assert.equal(rendered.lanternRadius, 120);
-assert.equal(rendered.lightAt(...lanternPoint), rendered.lanternStrength());
-const footLight = rendered.lightAt(rendered.actor.x, rendered.actor.y);
+assert.equal(lightAt(rendered, ...lanternPoint), lanternStrength(rendered));
+const footLight = lightAt(rendered, rendered.actor.x, rendered.actor.y);
 assert(footLight > 0.3, "Lantern must visibly light the feet");
-const strength = rendered.lanternStrength();
+const strength = lanternStrength(rendered);
 rendered.elapsed += 0.1;
-assert.notEqual(rendered.lanternStrength(), strength, "Flame flickers gently");
-assert(Math.abs(rendered.lanternStrength() - strength) < 0.1);
+assert.notEqual(lanternStrength(rendered), strength, "Flame flickers gently");
+assert(Math.abs(lanternStrength(rendered) - strength) < 0.1);
 key("l");
-assert.equal(rendered.lightAt(...lanternPoint), 0);
+assert.equal(lightAt(rendered, ...lanternPoint), 0);
 key("l");
 assert.equal(controller.state.bloom, true);
 key("g");
 assert.equal(controller.state.bloom, false);
 key("G");
 assert.equal(controller.state.bloom, true);
-assert.equal(rendered.lightAt(lanternPoint[0] + 120, lanternPoint[1]), 0);
+assert.equal(lightAt(rendered, lanternPoint[0] + 120, lanternPoint[1]), 0);
 rendered.room.lights = savedLights;
 rendered.time = savedTime;
-const glowPoint = rendered.lanternPosition();
+const glowPoint = lanternPosition(rendered);
 assert(glowPoint[0] > rendered.actor.x && glowPoint[1] < rendered.actor.y);
 rendered.actor.mirror = true;
 assert(
   Math.abs(
-    rendered.lanternPosition()[0] - (2 * rendered.actor.x - glowPoint[0]),
+    lanternPosition(rendered)[0] - (2 * rendered.actor.x - glowPoint[0]),
   ) < 1e-8,
 );
 rendered.actor.mirror = false;
 assert(rendered.character.glowTexture);
+const readable = rendered.room.items.find((item) => item.id === "about");
+readable.content = rendered.items.find((item) => item.id === "workstation-1");
 const open = rendered.verbRects.find((v) => v.label === "Open");
 click(open.x + 2, open.y + 2);
-click(470, 140, 2);
+click(...readable.position, 2);
 assert.equal(rendered.running, true, "Double-clicking an object runs to it");
 assert.equal(controller.state.reader, null, "Opening must wait for the walk");
 settle();
@@ -680,7 +681,7 @@ event(canvas, "pointermove", {
   clientX: menu.x + 6,
   clientY: menu.y + menu.listTop + useRow * menu.rowHeight,
 });
-assert.equal(rendered.sentence(), "Use Oil lamp");
+assert.equal(sentence(rendered), "Use Oil lamp");
 click(menu.x + 6, menu.y + menu.listTop + useRow * menu.rowHeight);
 assert.equal(rendered.menu, null);
 assert.equal(rendered.verb, selectedVerb);
@@ -701,7 +702,10 @@ for (const dismissal of ["escape", "outside", "document", "floor"]) {
   assert.equal(JSON.stringify(controller.state.position), before);
   assert.equal(controller.state.walking, false);
 }
-event(root, "contextmenu", { clientX: 470, clientY: 140 });
+event(root, "contextmenu", {
+  clientX: readable.position[0],
+  clientY: readable.position[1],
+});
 key("ArrowUp");
 assert.equal(rendered.menu.verbs[rendered.menu.selected], "Take");
 key("ArrowDown");
@@ -734,7 +738,7 @@ assert.equal(hotspot.content.id, "linux-kernel");
 assert.equal(rendered.speech, hotspot.look);
 assert(rendered.speechLines.length <= 2);
 assert.equal(opened.length, 0, "Look at must not open a tab");
-assert.equal(rendered.sentence(), "Look at Window: The Linux kernel");
+assert.equal(sentence(rendered), "Look at Window: The Linux kernel");
 const originalDescription = hotspot.look;
 hotspot.look = "A long note about the kernel. ".repeat(30);
 click(180, 120);
@@ -778,6 +782,7 @@ click(look.x + 2, look.y + 2);
 click(80, 160);
 settle();
 assert.equal(rendered.speech, "That way lies harbour.");
+readable.content = rendered.items.find((item) => item.id === "workstation-6");
 location.hash = "#stone-house/workstation-6";
 event(window, "hashchange");
 await Promise.resolve();
@@ -786,7 +791,6 @@ location.hash = "#stone-house";
 event(window, "hashchange");
 await Promise.resolve();
 assert.equal(controller.state.reader, null);
-const retiredSprites = rendered.objectSprites;
 // Date ordering must override part ordering and filters must exclude newer non-matches.
 rendered.items.push(
   {
@@ -835,21 +839,6 @@ click(180, 120);
 settle();
 assert.equal(rendered.speech, "There is nothing to open here.");
 assert.equal(opened.length, 2);
-assert.deepEqual(
-  Array.from(rendered.objects, (object) =>
-    rendered.objectSprites.indexOf(object.sprite),
-  ),
-  [0, 1, 2, 0, 1, 2],
-  "A new room restarts the sprite cycle",
-);
-assert(
-  retiredSprites.every((sprite) =>
-    rendered.renderer.deletedTextures.includes(sprite.texture),
-  ),
-);
-assert(
-  rendered.objectSprites.every((sprite) => !retiredSprites.includes(sprite)),
-);
 assert(soundEvents.some((event) => event.name === "lamp"));
 assert(soundEvents.some((event) => event.name === "menu"));
 // Exit effects fire for Use and Walk to, but not Look at.
@@ -872,8 +861,7 @@ assert.equal(firstAudio.state, "closed");
 assert.equal(nextFrame, null);
 assert(root.removed);
 // Loading with a deep link preserves the reader selection on Start.
-location.hash = "#stone-house/workstation-2";
-objectPaths = "objects/book.png";
+location.hash = "#stone-house/found-about";
 animationStart = 1;
 const secondContainer = new Element("main");
 const second = await startedBoot({
@@ -889,13 +877,7 @@ assert.deepEqual(
   originalFlames.slice(1),
   "Glow extraction starts at the animation's first column",
 );
-assert.equal(second.state.reader, "workstation-2");
-assert.equal(rendered.objectSprites.length, 1);
-assert(
-  rendered.objects.every(
-    (object) => object.sprite === rendered.objectSprites[0],
-  ),
-);
+assert.equal(second.state.reader, "found-about");
 // No matching content preserves the original room hotspot.
 rendered.world.rooms.empty = {
   ...rendered.world.rooms["stone-house"],
@@ -908,6 +890,11 @@ step();
 const unbound = rendered.room.items.find((item) => item.id === "window");
 assert.equal(unbound.label, "Window");
 assert.equal(unbound.content, undefined);
+rendered.verb = "Take";
+event(rendered.canvas, "click", { clientX: 180, clientY: 120 });
+step(300);
+assert.equal(rendered.speech, "It belongs to the keeper.");
+rendered.verb = null;
 const secondLook = rendered.verbRects.find((v) => v.label === "Look at");
 event(rendered.canvas, "click", {
   clientX: secondLook.x + 2,
@@ -917,35 +904,7 @@ event(rendered.canvas, "click", { clientX: 180, clientY: 120 });
 step(300);
 assert.equal(rendered.speech, "The sea, calm tonight.");
 second.destroy();
-// Both accepted forms resolve relative to the world file, and empty lists fail clearly.
 const assetsModule = await moduleAt("https://adventure.test/src/assets.js");
-for (const value of [
-  ["objects/book-blue.png"],
-  ["objects/book.png", "objects/book-green.png"],
-]) {
-  objectPaths = value;
-  const loaded = await assetsModule.namespace.loadWorld(
-    "https://adventure.test/dev/data/world.json",
-    "https://adventure.test/dev/data/content.json",
-  );
-  assert.equal(loaded.objects.book.length, value.length);
-  assert(
-    loaded.objects.book.every(
-      (bitmap) => bitmap.width === 24 && bitmap.height === 36,
-    ),
-  );
-}
-for (const value of [[], [null], ""]) {
-  objectPaths = value;
-  await assert.rejects(
-    assetsModule.namespace.loadWorld(
-      "https://adventure.test/dev/data/world.json",
-      "https://adventure.test/dev/data/content.json",
-    ),
-    /requires a sprite path or a non-empty list/,
-  );
-}
-objectPaths = "objects/book.png";
 for (const field of ["link", "url"]) {
   for (const value of ["javascript:alert(1)", "data:text/html,test"]) {
     contentOverride = [{ id: "unsafe", type: "link", [field]: value }];
@@ -953,6 +912,7 @@ for (const field of ["link", "url"]) {
       assetsModule.namespace.loadWorld(
         "https://adventure.test/dev/data/world.json",
         "https://adventure.test/dev/data/content.json",
+        location.origin,
       ),
       /require HTTP\(S\) URLs/,
     );
@@ -965,6 +925,7 @@ await assert.rejects(
   assetsModule.namespace.loadWorld(
     "https://adventure.test/dev/data/world.json",
     "https://adventure.test/dev/data/content.json",
+    location.origin,
   ),
   /Readers must stay on the page origin/,
 );
@@ -993,7 +954,6 @@ step();
 assert.deepEqual(Array.from(rendered.room.size), [640, 360]);
 assert.deepEqual(Array.from(rendered.character.frame), [128, 234]);
 assert.equal(rendered.pixelScale, 4 / 3);
-assert.equal(rendered.uiScale, 1);
 assert.equal(rendered.lanternRadius, 120);
 assert(rendered.verbRects.every((v) => v.x >= 0 && v.x + v.width <= 640));
 const realStart = real.state.position;
@@ -1012,7 +972,6 @@ console.log(
 );
 
 // Book mode uses the shipped topic bindings and close-up assets.
-singleContentMode = false;
 location.hash = "#constructor";
 const bookContainer = new Element("main");
 const books = await startedBoot({
@@ -1035,6 +994,23 @@ assert.equal(rendered.objects.length, 6);
 assert.equal(rendered.objects[0].label, "Workstation");
 assert.equal(rendered.objects[0].book.items.length, 22);
 const catalogue = bookRoot.children.find((node) => node.tagName === "nav");
+for (const list of catalogue.children.filter((node) => node.tagName === "ul")) {
+  for (const row of list.children) {
+    const link = row.children[0];
+    if (link.tagName === "a") {
+      assert.equal(link.target, "_blank");
+      assert.equal(link.rel, "noopener noreferrer");
+      assert(link.href.startsWith("https://"));
+    }
+  }
+}
+const catalogueModule = await moduleAt(
+  "https://adventure.test/src/catalogue.js",
+);
+assert.equal(
+  catalogueModule.namespace.link("Reader only", null).tagName,
+  "span",
+);
 assert.equal(catalogue.children.length, 17);
 assert.equal(
   catalogue.children[1].children[1].children[0].href,
@@ -1313,10 +1289,10 @@ event(adventureCanvas, "pointermove", {
   clientX: windowTarget.position[0],
   clientY: windowTarget.position[1],
 });
-assert.equal(rendered.sentence(), `Use Workstation with ${windowTarget.label}`);
+assert.equal(sentence(rendered), `Use Workstation with ${windowTarget.label}`);
 tap(...windowTarget.position);
 assert.equal(rendered.speech, "I can't use those together.");
-assert.equal(rendered.sentence(), `Use Workstation with ${windowTarget.label}`);
+assert.equal(sentence(rendered), `Use Workstation with ${windowTarget.label}`);
 assert.equal(rendered.selectedItem, null);
 select("Talk to");
 tap(...topic.position);
@@ -1385,7 +1361,7 @@ const checkSite = (path) => {
     clientX: rect.x + 1,
     clientY: rect.y + 1,
   });
-  assert.equal(rendered.sentence(), `Open ${path} on the site`);
+  assert.equal(sentence(rendered), `Open ${path} on the site`);
   const count = clickedLinks.length;
   tap(rect.x + 1, rect.y + 1);
   assert.equal(clickedLinks.length, count + 1);
@@ -1410,7 +1386,7 @@ assert.deepEqual(clickedLinks.at(-1), {
   target: "_blank",
   rel: "noopener noreferrer",
 });
-assert.equal(rendered.sentence(), "Opening the link…");
+assert.equal(sentence(rendered), "Opening the link…");
 assert.equal(adventure.state.reader, null);
 assert.equal(adventure.state.board, "links");
 step(250);
@@ -1466,7 +1442,7 @@ assert.equal(adventure.state.note, "notice-6");
 const boardModule = await moduleAt("https://adventure.test/src/board.js");
 const takeRect = boardModule.namespace.noteTakeRect(notices.art);
 const beforeTaking = adventure.state.inventory.length;
-tap(...takeRect.slice(0, 2));
+tap(takeRect.x, takeRect.y);
 assert.equal(rendered.speech, "I'll keep this one.");
 assert.equal(rendered.speechUntil - rendered.elapsed, 3);
 assert.equal(adventure.state.inventory.length, beforeTaking + 1);
@@ -1478,7 +1454,7 @@ assert.equal(notices.items.length, 14, "Taken notice stays on board");
 let taken = rendered.inventory.at(-1);
 assert.equal(taken.sprite, notices.art.sprites[notices.art.notices[0].paper]);
 assert.equal(taken.pin, notices.art.sprites[notices.art.pin]);
-tap(...takeRect.slice(0, 2));
+tap(takeRect.x, takeRect.y);
 assert.equal(
   rendered.speech,
   "I'll keep this one.",
@@ -1498,7 +1474,7 @@ for (let page = 0; page <= 2; page++) {
   );
   for (let i = 0; i < count; i++) {
     tap(...notices.art.notices[i].at);
-    tap(...takeRect.slice(0, 2));
+    tap(takeRect.x, takeRect.y);
     tap(...notices.art.note.back.slice(0, 2));
   }
 }
@@ -1592,9 +1568,9 @@ event(adventureCanvas, "pointermove", {
   clientX: mapPlace.position[0],
   clientY: mapPlace.position[1],
 });
-assert.equal(rendered.sentence(), "Go to Study");
-assert.equal(rendered.lanternStrength(), 0);
-assert.deepEqual(Array.from(rendered.lanternPosition()), [0, 0]);
+assert.equal(sentence(rendered), "Go to Study");
+assert.equal(lanternStrength(rendered), 0);
+assert.deepEqual(Array.from(lanternPosition(rendered)), [0, 0]);
 await travel(mapPlace, "stone-house");
 const mapEntrance = rendered.room.items.find((item) => item.to === "map");
 assert.deepEqual(
@@ -1637,7 +1613,7 @@ assert.equal(
   null,
   "Clicking selected verb restores default walk",
 );
-assert.equal(rendered.sentence(), "Walk to");
+assert.equal(sentence(rendered), "Walk to");
 // A map destination without a return exit falls back to spawn.
 location.hash = "#map";
 event(window, "hashchange");
@@ -1672,7 +1648,7 @@ stored.set(
     null,
   ]),
 );
-location.hash = "#stone-house";
+location.hash = "#harbour/book/workstation/1";
 const freshContainer = new Element("main");
 const fresh = await startedBoot({
   world: "./data/world.json",
@@ -1689,6 +1665,16 @@ assert.equal(
   savedInventory,
   "Restore rewrites only valid identifiers",
 );
+assert.equal(fresh.state.room, "harbour");
+assert.equal(
+  fresh.state.book,
+  "workstation",
+  "Initial routes accept carried books outside their shelf room",
+);
+assert.equal(fresh.state.spread, 1);
+location.hash = "#stone-house";
+event(window, "hashchange");
+await new Promise(setImmediate);
 const freshRoot = freshContainer.children[0];
 event(freshRoot.children[1].children[3], "click");
 step();
@@ -1898,7 +1884,7 @@ console.log(
     rendered.verb = null;
     const [px, py] = itemPixel(path);
     event(realCanvas, "pointermove", { clientX: px, clientY: py });
-    assert.equal(rendered.sentence(), "Walk to Island path");
+    assert.equal(sentence(rendered), "Walk to Island path");
     assert(
       decodeURIComponent(realCanvas.style.cursor).includes("rotate(0 12 12)"),
     );
@@ -1978,3 +1964,8 @@ assert.equal(AudioContext.instances.length, beforeIdleAudio);
 assert(idleContainer.children[0].removed);
 
 assert.equal(fontFaces.size, 0, "Destroyed games release their font faces");
+
+assert(
+  AudioContext.instances.every((context) => context.closeCalls === 1),
+  "Every audio context closes exactly once, including failed starts",
+);

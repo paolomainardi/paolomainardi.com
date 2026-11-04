@@ -1,3 +1,4 @@
+import { parseRoute, bookRoute } from "../src/route.js";
 // Check board behavior against the engine and shipped fixtures.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -9,7 +10,7 @@ import {
   boardText,
   noteTakeRect,
 } from "../src/board.js";
-import { bookFonts, parseRoute } from "../src/book.js";
+import { bookFonts } from "../src/book.js";
 import { TextLayer } from "../src/text-layer.js";
 import { Renderer } from "../src/renderer.js";
 import { beacon } from "../src/lighting.js";
@@ -78,6 +79,7 @@ const game = {
   boardPage: 0,
   boardNote: null,
   bookArt: { fonts },
+  inventory: [],
   elapsed: 1,
 };
 assert(layer.update(game));
@@ -145,16 +147,10 @@ console.log(
 );
 
 const take = noteTakeRect(art);
-assert(take[0] >= art.note.go[0] + art.note.go[2]);
-assert(take[0] + take[2] <= art.note.back[0]);
-assert.equal(boardHit(board, 0, entry.item, ...take), "take");
-assert.equal(boardHit(board, 0, entry.item, ...take.slice(0, 2), false), null);
-const custom = { ...art, note: { ...art.note, take: [300, 280, 60, 14] } };
-assert.deepEqual(noteTakeRect(custom), custom.note.take);
-assert.equal(
-  boardHit({ ...board, art: custom }, 0, entry.item, 301, 281),
-  "take",
-);
+assert(take.x >= art.note.go[0] + art.note.go[2]);
+assert(take.x + take.width <= art.note.back[0]);
+assert.equal(boardHit(board, 0, entry.item, take.x, take.y), "take");
+assert.equal(boardHit(board, 0, entry.item, take.x, take.y, false), null);
 assert(note.some((line) => line.value === "Take it"));
 const blank = boardText(
   board,

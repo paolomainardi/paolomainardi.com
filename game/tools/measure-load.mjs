@@ -64,8 +64,7 @@ const renderer = {
   },
 };
 const assets = await loadWorld(world, content, origin);
-if (assets.world.book)
-  await loadBook(resolve(assets.world.book, world), renderer);
+await loadBook(resolve(assets.world.book, world), renderer);
 for (const board of Object.values(assets.world.boards || {}))
   await loadBoard(board, world, renderer);
 await loadRoom(assets.world, world, assets.world.start, renderer);

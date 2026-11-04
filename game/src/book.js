@@ -1,5 +1,6 @@
-// Load book art and fonts, paginate entries, and track routes and page drags.
-import { image, json, resolve, matchingItems } from "./assets.js";
+// Load book art and fonts, paginate entries, and track page drags.
+import { inside, rectangle } from "./panel.js";
+import { image, json, resolve, matchingItems, newest } from "./assets.js";
 
 export async function loadFonts(book, url) {
   const face = new FontFace(
@@ -73,9 +74,7 @@ export function bookItems(items, filter) {
     items.filter((item) => item.type === (filter?.type || "post")),
     filter,
   );
-  return filter?.series
-    ? matches
-    : matches.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+  return filter?.series ? matches : newest(matches);
 }
 
 export function wrapText(font, text, width, maxLines = Infinity) {
@@ -146,43 +145,15 @@ export function hitEntry(pages, spread, x, y) {
     pages
       .slice(spread * 2, spread * 2 + 2)
       .flatMap((page) => page.entries)
-      .find(
-        (entry) =>
-          x >= entry.x &&
-          x < entry.x + entry.width &&
-          y >= entry.y &&
-          y < entry.y + entry.height,
-      ) || null
+      .find((entry) => inside(entry, x, y)) || null
   );
-}
-
-export function parseRoute(hash, start) {
-  try {
-    const parts = hash.replace(/^#/, "").split("/");
-    return {
-      room: decodeURIComponent(parts[0] || start),
-      board: parts[1] === "board" ? decodeURIComponent(parts[2] || "") : null,
-      book: parts[1] === "book" ? decodeURIComponent(parts[2] || "") : null,
-      spread: /^\d+$/.test(parts[3] || "") ? Number(parts[3]) : 0,
-      item:
-        parts[1] && !["book", "board"].includes(parts[1])
-          ? decodeURIComponent(parts[1])
-          : null,
-    };
-  } catch {
-    return { room: start, book: null, spread: 0, item: null };
-  }
-}
-
-export function bookRoute(room, id, spread) {
-  return `#${encodeURIComponent(room)}/book/${encodeURIComponent(id)}/${spread}`;
 }
 
 export function cornerHit(book, spread, pageCount, x, y) {
   for (const direction of [-1, 1]) {
     if (spread + direction < 0 || spread + direction >= pageCount / 2) continue;
     const [px, py, width, height] = book.curl.rects[direction < 0 ? 0 : 1];
-    if (x >= px - 8 && x < px + width + 8 && y >= py - 4 && y < py + height + 8)
+    if (inside(rectangle(px - 8, py - 4, width + 16, height + 12), x, y))
       return direction;
   }
   return 0;
@@ -200,16 +171,23 @@ export function dragPage(book, spread, pageCount, x, y) {
     if (
       (corner ||
         (outer &&
-          x >= left &&
-          x < right &&
-          y >= py - 16 &&
-          y < Math.max(py + height, cy + ch))) &&
+          inside(
+            rectangle(
+              left,
+              py - 16,
+              right - left,
+              Math.max(py + height, cy + ch) - py + 16,
+            ),
+            x,
+            y,
+          ))) &&
       spread + direction >= 0 &&
       spread + direction < pageCount / 2
     )
       return {
         direction,
         start: x,
+        // Distance to the spine makes a full drag turn one leaf.
         distance: Math.abs(
           x - (book.pages[0][0] + book.pages[0][2] + book.pages[1][0]) / 2,
         ),

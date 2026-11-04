@@ -30,15 +30,9 @@ export function footContacts(before, after) {
 }
 
 export class SoundEngine {
-  constructor(
-    world,
-    url,
-    Context = globalThis.AudioContext || globalThis.webkitAudioContext,
-    context = null,
-  ) {
+  constructor(world, url, context) {
     this.world = world;
     this.url = url;
-    this.Context = Context;
     this.context = null;
     this.startContext = context;
     this.muted = false;
@@ -58,9 +52,9 @@ export class SoundEngine {
   }
 
   start() {
-    if (this.disposed || !this.Context) return;
+    if (this.disposed || !this.startContext) return;
     if (!this.context) {
-      this.context = this.startContext || new this.Context();
+      this.context = this.startContext;
       const c = this.context;
       this.master = c.createGain();
       this.duck = c.createGain();
@@ -320,12 +314,7 @@ export class SoundEngine {
 
   position(slot, game, seconds = 0.08) {
     const { entry, voice } = slot;
-    const spatial = soundPosition(
-      game.room,
-      game.actor,
-      entry,
-      (slot.spatial ||= {}),
-    );
+    const spatial = soundPosition(game.room, game.actor, entry);
     const lamp = entry.light
       ? (game.room.lights.find((light) => light.id === entry.light)?.level ?? 0)
       : 1;

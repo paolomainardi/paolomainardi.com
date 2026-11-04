@@ -1,6 +1,6 @@
 // Filter supported target actions and place context menus and exit cursors.
+import { inside, rectangle } from "./panel.js";
 import { wrapText } from "./book.js";
-import { wrap } from "./font.js";
 
 export function targetVerbs(verbs, target) {
   return verbs.filter((verb) => {
@@ -9,26 +9,24 @@ export function targetVerbs(verbs, target) {
       return ["light", "exit", "inventory"].includes(target.kind);
     if (verb === "Take")
       return (
-        ["book", "content"].includes(target.kind) ||
+        target.kind === "book" ||
         (target.kind === "hotspot" &&
-          (target.board ||
-            ["noticeboard", "letter", "logbook"].includes(target.id)))
+          (target.board || target.binding === "content"))
       );
     if (verb === "Open")
       return (
-        ["book", "content", "inventory"].includes(target.kind) ||
+        ["book", "inventory"].includes(target.kind) ||
         (target.kind === "hotspot" &&
-          !!(target.content || target.book || target.board || target.go))
+          !!(target.content || target.board || target.go))
       );
     return false;
   });
 }
 
-export function layoutMenu(target, verbs, point, size, font = null) {
-  const body = font?.body,
-    heading = font?.label;
-  const textWidth = (text, role = body) =>
-    role ? role.measure(text) : text.length * 6;
+export function layoutMenu(target, verbs, point, size, font) {
+  const body = font.body,
+    heading = font.label;
+  const textWidth = (text, role = body) => role.measure(text);
   const name = target.label || target.id;
   const width = Math.min(
     size[0],
@@ -40,11 +38,9 @@ export function layoutMenu(target, verbs, point, size, font = null) {
       ),
     ) + 12,
   );
-  const header = heading
-    ? wrapText(heading, name, width - 12, 1)[0]
-    : wrap(name, Math.max(1, Math.floor((width - 12) / 6)), 1)[0];
+  const header = wrapText(heading, name, width - 12, 1)[0];
   const rowHeight =
-    Math.ceil(Math.max(body?.lineHeight || 8, heading?.lineHeight || 8)) + 4;
+    Math.ceil(Math.max(body.lineHeight, heading.lineHeight)) + 4;
   const listTop = rowHeight + 8;
   const height = listTop + verbs.length * rowHeight + 4;
   const x = Math.max(0, Math.min(Math.round(point[0]) + 3, size[0] - width));
@@ -64,7 +60,8 @@ export function layoutMenu(target, verbs, point, size, font = null) {
 }
 
 export function menuHit(menu, x, y) {
-  if (x < menu.x + 1 || x >= menu.x + menu.width - 1) return -1;
+  if (!inside(rectangle(menu.x + 1, menu.y, menu.width - 2, menu.height), x, y))
+    return -1;
   const row = Math.floor((y - menu.y - menu.listTop) / menu.rowHeight);
   return row >= 0 && row < menu.verbs.length ? row : -1;
 }

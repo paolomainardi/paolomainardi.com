@@ -2,11 +2,15 @@
 
 The engine loads `world.json`, `content.json`, room drawings, character sheets, close-up artwork and optional sound files. `rig.json` and `palette.json` are build inputs, not runtime requests. This document describes fields consumed by the engine and its asset tools.
 
-Paths inside JSON resolve against the file that names them. Runtime asset and link URLs must use HTTP or HTTPS. Reader URLs must also share the page's origin. `site` paths resolve against the page origin, independently of asset URLs. Drawings use the palette; data masks do not.
+Paths inside JSON resolve against the file that names them. Runtime asset and link URLs must use HTTP or HTTPS.
+
+Reader URLs must also share the page's origin. `site` paths resolve against the page origin, independently of asset URLs. Drawings use the palette; data masks do not.
 
 ## Coordinates and palette
 
-Coordinates start at the top left; x increases right and y increases down. Points are `[x, y]`. Layout rectangles are `[x, y, width, height]`; crop boxes in rigs are `[x0, y0, x1, y1]`, with the last edges excluded. Hit rectangles include top/left and exclude bottom/right, except room-mask bounds, whose last painted pixel is inclusive.
+Coordinates start at the top left; x increases right and y increases down. Points are `[x, y]`.
+
+Layout rectangles are `[x, y, width, height]`; crop boxes in rigs are `[x0, y0, x1, y1]`, with the last edges excluded. Hit rectangles include top/left and exclude bottom/right, except room-mask bounds, whose last painted pixel is inclusive.
 
 Room dimensions come from `room.size`, two positive integers. Use a common **640×360** frame for the supplied panel and close-up artwork. Low-level rendering accepts other dimensions, but the five-verb inventory panel has fixed horizontal positions and the book drawing is required to be 640×360.
 
@@ -16,7 +20,7 @@ Room dimensions come from `room.size`, two positive integers. Use a common **640
 | `palette.json`       | The same ordered colours as `["#rrggbb", ...]`. Used by drawing tools and checks.          |
 | Room and sprite PNGs | Every visible drawing pixel belongs to the palette; sprite backgrounds may be transparent. |
 
-The palette lookup quantizes RGB to 64 levels per channel and chooses the nearest swatch in OKLab. Ties use palette order. Optional presentation dither perturbs the input by less than one RGB byte. Bloom is added after palette mapping and is not restricted to palette colours.
+The palette lookup quantizes RGB to 64 levels per channel and chooses the nearest swatch in OKLab. Ties use palette order. Bloom is added after palette mapping and is not restricted to palette colours.
 
 ## content.json
 
@@ -31,7 +35,7 @@ The top-level object has one field, `items`, an array of content records. Stable
 | `date`        | optional string       | Display date and descending lexical sort key; use `YYYY-MM-DD`.             |
 | `tags`        | optional string array | Tags matched by filters; omitted means no tags.                             |
 | `series`      | optional string       | Series identity for exact matching.                                         |
-| `part`        | optional number       | Ascending series/slot order; omitted sorts after numbered parts.            |
+| `part`        | optional number       | Ascending series order; omitted sorts after numbered parts.                 |
 | `link`        | optional URL string   | External destination, preferred to `url` when opening a hotspot or notice.  |
 | `url`         | optional URL string   | Canonical website page; used by the reader's website link.                  |
 | `reader`      | optional URL string   | Same-origin script-free reader page.                                        |
@@ -56,28 +60,34 @@ The top-level object has one field, `items`, an array of content records. Stable
 }
 ```
 
-A filter is an object whose fields must all match. Non-tag fields use exact equality. `tags` accepts a string or array and matches any shared tag. An omitted filter matches everything. Slots sort matches by `part` ascending, then `date` descending. Content hotspots and boards re-sort by newest date. Books default to `type: "post"`; a `series` book keeps part order, while other books use newest date.
+A filter is an object whose fields must all match.
 
-A reader takes priority over external links. Without a reader, book entries and notices open `link`; a hotspot opens `link` or otherwise `url`. An entry with no usable destination gives a response. The reader's website link is hidden without `url`. Text is rendered as text, never interpreted as HTML.
+Non-tag fields use exact equality. `tags` accepts a string or array and matches any shared tag. An omitted filter matches everything.
+
+Matching items sort by `part` ascending, then `date` descending. Content hotspots and boards re-sort by newest date.
+
+Books default to `type: "post"`; a `series` book keeps part order, while other books use newest date.
+
+A reader takes priority over external links. Without a reader, book entries and notices open `link`; a hotspot opens `link` or otherwise `url`. An entry with no usable destination gives a response.
+
+The reader's website link is hidden without `url`. Catalogue entries link to `link` or `url` in a new tab; entries with neither are plain text. Text is rendered as text, never interpreted as HTML.
 
 ## world.json
 
-| Field       | Type                | Meaning                                                                                     |
-| ----------- | ------------------- | ------------------------------------------------------------------------------------------- |
-| `title`     | string              | World title, applied when the world loads after Start.                                      |
-| `palette`   | asset path          | Palette strip.                                                                              |
-| `start`     | string              | Initial room id when no valid hash selects another room.                                    |
-| `character` | asset path          | Character JSON. Loaded even when the initial room is a map.                                 |
-| `verbs`     | string array        | Panel and context-menu ordering. Use the five supported labels below.                       |
-| `rooms`     | object              | Room ids mapped to room bindings.                                                           |
-| `objects`   | optional object     | Sprite keys mapped to one path or a non-empty array of paths. Used by single-content slots. |
-| `book`      | optional asset path | Shared book drawing and fonts. Required when books or boards are configured.                |
-| `books`     | optional object     | Topic book ids mapped to book bindings.                                                     |
-| `boards`    | optional object     | Board ids mapped to board bindings.                                                         |
-| `dither`    | optional boolean    | Only literal `true` enables presentation dither; defaults off.                              |
-| `sounds`    | optional object     | Sound ids mapped to sound definitions.                                                      |
-| `events`    | optional object     | Game event names mapped to sound ids.                                                       |
-| `mix`       | optional object     | Audio bus gains.                                                                            |
+| Field       | Type            | Meaning                                                               |
+| ----------- | --------------- | --------------------------------------------------------------------- |
+| `title`     | string          | World title, applied when the world loads after Start.                |
+| `palette`   | asset path      | Palette strip.                                                        |
+| `start`     | string          | Initial room id when no valid hash selects another room.              |
+| `character` | asset path      | Character JSON. Loaded even when the initial room is a map.           |
+| `verbs`     | string array    | Panel and context-menu ordering. Use the five supported labels below. |
+| `rooms`     | object          | Room ids mapped to room bindings.                                     |
+| `book`      | asset path      | Required shared book drawing and fonts, also used by menus.           |
+| `books`     | optional object | Topic book ids mapped to book bindings.                               |
+| `boards`    | optional object | Board ids mapped to board bindings.                                   |
+| `sounds`    | optional object | Sound ids mapped to sound definitions.                                |
+| `events`    | optional object | Game event names mapped to sound ids.                                 |
+| `mix`       | optional object | Audio bus gains.                                                      |
 
 ```json
 {
@@ -103,16 +113,14 @@ A reader takes priority over external links. Without a reader, book entries and 
 
 ### Room bindings
 
-| Field      | Type              | Meaning                                                                                                       |
-| ---------- | ----------------- | ------------------------------------------------------------------------------------------------------------- |
-| `src`      | asset path        | Room JSON, relative to the world.                                                                             |
-| `books`    | optional id array | Fill slots in painted item order with topic books. An empty list fills none. Takes precedence over `content`. |
-| `content`  | optional filter   | Select individual content for slots when `books` is absent.                                                   |
-| `object`   | optional string   | Key in `world.objects` for individual content sprites.                                                        |
-| `hotspots` | optional object   | Room hotspot ids mapped to bindings below.                                                                    |
-| `ambience` | optional object   | `dusk` and `night` arrays of ambient sound entries.                                                           |
+| Field      | Type              | Meaning                                                                                 |
+| ---------- | ----------------- | --------------------------------------------------------------------------------------- |
+| `src`      | asset path        | Room JSON, relative to the world.                                                       |
+| `books`    | optional id array | Fill slots in painted item order with topic books. An empty or omitted list fills none. |
+| `hotspots` | optional object   | Room hotspot ids mapped to bindings below.                                              |
+| `ambience` | optional object   | `dusk` and `night` arrays of ambient sound entries.                                     |
 
-Slot contents stop when either items or slots run out. Sprite arrays cycle in occupied-slot order, restarting in each room. Each sprite uses its own dimensions, bottom-centred on the slot. There is no automatic room expansion or overflow build check.
+Slot books stop when either books or slots run out. Each sprite uses its own dimensions, bottom-centred on the slot. There is no automatic room expansion or overflow build check.
 
 A hotspot binding chooses the first applicable form in this order:
 
@@ -120,10 +128,11 @@ A hotspot binding chooses the first applicable form in this order:
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `go`, `via`                | `go` names a destination room; `via` names an exit in the current room. Open or default walk reaches that exit, then travels to `go`. |
 | `board`                    | Open the named world board after arrival.                                                                                             |
-| `book`                     | Open the named world book after arrival.                                                                                              |
 | `content`, optional `site` | Bind the newest matching item, append its title to the hotspot label, and open its reader or destination.                             |
 
-An unmatched content filter leaves the original hotspot unchanged. Look prefers the hotspot's `look`, then the content title and description. External hotspot links open during the original click to retain browser activation; arrival supplies feedback. The second click of a double-click does not open another tab.
+An unmatched content filter keeps the original hotspot label and description. Take still responds that it belongs to the keeper. Look prefers the hotspot's `look`, then the content title and description.
+
+External hotspot links open during the original click to retain browser activation; arrival supplies feedback. The second click of a double-click does not open another tab.
 
 ### Books, boards and site paths
 
@@ -132,24 +141,36 @@ An unmatched content filter leaves the original hotspot unchanged. Look prefers 
 | `books.<id>`  | Required `title`, `sprite`; optional `content` filter and `site` path.                    |
 | `boards.<id>` | Required `board` path and `content` filter; optional `title`, `subtitle` and `site` path. |
 
-`site` must begin with one slash, must resolve to the page origin and may include a fragment. Books and boards display it in their close-up footer. A content hotspot supplies its path to the reader. Paths are also present in the accessible catalogue. Long labels truncate to leave room for Close, the message and sound.
+`site` must begin with one slash, must resolve to the page origin and may include a fragment. Books and boards display it in their close-up footer. A content hotspot supplies its path to the reader.
+
+Paths are also present in the accessible catalogue. Long labels truncate to leave room for Close, the message and sound.
 
 ### Verbs, routes and storage
 
-Use `Look at`, `Open`, `Use`, `Take`, `Talk to`. Labels are action identifiers, not translatable display strings. Unsupported actions respond without changing the world. No selected verb means `Walk to`. The context menu filters this list for each target; `Talk to` currently has no implemented target action.
+Use `Look at`, `Open`, `Use`, `Take`, `Talk to`. Labels are action identifiers, not translatable display strings. Unsupported actions respond without changing the world.
 
-**Take** copies a topic book. Content objects open their reader instead. A board hotspot supports Take with a prompt to open it; hotspots named `noticeboard`, `letter` or `logbook` also expose Take. The latter two give the keeper response when bound to content. These ids currently carry engine-specific behaviour.
+No selected verb means `Walk to`. The context menu filters this list for each target; `Talk to` currently has no implemented target action.
 
-| Hash                         | Restored state                                        |
-| ---------------------------- | ----------------------------------------------------- |
-| `#<room>`                    | Room.                                                 |
-| `#<room>/<item>`             | Reader for content bound to a room object or hotspot. |
-| `#<room>/book/<id>/<spread>` | Book and zero-based spread.                           |
-| `#<room>/board/<id>/<page>`  | Board and zero-based page.                            |
+**Take** copies a topic book. Board hotspots prompt the visitor to open the board and pick a notice. Content-bound hotspots give the keeper response, including when their filter matches nothing.
 
-Ids are URL-encoded. Missing or non-digit page numbers become zero; numeric values clamp to bounds. Malformed URI escapes fall back to the start room. Unknown initial rooms fall back to `start`; unknown rooms in later hash changes are ignored. A book route must belong to the room or carried inventory; board routes require a board hotspot in the room. Notice detail is not encoded in the hash.
+These actions depend on bindings, not hotspot ids.
 
-Inventory uses only `localStorage["adventure.inventory"]`, containing a JSON array of `{ "kind": "book" | "notice", "id": "..." }`. Restoration checks entry types, current ids, board membership and duplicates. It rewrites the valid list. Corrupt JSON, blocked storage and quota errors do not stop play. Forget empties inventory and removes the key. No other game state persists.
+| Hash                         | Restored state                              |
+| ---------------------------- | ------------------------------------------- |
+| `#<room>`                    | Room.                                       |
+| `#<room>/<item>`             | Reader for content bound to a room hotspot. |
+| `#<room>/book/<id>/<spread>` | Book and zero-based spread.                 |
+| `#<room>/board/<id>/<page>`  | Board and zero-based page.                  |
+
+Ids are URL-encoded. Missing or non-digit page numbers become zero; numeric values clamp to bounds. Malformed URI escapes fall back to the start room.
+
+Unknown initial rooms fall back to `start`; unknown rooms in later hash changes are ignored. A book route must belong to the room or carried inventory; board routes require a board hotspot in the room. Notice detail is not encoded in the hash.
+
+Inventory uses only `localStorage["adventure.inventory"]`, containing a JSON array of `{ "kind": "book" | "notice", "id": "..." }`. Restoration checks entry types, current ids, board membership and duplicates. It rewrites the valid list.
+
+Corrupt JSON, blocked storage and quota errors do not stop play.
+
+Forget empties inventory and removes the key. No other game state persists.
 
 ## room.json and objects.png
 
@@ -158,7 +179,6 @@ Inventory uses only `localStorage["adventure.inventory"]`, containing a JSON arr
 | `name`                 | string                | Descriptive authoring name; runtime identity comes from the world room key.                                  |
 | `size`                 | two positive integers | Width and height shared by all room images.                                                                  |
 | `albedo`               | asset path            | Room in even light, used to colour the carried lantern's pool.                                               |
-| `objects`              | asset path            | Flat-colour item mask.                                                                                       |
 | `states`               | object                | Both `dusk` and `night`, each containing `unlit` and `lights`.                                               |
 | `states.<time>.unlit`  | asset path            | Drawing with every room lamp off.                                                                            |
 | `states.<time>.lights` | object                | Every light item id mapped to a drawing with only that lamp on. May be empty.                                |
@@ -168,9 +188,15 @@ Inventory uses only `localStorage["adventure.inventory"]`, containing a JSON arr
 | `map`                  | optional boolean      | With `true`, no actor, shadow, carried lantern or walking. Depth and spawn may be omitted.                   |
 | `water`                | optional asset path   | Room-sized water data mask.                                                                                  |
 
-Each state requires one drawing for every lamp. All room PNG dimensions are checked at load. Lighting is composed in linear colour as `unlit + sum(strength × (lamp drawing - unlit))`, plus lantern light from albedo, then clamped. Lamps start on and fade over 0.4 seconds when toggled.
+Each state requires one drawing for every lamp. All room PNG dimensions are checked at load. Lighting is composed in linear colour as `unlit + sum(strength × (lamp drawing - unlit))`, plus lantern light from albedo, then clamped.
 
-`objects.png` is an RGB mask. Black means no item. Paint each item with its unique exact `#rrggbb` colour, without antialiasing. An item must have painted pixels. The loader derives bounds and bottom-centre position from those pixels. Item regions cannot overlap because each pixel encodes one colour. Walkable floor under the panel is removed at runtime.
+Lamps start on and fade over 0.4 seconds when toggled.
+
+`objects.png` is an RGB mask. Black means no item. Paint each item with its unique exact `#rrggbb` colour, without antialiasing.
+
+An item must have painted pixels. The loader derives bounds and bottom-centre position from those pixels. Item regions cannot overlap because each pixel encodes one colour.
+
+Walkable floor under the panel is removed at runtime.
 
 | Item field | Meaning                                                                                                                          |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -183,15 +209,21 @@ Each state requires one drawing for every lamp. All room PNG dimensions are chec
 | `light`    | Lamp behaviour: `oil` and `candle` flicker; `beacon` flashes; other labels, such as `pendant`, `wall` or `desk`, breathe slowly. |
 | `tint`     | Required for light items: `#rrggbb` bloom colour. Room illumination still comes from drawings.                                   |
 
-Floor pixels permit eight-direction paths with no diagonal corner cutting. Slot position anchors a sprite's bottom centre. Foreground items use their lowest painted row as a baseline: feet behind that row are covered; feet on or in front of it remain visible. The same test clips lantern emission and glow.
+Floor pixels permit eight-direction paths with no diagonal corner cutting. Slot position anchors a sprite's bottom centre. Foreground items use their lowest painted row as a baseline: feet behind that row are covered; feet on or in front of it remain visible.
 
-Exits travel with a 0.15-second fade each way. The return exit's nearest floor point supplies arrival; otherwise `spawn` does. Arrival faces the frame centre. A map exit travels immediately. Beacon Use responds without walking or toggling: four seconds dark, then one smooth one-second flash, repeating every five seconds.
+The same test clips lantern emission and glow.
+
+Exits travel with a 0.15-second fade each way. The return exit's nearest floor point supplies arrival; otherwise `spawn` does. Arrival faces the frame centre.
+
+A map exit travels immediately. Beacon Use responds without walking or toggling: four seconds dark, then one smooth one-second flash, repeating every five seconds.
 
 ### water.png
 
 Use RGB black outside water, red `#ff0000` for water and yellow `#ffff00` for reflection pixels inside water. The loader treats red 255 as water and green 255 as reflection within it. Palette membership does not apply.
 
-Connected row spans keep displacement within coasts, holes and window bars. Horizontal samples shift by integer offsets within ±2 pixels over an eight-second swell. Sparse reflection pixels use the brightest painted RGB triplet of the relevant drawing, more often near the reflection horizon. Both effects update four times per second and stop when `prefers-reduced-motion: reduce` matches. Displacement applies to every lamp drawing and the unlit drawing before composition.
+Connected row spans keep displacement within coasts, holes and window bars. Horizontal samples shift by integer offsets within ±2 pixels over an eight-second swell. Sparse reflection pixels use the brightest painted RGB triplet of the relevant drawing, more often near the reflection horizon.
+
+Both effects update four times per second and stop when `prefers-reduced-motion: reduce` matches. Displacement applies to every lamp drawing and the unlit drawing before composition.
 
 ## character.json
 
@@ -204,7 +236,9 @@ Connected row spans keep displacement within coasts, holes and window bars. Hori
 | `lantern`    | point               | Fallback flame offset from the feet at scale 1.                                     |
 | `animations` | object              | Animation names mapped to cell metadata.                                            |
 
-Required animation names are `idle-front`, `walk-side`, `walk-front`, `walk-back`. Optional `idle-side` and `idle-back` preserve facing after movement; otherwise standing falls back to unmirrored `idle-front`. Additional sheet rows such as `talk-front` may exist, but the current engine does not select a talking animation.
+Required animation names are `idle-front`, `walk-side`, `walk-front`, `walk-back`. Optional `idle-side` and `idle-back` preserve facing after movement; otherwise standing falls back to unmirrored `idle-front`.
+
+Additional sheet rows such as `talk-front` may exist, but the current engine does not select a talking animation.
 
 | Animation field | Meaning                                                                                                                          |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -214,13 +248,19 @@ Required animation names are `idle-front`, `walk-side`, `walk-front`, `walk-back
 | `fps`           | Positive time-based playback rate when no stride is supplied.                                                                    |
 | `stride`        | Optional positive pixels travelled per cycle at scale 1. Walking advances by distance divided by stride and current depth scale. |
 
-The side sheet faces right and mirrors for left. Front/back selection uses hysteresis near diagonals. Walk phase persists across segments and directions; running changes distance, not frame rules. Feet interpolate the room depth scale, clamped at the far and near rows.
+The side sheet faces right and mirrors for left. Front/back selection uses hysteresis near diagonals. Walk phase persists across segments and directions; running changes distance, not frame rules.
 
-With `glow`, each cell's red×alpha weighted centroid supplies the flame location; an empty cell uses `lantern`. This offset, sheet crop and mirroring follow the current animation. Glow dimensions are checked against the sheet. Authoring checks must ensure every animation stays inside the grid.
+Feet interpolate the room depth scale, clamped at the far and near rows.
+
+With `glow`, each cell's red×alpha weighted centroid supplies the flame location; an empty cell uses `lantern`. This offset, sheet crop and mirroring follow the current animation. Glow dimensions are checked against the sheet.
+
+Authoring checks must ensure every animation stays inside the grid.
 
 ## rig.json
 
-`tools/rig_walk.py` reads this beside `character.json`. It uses Pillow and NumPy, rewrites walk rows in `sheet` and optional `glow`, updates animation `frames` and `stride`, removes walk `start` offsets, and optionally writes a preview GIF. Paths resolve relative to the character directory. Side output is always generated; front and back output require their view objects.
+`tools/rig_walk.py` reads this beside `character.json`. It uses Pillow and NumPy, rewrites walk rows in `sheet` and optional `glow`, updates animation `frames` and `stride`, removes walk `start` offsets, and optionally writes a preview GIF. Paths resolve relative to the character directory.
+
+Side output is always generated; front and back output require their view objects.
 
 | Field               | Default or requirement                                                                                                           |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -242,9 +282,15 @@ With `glow`, each cell's red×alpha weighted centroid supplies the flame locatio
 | `arm`               | Optional side arm with required `source`, `shoulder`, `elbow`; optional `swing`, default 18 degrees.                             |
 | `front`, `back`     | Optional depth-view definitions below.                                                                                           |
 
-Depth-view objects require `hem`, reference `joints`, `shin`, `boot`, and two `legs`. Each leg requires `joints.hip`, `joints.knee`, `joints.ankle`, plus `thigh`, `shin`, `boot` crop boxes. A view's optional `pose` defaults to `idle-front` or `idle-back`. `stride_scale` defaults to 0.5 and `foot_lift` to 5 pixels. Optional `arms` entries require `box`, `pivot` and accept `swing` (default 3 degrees). Optional `lantern` follows the common object. Depth views share the side gait; their own gait override is not read by the tool's main procedure.
+Depth-view objects require `hem` and two `legs`. Each leg requires `joints.hip`, `joints.knee`, `joints.ankle`, plus `thigh`, `shin`, `boot` crop boxes.
 
-Curve interpolation is periodic smoothstep. The tool samples side phases at equal planted-foot travel; depth views project those phases with half-cycle stance/swing corrections. Rotations use 4× nearest sampling; shading snaps back to the palette. See [Character walking](docs/character-walk.md) for measurements and visual checks.
+A view's optional `pose` defaults to `idle-front` or `idle-back`. `stride_scale` defaults to 0.5 and `foot_lift` to 5 pixels.
+
+Optional `arms` entries require `box`, `pivot` and accept `swing` (default 3 degrees). Optional `lantern` follows the common object. Depth views share the side gait and have no per-view gait option.
+
+Curve interpolation is periodic smoothstep. The tool samples side phases at equal planted-foot travel; depth views project those phases with half-cycle stance/swing corrections. Rotations use 4× nearest sampling; shading snaps back to the palette.
+
+See [Character walking](docs/character-walk.md) for measurements and visual checks.
 
 ## book.json
 
@@ -263,35 +309,49 @@ Curve interpolation is periodic smoothstep. The tool samples side phases at equa
 | `sizes.title`, `sizes.body`, `sizes.label` | Font sizes in game pixels, currently 20, 10, 10.               |
 | `ink`, `faded`, `accent`                   | Text, secondary text and hover colours as `#rrggbb`.           |
 
-Keep `fonts/NFPixels-OFL.txt` beside the unmodified font. Font metrics set ascent and line height; line height is `round(size × 1.3)`. Entries have at most two title lines plus a date and a half-body-line gap. Page one includes a two-line title and count. Each page reserves label height for its number; pagination throws if later pages cannot fit any entry. Empty books still have one spread.
+Keep `fonts/NFPixels-OFL.txt` beside the unmodified font. Font metrics set ascent and line height; line height is `round(size × 1.3)`. Entries have at most two title lines plus a date and a half-body-line gap.
 
-A cached transparent text canvas matches the room grid. Positions round to whole pixels and alpha thresholds at 128. It redraws when book, board, page, note, inventory count, hover, menu selection or frame size changes. The turning leaf masks text in the shader without rebuilding the text canvas.
+Page one includes a two-line title and count. Each page reserves label height for its number; pagination throws if later pages cannot fit any entry. Empty books still have one spread.
 
-Drag an outer half outside an entry towards the spine. Passing halfway commits; cancellation or an earlier release returns. Corner clicks commit without dragging. The next-page strip runs right-to-left; previous turns mirror it. `tools/make_curls.py` derives folded corners from the open drawing and palette.
+A cached transparent text canvas matches the room grid. Positions round to whole pixels and alpha thresholds at 128. It redraws only while a book, board or menu is open, when book, board, page, note, inventory count, hover, menu selection or frame size changes.
+
+The turning leaf masks text in the shader without rebuilding the text canvas.
+
+Drag an outer half outside an entry towards the spine. Passing halfway commits; cancellation or an earlier release returns. Corner clicks commit without dragging.
+
+The next-page strip runs right-to-left; previous turns mirror it. `tools/make_curls.py` derives folded corners from the open drawing and palette.
 
 ## board.json
 
-| Field                    | Meaning                                                                                                           |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| `image`                  | Empty board drawing, normally 640×360.                                                                            |
-| `pin`                    | Transparent pin sprite.                                                                                           |
-| `notices`                | Non-empty array of notice places in reading order.                                                                |
-| `notices[].paper`        | Blank paper sprite path.                                                                                          |
-| `notices[].at`           | Paper top-left point.                                                                                             |
-| `notices[].text`         | Absolute text rectangle inside that paper.                                                                        |
-| `older`, `newer`         | Paging hit rectangles.                                                                                            |
-| `title`                  | Optional heading rectangle; its x, y and width position the title box. The height is not used for clipping.       |
-| `note.image`             | Large-note overlay, normally transparent 640×360.                                                                 |
-| `note.text`              | Full note text rectangle.                                                                                         |
-| `note.go`, `note.back`   | Go there and Back hit rectangles.                                                                                 |
-| `note.take`              | Optional Take it rectangle. Defaults to an 80-pixel width centred between Go and Back, sharing Go's y and height. |
-| `ink`, `faded`, `accent` | Text, secondary text and hover colours.                                                                           |
+| Field                    | Meaning                                            |
+| ------------------------ | -------------------------------------------------- |
+| `image`                  | Empty board drawing, normally 640×360.             |
+| `pin`                    | Transparent pin sprite.                            |
+| `notices`                | Non-empty array of notice places in reading order. |
+| `notices[].paper`        | Blank paper sprite path.                           |
+| `notices[].at`           | Paper top-left point.                              |
+| `notices[].text`         | Absolute text rectangle inside that paper.         |
+| `older`, `newer`         | Paging hit rectangles.                             |
+| `note.image`             | Large-note overlay, normally transparent 640×360.  |
+| `note.text`              | Full note text rectangle.                          |
+| `note.go`, `note.back`   | Go there and Back hit rectangles.                  |
+| `ink`, `faded`, `accent` | Text, secondary text and hover colours.            |
 
-One page holds `notices.length` items. Controls stay drawn when inactive, with faded explanatory labels. Hover lifts paper, pin and text one game pixel. Titles wrap to fit the paper and reserve one date line. The full note shows up to three title lines, date, faded hostname and description; missing descriptions use a faded placeholder sentence.
+One page holds `notices.length` items. Controls stay drawn when inactive, with faded explanatory labels. Hover lifts paper, pin and text one game pixel.
 
-The world board's title and subtitle each wrap to one line above the notices. Without `title`, the box centres over the notice span just above its top edge. With `title`, it centres in that rectangle's width at its y. The title box height follows font line heights, not the rectangle height. Wrapping always uses the horizontal notice span, even when a title rectangle supplies a different width. Leave enough clear space in the drawing.
+Titles wrap to fit the paper and reserve one date line.
 
-Take copies the notice and its slot's paper/pin into inventory; the board retains it. A carried notice shows inactive In your pocket. Its Back action closes the overlay to the current room. The book's shared fonts are required for board text.
+The full note shows up to three title lines, date, faded hostname and description; missing descriptions use a faded placeholder sentence.
+
+The world board's title and subtitle each wrap to one line above the notices. The box centres over the notice span just above its top edge. Its height follows font line heights; wrapping uses the horizontal notice span.
+
+Leave enough clear space in the drawing.
+
+The Take it rectangle has an 80-pixel width centred between Go and Back, sharing Go's y and height.
+
+Take copies the notice and its slot's paper/pin into inventory; the board retains it. A carried notice shows inactive In your pocket. Its Back action closes the overlay to the current room.
+
+The book's shared fonts are required for board text.
 
 ## Sounds
 
@@ -317,14 +377,26 @@ Sounds live in `world.sounds`; no separate sound JSON is loaded. The shipped rea
 | `creak`   | 380 Hz           | 0.65 s   | 0.28       |
 | `whoosh`  | 700 Hz           | 0.5 s    | 0.25       |
 
-Generators use filtered noise with pitch and level variation. Loops use eight-second noise beds and evolving envelopes. `surf` uses a low-pass filter; other presets use a band-pass. File duration comes from decoded audio. Missing files, unknown sound ids and unknown synths warn once and remain silent. Audio data is decoded once per resolved URL per game instance.
+Generators use filtered noise with pitch and level variation. Loops use eight-second noise beds and evolving envelopes. `surf` uses a low-pass filter; other presets use a band-pass.
 
-`world.mix` accepts `master`, `ambience` and `effects`, defaulting to 0.5, 0.8 and 1. Each room's `ambience.dusk` and `ambience.night` contain entries with required `sound`, optional `at` (room item id) and optional `light` (lamp id). Position changes gain and stereo pan; no position means constant gain and centred pan. Lamp binding multiplies gain by fade level. Room/time changes cross-fade loops over one second.
+File duration comes from decoded audio.
 
-`world.events` maps `step`, `page-turn`, `book-open`, `book-close`, `lamp`, `menu`, `door`, `lantern` and `time` to sound ids. Omitted events stay silent. Footsteps fire at half and whole walk cycles with depth-scaled gain. Cancelled page turns stay silent. Door sound fires on exit arrival before the room fade.
+Missing files, unknown sound ids and unknown synths warn once and remain silent. Audio data is decoded once per resolved URL per game instance.
 
-Start unlocks audio. M and the sound label toggle mute in memory. A reader ducks both buses to 0.25. Hidden tabs suspend the context and visible tabs resume it. Destroy stops voices and closes the context.
+`world.mix` accepts `master`, `ambience` and `effects`, defaulting to 0.5, 0.8 and 1. Each room's `ambience.dusk` and `ambience.night` contain entries with required `sound`, optional `at` (room item id) and optional `light` (lamp id). Position changes gain and stereo pan; no position means constant gain and centred pan.
+
+Lamp binding multiplies gain by fade level. Room/time changes cross-fade loops over one second.
+
+`world.events` maps `step`, `page-turn`, `book-open`, `book-close`, `lamp`, `menu`, `door`, `lantern` and `time` to sound ids. Omitted events stay silent. Footsteps fire at half and whole walk cycles with depth-scaled gain.
+
+Cancelled page turns stay silent. Door sound fires on exit arrival before the room fade.
+
+Start unlocks audio. M and the sound label toggle mute in memory. A reader ducks both buses to 0.25.
+
+Hidden tabs suspend the context and visible tabs resume it. Destroy stops voices and closes the context.
 
 ## Validation boundary
 
-The loader checks fetch status, URL protocols, reader origin, non-empty object sprite lists, palette-strip dimensions, room-image dimensions, required lamp drawings and character-glow dimensions. It is not a complete schema validator. Authors must check ids, colours, animation bounds, floor connectivity, page fit and control geometry. Use `tests/assets.py`, the JavaScript suite and browser checks described in [README.md](README.md#checks-and-tools).
+The loader checks fetch status, URL protocols, reader origin, palette-strip dimensions, room-image dimensions, required lamp drawings and character-glow dimensions. It is not a complete schema validator. Authors must check ids, colours, animation bounds, floor connectivity, page fit and control geometry.
+
+Use `tests/assets.py`, the JavaScript suite and browser checks described in [README.md](README.md#checks-and-tools).

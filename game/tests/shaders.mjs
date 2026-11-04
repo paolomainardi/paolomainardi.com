@@ -13,10 +13,9 @@ class ShaderCheck extends Renderer {
       directory,
       `shader-${(this.number = (this.number || 0) + 1)}.frag`,
     );
-    writeFileSync(
-      path,
-      source.startsWith("#version") ? source : "#version 300 es\n" + source,
-    );
+    if (!source.startsWith("#version"))
+      throw new Error("Shader requires an explicit version");
+    writeFileSync(path, source);
     const result = spawnSync("glslangValidator", ["-S", "frag", path], {
       encoding: "utf8",
     });

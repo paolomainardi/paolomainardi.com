@@ -20,7 +20,7 @@ Do not move furniture or the camera between light drawings. Lamp differences bec
 
 Use black for unassigned pixels and one unique RGB colour per item. Paint enough continuous floor to reach every target. Put exit regions above nearby floor; arrival snaps to the nearest walkable point. A* will not cross gaps or diagonal corners.
 
-A slot anchors the bottom centre of a content or book sprite. A light region marks the emitting bulb or flame, not its pool. A foreground region marks the part of a drawing that can cover the actor; its lowest row becomes its depth baseline. Keep each foreground region limited to the object it represents.
+A slot anchors the bottom centre of a book sprite. A light region marks the emitting bulb or flame, not its pool. A foreground region marks the part of a drawing that can cover the actor; its lowest row becomes its depth baseline. Keep each foreground region limited to the object it represents.
 
 If water is present, use red for water and yellow for reflection within water, black elsewhere. Window bars and coastlines must remain black. See [the mask contract](../CONTRACT.md#roomjson-and-objectspng).
 
@@ -87,9 +87,9 @@ Add the room to `rooms`:
 }
 ```
 
-This is a fragment of the `rooms` map. `linux` must exist in `world.books`, including its title, filter and sprite; `wind` must exist in `world.sounds`. Supply at least as many slots as room books. Extra book bindings or single-content matches are silently truncated to available slots.
+This is a fragment of the `rooms` map. `linux` must exist in `world.books`, including its title, filter and sprite; `wind` must exist in `world.sounds`. Supply at least as many slots as room books. Extra book bindings are silently truncated to available slots.
 
-For individual content objects instead, omit `books`, set a `content` filter and an `object` sprite key. Sprite keys belong to `world.objects`. Use hotspot bindings for a board, a book, the newest matching content item, or travel through a named exit. The full forms are in [CONTRACT.md](../CONTRACT.md#room-bindings).
+Use hotspot bindings for a board, the newest matching content item, or travel through a named exit. The shared `world.book` drawing and fonts are required, including for menus. The full forms are in [CONTRACT.md](../CONTRACT.md#room-bindings).
 
 Add an exit to the new room in the source room. For return travel, make the new room's exit `to` name that source room. Arrival uses its nearest floor point and faces into the room. Change `world.start` only if this should become the initial room.
 
@@ -103,7 +103,7 @@ Check the new room's files explicitly:
 - Every lamp has a drawing in both states and a tint.
 - All visible colours belong to the palette; mask colours are known and unique.
 - Every item has painted pixels; floor connects spawn, exits and interaction points.
-- Book ids, sprite keys, hotspot ids and destination rooms exist.
+- Book ids, sprite paths, hotspot ids and destination rooms exist.
 - Board text rectangles and close-up controls fit without overlap.
 
 Serve the game, open `/dev/?data=real#workshop` and press Start. Walk to all targets and travel both ways. Switch each lamp independently in dusk and night, then test lantern and bloom. Check foreground with feet behind, on and in front of its baseline. Open content, close the reader with Escape, reload the hash, and check the browser console for errors.

@@ -1,5 +1,6 @@
 // Load notice-board art and lay out notices, notes, and paging controls.
-import { image, json, resolve, matchingItems } from "./assets.js";
+import { inside, rectangle } from "./panel.js";
+import { image, json, resolve, matchingItems, newest } from "./assets.js";
 import { wrapText } from "./book.js";
 
 export async function loadBoard(config, worldURL, renderer) {
@@ -29,9 +30,7 @@ export async function loadBoard(config, worldURL, renderer) {
 }
 
 export function boardItems(items, filter) {
-  return matchingItems(items, filter).sort((a, b) =>
-    (b.date || "").localeCompare(a.date || ""),
-  );
+  return newest(matchingItems(items, filter));
 }
 
 export function boardPage(board, page) {
@@ -54,18 +53,16 @@ export function boardEntries(board, page) {
 }
 
 export function noteTakeRect(art) {
-  if (art.note.take) return art.note.take;
   const [gx, gy, gw, gh] = art.note.go,
     [bx] = art.note.back;
-  return [Math.round((gx + gw + bx - 80) / 2), gy, 80, gh];
+  return rectangle(Math.round((gx + gw + bx - 80) / 2), gy, 80, gh);
 }
 
 export function boardHit(board, page, note, x, y, canTake = true) {
-  const hit = ([px, py, w, h]) =>
-    x >= px && x < px + w && y >= py && y < py + h;
+  const hit = (tuple) => inside(rectangle(...tuple), x, y);
   if (note) {
     if (hit(board.art.note.go)) return "go";
-    if (canTake && hit(noteTakeRect(board.art))) return "take";
+    if (canTake && inside(noteTakeRect(board.art), x, y)) return "take";
     if (hit(board.art.note.back)) return "back";
     return null;
   }
@@ -102,10 +99,8 @@ export function boardTitleBox(board, art, fonts) {
   ];
   const w = Math.max(...lines.map(([font, value]) => font.measure(value))) + 16;
   const h = lines.reduce((sum, [font]) => sum + font.lineHeight, 0) + 8;
-  const [x, y] = art.title
-    ? [art.title[0] + Math.floor((art.title[2] - w) / 2), art.title[1]]
-    : [Math.floor((left + right - w) / 2), Math.max(0, top - h - 4)];
-  return { x, y, w, h, lines };
+  const [x, y] = [Math.floor((left + right - w) / 2), Math.max(0, top - h - 4)];
+  return { x, y, width: w, height: h, lines };
 }
 
 export function boardText(board, page, note, hover, fonts, canTake = true) {
@@ -169,7 +164,9 @@ export function boardText(board, page, note, hover, fonts, canTake = true) {
       add(
         fonts.body,
         label,
-        ...(key === "take" ? noteTakeRect(art) : art.note[key]).slice(0, 2),
+        ...(key === "take"
+          ? [noteTakeRect(art).x, noteTakeRect(art).y]
+          : art.note[key].slice(0, 2)),
         key === "take" && !canTake
           ? art.faded
           : hover === key
@@ -184,7 +181,7 @@ export function boardText(board, page, note, hover, fonts, canTake = true) {
         add(
           font,
           value,
-          box.x + Math.floor((box.w - font.measure(value)) / 2),
+          box.x + Math.floor((box.width - font.measure(value)) / 2),
           lineY,
           color,
         );

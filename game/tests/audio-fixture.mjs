@@ -85,6 +85,7 @@ export class AudioContext {
     this.state = "suspended";
   }
   async close() {
+    this.closeCalls = (this.closeCalls || 0) + 1;
     this.state = "closed";
   }
 }

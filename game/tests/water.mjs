@@ -46,10 +46,6 @@ for (let tick = 0; tick < 800; tick++) {
       else near++;
     }
   }
-  assert(
-    waterFrame(water, tick / 4, true).every((v) => v === 0),
-    "Reduced motion disables both effects",
-  );
 }
 assert.deepEqual([...shifts].sort(), [-1, -2, 0, 1, 2].sort());
 assert(sparkles > 0 && sparkles < water.reflection.length * 800 * 0.04);
@@ -89,7 +85,7 @@ const game = {
   actor: { y: 0 },
   time: "dusk",
   elapsed: 2,
-  room: { lights: [] },
+  room: { lights: [], map: true },
   lanternPosition: () => [0, 0],
   lanternStrength: () => 0,
 };

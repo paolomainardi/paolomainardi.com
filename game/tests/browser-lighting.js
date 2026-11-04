@@ -2,6 +2,7 @@
 async (page) => {
   return page.evaluate(async () => {
     const { Renderer } = await import("/src/renderer.js");
+    const { lanternStrength } = await import("/src/lighting.js");
     const renderer = new Renderer(document.createElement("canvas"));
     const gl = renderer.gl;
     const pixels = (rgb) =>
@@ -16,6 +17,7 @@ async (page) => {
       albedo = [160, 140, 120];
     const room = {
       size: [4, 4],
+      depth: { far: [0, 1], near: [4, 1] },
       albedo: await bitmap(albedo),
       states: {
         night: {
@@ -38,11 +40,15 @@ async (page) => {
     let hand = 0;
     const game = {
       room,
-      actor: { y: 3 },
+      actor: { x: 1.5, y: 3, animation: "idle-front", clock: 0 },
+      character: {
+        lantern: [0, -0.5],
+        animations: { "idle-front": { frames: 1, fps: 1 } },
+      },
+      elapsed: 0,
+      lantern: false,
       time: "night",
       lanternRadius: 90,
-      lanternPosition: () => [1.5, 2.5],
-      lanternStrength: () => hand,
     };
     const linear = (v) =>
       v / 255 <= 0.04045 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4;
@@ -72,7 +78,8 @@ async (page) => {
     ]) {
       room.lights[0].strength = a;
       room.lights[1].strength = b;
-      hand = lantern;
+      game.lantern = !!lantern;
+      hand = lanternStrength(game);
       renderer.lights(game);
       renderer.into(renderer.scene);
       renderer.use(renderer.programs.room);
@@ -90,11 +97,15 @@ async (page) => {
       close(read(), expected, `Room ${a}/${b}/${lantern}`);
     }
     const sprite = renderer.texture(pixels([160, 140, 120]), 4, 4);
-    game.character = {
-      glowTexture: renderer.texture(pixels([255, 255, 255]), 4, 4),
-    };
+    game.character.glowTexture = renderer.texture(
+      pixels([255, 255, 255]),
+      4,
+      4,
+    );
+    renderer.pixelScale = 4 / 480;
     for (const strength of [0, 0.9]) {
-      hand = strength;
+      game.lantern = !!strength;
+      hand = lanternStrength(game);
       renderer.sprite(
         sprite,
         [4, 4],

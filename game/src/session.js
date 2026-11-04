@@ -1,4 +1,13 @@
 // Load a world and coordinate room state, interactions, audio, and the frame loop.
+import { catalogue, siteURL, openLink } from "./catalogue.js";
+import {
+  restoreInventory,
+  saveInventory,
+  carriedNotice,
+  forgetInventory,
+  canTake,
+} from "./inventory.js";
+import { parseRoute, writeHash, routeTarget } from "./route.js";
 import { loadBoard, boardItems, boardPage, boardHit } from "./board.js";
 import {
   loadBook,
@@ -9,18 +18,22 @@ import {
   bookItems,
   layoutBook,
   hitEntry,
-  parseRoute,
-  bookRoute,
 } from "./book.js";
-import { layoutPanel, inside, siteLayout } from "./panel.js";
+import { layoutPanel, inside, footerLayout, rectangle } from "./panel.js";
 import { targetVerbs, layoutMenu, menuHit, exitCursor } from "./verb-menu.js";
 import { Renderer } from "./renderer.js";
-import { loadWorld, loadRoom, matchingItems, resolve } from "./assets.js";
+import {
+  loadWorld,
+  loadRoom,
+  bindRoom,
+  flameCentroids,
+  resolve,
+} from "./assets.js";
 import { findPath, nearestWalkable } from "./pathfinding.js";
 import { wrap } from "./font.js";
-import { beacon, flame, lightSourcesAt } from "./lighting.js";
-import { animationFrame } from "./animation.js";
-import { SoundEngine, footContacts } from "./sound.js";
+import { currentTime, updateLamps } from "./lighting.js";
+import { advanceActor, idleAnimation } from "./animation.js";
+import { SoundEngine } from "./sound.js";
 
 export async function startSession({
   worldURL,
@@ -36,9 +49,6 @@ export async function startSession({
     canvas,
     cover,
     heading,
-    help,
-    start,
-    windowed,
     reader,
     close,
     iframe,
@@ -51,6 +61,7 @@ export async function startSession({
     frame = 0,
     last = 0,
     roomRequest = 0;
+  const subscriptionStart = subscriptions.length;
   try {
     renderer = new Renderer(canvas);
     const assets = await loadWorld(worldURL, contentURL, location.origin);
@@ -62,12 +73,8 @@ export async function startSession({
       renderer,
       root,
       canvas,
-      started: false,
       readerItem: null,
-      time:
-        new Date().getHours() >= 6 && new Date().getHours() < 20
-          ? "dusk"
-          : "night",
+      time: currentTime(),
       lantern: true,
       bloom: true,
       timeOverride: false,
@@ -89,16 +96,13 @@ export async function startSession({
       panelHover: null,
       sentenceNotice: null,
     };
-    game.sound = new SoundEngine(game.world, worldURL, undefined, soundContext);
+    game.sound = new SoundEngine(game.world, worldURL, soundContext);
     subscriptions.push(() => game.sound.destroy());
     on(document, "visibilitychange", () =>
       game.sound.visibility(document.hidden),
     );
-    game.bookArt = game.world.book
-      ? await loadBook(resolve(game.world.book, worldURL), renderer)
-      : null;
-    if (game.bookArt)
-      subscriptions.push(() => document.fonts.delete(game.bookArt.fontFace));
+    game.bookArt = await loadBook(resolve(game.world.book, worldURL), renderer);
+    subscriptions.push(() => document.fonts.delete(game.bookArt.fontFace));
     for (const book of Object.values(game.books)) {
       book.items = bookItems(game.items, book.content);
       book.sprite = {
@@ -120,245 +124,24 @@ export async function startSession({
         ]),
       ),
     );
-    function saveInventory() {
-      try {
-        window.localStorage.setItem(
-          "adventure.inventory",
-          JSON.stringify(
-            game.inventory.map((item) => ({
-              kind: item.note ? "notice" : "book",
-              id: item.note ? item.note.id : item.book.id,
-            })),
-          ),
-        );
-      } catch {}
-    }
-    function carriedNotice(note, board) {
-      const entry =
-        board.art.notices[board.items.indexOf(note) % board.art.notices.length];
-      return {
-        kind: "inventory",
-        label: note.title,
-        note,
-        board,
-        sprite: board.art.sprites[entry.paper],
-        pin: board.art.sprites[board.art.pin],
-      };
-    }
-    try {
-      const saved = JSON.parse(
-        window.localStorage.getItem("adventure.inventory"),
-      );
-      if (Array.isArray(saved)) {
-        for (const entry of saved) {
-          if (!entry || typeof entry.id !== "string") continue;
-          if (entry.kind === "book" && Object.hasOwn(game.books, entry.id)) {
-            const book = game.books[entry.id];
-            if (!game.inventory.some((item) => item.book === book))
-              game.inventory.push({
-                kind: "inventory",
-                label: book.title,
-                book,
-                sprite: book.sprite,
-              });
-          } else if (entry.kind === "notice") {
-            const note = game.items.find((item) => item.id === entry.id);
-            const board = Object.values(game.boards).find((board) =>
-              board.items.includes(note),
-            );
-            if (
-              note &&
-              board &&
-              !game.inventory.some((item) => item.note === note)
-            )
-              game.inventory.push(carriedNotice(note, board));
-          }
-        }
-        saveInventory();
-      }
-    } catch {}
-    const siteURL = (path) => {
-      if (
-        typeof path !== "string" ||
-        !path.startsWith("/") ||
-        path.startsWith("//")
-      )
-        throw new Error("Site paths must start with a single slash.");
-      const url = resolve(path, location.origin + "/");
-      if (new URL(url).origin !== location.origin)
-        throw new Error("Site paths must stay on the page origin.");
-      return url;
-    };
-    const catalogue = document.createElement("nav");
-    catalogue.className = "adventure-catalogue";
-    catalogue.setAttribute("aria-label", "Books and posts");
-    for (const book of [
-      ...Object.values(game.books),
-      ...Object.values(game.boards),
-    ]) {
-      const title = document.createElement("h2");
-      title.textContent = book.title;
-      const list = document.createElement("ul");
-      if (book.site) {
-        const row = document.createElement("li"),
-          link = document.createElement("a");
-        link.textContent = `${book.title} on the site`;
-        link.href = siteURL(book.site);
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        row.append(link);
-        list.append(row);
-      }
-      for (const item of book.items) {
-        const row = document.createElement("li"),
-          link = document.createElement("a");
-        link.textContent = item.title;
-        link.rel = "noopener noreferrer";
-        if (item.link || item.url) link.href = item.link || item.url;
-        row.append(link);
-        list.append(row);
-      }
-      catalogue.append(title, list);
-    }
-    const hotspotLinks = document.createElement("ul");
-    for (const room of Object.values(game.world.rooms))
-      for (const [id, binding] of Object.entries(room.hotspots || {})) {
-        if (!binding.content || !binding.site) continue;
-        const row = document.createElement("li"),
-          link = document.createElement("a");
-        const item = matchingItems(game.items, binding.content).sort((a, b) =>
-          (b.date || "").localeCompare(a.date || ""),
-        )[0];
-        link.textContent = `${item?.title || id} on the site`;
-        link.href = siteURL(binding.site);
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        row.append(link);
-        hotspotLinks.append(row);
-      }
-    catalogue.append(hotspotLinks);
-    root.append(catalogue);
+    restoreInventory(game);
+    root.append(catalogue(game));
     game.character.texture = renderer.texture(game.character.sheet);
     game.character.size = [
       game.character.sheet.width,
       game.character.sheet.height,
     ];
-    game.depth = () => {
-      const { far, near } = game.room.depth,
-        t = Math.max(
-          0,
-          Math.min(1, (game.actor.y - far[0]) / (near[0] - far[0])),
-        );
-      return far[1] + (near[1] - far[1]) * t;
-    };
     game.character.glowTexture = game.character.glow
       ? renderer.texture(game.character.glow)
       : null;
-    if (game.character.glow) {
-      const pixels = renderer.pixels(game.character.glow);
-      game.character.flames = {};
-      for (const [name, animation] of Object.entries(
-        game.character.animations,
-      )) {
-        game.character.flames[name] = [];
-        for (let frame = 0; frame < animation.frames; frame++) {
-          let sx = 0,
-            sy = 0,
-            weight = 0;
-          for (let y = 0; y < game.character.frame[1]; y++)
-            for (let x = 0; x < game.character.frame[0]; x++) {
-              const i =
-                ((animation.row * game.character.frame[1] + y) *
-                  game.character.size[0] +
-                  ((animation.start || 0) + frame) * game.character.frame[0] +
-                  x) *
-                4;
-              const w = ((pixels[i] / 255) * pixels[i + 3]) / 255;
-              sx += (x + 0.5) * w;
-              sy += (y + 0.5) * w;
-              weight += w;
-            }
-          game.character.flames[name].push(
-            weight
-              ? [
-                  sx / weight - game.character.anchor[0],
-                  sy / weight - game.character.anchor[1],
-                ]
-              : game.character.lantern,
-          );
-        }
-      }
-    }
-    game.lanternPosition = (position = [0, 0]) => {
-      if (game.room.map) {
-        position[0] = position[1] = 0;
-        return position;
-      }
-      const animation = game.character.animations[game.actor.animation];
-      const frame = animationFrame(game.actor, animation);
-      const offset =
-        game.character.flames?.[game.actor.animation][frame] ||
-        game.character.lantern;
-      const depth = game.depth();
-      position[0] =
-        game.actor.x + (game.actor.mirror ? -1 : 1) * offset[0] * depth;
-      position[1] = game.actor.y + offset[1] * depth;
-      return position;
-    };
-    game.lanternStrength = () =>
-      !game.room.map && game.lantern && game.time === "night"
-        ? flame(game.elapsed)
-        : 0;
-    game.lightSourcesAt = (x, y) => lightSourcesAt(game, x, y);
-    game.lightAt = (x, y) =>
-      Math.min(
-        1,
-        game
-          .lightSourcesAt(x, y)
-          .reduce((sum, light) => sum + light.strength, 0),
-      );
-    game.nearestLamp = () => {
-      let nearest = null,
-        best = Infinity;
-      for (const light of game.room.lights) {
-        if (light.strength <= 0.05) continue;
-        const distance =
-          (light.position[0] - game.actor.x) ** 2 +
-          (light.position[1] - game.actor.y) ** 2;
-        if (distance < best) {
-          best = distance;
-          nearest = light;
-        }
-      }
-      return nearest;
-    };
-    game.sentence = () => {
-      const site = siteLayout(game);
-      if (game.siteHover && site) return `Open ${site.path} on the site`;
-      if (game.sentenceNotice && game.speechUntil > game.elapsed)
-        return game.sentenceNotice;
-      if (game.selectedItem)
-        return `Use ${game.selectedItem.label} with${game.hover ? " " + (game.hover.label || game.hover.id) : "..."}`;
-      if (game.menu) {
-        const { target, verbs, selected } = game.menu;
-        return selected >= 0
-          ? `${verbs[selected]} ${target.label || target.id}`
-          : target.label || target.id;
-      }
-      const target = game.hover;
-      if (game.room.map && target?.kind === "exit")
-        return `Go to ${target.label || target.id}`;
-      return target
-        ? `${game.verb || "Walk to"} ${target.kind === "content" ? "Book: " : ""}${target.label || target.id}`
-        : game.verb || "Walk to";
-    };
+    flameCentroids(game.character, renderer);
     const labels = game.world.verbs;
     function say(text) {
       game.sentenceNotice = null;
       game.speech = String(text);
       game.speechLines = wrap(
         text,
-        Math.max(1, Math.floor((game.room.size[0] * 0.8) / (6 * game.uiScale))),
+        Math.max(1, Math.floor((game.room.size[0] * 0.8) / 6)),
         2,
       );
       game.speechUntil =
@@ -367,17 +150,6 @@ export async function startSession({
           ? 3
           : Math.max(3.5, String(text).length * 0.055));
       live.textContent = String(text);
-    }
-    function hashState() {
-      return parseRoute(location.hash, game.world.start);
-    }
-    function writeHash(item = null) {
-      const value = game.activeBoard
-        ? `#${encodeURIComponent(game.room.id)}/board/${encodeURIComponent(game.activeBoard.id)}/${game.boardPage}`
-        : game.activeBook
-          ? bookRoute(game.room.id, game.activeBook.id, game.spread)
-          : `#${encodeURIComponent(game.room.id)}${item ? "/" + encodeURIComponent(item.id) : ""}`;
-      if (location.hash !== value) history.pushState(null, "", value);
     }
     function openBoard(board, page = 0, update = true) {
       game.siteHover = false;
@@ -392,7 +164,7 @@ export async function startSession({
       game.menu = game.hover = game.pending = null;
       game.path = [];
       game.sentenceNotice = null;
-      if (update) writeHash();
+      if (update) writeHash(game);
     }
     function openBook(book, spread = 0, update = true) {
       game.siteHover = false;
@@ -412,7 +184,7 @@ export async function startSession({
       game.hover = null;
       game.path = [];
       game.pending = null;
-      if (update) writeHash();
+      if (update) writeHash(game);
     }
     function closeBook() {
       game.siteHover = false;
@@ -426,7 +198,7 @@ export async function startSession({
       game.corner = 0;
       game.hover = null;
       canvas.style.cursor = "crosshair";
-      writeHash();
+      writeHash(game);
     }
     function turnBook(direction) {
       const spread = game.spread + direction;
@@ -448,20 +220,14 @@ export async function startSession({
       game.readerItem = null;
       game.readerSite = null;
       game.siteHover = false;
-      if (update) writeHash();
+      if (update) writeHash(game);
       root.focus({ preventScroll: true });
     }
     function openReader(item, update = true) {
       game.menu = null;
       if (!item.reader) {
         if (item.link) {
-          const link = document.createElement("a");
-          link.href = item.link;
-          link.target = "_blank";
-          link.rel = "noopener noreferrer";
-          root.append(link);
-          link.click();
-          link.remove();
+          openLink(item.link);
           say("Opening the link…");
           game.sentenceNotice = "Opening the link…";
         } else say("There is nothing to read here.");
@@ -492,7 +258,7 @@ export async function startSession({
       game.readerSpeech = game.speechUntil > game.elapsed;
       reader.hidden = false;
       game.sound.setReader(true);
-      if (update) writeHash(item);
+      if (update) writeHash(game, item);
       close.focus({ preventScroll: true });
     }
     on(close, "click", () => hideReader());
@@ -522,7 +288,7 @@ export async function startSession({
           event.preventDefault();
           close.focus();
         }
-        // Keep keyboard focus within the modal, including after the last article link.
+        // Shift-Tab from Close returns to the last focusable reader control.
         if (event.target === close && event.shiftKey) {
           event.preventDefault();
           (website.hidden ? iframe : website).focus();
@@ -554,9 +320,8 @@ export async function startSession({
       game.room = room;
       renderer.setRoom(room);
       fit();
-      const [width, height] = room.size;
+      const [width] = room.size;
       game.pixelScale = width / 480;
-      game.uiScale = 1;
       game.lanternRadius = 90 * game.pixelScale;
       game.panel = layoutPanel(room.size, labels);
       game.verbTop = game.panel.top;
@@ -585,7 +350,7 @@ export async function startSession({
       game.actor = {
         x: spawn[0],
         y: spawn[1],
-        animation: game.character.animations[idle] ? idle : "idle-front",
+        animation: idleAnimation(game.character, idle),
         clock: 0,
         walkPhase: 0,
         mirror: !!entrance && facing === "side" && dx < 0,
@@ -596,109 +361,21 @@ export async function startSession({
       game.panelHover = null;
       game.speech = null;
       game.sentenceNotice = null;
-      for (const hotspot of room.items.filter(
-        (item) => item.kind === "hotspot",
-      )) {
-        const binding = room.config.hotspots?.[hotspot.id];
-        if (!binding) continue;
-        if (binding.go) {
-          const via = room.items.find(
-            (item) => item.id === binding.via && item.kind === "exit",
-          );
-          if (!Object.hasOwn(game.world.rooms, binding.go) || !via)
-            throw new Error(`Invalid travel hotspot: ${hotspot.id}`);
-          hotspot.go = binding.go;
-          hotspot.via = via;
-          continue;
-        }
-        if (binding.board) {
-          hotspot.board = game.boards[binding.board];
-          if (!hotspot.board)
-            throw new Error(`Unknown board: ${binding.board}`);
-          continue;
-        }
-        if (binding.book) {
-          hotspot.book = game.books[binding.book];
-          if (!hotspot.book) throw new Error(`Unknown book: ${binding.book}`);
-          continue;
-        }
-        const item = matchingItems(game.items, binding.content).sort((a, b) =>
-          (b.date || "").localeCompare(a.date || ""),
-        )[0];
-        if (item) {
-          hotspot.content = item;
-          hotspot.site = binding.site;
-          hotspot.label = `${hotspot.label || hotspot.id}: ${item.title}`;
-        }
-      }
-      const matching = room.config.books
-        ? []
-        : matchingItems(game.items, room.config.content);
-      for (const sprite of game.objectSprites || [])
-        renderer.gl.deleteTexture(sprite.texture);
-      game.objectSprites = (assets.objects[room.config.object] || []).map(
-        (bitmap) => ({
-          texture: renderer.texture(bitmap),
-          size: [bitmap.width, bitmap.height],
-        }),
-      );
-      game.objects = room.items
-        .filter((item) => item.kind === "slot" && item.bounds[2] >= 0)
-        .slice(0, matching.length)
-        .map((slot, i) => ({
-          ...slot,
-          kind: "content",
-          label: matching[i].title,
-          content: matching[i],
-          sprite: game.objectSprites[i % game.objectSprites.length],
-        }));
-      if (room.config.books) {
-        game.objects = room.items
-          .filter((item) => item.kind === "slot" && item.bounds[2] >= 0)
-          .slice(0, room.config.books.length)
-          .map((slot, i) => {
-            const book = game.books[room.config.books[i]];
-            if (!book) throw new Error(`Unknown book: ${room.config.books[i]}`);
-            return {
-              ...slot,
-              kind: "book",
-              label: book.title,
-              book,
-              sprite: book.sprite,
-            };
-          });
-      }
-      if (
-        !room.config.books &&
-        game.objects.length &&
-        !game.objectSprites.length
-      )
-        throw new Error(`Missing object sprite: ${room.config.object}`);
+      bindRoom(game);
     }
-    let initial = hashState();
+    let initial = parseRoute(location.hash, game.world.start);
     if (!Object.hasOwn(game.world.rooms, initial.room))
       initial = { room: game.world.start, item: null };
     await changeRoom(initial.room);
     function fit() {
-      renderer.resize(root.clientWidth, root.clientHeight);
-      const [width, height] = game.room.size;
-      const scale = Math.max(
-        1,
-        Math.floor(
-          Math.min(root.clientWidth / width, root.clientHeight / height),
-        ),
-      );
-      const fit = Math.min(
-        scale,
-        root.clientWidth / width,
-        root.clientHeight / height,
-      );
+      const fit = renderer.resize(root.clientWidth, root.clientHeight);
+      const [, height] = game.room.size;
+      // Leave six game pixels above the reader and room for the footer below.
       reader.style.top = `${(root.clientHeight - height * fit) / 2 + 6 * fit}px`;
       reader.style.height = `${(height - 48) * fit}px`;
     }
     const observer = new ResizeObserver(fit);
     observer.observe(root);
-    fit();
     subscriptions.push(
       () => observer.disconnect(),
       () => frameSubscriptions.forEach((remove) => remove()),
@@ -711,11 +388,12 @@ export async function startSession({
         const sprite = object.sprite.size,
           p = object.position;
         if (
-          (px >= x0 && px <= x1 && py >= y0 && py <= y1) ||
-          (px >= p[0] - sprite[0] / 2 &&
-            px < p[0] + sprite[0] / 2 &&
-            py >= p[1] - sprite[1] &&
-            py <= p[1])
+          inside(rectangle(x0, y0, x1 - x0 + 1, y1 - y0 + 1), px, py) ||
+          inside(
+            rectangle(p[0] - sprite[0] / 2, p[1] - sprite[1], ...sprite),
+            px,
+            py,
+          )
         )
           return object;
       }
@@ -734,15 +412,14 @@ export async function startSession({
       ];
     }
     on(canvas, "pointermove", (event) => {
-      const site = siteLayout(game);
+      const site = footerLayout(game).site;
       game.siteHover = !!(site && inside(site, ...point(event)));
       if (game.siteHover) {
         game.hover = null;
         canvas.style.cursor = "pointer";
         return;
       }
-      if (!game.started || game.readerItem || game.loading || game.transition)
-        return;
+      if (game.readerItem || game.loading || game.transition) return;
       const [x, y] = point(event);
       if (game.turning?.dragging) {
         movePage(game.turning, x);
@@ -756,10 +433,7 @@ export async function startSession({
           game.boardNote,
           x,
           y,
-          !game.inventoryNote &&
-            !game.inventory.some(
-              (item) => item.note?.id === game.boardNote?.id,
-            ),
+          canTake(game),
         );
         canvas.style.cursor = game.hover ? "pointer" : "crosshair";
         return;
@@ -816,8 +490,7 @@ export async function startSession({
         closeBook();
         return;
       }
-      if (!game.started || game.readerItem || game.loading || game.transition)
-        return;
+      if (game.readerItem || game.loading || game.transition) return;
       root.focus({ preventScroll: true });
       const pointAt = point(event);
       const target = hit(...pointAt);
@@ -828,14 +501,10 @@ export async function startSession({
           targetVerbs(labels, target),
           pointAt,
           game.room.size,
-          game.bookArt?.fonts,
+          game.bookArt.fonts,
         );
     });
     function act(target, verb) {
-      if (verb !== "Walk to" && !targetVerbs(labels, target).includes(verb)) {
-        say("I can't do that.");
-        return;
-      }
       if (target.note) {
         if (verb === "Open") {
           openBoard(target.board, 0, false);
@@ -846,8 +515,8 @@ export async function startSession({
         return;
       }
       if (verb === "Take" && target.kind === "hotspot") {
-        if (target.board || target.book) say("Open it and pick a notice.");
-        else if (target.content) say("It belongs to the keeper.");
+        if (target.board) say("Open it and pick a notice.");
+        else say("It belongs to the keeper.");
         return;
       }
       if (target.go && (verb === "Open" || verb === "Walk to")) {
@@ -858,19 +527,16 @@ export async function startSession({
         openBoard(target.board);
         return;
       }
-      if (target.book && verb === "Open") {
-        openBook(target.book);
-        return;
-      }
       if (target.kind === "book" || target.kind === "inventory") {
-        if (verb === "Look at")
+        if (verb === "Open") openBook(target.book);
+        else if (verb === "Look at")
           say(`${target.book.title}. ${target.book.items.length} entries.`);
         else if (verb === "Take" && target.kind === "book") {
           if (game.inventory.some((item) => item.book?.id === target.book.id))
             say("I already have it.");
           else {
             game.inventory.push({ ...target, kind: "inventory" });
-            saveInventory();
+            saveInventory(game);
             say(`Taken ${target.book.title}.`);
           }
         } else say("I can't do that.");
@@ -907,11 +573,6 @@ export async function startSession({
                 ? "Let's see what's out there."
                 : "There is nothing to open here.",
             );
-      else if (
-        (verb === "Open" || verb === "Take") &&
-        target.kind === "content"
-      )
-        openReader(target.content);
       else if (verb === "Use" && target.kind === "light") {
         const lamp = game.room.lights.find((light) => light.id === target.id);
         if (lamp.light === "beacon") {
@@ -977,8 +638,7 @@ export async function startSession({
       }
       if (verb === "Open" && target.kind === "hotspot" && target.content) {
         const url = target.content.link || target.content.url;
-        if (url && !target.content.reader && !running)
-          window.open(url, "_blank", "noopener,noreferrer");
+        if (url && !target.content.reader && !running) openLink(url);
       }
       const travel = target.go && (verb === "Open" || verb === "Walk to");
       walk(
@@ -1004,7 +664,6 @@ export async function startSession({
       suppressBookClick = false;
       if (
         event.button !== 0 ||
-        !game.started ||
         game.readerItem ||
         game.loading ||
         game.transition ||
@@ -1042,34 +701,20 @@ export async function startSession({
     on(canvas, "pointercancel", (event) => finishDrag(event, true));
     on(canvas, "lostpointercapture", (event) => finishDrag(event, true));
     on(canvas, "click", (event) => {
-      const site = siteLayout(game);
-      if (game.started && site && inside(site, ...point(event))) {
-        const link = document.createElement("a");
-        link.href = siteURL(site.path);
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        root.append(link);
-        link.click();
-        link.remove();
+      const site = footerLayout(game).site;
+      if (site && inside(site, ...point(event))) {
+        openLink(siteURL(site.path));
         return;
       }
-      if (game.started && game.readerItem) {
+      if (game.readerItem) {
         const [x, y] = point(event);
-        if (y >= game.room.size[1] - 24 && x >= 8 && x < 60) hideReader();
+        if (inside(footerLayout(game).close, x, y)) hideReader();
         return;
       }
-      if (!game.started || game.loading || game.transition) return;
+      if (game.loading || game.transition) return;
       root.focus({ preventScroll: true });
       const [x, y] = point(event);
-      if (
-        inside(
-          game.activeBook || game.activeBoard
-            ? { ...game.soundRect, y: game.room.size[1] - 16 }
-            : game.soundRect,
-          x,
-          y,
-        )
-      ) {
+      if (inside(footerLayout(game).sound, x, y)) {
         game.sound.toggleMute();
         return;
       }
@@ -1079,7 +724,7 @@ export async function startSession({
       }
       if (game.activeBoard) {
         if (y >= game.room.size[1] - 24) {
-          if (x >= 8 && x < 60) closeBook();
+          if (inside(footerLayout(game).close, x, y)) closeBook();
           return;
         }
         const hit = boardHit(
@@ -1088,10 +733,7 @@ export async function startSession({
           game.boardNote,
           x,
           y,
-          !game.inventoryNote &&
-            !game.inventory.some(
-              (item) => item.note?.id === game.boardNote?.id,
-            ),
+          canTake(game),
         );
         if (hit === "back") {
           if (game.inventoryNote) closeBook();
@@ -1103,14 +745,14 @@ export async function startSession({
           else {
             const board = game.activeBoard;
             game.inventory.push(carriedNotice(note, board));
-            saveInventory();
+            saveInventory(game);
             say("I'll keep this one.");
           }
         } else if (hit === "go")
           openReader({ ...game.boardNote, reader: null });
         else if (hit === "older" || hit === "newer") {
           game.boardPage += hit === "older" ? 1 : -1;
-          writeHash();
+          writeHash(game);
         } else if (hit) game.boardNote = hit;
         game.hover = null;
         return;
@@ -1122,7 +764,7 @@ export async function startSession({
         }
         if (game.turning) return;
         if (y >= game.room.size[1] - 24) {
-          if (x >= 8 && x < 60) closeBook();
+          if (inside(footerLayout(game).close, x, y)) closeBook();
           return;
         }
         const entry = hitEntry(game.activeBook.pages, game.spread, x, y);
@@ -1143,14 +785,7 @@ export async function startSession({
       if (y >= game.verbTop) {
         if (game.inventory.length && inside(game.panel.forget, x, y)) {
           say("Pockets emptied.");
-          game.inventory = [];
-          game.inventoryOffset = 0;
-          game.selectedItem = null;
-          game.hover = null;
-          game.sentenceNotice = null;
-          try {
-            window.localStorage.removeItem("adventure.inventory");
-          } catch {}
+          forgetInventory(game);
           return;
         }
         const cell = game.verbRects.find((rect) => inside(rect, x, y));
@@ -1191,15 +826,7 @@ export async function startSession({
       if (game.menu && event.target !== canvas) chooseMenu(-1);
     });
     on(root, "keydown", (event) => {
-      if (
-        event.target === start ||
-        event.target === windowed ||
-        game.readerItem ||
-        !game.started ||
-        game.loading ||
-        game.transition
-      )
-        return;
+      if (game.readerItem || game.loading || game.transition) return;
       if (event.key.toLowerCase() === "m") {
         if (!event.repeat) game.sound.toggleMute();
         return;
@@ -1247,7 +874,7 @@ export async function startSession({
     });
     async function restoreHash() {
       if (lifecycle.disposed) return;
-      const state = hashState();
+      const state = parseRoute(location.hash, game.world.start);
       if (!Object.hasOwn(game.world.rooms, state.room)) return;
       if (game.room.id !== state.room) {
         hideReader(false);
@@ -1258,36 +885,15 @@ export async function startSession({
           game.loading = false;
         }
       }
-      if (game.started) {
-        if (
-          state.board &&
-          game.room.items.some((item) => item.board?.id === state.board)
-        ) {
-          hideReader(false);
-          openBoard(game.boards[state.board], state.spread, false);
-          return;
-        }
-        game.activeBoard = null;
-        game.inventoryNote = false;
-        if (
-          state.book &&
-          (game.room.config.books?.includes(state.book) ||
-            game.room.items.some((item) => item.book?.id === state.book) ||
-            game.inventory.some((item) => item.book?.id === state.book))
-        ) {
-          hideReader(false);
-          openBook(game.books[state.book], state.spread, false);
-          return;
-        }
-        game.activeBook = null;
-        game.turning = null;
-        const item = [...game.objects, ...game.room.items].find(
-          (object) => object.content?.id === state.item,
-        )?.content;
-        if (item) openReader(item, false);
-        else hideReader(false);
-      }
+      const target = routeTarget(game, state);
+      hideReader(false);
+      game.activeBoard = game.activeBook = game.turning = null;
+      game.inventoryNote = false;
+      if (target.board) openBoard(target.board, state.spread, false);
+      else if (target.book) openBook(target.book, state.spread, false);
+      else if (target.item) openReader(target.item, false);
     }
+
     on(window, "hashchange", () => {
       restoreHash().catch((error) => say(error.message));
     });
@@ -1317,7 +923,7 @@ export async function startSession({
             game.loading = true;
             changeRoom(transition.to, transition.from)
               .then(() => {
-                if (!lifecycle.disposed) writeHash();
+                if (!lifecycle.disposed) writeHash(game);
               })
               .catch((error) => say(error.message))
               .finally(() => {
@@ -1329,12 +935,7 @@ export async function startSession({
         }
       }
       if (!game.loading) {
-        if (
-          game.started &&
-          !game.readerItem &&
-          game.activeBook &&
-          game.turning
-        ) {
+        if (!game.readerItem && game.activeBook && game.turning) {
           const turn = game.turning;
           if (!turn.dragging) {
             const step =
@@ -1352,102 +953,17 @@ export async function startSession({
                 game.sound.event("page-turn");
               }
               game.turning = null;
-              writeHash();
+              writeHash(game);
             }
           }
         }
-        if (game.started) game.elapsed += dt;
-        if (
-          game.started &&
-          !game.readerItem &&
-          !game.activeBook &&
-          !game.activeBoard
-        ) {
-          if (!game.timeOverride) {
-            const hour = new Date().getHours();
-            game.time = hour >= 6 && hour < 20 ? "dusk" : "night";
-          }
-          game.actor.clock += dt;
-          for (const lamp of game.room.lights) {
-            lamp.level +=
-              Math.sign(Number(lamp.on) - lamp.level) *
-              Math.min(Math.abs(Number(lamp.on) - lamp.level), dt / 0.4);
-            const index = game.room.lights.indexOf(lamp),
-              t = game.elapsed + index * 7.31;
-            const burning = lamp.light === "oil" || lamp.light === "candle";
-            lamp.strength =
-              lamp.level *
-              (lamp.light === "beacon"
-                ? beacon(game.elapsed)
-                : burning
-                  ? flame(t)
-                  : 0.98 + 0.02 * Math.sin(t * 0.2));
-            lamp.drift[0] = burning
-              ? 0.65 * game.pixelScale * Math.sin(t * 1.13)
-              : 0;
-            lamp.drift[1] = burning
-              ? 0.45 * game.pixelScale * Math.sin(t * 0.79)
-              : 0;
-          }
-          let remaining = dt;
-          while (game.path.length && remaining > 0) {
-            const next = game.path[0],
-              dx = next[0] - game.actor.x,
-              dy = next[1] - game.actor.y,
-              distance = Math.hypot(dx, dy),
-              speed =
-                90 * game.pixelScale * game.depth() * (game.running ? 2 : 1),
-              travel = speed * remaining;
-            if (distance > 0) {
-              const wasSide = game.actor.animation === "walk-side",
-                wasVertical = ["walk-front", "walk-back"].includes(
-                  game.actor.animation,
-                ),
-                threshold = wasSide ? 0.7 : wasVertical ? 0.9 : 0.8;
-              game.actor.mirror = dx < 0;
-              game.actor.animation =
-                Math.abs(dx) > Math.abs(dy) * threshold
-                  ? "walk-side"
-                  : dy < 0
-                    ? "walk-back"
-                    : "walk-front";
-              const animation = game.character.animations[game.actor.animation];
-              const before = animation.stride
-                ? game.actor.walkPhase
-                : ((game.actor.clock - remaining) * animation.fps) /
-                  animation.frames;
-              if (animation.stride)
-                game.actor.walkPhase +=
-                  Math.min(distance, travel) /
-                  (animation.stride * game.depth());
-              const after = animation.stride
-                ? game.actor.walkPhase
-                : before +
-                  (Math.min(distance / speed, remaining) * animation.fps) /
-                    animation.frames;
-              for (let i = 0; i < footContacts(before, after); i++)
-                game.sound.event("step", game.depth());
-            }
-            if (distance <= travel) {
-              game.actor.x = next[0];
-              game.actor.y = next[1];
-              game.path.shift();
-              remaining -= distance / speed;
-            } else {
-              game.actor.x += (dx / distance) * travel;
-              game.actor.y += (dy / distance) * travel;
-              remaining = 0;
-            }
-          }
+        game.elapsed += dt;
+        if (!game.readerItem && !game.activeBook && !game.activeBoard) {
+          if (!game.timeOverride) game.time = currentTime();
+          updateLamps(game, dt);
+          for (const contact of advanceActor(game, dt))
+            game.sound.event("step", contact);
           if (!game.path.length) {
-            if (game.actor.animation.startsWith("walk-")) {
-              const idle = game.actor.animation.replace("walk-", "idle-");
-              game.actor.animation = game.character.animations[idle]
-                ? idle
-                : "idle-front";
-              if (game.actor.animation !== "idle-side")
-                game.actor.mirror = false;
-            }
             if (game.pending) {
               const pending = game.pending;
               game.pending = null;
@@ -1471,28 +987,16 @@ export async function startSession({
       }
       frame = requestAnimationFrame(tick);
     }
-    game.started = true;
     game.sound.start();
     game.sound.visibility(document.hidden);
     game.sound.update(game);
     cover.hidden = true;
     root.focus({ preventScroll: true });
-    const item = [...game.objects, ...game.room.items].find(
-      (object) => object.content?.id === initial.item,
-    )?.content;
-    if (
-      initial.board &&
-      game.room.items.some((item) => item.board?.id === initial.board)
-    )
-      openBoard(game.boards[initial.board], initial.spread);
-    else if (
-      initial.book &&
-      (game.room.config.books?.includes(initial.book) ||
-        game.room.items.some((item) => item.book?.id === initial.book))
-    )
-      openBook(game.books[initial.book], initial.spread);
-    else if (item) openReader(item);
-    else writeHash();
+    const target = routeTarget(game, initial);
+    if (target.board) openBoard(target.board, initial.spread);
+    else if (target.book) openBook(target.book, initial.spread);
+    else if (target.item) openReader(target.item);
+    else writeHash(game);
     frame = requestAnimationFrame(tick);
     return {
       destroy() {
@@ -1529,12 +1033,7 @@ export async function startSession({
       },
     };
   } catch (error) {
-    start.hidden = true;
-    windowed.hidden = true;
-    help.textContent = error.message;
-    heading.textContent = "The study could not open";
-    subscriptions.splice(0).forEach((remove) => remove());
-    game?.sound?.destroy();
+    subscriptions.splice(subscriptionStart).forEach((remove) => remove());
     if (!game?.sound) soundContext?.close()?.catch(() => {});
     renderer?.destroy();
     throw error;

@@ -16,6 +16,8 @@ async (page) => {
       ]) {
         const room = await loadRoom(world, worldURL, id, renderer);
         renderer.setRoom(room);
+        renderer.pixelScale = room.size[0] / 480;
+        room.depth = { far: [0, 1], near: [room.size[1], 1] };
         const [width, height] = room.size;
         room.lights.forEach((lamp) => {
           lamp.strength = 0;
@@ -30,11 +32,14 @@ async (page) => {
             room,
             time: "night",
             elapsed: 0,
-            actor: { y: 0 },
-            character: { glowTexture: white },
+            actor: { x: x + 0.5, y: 0, animation: "idle-front", clock: 0 },
+            character: {
+              glowTexture: white,
+              lantern: [0, y + 0.5],
+              animations: { "idle-front": { frames: 1, fps: 1 } },
+            },
+            lantern: true,
             lanternRadius: 30,
-            lanternPosition: () => [x + 0.5, y + 0.5],
-            lanternStrength: () => 1,
           };
           const read = () => {
             const out = new Uint8Array(4);
@@ -61,6 +66,7 @@ async (page) => {
             item.baseline + 1,
           ]) {
             game.actor.y = feet;
+            game.character.lantern[1] = y + 0.5 - feet;
             const behind = feet < item.baseline;
             reset();
             renderer.use(renderer.programs.room);

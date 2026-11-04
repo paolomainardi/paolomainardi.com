@@ -78,3 +78,45 @@ export function siteLayout(game) {
     height: 8,
   };
 }
+
+export const siteSentence = (site) => `Open ${site.path} on the site`;
+
+export function sentence(game) {
+  const site = siteLayout(game);
+  if (game.siteHover && site) return siteSentence(site);
+  if (game.sentenceNotice && game.speechUntil > game.elapsed)
+    return game.sentenceNotice;
+  if (game.selectedItem)
+    return `Use ${game.selectedItem.label} with${game.hover ? " " + (game.hover.label || game.hover.id) : "..."}`;
+  if (game.menu) {
+    const { target, verbs, selected } = game.menu;
+    return selected >= 0
+      ? `${verbs[selected]} ${target.label || target.id}`
+      : target.label || target.id;
+  }
+  const target = game.hover;
+  if (game.room.map && target?.kind === "exit")
+    return `Go to ${target.label || target.id}`;
+  return target
+    ? `${game.verb || "Walk to"} ${target.label || target.id}`
+    : game.verb || "Walk to";
+}
+
+export function footerLayout(game) {
+  return {
+    close: { x: 8, y: game.room.size[1] - 24, width: 52, height: 24 },
+    sound: {
+      ...game.soundRect,
+      y:
+        game.activeBook || game.activeBoard || game.readerItem
+          ? game.room.size[1] - 16
+          : game.soundRect.y,
+    },
+    site: siteLayout(game),
+  };
+}
+
+// Convert JSON layout tuples to the hit-rectangle format used by the UI.
+export function rectangle(x, y, width, height) {
+  return { x, y, width, height };
+}

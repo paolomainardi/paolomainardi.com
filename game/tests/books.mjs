@@ -1,3 +1,4 @@
+import { parseRoute, bookRoute } from "../src/route.js";
 // Check books behavior against the engine and shipped fixtures.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -7,8 +8,6 @@ import {
   wrapText,
   layoutBook,
   hitEntry,
-  parseRoute,
-  bookRoute,
   bookItems,
   cornerHit,
   dragPage,
@@ -165,6 +164,8 @@ const canvas = canvas2D(),
   layer = new TextLayer(canvas);
 const game = {
   bookArt: book,
+  sound: { muted: false },
+  soundRect: { x: 566, y: 328, width: 66, height: 8 },
   activeBook: { pages },
   room: { size: [640, 360] },
   spread: 0,

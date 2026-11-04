@@ -90,14 +90,14 @@ async (page) => {
     }),
   );
   await page.evaluate(() => {
-    const open = window.open;
-    window.open = function (...args) {
+    const click = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () {
       window.hotspotOpen = {
-        args,
+        args: [this.href, this.target, this.rel],
         activation: navigator.userActivation.isActive,
         walking: window.game.state.walking,
       };
-      return open.apply(window, args);
+      return click.call(this);
     };
   });
   const popupPromise = page.waitForEvent("popup");
@@ -110,7 +110,7 @@ async (page) => {
       JSON.stringify([
         "https://www.kernel.org/",
         "_blank",
-        "noopener,noreferrer",
+        "noopener noreferrer",
       ]) ||
     !opened.activation ||
     opened.walking
