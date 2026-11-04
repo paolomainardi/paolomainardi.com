@@ -585,7 +585,7 @@ export async function startSession({
         return;
       }
       if (target.kind === "exit") {
-        if (verb === "Use" || verb === "Walk to") {
+        if (verb === "Use" || verb === "Walk to" || verb === "Open") {
           if (!Object.hasOwn(game.world.rooms, target.to)) {
             say(`That way lies ${target.to}.`);
             return;
@@ -710,6 +710,7 @@ export async function startSession({
       }
     }
     let suppressBookClick = false;
+    let lastVerb = null;
     on(canvas, "pointerdown", (event) => {
       suppressBookClick = false;
       if (
@@ -863,7 +864,11 @@ export async function startSession({
         }
         const slot = game.panel.slots.findIndex((rect) => inside(rect, x, y));
         const item = slot >= 0 && game.inventory[game.inventoryOffset + slot];
-        if (item) chooseTarget(item, game.verb);
+        if (item) {
+          const verb = game.verb;
+          game.verb = null;
+          chooseTarget(item, verb);
+        }
         if (inside(game.panel.previous, x, y))
           game.inventoryOffset = Math.max(
             0,
@@ -879,7 +884,11 @@ export async function startSession({
       const target = hit(x, y);
       game.hover = target;
       if (target) {
-        chooseTarget(target, game.verb, event.detail >= 2);
+        // A double click repeats the first click's verb, running.
+        const verb = event.detail >= 2 ? lastVerb : game.verb;
+        lastVerb = verb;
+        game.verb = null;
+        chooseTarget(target, verb, event.detail >= 2);
       } else if (
         x >= 0 &&
         x < game.room.size[0] &&

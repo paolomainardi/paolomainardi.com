@@ -749,9 +749,11 @@ assert.equal(hotspot.content.id, "linux-kernel");
 assert.equal(rendered.speech, hotspot.look);
 assert(rendered.speechLines.length <= 2);
 assert.equal(opened.length, 0, "Look at must not open a tab");
-assert.equal(sentence(rendered), "Look at Window: The Linux kernel");
+// The verb applies once, then returns to Walk to.
+assert.equal(sentence(rendered), "Walk to Window: The Linux kernel");
 const originalDescription = hotspot.look;
 hotspot.look = "A long note about the kernel. ".repeat(30);
+click(look.x + 2, look.y + 2);
 click(180, 120);
 settle();
 assert(rendered.speechLines.length > 2);
@@ -782,6 +784,10 @@ assert.equal(rendered.speech, "Let's see what's out there.");
 assert.equal(location.hash, "#stone-house");
 const originalLink = hotspot.content.link;
 hotspot.content.link = null;
+// Verbs apply once; a click may first skip a line still playing.
+for (let i = 0; i < 2 && controller.state.verb !== "Open"; i++)
+  click(open.x + 2, open.y + 2);
+assert.equal(controller.state.verb, "Open");
 click(180, 120);
 assert.equal(
   opened.at(-1).args[0],
@@ -852,10 +858,10 @@ assert.equal(rendered.speech, "There is nothing to open here.");
 assert.equal(opened.length, 2);
 assert(soundEvents.some((event) => event.name === "lamp"));
 assert(soundEvents.some((event) => event.name === "menu"));
-// Exit effects fire for Use and Walk to, but not Look at.
+// Exit effects fire for Use, Open and Walk to, but not Look at.
 const exit = rendered.room.items.find((item) => item.kind === "exit");
 exit.to = "unbuilt-room";
-for (const verb of ["Use", "Walk to"]) {
+for (const verb of ["Use", "Open", "Walk to"]) {
   const barVerb = rendered.verbRects.find((v) => v.label === verb);
   if (barVerb) click(barVerb.x + 2, barVerb.y + 2);
   else rendered.verb = null;
@@ -1048,11 +1054,9 @@ event(bookCanvas, "click", {
 event(bookCanvas, "click", { clientX: 470, clientY: 140 });
 for (let i = 0; i < 600 && books.state.walking; i++) step();
 assert.equal(rendered.speech, "Workstation. 22 entries.");
-const walkVerb = bookLook;
-event(bookCanvas, "click", {
-  clientX: walkVerb.x + 2,
-  clientY: walkVerb.y + 2,
-});
+// Look at applied once; the next click skips the line, then walks to the book.
+assert.equal(books.state.verb, null);
+event(bookCanvas, "click", { clientX: 470, clientY: 140 });
 event(bookCanvas, "click", { clientX: 470, clientY: 140 });
 assert.equal(books.state.book, null, "Book waits for arrival");
 for (let i = 0; i < 600 && books.state.walking; i++) step();
@@ -1230,8 +1234,11 @@ const select = (label) => {
     }
     return;
   }
+  // A tap may first skip a line still playing.
   const rect = rendered.verbRects.find((rect) => rect.label === label);
-  if (rendered.verb !== label) tap(rect.x + 1, rect.y + 1);
+  for (let i = 0; i < 2 && rendered.verb !== label; i++)
+    tap(rect.x + 1, rect.y + 1);
+  assert.equal(rendered.verb, label);
 };
 const arrive = () => {
   for (let i = 0; i < 600 && adventure.state.walking; i++) step();
@@ -1266,6 +1273,8 @@ assert.deepEqual(JSON.parse(stored.get(inventoryKey)), [
   { kind: "book", id: "workstation" },
 ]);
 assert.equal(rendered.objects.length, 6, "Shelf keeps its book");
+assert.equal(rendered.verb, null, "Take applies once");
+select("Take");
 tap(...topic.position);
 arrive();
 assert.equal(rendered.speech, "I already have it.");
@@ -1827,7 +1836,7 @@ console.log(
     for (let i = 0; i < 600 && real.state.walking; i++) step();
     assert.equal(rendered.speech, "It belongs to the keeper.");
     assert.equal(real.state.reader, null);
-    event(realCanvas, "click", { clientX: take.x + 1, clientY: take.y + 1 });
+    assert.equal(rendered.verb, null, "Take applies once");
     const pixel = rendered.room.ids.findIndex(
       (value) => rendered.room.items[value] === paper,
     );
@@ -2062,6 +2071,11 @@ rawEvent(voiceCanvas, "click", { clientX: 5, clientY: 5 });
 await voiceReturn("harbour");
 assert.equal(rendered.speech, null);
 const voiceSlot = rendered.panel.slots[0];
+rawEvent(voiceCanvas, "click", {
+  clientX: lookVoice.x + 1,
+  clientY: lookVoice.y + 1,
+});
+assert.equal(rendered.verb, "Look at");
 rawEvent(voiceCanvas, "click", {
   clientX: voiceSlot.x + 1,
   clientY: voiceSlot.y + 1,

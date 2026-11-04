@@ -108,7 +108,7 @@ Unsupported actions give a short response.
 
 Right-click a target for its supported actions in world order. Click an action or use Up/Down and Enter. Escape, an outside click or an empty-floor right-click closes the menu.
 
-The selected panel verb stays unchanged.
+A panel verb applies to one target, then the verb returns to **Walk to**. Exits accept Walk to, Open and Use.
 
 | Key        | Action                                     |
 | ---------- | ------------------------------------------ |

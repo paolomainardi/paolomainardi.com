@@ -15,7 +15,7 @@ export function targetVerbs(verbs, target) {
       );
     if (verb === "Open")
       return (
-        ["book", "inventory"].includes(target.kind) ||
+        ["book", "inventory", "exit"].includes(target.kind) ||
         (target.kind === "hotspot" &&
           !!(target.content || target.board || target.go))
       );
