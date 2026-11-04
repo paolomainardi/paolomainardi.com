@@ -3511,9 +3511,9 @@ sup a,
 // -----------------------------------------------------------------------------
 // 18. Syntax palette
 //
-// Chroma classes in ink. Structure is carried by weight and slope rather than
-// colour: keywords semibold, names medium, comments italic and faint, strings
-// a shade lighter. Only errors and deleted lines take the accent. Needs
+// Chroma classes in the notice hues, with weight and slope kept: keywords
+// purple and semibold, names blue and medium, strings teal, numbers amber,
+// comments italic and faint. Errors and deleted lines take the accent. Needs
 // noClasses = false.
 // -----------------------------------------------------------------------------
 
@@ -3560,6 +3560,7 @@ sup a,
   .gh,
   .gu,
   .gs {
+    color: var(--notice-note);
     font-weight: 600;
   }
 
@@ -3574,7 +3575,18 @@ sup a,
   .no,
   .ne,
   .na {
+    color: var(--notice-info);
     font-weight: 500;
+  }
+
+  .m,
+  .mb,
+  .mf,
+  .mh,
+  .mi,
+  .il,
+  .mo {
+    color: var(--notice-warning);
   }
 
   .s,
@@ -3592,7 +3604,7 @@ sup a,
   .s1,
   .ss,
   .gi {
-    color: var(--ink-2);
+    color: var(--notice-tip);
   }
 
   .ge {

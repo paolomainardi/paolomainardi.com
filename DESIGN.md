@@ -345,7 +345,7 @@ sun for cautions and lilac for margin notes, each with a wash for block
 backgrounds. They were removed in October 2026. Five colours on a page meant
 five things competing for attention, and none of them carried information that
 a label or a hairline did not already carry. Code is told apart by its wash and
-its typeface, notes by their label and rule, syntax by weight and slope.
+its typeface, notes by their label and rule.
 
 Notices got colour back in October 2026, and only notices. Each kind has its own
 hue, the way the Hugo Coder theme did it: note purple, tip teal, example brown,
@@ -354,8 +354,14 @@ effective difference, the colour sits only on the label and on the 2px rule:
 no box, no wash behind the text. A reader scanning a long post can tell a
 caveat from an aside before reading the label. The hues are
 muted to sit on paper, every one is at least 4.7:1 on paper by day and 8:1 on
-the night paper, and they never leave the notice: links, charts and the rest of
-the page keep blush as the one accent.
+the night paper. Links, charts and the rest of the page keep blush as the one
+accent.
+
+Code got colour back in November 2026, from the same hues. Syntax by weight and
+slope alone read as flat, and colour is how a programmer scans code. Keywords
+are note purple, names info blue, strings tip teal and numbers warning amber,
+each at least 5:1 on the code wash by day and 7.5:1 by night. The weights and
+slopes stay: keywords semibold, names medium, comments italic and faint.
 
 ## Typography
 
@@ -436,8 +442,9 @@ the file name from the fence title sit in the apparatus margin. Listings used to
 be numbered; the numbers went in October 2026 for the same reason as the figure
 numbers below, since no post ever referred to one. The code sits on the code
 wash, with no rule beside it: the wash and the typeface already set it apart.
-Highlighting is in ink, by weight and slope: keywords semibold, names medium,
-comments italic and faint, strings a shade lighter. A copy button appears over the top right
+Highlighting uses the notice hues with weight and slope: keywords purple and
+semibold, names blue and medium, strings teal, numbers amber, comments italic
+and faint. A copy button appears over the top right
 on hover or focus, and reports Copied. A long line fades into the block
 background at the right edge rather than being cut off.
 
