@@ -148,21 +148,11 @@ Later the same rig gained the arm swing, a small bob and the front and back walk
 
 ## Sound and voices
 
-The first version synthesized every sound in the browser with Web Audio. ElevenLabs can also produce sound effects, so we tested that too, to get the exact sounds we needed, as part of the same experiment. The doors, the books, the lamps, the papers, the cat's meows and purr and the ambience of the harbour and the lighthouse are now [ElevenLabs Sound Effects](https://elevenlabs.io/sound-effects).
+The doors, the books, the lamps, the papers, the cat and the ambience of the harbour and the lighthouse are [ElevenLabs Sound Effects](https://elevenlabs.io/sound-effects). The sea, the wind and the flames are synthesized with Web Audio, follow the room and the time of day, and pan towards what makes them. The footsteps are [CC0 recordings](https://opengameart.org/node/5701) by TinyWorlds.
 
-The **sea**, the **wind** and the flames are still synthesized. They change with the room and the time of day and they pan towards what makes them. The footsteps are three [CC0 recordings](https://opengameart.org/node/5701) of steps on wood by TinyWorlds, played when a foot touches the ground.
+The visitor speaks **49 lines**, written by Claude and recorded with **[Eleven v4](https://elevenlabs.io/docs/overview/models)** in a voice called **Will**, which I chose by taste. Claude cannot hear, so I listened to every sound and every voice myself.
 
-Claude cannot hear, so I listened to every sound and every voice myself. The visitor speaks **49 lines**, a thought on entering each place, a line for most things you look at, a few answers to the harbour cat and the short replies of the game. Claude wrote the script, with some mystery, some curiosity and a bit of irony, as in the study.
-
-> Hello…? The lamp is still warm. Whoever lives here left a moment ago. Or maybe… they never really left.
-
-The issue with AI generated voices is expression. I asked for pauses, emotions and sounds like "mmmh", but they were added to every line and it became unnatural again. In the end only nine lines keep a hesitation.
-
-While I was writing this post, ElevenLabs released **[Eleven v4](https://elevenlabs.io/docs/overview/models)**, which follows those tags much more closely. The first takes were whispering too much, because v4 took every "softly" literally. With lighter tags I really loved it, so every line is now recorded with v4.
-
-I chose the voice, **Will**, by taste, because it resembled the character we built and it worked better with a bit of irony. You can [listen to the study](/play/data/voices/study-enter.mp3) and to [the laptop](/play/data/voices/study-laptop.mp3).
-
-The [subtitles](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/src/speech.js) use the book's pixel font, in a warm colour with a dark outline, above the character's head, as in the old games.
+The hard part of AI voices is expression. Tags for pauses and emotions ended up on every line and sounded unnatural, so only nine lines keep a hesitation, and v4 follows them far better than the older models. You can [listen to the study](/play/data/voices/study-enter.mp3).
 
 ## How we worked
 
