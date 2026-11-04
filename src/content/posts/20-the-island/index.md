@@ -114,9 +114,9 @@ Can this work on real projects at [SparkFabrik](https://www.sparkfabrik.com/)? Y
 
 ## Conclusion
 
-I am proud of all of it. The change of pace is incredible, emotional and sometimes scary.
+I am proud of all of it. The change of pace of this market is incredible, emotional and sometimes scary.
 
-I know programming, but I know nothing about design or making games. I hope this inspires other programmers to understand what can be achieved once we stop being intimidated, press the gas pedal and let the agents do their work, compressing weeks or months of human work into a bunch of hours.
+I am a programmer, and I knew nothing about design or how games are made. Still, the island exists. I hope it shows other programmers how far we can go outside our own field once we stop being intimidated by these tools. Press the gas pedal, let the agents do their work, and weeks or months of human work fit into a bunch of hours.
 
 The goal was a **reusable engine** without over-engineering it, and I think we got there. The next step may be to invest more in it, maybe as an open source project of its own.
 
