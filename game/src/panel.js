@@ -61,7 +61,12 @@ export function siteLayout(game) {
   const path = sitePath(game);
   if (!path) return null;
   const [width, height] = game.room.size;
-  const right = width - 82;
+  const right =
+    width -
+    82 -
+    (game.activeBook || game.activeBoard || game.readerItem
+      ? (game.pocket?.length || 0) * 32
+      : 0);
   // Leave Close and a short sentence to the left, even for a long path.
   const capacity = Math.max(1, Math.floor((right - 152) / 6));
   const label =
@@ -113,6 +118,13 @@ export function footerLayout(game) {
           : game.soundRect.y,
     },
     site: siteLayout(game),
+    pocket: (game.pocket || []).map((item, i) => ({
+      item,
+      x: game.room.size[0] - 114 - i * 32,
+      y: game.room.size[1] - 21,
+      width: 28,
+      height: 18,
+    })),
   };
 }
 

@@ -42,8 +42,7 @@
       "id": "noticeboard",
       "kind": "hotspot",
       "color": "#ff00ff",
-      "label": "Notice board",
-      "look": "A few papers. Plenty of places to go."
+      "label": "Notice board"
     },
     {
       "id": "street-lamp",
@@ -65,15 +64,13 @@
       "id": "boat",
       "kind": "hotspot",
       "color": "#00ffff",
-      "label": "Rowing boat",
-      "look": "Two oars. No deadlines."
+      "label": "Rowing boat"
     },
     {
       "id": "lighthouse",
       "kind": "hotspot",
       "color": "#0080ff",
-      "label": "Lighthouse",
-      "look": "Still keeping watch."
+      "label": "Lighthouse"
     },
     {
       "id": "quay-posts",
@@ -99,6 +96,18 @@
       "color": "#ff4000",
       "to": "map",
       "label": "Island path"
+    },
+    {
+      "id": "signpost",
+      "kind": "exit",
+      "color": "#00ff80",
+      "label": "Signpost",
+      "to": "map"
+    },
+    {
+      "id": "signpost-post",
+      "kind": "foreground",
+      "color": "#80ff00"
     }
   ],
   "depth": {

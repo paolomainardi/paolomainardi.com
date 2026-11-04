@@ -32,6 +32,9 @@ async (page) => {
             ? state.book === "workstation"
             : state.reader === hash.split("/").at(-1);
       }, hash);
+      await page.waitForFunction(
+        () => !document.querySelector(".adventure-live").textContent,
+      );
       const point = await page.evaluate(
         async ({ path, closeup }) => {
           const { siteLayout } = await import("../src/panel.js");

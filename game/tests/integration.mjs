@@ -94,6 +94,8 @@ window.open = (...args) => {
 };
 const location = { hash: "", origin: "https://adventure.test" };
 let animationStart = 0;
+// Retain coverage for worlds that omit the optional pocket list.
+let includePocket = false;
 let contentOverride,
   missingLampDrawings = false;
 const requests = [];
@@ -168,6 +170,7 @@ const context = vm.createContext({
       ok: true,
       json: async () => {
         const data = JSON.parse(readFileSync(path, "utf8"));
+        if (path.endsWith("/world.json") && !includePocket) delete data.pocket;
         if (path.endsWith("/content.json") && contentOverride)
           data.items = contentOverride;
         if (path.endsWith("/room.json") && missingLampDrawings)
@@ -270,11 +273,19 @@ const root = container.children[0],
   reader = root.children[2],
   close = reader.children[0],
   iframe = reader.children[1];
-function event(target, type, props = {}) {
+function rawEvent(target, type, props = {}) {
   const e = new Event(type, { cancelable: true });
   Object.assign(e, props);
   target.dispatchEvent(e);
   return e;
+}
+// Existing interaction cases assume the visitor has finished reading each reply.
+function event(target, type, props = {}) {
+  if (["click", "contextmenu", "pointerdown"].includes(type) && rendered) {
+    rendered.sound.stopVoice();
+    rendered.speechUntil = rendered.elapsed;
+  }
+  return rawEvent(target, type, props);
 }
 function step(frames = 1) {
   for (let i = 0; i < frames; i++) {
@@ -743,8 +754,8 @@ const originalDescription = hotspot.look;
 hotspot.look = "A long note about the kernel. ".repeat(30);
 click(180, 120);
 settle();
-assert.equal(rendered.speechLines.length, 2);
-assert(rendered.speechLines[1].endsWith("…"));
+assert(rendered.speechLines.length > 2);
+assert.equal(rendered.speechLines.join(" ").trim(), hotspot.look.trim());
 hotspot.look = originalDescription;
 // Move away so the click can prove opening happens before movement.
 click(600, 300);
@@ -1444,7 +1455,7 @@ const takeRect = boardModule.namespace.noteTakeRect(notices.art);
 const beforeTaking = adventure.state.inventory.length;
 tap(takeRect.x, takeRect.y);
 assert.equal(rendered.speech, "I'll keep this one.");
-assert.equal(rendered.speechUntil - rendered.elapsed, 3);
+assert.equal(rendered.speechUntil - rendered.elapsed, 3.5);
 assert.equal(adventure.state.inventory.length, beforeTaking + 1);
 assert.deepEqual(JSON.parse(stored.get(inventoryKey)).at(-1), {
   kind: "notice",
@@ -1891,7 +1902,13 @@ console.log(
     rendered.verb = "Look at";
     realTap(...itemPixel(target));
     for (let i = 0; i < 600 && real.state.walking; i++) step();
-    assert.equal(rendered.speech, target.look);
+    assert.equal(
+      rendered.speech,
+      rendered.world.voices[
+        rendered.room.config.looks[target.id] ||
+          rendered.room.config.hotspots[target.id].look
+      ].text,
+    );
     assert.equal(real.state.room, "harbour");
     rendered.verb = verb;
     realTap(...itemPixel(target));
@@ -1948,6 +1965,117 @@ console.log(
   console.log("Real lighthouse letter and logbook readers passed.");
 }
 
+// Keep real input events for voice behavior; other cases wait between replies.
+location.hash = "#stone-house";
+stored.set(inventoryKey, JSON.stringify([{ kind: "book", id: "workstation" }]));
+const voiceContainer = new Element("main");
+const voiceGame = await startedBoot({
+  world: "./real/world.json",
+  content: "./data/content.json",
+  element: voiceContainer,
+});
+step();
+await new Promise(setImmediate);
+const voiceRoot = voiceContainer.children[0],
+  voiceCanvas = voiceRoot.children[0];
+assert.equal(rendered.speech, rendered.world.voices["study-enter"].text);
+const lookVoice = rendered.verbRects.find((rect) => rect.label === "Look at");
+rawEvent(voiceCanvas, "click", {
+  clientX: lookVoice.x + 1,
+  clientY: lookVoice.y + 1,
+});
+assert.equal(rendered.speech, null, "Click skips text-only entry speech");
+assert.equal(rendered.verb, null, "Skip click cannot select a verb");
+assert.equal(rendered.path.length, 0);
+assert.equal(rendered.pending, null);
+rawEvent(voiceCanvas, "click", {
+  clientX: lookVoice.x + 1,
+  clientY: lookVoice.y + 1,
+});
+assert.equal(rendered.verb, "Look at");
+const voiceWindow = rendered.room.items.find((item) => item.id === "window");
+const voicePixel = rendered.room.ids.findIndex(
+  (id) => rendered.room.items[id] === voiceWindow,
+);
+rawEvent(voiceCanvas, "click", {
+  clientX: voicePixel % 640,
+  clientY: Math.floor(voicePixel / 640),
+});
+for (let i = 0; i < 600 && voiceGame.state.walking; i++) step();
+assert.equal(rendered.speech, rendered.world.voices["study-window"].text);
+await new Promise(setImmediate);
+assert(
+  Number.isFinite(rendered.speechUntil),
+  "Missing recording uses reading time",
+);
+rawEvent(voiceCanvas, "click", { clientX: 5, clientY: 5 });
+// Topic book look uses its world binding before the dynamic entry-count fallback.
+const voiceBook = rendered.objects[0];
+rendered.actor.x = voiceBook.position[0];
+rendered.actor.y = voiceBook.position[1];
+rawEvent(voiceRoot, "contextmenu", {
+  clientX: voiceBook.position[0],
+  clientY: voiceBook.position[1] - 1,
+});
+assert(rendered.menu);
+rawEvent(voiceRoot, "keydown", { key: "ArrowDown" });
+rawEvent(voiceRoot, "keydown", { key: "Enter" });
+for (let i = 0; i < 600 && voiceGame.state.walking; i++) step();
+step();
+assert.equal(rendered.speech, rendered.world.voices["book-workstation"].text);
+rawEvent(voiceCanvas, "click", { clientX: 5, clientY: 5 });
+rawEvent(voiceRoot, "keydown", { key: "t" });
+assert.equal(
+  rendered.speech,
+  rendered.world.voices[`common-${rendered.time}`].text,
+);
+rawEvent(voiceCanvas, "click", { clientX: 5, clientY: 5 });
+// Drive the actual fade state machine, including the asynchronous room load.
+rendered.transition = {
+  to: "harbour",
+  from: "stone-house",
+  phase: "out",
+  opacity: 0,
+};
+step(12);
+await new Promise(setImmediate);
+assert.equal(voiceGame.state.room, "harbour");
+assert.equal(rendered.speech, null, "Room entry waits for fade-in");
+step(12);
+assert.equal(rendered.transition, null);
+assert.equal(rendered.speech, rendered.world.voices["harbour-enter"].text);
+const voiceReturn = async (room) => {
+  location.hash = `#${room}`;
+  rawEvent(window, "hashchange");
+  await new Promise(setImmediate);
+  step();
+};
+await voiceReturn("stone-house");
+assert.equal(
+  rendered.speech,
+  null,
+  "Returning to a room never repeats entry speech",
+);
+await voiceReturn("map");
+assert.equal(rendered.speech, rendered.world.voices["map-enter"].text);
+rawEvent(voiceCanvas, "click", { clientX: 5, clientY: 5 });
+await voiceReturn("harbour");
+assert.equal(rendered.speech, null);
+const voiceSlot = rendered.panel.slots[0];
+rawEvent(voiceCanvas, "click", {
+  clientX: voiceSlot.x + 1,
+  clientY: voiceSlot.y + 1,
+});
+assert.equal(
+  rendered.speech,
+  rendered.world.voices["book-workstation"].text,
+  "A restored carried book keeps its look voice outside its original room",
+);
+voiceGame.destroy();
+console.log(
+  "Voice frame skipping, look bindings, common replies, fade ordering and once-per-room entry passed.",
+);
+
 // Destroying an untouched title must not load data or create an audio context.
 const beforeIdleRequests = requests.length;
 const beforeIdleAudio = AudioContext.instances.length;
@@ -1968,4 +2096,156 @@ assert.equal(fontFaces.size, 0, "Destroyed games release their font faces");
 assert(
   AudioContext.instances.every((context) => context.closeCalls === 1),
   "Every audio context closes exactly once, including failed starts",
+);
+
+// Permanent pocket items work alongside saved items and every close-up.
+includePocket = true;
+stored.clear();
+location.hash = "#stone-house";
+const pocketContainer = new Element("main");
+const pocketGame = await startedBoot({
+  world: "./data/world.json",
+  content: "./data/content.json",
+  element: pocketContainer,
+});
+step();
+const pocketRoot = pocketContainer.children[0];
+const pocketCanvas = pocketRoot.children[0];
+const pocketTap = (rect) =>
+  event(pocketCanvas, "click", {
+    clientX: rect.x + 1,
+    clientY: rect.y + 1,
+  });
+const mapSlot = rendered.panel.slots[0];
+assert.deepEqual(Array.from(pocketGame.state.inventory), ["map"]);
+assert(rendered.inventory[0].sprite.texture);
+assert.equal(stored.has(inventoryKey), false, "Fresh pocket is not persisted");
+pocketTap(rendered.panel.forget);
+assert.equal(
+  rendered.speech,
+  null,
+  "Forget is inactive with only pocket items",
+);
+const pocketReturn = async (hash) => {
+  location.hash = hash;
+  event(window, "hashchange");
+  await new Promise(setImmediate);
+  step();
+};
+const finishPocketTravel = async () => {
+  step(12);
+  await new Promise(setImmediate);
+  step(12);
+  assert.equal(pocketGame.state.room, "map");
+  assert.equal(rendered.transition, null);
+};
+for (const verb of ["Open", "Use", null, "Walk to"]) {
+  await pocketReturn("#stone-house");
+  rendered.verb = verb;
+  rendered.hover = rendered.inventory[0];
+  assert.equal(sentence(rendered), (verb || "Walk to") + " Island map");
+  pocketTap(mapSlot);
+  assert.equal(rendered.transition.to, "map");
+  assert.equal(rendered.transition.from, "stone-house");
+  assert.equal(rendered.transition.phase, "out");
+  assert.equal(rendered.path.length, 0);
+  assert.equal(rendered.selectedItem, null);
+  await finishPocketTravel();
+  pocketTap(mapSlot);
+  assert.equal(rendered.speech, "I'm already looking at it.");
+  assert.equal(rendered.transition, null);
+}
+for (const [verb, expected] of [
+  ["Look at", "My map of the island. Folded wrong, like every map."],
+  ["Take", "I already have it."],
+  ["Talk to", "I can't do that."],
+]) {
+  rendered.verb = verb;
+  pocketTap(mapSlot);
+  assert.equal(rendered.speech, expected, verb + " works in the map room");
+}
+await pocketReturn("#stone-house");
+const carriedBook = rendered.books.workstation;
+rendered.inventory.push({
+  kind: "inventory",
+  label: carriedBook.title,
+  book: carriedBook,
+  sprite: carriedBook.sprite,
+});
+const inventoryModule = await moduleAt(
+  "https://adventure.test/src/inventory.js",
+);
+inventoryModule.namespace.saveInventory(rendered);
+assert.deepEqual(JSON.parse(stored.get(inventoryKey)), [
+  { kind: "book", id: "workstation" },
+]);
+pocketTap(rendered.panel.forget);
+assert.deepEqual(Array.from(pocketGame.state.inventory), ["map"]);
+assert.equal(stored.has(inventoryKey), false);
+assert.equal(rendered.inventoryOffset, 0);
+assert.equal(rendered.selectedItem, null);
+for (const hash of [
+  "#stone-house/book/workstation/0",
+  "#harbour/board/links/0",
+  "reader",
+]) {
+  await pocketReturn(
+    hash === "reader" ? "#stone-house/book/workstation/0" : hash,
+  );
+  if (hash === "reader") {
+    const entry = rendered.activeBook.pages[0].entries[0];
+    pocketTap(entry);
+    assert.equal(pocketGame.state.reader, entry.item.id);
+  }
+  assert(
+    rendered.activeBook || rendered.activeBoard || rendered.readerItem,
+    hash,
+  );
+  const footerMap = panelModule.namespace.footerLayout(rendered).pocket[0];
+  event(pocketCanvas, "pointermove", {
+    clientX: footerMap.x + 1,
+    clientY: footerMap.y + 1,
+  });
+  assert.equal(
+    rendered.hover,
+    rendered.inventory[0],
+    "Footer map can be hovered",
+  );
+  // A stale room verb must not stop the close-up shortcut.
+  rendered.verb = "Talk to";
+  pocketTap(footerMap);
+  assert.equal(pocketGame.state.book, null);
+  assert.equal(pocketGame.state.board, null);
+  assert.equal(pocketGame.state.reader, null);
+  assert.equal(pocketRoot.children[2].hidden, true);
+  await finishPocketTravel();
+}
+pocketGame.destroy();
+stored.set(
+  inventoryKey,
+  JSON.stringify([
+    { kind: "pocket", id: "map" },
+    { kind: "book", id: "workstation" },
+  ]),
+);
+location.hash = "#stone-house";
+const restoredPocketContainer = new Element("main");
+const restoredPocket = await startedBoot({
+  world: "./data/world.json",
+  content: "./data/content.json",
+  element: restoredPocketContainer,
+});
+step();
+assert.deepEqual(Array.from(restoredPocket.state.inventory), [
+  "map",
+  "workstation",
+]);
+assert.deepEqual(JSON.parse(stored.get(inventoryKey)), [
+  { kind: "book", id: "workstation" },
+]);
+restoredPocket.destroy();
+assert.equal(fontFaces.size, 0);
+assert(AudioContext.instances.every((context) => context.closeCalls === 1));
+console.log(
+  "Pocket map startup, storage, Forget, actions, travel and close-ups passed.",
 );

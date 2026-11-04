@@ -85,6 +85,8 @@ The reader's website link is hidden without `url`. Catalogue entries link to `li
 | `book`      | asset path      | Required shared book drawing and fonts, also used by menus.           |
 | `books`     | optional object | Topic book ids mapped to book bindings.                               |
 | `boards`    | optional object | Board ids mapped to board bindings.                                   |
+| `pocket`    | optional array  | Permanent inventory items, in display order.                          |
+| `voices`    | optional object | Voice ids mapped to subtitle text and optional audio paths.           |
 | `sounds`    | optional object | Sound ids mapped to sound definitions.                                |
 | `events`    | optional object | Game event names mapped to sound ids.                                 |
 | `mix`       | optional object | Audio bus gains.                                                      |
@@ -111,6 +113,22 @@ The reader's website link is hidden without `url`. Catalogue entries link to `li
 }
 ```
 
+### Permanent pocket items
+
+`pocket` is optional and defaults to an empty list. Each entry requires a unique `id`, display `label`, transparent `icon` path, destination room id `to`, and voice id `look`. Icons resolve against `world.json`, fit within 24×14 pixels, and render in inventory slots.
+
+```json
+"pocket": [
+  { "id": "map", "label": "Island map", "icon": "items/map.png", "to": "map", "look": "pocket-map" }
+]
+```
+
+Pocket items precede collected books and notices. They cannot be dropped, never enter storage, and survive Forget. Forget appears only when non-pocket items are present.
+
+Open, Use and a plain click (including Walk to) travel immediately with the exit fade. At the destination, the reply uses `common-already-map`, falling back to "I'm already looking at it." Look at uses the entry's `look` voice, Take uses `common-have-it`, and Talk to uses `common-cant`.
+
+Book, board and reader footers also show pocket icons. Clicking a footer icon closes the close-up and travels, regardless of the selected room verb. Hovering an inventory icon uses the normal action sentence.
+
 ### Room bindings
 
 | Field      | Type              | Meaning                                                                                 |
@@ -119,6 +137,8 @@ The reader's website link is hidden without `url`. Catalogue entries link to `li
 | `books`    | optional id array | Fill slots in painted item order with topic books. An empty or omitted list fills none. |
 | `hotspots` | optional object   | Room hotspot ids mapped to bindings below.                                              |
 | `ambience` | optional object   | `dusk` and `night` arrays of ambient sound entries.                                     |
+
+`enter` names a voice said once per room per session, after the room fades in. `looks` maps room item ids or topic book ids to voice ids. A hotspot binding can name its voice with `look`, including alongside `go`, `board` or `content`, or by itself. Look bindings take priority over drawing descriptions and content metadata. Carried books retain their look binding.
 
 Slot books stop when either books or slots run out. Each sprite uses its own dimensions, bottom-centred on the slot. There is no automatic room expansion or overflow build check.
 
@@ -130,7 +150,7 @@ A hotspot binding chooses the first applicable form in this order:
 | `board`                    | Open the named world board after arrival.                                                                                             |
 | `content`, optional `site` | Bind the newest matching item, append its title to the hotspot label, and open its reader or destination.                             |
 
-An unmatched content filter keeps the original hotspot label and description. Take still responds that it belongs to the keeper. Look prefers the hotspot's `look`, then the content title and description.
+An unmatched content filter keeps the original hotspot label and description. Take still responds that it belongs to the keeper. Without a voice binding, Look prefers the drawing's `look`, then the content title and description.
 
 External hotspot links open during the original click to retain browser activation; arrival supplies feedback. The second click of a double-click does not open another tab.
 
@@ -170,7 +190,7 @@ Inventory uses only `localStorage["adventure.inventory"]`, containing a JSON arr
 
 Corrupt JSON, blocked storage and quota errors do not stop play.
 
-Forget empties inventory and removes the key. No other game state persists.
+Forget removes collected books and notices and removes the key. Pocket items remain. No other game state persists.
 
 ## room.json and objects.png
 
@@ -383,7 +403,7 @@ File duration comes from decoded audio.
 
 Missing files, unknown sound ids and unknown synths warn once and remain silent. Audio data is decoded once per resolved URL per game instance.
 
-`world.mix` accepts `master`, `ambience` and `effects`, defaulting to 0.5, 0.8 and 1. Each room's `ambience.dusk` and `ambience.night` contain entries with required `sound`, optional `at` (room item id) and optional `light` (lamp id). Position changes gain and stereo pan; no position means constant gain and centred pan.
+`world.mix` accepts `master`, `ambience`, `effects` and `voice`, defaulting to 0.5, 0.8, 1 and 1. Each room's `ambience.dusk` and `ambience.night` contain entries with required `sound`, optional `at` (room item id) and optional `light` (lamp id). Position changes gain and stereo pan; no position means constant gain and centred pan.
 
 Lamp binding multiplies gain by fade level. Room/time changes cross-fade loops over one second.
 
@@ -391,9 +411,23 @@ Lamp binding multiplies gain by fade level. Room/time changes cross-fade loops o
 
 Cancelled page turns stay silent. Door sound fires on exit arrival before the room fade.
 
-Start unlocks audio. M and the sound label toggle mute in memory. A reader ducks both buses to 0.25.
+Start unlocks audio. M and the sound label toggle mute in memory. A reader ducks ambience and effects to 0.25.
 
 Hidden tabs suspend the context and visible tabs resume it. Destroy stops voices and closes the context.
+
+## Voices
+
+`world.voices` maps each voice id to `{ "text": "Spoken subtitle.", "src": "voices/line-id.mp3" }`. `text` is required; `src` is optional and resolves against `world.json`. Record dry MP3 files under `dev/real/voices/`, using each line's id as its file name.
+
+Recordings load only when said and decode once per resolved URL per instance. Missing or failing files warn once and use text only; failed loads are cached too. A new line cancels the previous recording and any pending playback. Destroy also cancels pending playback.
+
+Subtitles stay visible while audio loads and until it ends. Without audio they stay for `max(3.5, text.length × 0.055)` seconds, starting after a failed load resolves. Long subtitles wrap without truncation above the character, inside the frame. Maps centre subtitles; close-ups show them in the bottom bar.
+
+A frame click skips the current line, stops audio, clears its subtitle, and performs no other action. A secondary click also skips. Page dragging cannot begin during a line. Room entry speech starts after fade-in before a frame click can act.
+
+The voice bus connects directly to master. While a recording plays, ambience and effects duck to 0.5 (about 6 dB). Reader ducking multiplies this level. Voice gain uses `mix.voice`, default 1; M and the sound label mute every bus through master. M never skips a line.
+
+The fixed answers use `common-cant`, `common-lamp-on`, `common-lamp-off`, `common-too-far`, `common-keep`, `common-have-it`, `common-pockets`, `common-night` and `common-dusk`. Their text and recordings come from `voices`; an omitted id keeps the engine's built-in text. Other dynamic responses stay text only.
 
 ## Validation boundary
 

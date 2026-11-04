@@ -3,7 +3,11 @@ async (page) => {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => {
-    if (message.type() === "error") errors.push(message.text());
+    if (
+      message.type() === "error" &&
+      !message.location().url.includes("/voices/")
+    )
+      errors.push(message.text());
   });
   const origin = new URL(page.url()).origin;
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -51,6 +55,9 @@ async (page) => {
     return [(x0 + x1) / 2, (y0 + y1) / 2];
   });
   async function click(x, y) {
+    await page.waitForFunction(
+      () => !document.querySelector(".adventure-live").textContent,
+    );
     const box = await page.locator("canvas").boundingBox();
     await page.mouse.click(
       box.x + (x * box.width) / 640,

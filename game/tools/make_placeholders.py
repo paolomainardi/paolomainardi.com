@@ -303,11 +303,20 @@ def generate():
     for inset, color in [(0, 0), (1, 9), (2, 7), (3, 2)]:
         f.rectangle((inset, inset, 11-inset, 11-inset), outline=COLORS[color])
     frame.save(ROOT.parent / 'src/reader-frame.png')
+    pocket_map = Image.new('RGBA', (24, 14))
+    draw = ImageDraw.Draw(pocket_map)
+    draw.polygon([(1, 3), (7, 1), (15, 3), (22, 1), (22, 10), (15, 12), (7, 10), (1, 12)], fill=COLORS[11], outline=COLORS[7])
+    draw.line([(7, 2), (7, 9)], fill=COLORS[7])
+    draw.line([(15, 4), (15, 11)], fill=COLORS[7])
+    (DATA / 'items').mkdir(exist_ok=True)
+    pocket_map.save(DATA / 'items/map.png')
     save_json(DATA / 'world.json', dict(title='The engineer\'s study', palette='palette.png', start='stone-house',
+        pocket=[dict(id='map', label='Island map', icon='items/map.png', to='map', look='pocket-map')],
         character='character/character.json', verbs=['Look at', 'Open', 'Use', 'Take', 'Talk to'],
         sounds={'sea': {'synth': 'surf', 'volume': 0.5, 'loop': True}, 'wind': {'synth': 'wind', 'volume': 0.3, 'loop': True}, 'flame': {'synth': 'crackle', 'volume': 0.25, 'loop': True}, 'step': {'synth': 'step', 'volume': 0.9}, 'page': {'synth': 'page', 'volume': 0.6}, 'click': {'synth': 'click', 'volume': 0.4}, 'door': {'synth': 'creak', 'volume': 0.5}, 'flare': {'synth': 'whoosh', 'volume': 0.5, 'params': {'frequency': 900, 'duration': 0.35}}, 'gust': {'synth': 'whoosh', 'volume': 0.4, 'params': {'frequency': 350, 'duration': 1.2}}},
         events={'step': 'step', 'page-turn': 'page', 'book-open': 'page', 'book-close': 'page', 'lamp': 'click', 'menu': 'click', 'door': 'door', 'lantern': 'flare', 'time': 'gust'},
-        mix={'master': 0.5, 'ambience': 0.8, 'effects': 1.0},
+        mix={'master': 0.5, 'ambience': 0.8, 'effects': 1.0, 'voice': 1.0},
+        voices={'pocket-map': {'text': 'My map of the island. Folded wrong, like every map.'}, 'common-already-map': {'text': "I'm already looking at it."}, 'map-enter': {'text': 'So this is the whole island. Small… but full of things somebody left behind. Like a desk, but bigger.', 'src': 'voices/map-enter.mp3'}, 'map-house': {'text': 'The stone house. Where the lamp was still warm.', 'src': 'voices/map-house.mp3'}, 'common-night': {'text': 'Night already… everything looks more mysterious now. And darker. Mostly darker.', 'src': 'voices/common-night.mp3'}},
         book='book/book.json',
         boards={'links': dict(title='Links', subtitle='Things I read and think are worth your time, with a line or two on why.', site='/links/', content=dict(type='link'), board='board/board.json')},
         books={key: dict(title=title, content=content, sprite=books[i % len(books)], site='/posts/manage-dotfiles-with-yadm/#series' if key == 'workstation' else '/links/' if key == 'links' else f'/tags/{key}/')
@@ -326,7 +335,7 @@ def generate():
                 about=dict(content=dict(type='about'), site='/about/'), talk=dict(content=dict(type='talk'), site='/talks/'))),
             'harbour': dict(src='rooms/harbour/room.json', books=[],
                 hotspots=dict(noticeboard=dict(board='links'))),
-            'map': dict(src='rooms/map/room.json', books=[])}))
+            'map': dict(src='rooms/map/room.json', books=[], enter='map-enter', looks={'study': 'map-house'})}))
     titles = ['A room of one\'s own', 'Choosing the hardware', 'Linux on the desk', 'Containers at home', 'A quieter workstation', 'The finished build']
     content = []
     for i, title in enumerate(titles, 1):

@@ -43,6 +43,7 @@ export class SoundEngine {
     this.voices = new Set();
     this.loops = [];
     this.selection = null;
+    this.spoken = null;
   }
 
   warn(key, error) {
@@ -60,6 +61,9 @@ export class SoundEngine {
       this.duck = c.createGain();
       this.ambience = c.createGain();
       this.effects = c.createGain();
+      this.voice = c.createGain();
+      this.voice.gain.value = this.world.mix?.voice ?? 1;
+      this.voice.connect(this.master);
       this.master.gain.value = this.world.mix?.master ?? 0.5;
       this.ambience.gain.value = this.world.mix?.ambience ?? 0.8;
       this.effects.gain.value = this.world.mix?.effects ?? 1;
@@ -98,7 +102,60 @@ export class SoundEngine {
   setReader(open) {
     if (this.ducked === open) return;
     this.ducked = open;
-    if (this.context) this.ramp(this.duck.gain, open ? 0.25 : 1, 0.15);
+    this.updateDuck();
+  }
+
+  updateDuck() {
+    if (this.context)
+      this.ramp(
+        this.duck.gain,
+        (this.ducked ? 0.25 : 1) * (this.spoken?.source ? 0.5 : 1),
+        0.15,
+      );
+  }
+
+  stopVoice() {
+    const spoken = this.spoken;
+    this.spoken = null;
+    if (spoken?.source) {
+      spoken.source.onended = null;
+      spoken.source.stop();
+      spoken.source.disconnect();
+    }
+    this.updateDuck();
+  }
+
+  async playVoice(id, ended) {
+    this.stopVoice();
+    const definition = this.world.voices?.[id];
+    if (!definition?.src || !this.context || this.disposed) return false;
+    const spoken = (this.spoken = {});
+    const buffer = await this.buffer(definition.src);
+    if (this.spoken !== spoken || this.disposed) return false;
+    if (!buffer) {
+      this.spoken = null;
+      return false;
+    }
+    try {
+      const source = this.context.createBufferSource();
+      spoken.source = source;
+      source.buffer = buffer;
+      source.connect(this.voice);
+      source.onended = () => {
+        if (this.spoken !== spoken) return;
+        this.spoken = null;
+        source.disconnect();
+        this.updateDuck();
+        ended();
+      };
+      source.start();
+      this.updateDuck();
+      return true;
+    } catch (error) {
+      this.warn(`voice:${id}`, error);
+      this.stopVoice();
+      return false;
+    }
   }
 
   buffer(src) {
@@ -333,6 +390,7 @@ export class SoundEngine {
   destroy() {
     if (this.disposed) return;
     this.disposed = true;
+    this.stopVoice();
     this.loops.forEach((slot) => {
       slot.retired = true;
     });

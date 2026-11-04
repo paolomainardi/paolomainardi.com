@@ -2,6 +2,9 @@
 import assert from "node:assert/strict";
 import { layoutPanel, sentence } from "../src/panel.js";
 import { wrap } from "../src/font.js";
+import { speechLines, speechLayout } from "../src/speech.js";
+import { bookFonts } from "../src/book.js";
+import { context2D } from "./text-fixture.mjs";
 import { Renderer } from "../src/renderer.js";
 
 // Exercise render placement without requiring a GPU. Use deliberately different
@@ -39,6 +42,13 @@ Object.assign(renderer, {
 });
 const texture = {};
 const game = {
+  bookArt: {
+    fonts: bookFonts(
+      { font: { family: "NF-Pixels" }, sizes: { body: 10 } },
+      context2D(),
+    ),
+  },
+  world: {},
   objects: [],
   room: {
     size: [640, 360],
@@ -98,6 +108,67 @@ for (const mirror of [false, true]) {
 }
 console.log(
   "Swappable frame, anchor, animation, mirroring, sentence outline, and compact translucent UI passed (mock GPU).",
+);
+
+// Long subtitles stay complete and inside the frame, including near its edges.
+game.elapsed = 0;
+game.speechUntil = 100;
+game.speech = "A long spoken thought about this quiet island. "
+  .repeat(12)
+  .trim();
+game.speechLines = speechLines(game.bookArt.fonts.body, game.speech);
+for (const map of [false, true]) {
+  game.room.map = map;
+  for (const [x, y] of [
+    [0, 0],
+    [639, 359],
+  ]) {
+    game.actor.x = x;
+    game.actor.y = y;
+    calls.length = 0;
+    renderer.render(game);
+    const layout = speechLayout(game);
+    assert.equal(layout.rows.length, game.speechLines.length);
+    for (const { line, x, y } of layout.rows) {
+      assert(x >= 1 && x + layout.font.measure(line) <= 639);
+      assert(y >= 1 && y + layout.font.lineHeight <= game.verbTop - 1);
+    }
+    assert(
+      !calls.some(
+        (call) =>
+          call.type === "text" && game.speechLines.includes(call.args[0]),
+      ),
+    );
+    assert(
+      !calls.some(
+        (call) => call.type === "rect" && call.args[1] < game.verbTop,
+      ),
+      "Room subtitles have no background rectangle",
+    );
+  }
+}
+game.room.map = false;
+renderer.size = [640, 360];
+game.siteHover = true;
+calls.length = 0;
+renderer.renderFooter({ ...game, readerItem: {} });
+const footerSpeech = speechLayout({ ...game, readerItem: {} });
+assert.equal(footerSpeech.rows.map((row) => row.line).join(" "), game.speech);
+assert(
+  footerSpeech.rows.every(
+    (row) => row.y >= 0 && row.y + footerSpeech.font.lineHeight <= 360,
+  ),
+);
+assert(
+  !calls.some((call) => call.type === "text" && call.args[1] === 68),
+  "Footer speech uses the text layer",
+);
+game.siteHover = false;
+game.speech = null;
+game.actor.x = 100;
+game.actor.y = 150;
+console.log(
+  "Complete room, map and footer subtitles stay within frame bounds (mock GPU).",
 );
 
 // Each object draws its assigned texture at its own size, bottom-centred on the slot.
@@ -418,6 +489,53 @@ assert.deepEqual(
 console.log(
   "Inventory sprite scaling and shared rose hover/selection colour passed.",
 );
+
+// Permanent pocket items hide Forget and remain visible in close-up footers.
+const pocketIcon = {
+  kind: "inventory",
+  pocket: true,
+  id: "map",
+  label: "Island map",
+  sprite: { texture: {}, size: [24, 14] },
+};
+const pocketView = {
+  ...game,
+  inventory: [pocketIcon],
+  pocket: [pocketIcon],
+  hover: pocketIcon,
+  speech: null,
+  sentenceNotice: null,
+};
+calls.length = 0;
+renderer.renderPanel(pocketView);
+assert(
+  !calls.some((call) => call.type === "text" && call.args[0] === "Forget"),
+);
+calls.length = 0;
+renderer.renderPanel({ ...pocketView, inventory: [pocketIcon, iconItem] });
+assert(calls.some((call) => call.type === "text" && call.args[0] === "Forget"));
+for (const closeup of [
+  { activeBook: { site: "/tags/linux/" } },
+  { activeBoard: { site: "/links/" } },
+  { readerItem: {}, readerSite: "/posts/" },
+]) {
+  calls.length = 0;
+  renderer.renderFooter({
+    ...pocketView,
+    ...closeup,
+    siteHover: false,
+  });
+  const sprite = calls.find(
+    (call) =>
+      call.type === "sprite" && call.args[0] === pocketIcon.sprite.texture,
+  );
+  assert.deepEqual(sprite.args[2], [528, 341, 24, 14]);
+  assert(
+    calls.some(
+      (call) => call.type === "text" && call.args[0] === "Open Island map",
+    ),
+  );
+}
 
 // Map rooms draw neither the character nor its shadow or lantern emission.
 game.room.map = true;

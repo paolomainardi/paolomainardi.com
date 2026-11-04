@@ -35,6 +35,9 @@ async (page) => {
     throw new Error(
       `Expected a full-screen 3× frame: ${JSON.stringify(metrics)}`,
     );
+  await page.waitForFunction(
+    () => !document.querySelector(".adventure-live").textContent,
+  );
   const start = await page.evaluate(() => window.game.state.position);
   const target = [start[0] + 60, start[1]];
   await page.mouse.click(target[0] * 3, target[1] * 3);
