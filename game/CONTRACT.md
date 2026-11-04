@@ -450,7 +450,7 @@ Optional `world.intro` plays after every Start, before restoring the initial roo
 }
 ```
 
-`shots` must be non-empty. Every shot requires a room listed in `world.rooms`, `time` set to `night` or `dusk`, finite positive `seconds`, and a `lines` array of strings. Optional `title` is boolean. A title shot shows `world.title` large and centred before its lines. Lines appear sequentially in the lower third, using the book font and speech outline. Each title or line gets an equal part of the shot duration and fades in and out. The last line of the last shot remains visible until input.
+`shots` must be non-empty. Every shot requires a room listed in `world.rooms`, `time` set to `night` or `dusk`, finite positive `seconds`, and a `lines` array of strings. Optional `title` is boolean. A title shot requires a string `world.title` and shows it large and centred before its lines. Lines appear sequentially in the lower third, using the book font and speech outline. Each title or line gets an equal part of the shot duration and fades in and out. The last line of the last shot remains visible until input.
 
 Rooms keep their lights, water, beacon and actors. The intro hides the visitor, carried lantern, panel and hotspots, blocks game actions and suppresses entry speech. Intro-only rooms need no incoming exits. Shots cross-fade over 0.8 seconds using a captured outgoing frame over the living incoming scene. Loading pauses shot timing. Hidden tabs pause the intro. Reduced motion removes shot and text fades while keeping their order.
 
