@@ -131,7 +131,7 @@ Start creates and resumes the audio context during the button gesture. World sou
 
 The title uses native buttons. A hidden navigation list exposes book and board links and site destinations, and a polite live region announces spoken responses. Data text uses DOM `textContent` or canvas text. The reader is a labelled dialog with a Close button, iframe Escape handling and focus return. Keyboard menus and page turns work, but movement and most canvas controls still require a pointer. The engine is not a fully keyboard-accessible game. Reduced motion disables water motion; it does not disable every animation.
 
-NF-Pixels is bundled unmodified under SIL OFL 1.1 beside each font file.
+NF-Pixels is bundled unmodified under SIL OFL 1.1 beside each font file. [CREDITS.md](CREDITS.md) lists every third-party asset and its licence.
 
 ## Checks and tools
 
