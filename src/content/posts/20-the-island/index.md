@@ -53,7 +53,7 @@ The site and the game share only the build. Hugo writes a `content.json` with po
 
 ## The intro
 
-A game has an intro, so the island got one too. I wanted it to feel like the little game we built, a 90s interactive adventure like Monkey Island, from the first frame.
+Every adventure game of the 90s opened with an intro, so the island has one too, in the style of Monkey Island.
 
 For the engine, the intro is only data: a list of **shots** in `world.json`, each with a room, a time of day, a duration, its credit lines and optional sound cues. The engine plays each shot as a room without the visitor or the panel, with the same lights and the same moving sea, cross-fades between them and draws the credits in a dark band at the bottom of the screen, as in the old games.
 
