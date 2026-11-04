@@ -38,6 +38,7 @@ The visitor speaks. Each place has a line for the first visit, and Look at gives
 - **Text** lives in `world.json` under `voices`, keyed by id. Rooms and hotspots point at those ids. The text is also the subtitle.
 - **Recordings** are `game/dev/real/voices/<id>.mp3`, one per id. They load on first use. A missing file leaves the line as text only, so a new line can ship before its recording.
 - **Subtitles** are drawn in the book font above the character, in a warm colour with a dark outline. Close-ups show them in the footer.
+- **Placement:** ambience tied to an object, such as the sea at a window or a lamp's flame, is binaural. On headphones it comes from the left or right of the visitor and turns as they walk.
 - **Mixing:** voices have their own `mix.voice` level. Ambience and effects dip while a line plays, and mute silences everything.
 
 The recordings were generated with ElevenLabs (`eleven_v4`, voice "Will", 44.1 kHz 128 kbps MP3). To change a line, edit its text in `world.json`, record the new take under the same id, and replace the file. The [engine README](../game/README.md) has the full behaviour.

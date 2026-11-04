@@ -240,7 +240,7 @@ export class SoundEngine {
     return this.buffers.get(url);
   }
 
-  async play(id, bus, volume = 1, quiet = false) {
+  async play(id, bus, volume = 1, quiet = false, placed = false) {
     if (!this.context || this.disposed || !id) return null;
     const definition = this.world.sounds?.[id];
     if (!definition) {
@@ -261,8 +261,14 @@ export class SoundEngine {
       : definition.src;
     const buffer = src ? await this.buffer(src, quiet) : null;
     if (this.disposed || (definition.src && !buffer)) return null;
+    // Placed voices use an HRTF panner in front of the listener where supported.
+    const panner = placed && c.createPanner?.();
     const output = c.createGain(),
-      pan = c.createStereoPanner();
+      pan = panner?.positionX ? panner : c.createStereoPanner();
+    if (pan === panner) {
+      pan.panningModel = "HRTF";
+      pan.positionZ.value = -1;
+    }
     const envelope = c.createGain(),
       fade = c.createGain();
     const source = c.createBufferSource();
@@ -383,18 +389,20 @@ export class SoundEngine {
         (entry) => {
           const slot = { entry, voice: null, retired: false };
           // Start silently, including files whose decode finishes after a room change.
-          this.play(entry.sound, this.ambience, 0).then((voice) => {
-            if (!voice) return;
-            if (slot.retired || this.disposed) {
-              voice.source.stop();
-              return;
-            }
-            slot.voice = voice;
-            voice.fade.gain.value = 0;
-            this.ramp(voice.fade.gain, 1, 1);
-            voice.level = voice.definition.volume ?? 1;
-            this.position(slot, game);
-          });
+          this.play(entry.sound, this.ambience, 0, false, !!entry.at).then(
+            (voice) => {
+              if (!voice) return;
+              if (slot.retired || this.disposed) {
+                voice.source.stop();
+                return;
+              }
+              slot.voice = voice;
+              voice.fade.gain.value = 0;
+              this.ramp(voice.fade.gain, 1, 1);
+              voice.level = voice.definition.volume ?? 1;
+              this.position(slot, game);
+            },
+          );
           return slot;
         },
       );
@@ -456,7 +464,12 @@ export class SoundEngine {
       slot.target = target;
     }
     if (slot.pan !== spatial.pan) {
-      this.ramp(voice.pan.pan, spatial.pan);
+      // Pan -1 to 1 turns the source from the left ear, through the front, to the right.
+      const azimuth = (spatial.pan * Math.PI) / 2;
+      if (voice.pan.positionX) {
+        this.ramp(voice.pan.positionX, Math.sin(azimuth));
+        this.ramp(voice.pan.positionZ, -Math.cos(azimuth));
+      } else this.ramp(voice.pan.pan, spatial.pan);
       slot.pan = spatial.pan;
     }
   }

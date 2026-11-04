@@ -205,7 +205,7 @@ Position, lamp state, time overrides, room actors and mute are not stored.
 
 ## Sound and accessibility
 
-Start creates and resumes the audio context during the button gesture. World sound definitions select noise generators or audio files; files decode once per URL. Ambience follows room and time, cross-fades over one second, pans towards named objects and can follow a lamp's fade level.
+Start creates and resumes the audio context during the button gesture. World sound definitions select noise generators or audio files; files decode once per URL. Ambience follows room and time, cross-fades over one second, comes from the direction of named objects and can follow a lamp's fade level. Loops tied to an object go through an HRTF panner in front of the listener, so on headphones they sound left or right of the visitor; browsers without panner position params get a plain stereo pan.
 
 Effects cover foot contacts, page turns, books, switches, menus, doors and time/lantern changes. The reader lowers ambience and effects to 25%; mute lasts only for the instance.
 
