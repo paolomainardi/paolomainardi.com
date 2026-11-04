@@ -13,7 +13,14 @@ series_part = 4
 
 ## TL;DR
 
-This site can now be browsed as a **point-and-click adventure** in the style of the LucasArts games of the 90s. A visitor walks a small island, opens **topic books** to read posts, takes notes from a **notice board** to follow links and finds the about page as a **letter** in a lighthouse. You can [play it here](/play/) on a desktop browser. Click to walk, pick a verb such as Look at or Open in the panel, and use the folded map in your pocket to travel.
+This site can now be browsed as a **point-and-click adventure** in the style of the LucasArts games of the 90s. A visitor walks a small island, opens **topic books** to read posts, takes notes from a **notice board** to follow links and finds the about page as a **letter** in a lighthouse. You can [play it here](/play/) on a desktop browser.
+
+{{< notice tip "How to play" >}}
+- **Click** a spot to walk there, or a book or paper to open it.
+- **Pick a verb** in the panel (Look at, Open, Use, Take, Talk to), then click an object. A right click shows an object's actions.
+- **The folded map** in your pocket takes you anywhere on the island.
+- **T** switches between night and dusk, **M** mutes the sound and **Esc** closes a book or a page.
+{{< /notice >}}
 
 It is built with **[Claude](https://www.anthropic.com/claude)** and **[Codex](https://openai.com/codex/)**, and the voice comes from **[ElevenLabs](https://elevenlabs.io/)**.
 
