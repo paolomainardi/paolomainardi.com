@@ -815,10 +815,8 @@ export async function startSession({
     on(canvas, "click", (event) => {
       if (game.loading || game.transition) return;
       enterSpeech();
-      if (speech.active()) {
-        speech.clear();
-        return;
-      }
+      // A click cuts the current line short and still does what was clicked.
+      if (speech.active()) speech.clear();
       const pocket =
         (game.activeBook || game.activeBoard || game.readerItem) &&
         footerLayout(game).pocket.find((rect) => inside(rect, ...point(event)));

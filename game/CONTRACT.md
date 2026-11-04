@@ -459,7 +459,7 @@ Recordings load only when said and decode once per resolved URL per instance. Mi
 
 Subtitles stay visible while audio loads and until it ends. Without audio they stay for `max(3.5, text.length × 0.055)` seconds, starting after a failed load resolves. Long subtitles wrap without truncation above the character, inside the frame. Maps centre subtitles; close-ups show them in the bottom bar.
 
-A frame click skips the current line, stops audio, clears its subtitle, and performs no other action. A secondary click also skips. Page dragging cannot begin during a line. Room entry speech starts after fade-in before a frame click can act.
+A frame click skips the current line, stops audio and clears its subtitle, then acts as a normal click. A secondary click only skips. Page dragging cannot begin during a line. Room entry speech starts after fade-in before a frame click can act.
 
 The voice bus connects directly to master. While a recording plays, ambience and effects duck to 0.5 (about 6 dB). Reader ducking multiplies this level. Voice gain uses `mix.voice`, default 1; M and the sound label mute every bus through master. M never skips a line.
 

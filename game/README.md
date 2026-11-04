@@ -199,7 +199,7 @@ Voice lines live in `world.voices`. Rooms use `enter` for a first-visit line and
 
 Each line shows a subtitle and plays its optional recording. Subtitles use the book’s NF-Pixels body font in the original case. Balanced rows fit within 200 game pixels and about 34 characters. Warm pale gold text has a one-pixel dark outline in all eight directions, with no background box and binary alpha. Set `world.speech` to a `#rrggbb` colour to override the default `#feeab3`.
 
-The block sits above the character’s head, falls below it when there is no room above, and stays inside the frame above the panel. Maps centre the block. Books, boards and readers keep speech in the bottom bar with the same font and case. Subtitles last until audio ends, or for reading time without audio. Click the frame to skip a line; that click performs no action. A new line stops the previous one.
+The block sits above the character’s head, falls below it when there is no room above, and stays inside the frame above the panel. Maps centre the block. Books, boards and readers keep speech in the bottom bar with the same font and case. Subtitles last until audio ends, or for reading time without audio. A click on the frame cuts the line short and still does what was clicked; a right click only skips. A new line stops the previous one.
 
 Each recording is `dev/real/voices/<id>.mp3`, named by its voice id. A line without a file stays text only. Files load on first use and cache for the session; a failed file warns once. No recordings load at Start unless an entry line requests one.
 

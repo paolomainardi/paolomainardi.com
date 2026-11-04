@@ -2096,14 +2096,7 @@ rawEvent(voiceCanvas, "click", {
   clientY: lookVoice.y + 1,
 });
 assert.equal(rendered.speech, null, "Click skips text-only entry speech");
-assert.equal(rendered.verb, null, "Skip click cannot select a verb");
-assert.equal(rendered.path.length, 0);
-assert.equal(rendered.pending, null);
-rawEvent(voiceCanvas, "click", {
-  clientX: lookVoice.x + 1,
-  clientY: lookVoice.y + 1,
-});
-assert.equal(rendered.verb, "Look at");
+assert.equal(rendered.verb, "Look at", "The same click still picks the verb");
 const voiceWindow = rendered.room.items.find((item) => item.id === "window");
 const voicePixel = rendered.room.ids.findIndex(
   (id) => rendered.room.items[id] === voiceWindow,
