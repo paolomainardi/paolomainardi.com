@@ -1,7 +1,7 @@
 +++
 date = "2026-11-04T15:01:00+01:00"
 title = "This site is now also an island you can walk"
-description = "A 90s point-and-click adventure that browses this site: the island, the light, the walk, the sound and the voices."
+description = "A 90s point-and-click adventure that browses this site: the island, the intro, the light, the walk, the sound and the voices."
 slug = "this-site-is-now-an-island"
 tags = ["ai", "agents", "webgl", "games", "design"]
 featuredImage = "/images/posts/20-the-island/harbour.webp"
@@ -13,16 +13,21 @@ series_part = 4
 
 ## TL;DR
 
-This site can now be browsed as a **point-and-click adventure** in the style of the LucasArts games of the 90s. A visitor walks a small island, opens **topic books** to read posts, takes notes from a **notice board** to follow links and finds the about page as a **letter** in a lighthouse. You can [play it here](/play/) on a desktop browser.
+This site can now be browsed as a **point-and-click adventure** in the style of the LucasArts games of the 90s, called **The Context Island**. It opens with an **intro**, then a visitor walks a small island, opens **topic books** to read posts, takes notes from a **notice board** to follow links and finds the about page as a **letter** in a lighthouse, while **Rosa**, the harbour cat, has opinions about all of it. You can [play it here](/play/) on a desktop browser.
 
 {{< notice tip "How to play" >}}
 - **Click** a spot to walk there, or a book or paper to open it.
 - **Pick a verb** in the panel (Look at, Open, Use, Take, Talk to), then click an object. A right click shows an object's actions.
 - **The folded map** in your pocket takes you anywhere on the island.
 - **T** switches between night and dusk, **M** mutes the sound and **Esc** closes a book or a page.
+- **A click** skips the intro, and **R** replays it.
 {{< /notice >}}
 
-It is built with **[Claude](https://www.anthropic.com/claude)** and **[Codex](https://openai.com/codex/)**, and the voice comes from **[ElevenLabs](https://elevenlabs.io/)**.
+It is built with **[Claude](https://www.anthropic.com/claude)** and **[Codex](https://openai.com/codex/)**, and the voice, the sound effects and the music come from **[ElevenLabs](https://elevenlabs.io/)**.
+
+{{< notice note "Updated on 5 November 2026" >}}
+The island now has an intro, a cat called Rosa and recorded sound effects, and this post covers them.
+{{< /notice >}}
 
 ## Introduction
 
@@ -42,9 +47,33 @@ I came up with the idea on 1 November while I was out for a walk, and I dictated
 - Articles **readable** inside the game, rendered by the browser and not redrawn in pixels.
 - **Desktop only**, no mobile version for now.
 - An engine **configured by JSON**, kept separate from the site, so that one day it can work on any site, but without abstracting it too much in a prototype.
-- **Only Claude and Codex** as AI models, the rule I already had for the covers. The voices became the one exception.
+- **Only Claude and Codex** as AI models, the rule I already had for the covers. ElevenLabs, for the voices, the sounds and the music, became the one exception.
 
 The site and the game share only the build. Hugo writes a `content.json` with posts, links and pages, and the engine reads it together with a hand-written `world.json` and the room drawings. The whole game can be removed in a single change, and the site then builds byte for byte as before ([`docs/adventure.md`](https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/adventure.md)).
+
+## The intro
+
+A game has an intro, so the island got one too. I wanted it to feel like the little game we built, a 90s interactive adventure like Monkey Island, from the first frame.
+
+It plays after **Start**, in five shots of about 45 seconds in all, with the credits in a dark band at the bottom of the screen, as in the old games:
+
+- the **island map**, with "paolomainardi.com presents";
+- the **harbour**, where Rosa meows softly;
+- a **workshop** where robots build the island under a glass dome, for the credits "Directed by Paolo Mainardi", "Built by Agents™" and "Powered by the L.A.M.P.™ engine" _(Lanterns, Agents, Markdown and Pixels)_;
+- the **fishermen**, dressed a bit like pirates, with a robot in a sou'wester, for "Voices and sounds by ElevenLabs" and "No fish were harmed in the making of this island";
+- the **lighthouse**, with the title.
+
+{{< figure src="/images/posts/20-the-island/intro-workshop.webp" caption="The workshop, where the agents build the island under a glass dome." >}}
+
+{{< figure src="/images/posts/20-the-island/intro-fishermen.webp" caption="The fishermen, with Rosa painted into the scene and a robot that took up fishing." >}}
+
+The workshop and the fishermen exist only in the intro. Codex drew them like every other room, and the engine plays them as rooms without the visitor or the panel, with the same lights and the same moving sea.
+
+The game also got a name, **The Context Island** _(a joke about context windows)_.
+
+{{< figure src="/images/posts/20-the-island/intro-title.webp" caption="The title card, over the lighthouse lamp." >}}
+
+The music comes from [ElevenLabs Music](https://elevenlabs.io/music), and the browser plays it **binaurally**, through two Web Audio HRTF panners that slowly drift around your head. Choosing it was just taste. Sound, like art in general, needs good prompts, and when you are not a musician it is hard to describe in words what the model should produce. Most of the takes I discarded were my poor wording, not the model.
 
 ## The island
 
@@ -53,13 +82,23 @@ The island is the world of the covers, the sea, the stone house, the lighthouses
 {{< figure src="/images/posts/20-the-island/study.webp" caption="The study at night. Each book on the shelf is a topic, and the laptop is still awake." >}}
 
 - The **study** in the stone house, where the bookshelf holds six topic books (Linux, AI, Docker, Security, Workstation and Personal). Each opens in a close-up with its table of contents, and the pages turn with a curl.
-- The **harbour**, where a **notice board** holds the links as pinned papers you can read, follow or take.
+- The **harbour**, where a **notice board** holds the links as pinned papers you can read, follow or take, and where **Rosa** walks the quay.
 - The **lighthouse**, where a **letter** on the desk is the about page and a **logbook** lists my talks.
 - The **island map**, which connects the three places.
 
 {{< figure src="/images/posts/20-the-island/harbour.webp" caption="The harbour. The notice board holds the links, and the signpost points to the rest of the island." >}}
 
 Articles open in a reader at the browser's own resolution, with the site's fonts, and every close-up shows which section of the site you are in, with a link to the normal page. The things you take go in the **inventory** and stay there on your next visit. It is the second thing on this site that uses the browser's storage, and **Forget** empties it.
+
+### Rosa
+
+**Rosa** is a tuxedo cat with a rose collar, the mayor of the harbour. She wanders the quay, sits down when she likes, and meows now and then. You can look at her, pet her and talk to her, and the visitor always turns to face her first.
+
+Talking to her is a small joke from [Monkey Island 2](https://en.wikipedia.org/wiki/Monkey_Island_2:_LeChuck%27s_Revenge): she meows, and then her meows turn into words.
+
+> Meow. Mrrp… meow meow.
+>
+> About time. They all went up to the lighthouse… and nobody fed me.
 
 {{< figure src="/images/posts/20-the-island/lighthouse.webp" caption="The top of the lighthouse, where the letter and the logbook wait on the desk." >}}
 
@@ -77,11 +116,11 @@ The same harbour at dusk and at night. At night the street lamp, the door lanter
 
 ## The walk
 
-The character walked in a very unnatural way, and I said so.
+Making the character walk was the hardest part, every version looked unnatural. This is where I dove into the [ScummVM](https://github.com/scummvm/scummvm/blob/master/engines/scumm/actor.cpp) source, to see how the original engine moved a character, one fixed step per frame with separate limbs. It was far more complex than ours, so we tried other ways.
 
-Before touching anything, Claude **measured** the drawn frames. The foot on the ground jumped **36 pixels** in one frame and barely **6** in the next, and the head bobbed 10 pixels. The drawings could not be patched. It then read the [ScummVM](https://github.com/scummvm/scummvm/blob/master/engines/scumm/actor.cpp) source to see how the original engine moved a character, one fixed step per frame with separate limbs. It also studied the Curse of Monkey Island sprites I had found, as a reference only, and none of them ships in the game.
+First we **measured** the drawn frames. The foot on the ground jumped **36 pixels** in one frame and barely **6** in the next, and the head bobbed 10 pixels, so the drawings could not be patched. I also found the Curse of Monkey Island sprites, which we studied as a reference only, and none of them ships in the game.
 
-Then it proposed to stop drawing frames one by one, and to build a **cut-out puppet** moved by recorded human walking data. I did not even imagine that scenario, it was absurdly complex for me, but not for the agents, and it surprised me more than anything else in this project. Claude wrote the rig in Python without Codex. It cuts the legs from a standing pose and moves them with textbook gait curves instead of recordings, in **12 frames** that each move the foot the same **11.3 pixels**.
+Then Claude proposed to stop drawing frames one by one, and to build a **cut-out puppet** moved by recorded human walking data. I did not even imagine that scenario, it was absurdly complex for me, but not for the agents, and it surprised me more than anything else in this project. Claude wrote the rig in Python without Codex. It cuts the legs from a standing pose and moves them with textbook gait curves instead of recordings, in **12 frames** that each move the foot the same **11.3 pixels**.
 
 {{< chart type="bar" data="walk.csv" y="frame" x="px" facet="walk" unit="px" axis="Pixels the planted foot moves in each frame, equal is better" >}}
 The planted foot in four frames of the side walk, in the drawn frames and in the cut-out rig.
@@ -91,15 +130,17 @@ Later the same rig gained the arm swing, a small bob and the front and back walk
 
 ## Sound and voices
 
-The **sea**, the **wind**, the lamp crackle and the page turns are synthesized in the browser with Web Audio. They change with the room and the time of day and they pan towards what makes them. The footsteps are three [CC0 recordings](https://opengameart.org/node/5701) of steps on wood by TinyWorlds, played when a foot touches the ground.
+The first version synthesized every sound in the browser with Web Audio. ElevenLabs can also produce sound effects, so we tested that too, to get the exact sounds we needed, as part of the same experiment. The doors, the books, the lamps, the papers, Rosa's meows and purr and the ambience of the harbour and the lighthouse are now [ElevenLabs Sound Effects](https://elevenlabs.io/sound-effects).
 
-Claude cannot hear, so I listened to every sound and every voice myself. The visitor speaks **43 lines**, a thought on entering each place, a line for most things you look at and the short replies of the game. Claude wrote the script, with some mystery, some curiosity and a bit of irony, as in the study.
+The **sea**, the **wind** and the flames are still synthesized. They change with the room and the time of day and they pan towards what makes them. The footsteps are three [CC0 recordings](https://opengameart.org/node/5701) of steps on wood by TinyWorlds, played when a foot touches the ground.
+
+Claude cannot hear, so I listened to every sound and every voice myself. The visitor speaks **49 lines**, a thought on entering each place, a line for most things you look at, his answers to Rosa and the short replies of the game. Claude wrote the script, with some mystery, some curiosity and a bit of irony, as in the study.
 
 > Hello…? The lamp is still warm. Whoever lives here left a moment ago. Or maybe… they never really left.
 
 The issue with AI generated voices is expression. I asked for pauses, emotions and sounds like "mmmh", but they were added to every line and it became unnatural again. In the end only nine lines keep a hesitation.
 
-While I was writing this post, ElevenLabs released **Eleven v4**, which follows those tags much more closely. The first takes were whispering too much, because v4 took every "softly" literally. With lighter tags I really loved it, so all 43 lines are now recorded with v4.
+While I was writing this post, ElevenLabs released **Eleven v4**, which follows those tags much more closely. The first takes were whispering too much, because v4 took every "softly" literally. With lighter tags I really loved it, so every line is now recorded with v4.
 
 I chose the voice, **Will**, by taste, because it resembled the character we built and it worked better with a bit of irony. You can [listen to the study](/play/data/voices/study-enter.mp3) and to [the laptop](/play/data/voices/study-laptop.mp3).
 
