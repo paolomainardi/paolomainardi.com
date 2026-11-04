@@ -953,7 +953,10 @@ void main(){color=vec4(texture(uImage,uv).rgb,uAlpha);}`);
     // The intro keeps the panel band dark, like a film's credit strip, and
     // dims the scene behind the title card.
     if (game.intro) {
-      const credit = game.intro.text(game.world.title);
+      const credit = game.intro.text(
+        game.world.title,
+        !!this.motionPreference?.matches,
+      );
       if (credit?.title)
         this.rect(0, 0, game.room.size[0], game.verbTop, [
           0,

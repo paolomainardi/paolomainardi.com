@@ -201,3 +201,19 @@ try {
 console.log(
   "Sound lifecycle, buses, mute, ducking, spatial gain, lamps, fades, synths, events, contacts, decode caching and missing sounds passed.",
 );
+
+// Browsers without panner position params fall back to plain stereo music.
+const oldContext = new AudioContext();
+const createPanner = oldContext.createPanner.bind(oldContext);
+oldContext.createPanner = () => {
+  const node = createPanner();
+  delete node.positionX;
+  return node;
+};
+const oldAudio = new SoundEngine(
+  world,
+  "https://example.test/data/world.json",
+  oldContext,
+);
+oldAudio.start();
+assert.equal(oldAudio.music.connections[0], oldAudio.master);

@@ -2,6 +2,7 @@
 import { speechLayout } from "./speech.js";
 import { canTake } from "./inventory.js";
 import { boardText } from "./board.js";
+import { wrapText } from "./book.js";
 
 export class TextLayer {
   constructor(canvas) {
@@ -30,9 +31,6 @@ export class TextLayer {
       game.world.title,
       !!game.renderer.motionPreference?.matches,
     );
-    key[20] = credit?.value;
-    key[21] = credit?.alpha;
-    key[22] = credit?.title;
     key[12] = game.speech;
     key[13] = speech?.top;
     key[14] = speech?.rows[0]?.x;
@@ -41,6 +39,9 @@ export class TextLayer {
     key[17] = game.sentenceNotice;
     key[18] = game.speechActor?.speech || game.world?.speech;
     key[19] = speech && !speech.footer ? game.actor.x : null;
+    key[20] = credit?.value;
+    key[21] = credit?.alpha;
+    key[22] = credit?.title;
     let changed = false;
     for (let i = 0; i < key.length; i++)
       if (key[i] !== this.key[i]) {
@@ -115,23 +116,14 @@ export class TextLayer {
         ? book.fonts.display || book.fonts.title
         : book.fonts.credit || book.fonts.body;
       // Credits sit in the dark band at the bottom; the title in the sky.
-      const words = credit.value.split(/\s+/);
-      const lines = [];
-      let line = "";
-      for (const word of words) {
-        const next = line ? line + " " + word : word;
-        if (line && font.measure(next) > width - 40) {
-          lines.push(line);
-          line = word;
-        } else line = next;
-      }
-      lines.push(line);
+      const lines = wrapText(font, credit.value, width - 40);
       const band = game.verbTop ?? height;
       const top = credit.title
         ? (band - lines.length * font.lineHeight) / 2
         : band + (height - band - lines.length * font.lineHeight) / 2;
       // The font draws ™ at full size, so it is set small and raised instead.
       const mark = book.fonts.body;
+      const markWidth = mark.measure("TM") + 1;
       const outlined = (f, value, x, y) => {
         for (let dy = -1; dy <= 1; dy++)
           for (let dx = -1; dx <= 1; dx++)
@@ -140,7 +132,6 @@ export class TextLayer {
       };
       lines.forEach((value, i) => {
         const parts = value.split("\u2122");
-        const markWidth = mark.measure("TM") + 1;
         const lineWidth =
           parts.reduce((sum, part) => sum + font.measure(part), 0) +
           (parts.length - 1) * markWidth;

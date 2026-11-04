@@ -19,6 +19,7 @@ const config = {
   ],
 };
 const world = {
+  title: "Title",
   intro: config,
   rooms: { map: {}, harbour: {} },
   sounds: { theme: { src: "theme.mp3" } },
@@ -38,6 +39,8 @@ for (const change of [
 ])
   assert.throws(() => validateIntro({ ...world, intro: change }));
 assert.throws(() => validateIntro({ ...world, mix: { music: -1 } }));
+// A title shot needs a world title to draw.
+assert.throws(() => validateIntro({ ...world, title: undefined }));
 assert.throws(() =>
   validateIntro({ ...world, sounds: { theme: { src: "file", loop: true } } }),
 );

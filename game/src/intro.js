@@ -30,6 +30,7 @@ export function validateIntro(world) {
       !Array.isArray(shot.lines) ||
       !shot.lines.every((line) => typeof line === "string") ||
       (shot.title !== undefined && typeof shot.title !== "boolean") ||
+      (shot.title && typeof world.title !== "string") ||
       (shot.sounds !== undefined &&
         (!Array.isArray(shot.sounds) ||
           !shot.sounds.every(
