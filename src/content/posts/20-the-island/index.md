@@ -49,11 +49,11 @@ I came up with the idea on 1 November while I was out for a walk, and I dictated
 - An engine **configured by JSON**, kept separate from the site, so that one day it can work on any site, but without abstracting it too much in a prototype.
 - **Only Claude and Codex** as AI models, the rule I already had for the covers. ElevenLabs, for the voices, the sounds and the music, became the one exception.
 
-The site and the game share only the build. Hugo writes a `content.json` with posts, links and pages, and the engine reads it together with a hand-written `world.json` and the room drawings. The whole game can be removed in a single change, and the site then builds byte for byte as before ([`docs/adventure.md`](https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/adventure.md)).
+The site and the game share only the build. Hugo writes a [`content.json`](https://github.com/paolomainardi/paolomainardi.com/blob/main/src/themes/large-print/layouts/play/list.adventure.json) with posts, links and pages, and the engine reads it together with a hand-written [`world.json`](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/dev/real/world.json) and the room drawings. The whole game can be removed in a single change, and the site then builds byte for byte as before ([`docs/adventure.md`](https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/adventure.md)).
 
 ## The intro
 
-The intro is only data. `world.json` lists its **shots**, each with a room, a time of day, a duration, its credit lines and optional sound cues, plus the music that plays under all of them.
+The intro is only data. [`world.json`](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/dev/real/world.json) lists its **shots**, each with a room, a time of day, a duration, its credit lines and optional sound cues, plus the music that plays under all of them.
 
 The engine plays each shot as a room without the visitor or the panel, with the same lights and the same moving sea, and cross-fades from one shot to the next. Each credit line gets an equal part of its shot and fades in and out, drawn with the book's pixel font in a dark band at the bottom of the screen.
 
