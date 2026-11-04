@@ -56,7 +56,7 @@ The site world keeps game navigation separate from content production. Books hav
 
 Run the engine suites and browser checks from `game/`, following its README. Build Hugo to check the module mounts, bundled engine, content feed and reader templates together. Browser checks must cover `/play/` as well as the standalone demo when site integration changes.
 
-Only inventory persists, in browser key `adventure.inventory`. It contains current book and notice ids, validated on Start. The in-game Forget control removes it. Room position, time overrides, lamp switches and mute do not persist.
+Two browser keys persist. `adventure.inventory` holds current book and notice ids, validated on Start, and the in-game Forget control removes it. `adventure.visited` lists the rooms already entered, so a room's entry line plays only on the first visit ever. Room position, time overrides, lamp switches and mute do not persist.
 
 ## Removing the adventure
 

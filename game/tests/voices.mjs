@@ -132,10 +132,43 @@ try {
     "Each room has its own first entry",
   );
   speech.clear();
+  // Without browser storage a new visit speaks again.
   const nextVisit = new Speech(game, live);
   nextVisit.enter();
   await flush();
   assert(nextVisit.active(), "A new session speaks again");
+  nextVisit.clear();
+  // With storage, a room entered on an earlier visit stays quiet.
+  const store = new Map();
+  const oldStorage = Object.getOwnPropertyDescriptor(
+    globalThis,
+    "localStorage",
+  );
+  Object.defineProperty(globalThis, "localStorage", {
+    configurable: true,
+    value: {
+      getItem: (key) => store.get(key) ?? null,
+      setItem: (key, value) => store.set(key, String(value)),
+    },
+  });
+  try {
+    const firstVisit = new Speech(game, live);
+    firstVisit.enter();
+    await flush();
+    assert(firstVisit.active(), "The first visit speaks");
+    firstVisit.clear();
+    assert.deepEqual(JSON.parse(store.get("adventure.visited")), [
+      game.room.id,
+    ]);
+    const laterVisit = new Speech(game, live);
+    laterVisit.enter();
+    await flush();
+    assert(!laterVisit.active(), "A later visit does not repeat the entry");
+  } finally {
+    if (oldStorage)
+      Object.defineProperty(globalThis, "localStorage", oldStorage);
+    else delete globalThis.localStorage;
+  }
   sound.destroy();
   assert.equal(sound.spoken, null);
   assert.equal(sound.context.state, "closed");

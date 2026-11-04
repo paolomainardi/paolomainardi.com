@@ -108,6 +108,15 @@ export class Speech {
     this.game = game;
     this.live = live;
     this.visited = new Set();
+    // Rooms keep their entry line said across visits to the site.
+    try {
+      const saved = JSON.parse(
+        globalThis.localStorage.getItem("adventure.visited"),
+      );
+      if (Array.isArray(saved))
+        for (const id of saved)
+          if (typeof id === "string") this.visited.add(id);
+    } catch {}
     this.line = null;
   }
 
@@ -157,6 +166,12 @@ export class Speech {
     const room = this.game.room;
     if (this.visited.has(room.id)) return;
     this.visited.add(room.id);
+    try {
+      globalThis.localStorage.setItem(
+        "adventure.visited",
+        JSON.stringify([...this.visited]),
+      );
+    } catch {}
     this.say(null, room.config.enter);
   }
 }
