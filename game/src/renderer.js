@@ -950,6 +950,15 @@ void main(){color=vec4(texture(uImage,uv).rgb,uAlpha);}`);
     const pixelScale = game.pixelScale;
     if (!game.intro && !game.inventoryNote && !game.readerItem)
       this.renderPanel(game);
+    // The intro keeps the panel band dark, like a film's credit strip.
+    if (game.intro)
+      this.rect(
+        0,
+        game.verbTop,
+        game.room.size[0],
+        game.room.size[1] - game.verbTop,
+        [0, 0, 0, 1],
+      );
     if (game.menu) this.renderMenu(game);
     gl.disable(gl.BLEND);
     this.into(this.glow[2]);

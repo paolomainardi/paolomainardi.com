@@ -111,8 +111,10 @@ export class TextLayer {
         text(line.font, line.value, line.x, line.y, line.color);
     }
     if (credit) {
-      const font = credit.title ? book.fonts.title : book.fonts.body;
-      // Wrap credits to the frame, keeping the title in the centre and lines below.
+      const font = credit.title
+        ? book.fonts.display || book.fonts.title
+        : book.fonts.credit || book.fonts.body;
+      // Credits sit in the dark band at the bottom; the title in the sky.
       const words = credit.value.split(/\s+/);
       const lines = [];
       let line = "";
@@ -124,9 +126,10 @@ export class TextLayer {
         } else line = next;
       }
       lines.push(line);
-      const top =
-        (credit.title ? height / 2 : height * 0.75) -
-        (lines.length * font.lineHeight) / 2;
+      const band = game.verbTop ?? height;
+      const top = credit.title
+        ? 24
+        : band + (height - band - lines.length * font.lineHeight) / 2;
       lines.forEach((value, i) => {
         const x = (width - font.measure(value)) / 2;
         const y = top + i * font.lineHeight;

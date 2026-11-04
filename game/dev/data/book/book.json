@@ -35,7 +35,9 @@
   "sizes": {
     "title": 20,
     "body": 10,
-    "label": 10
+    "label": 10,
+    "credit": 20,
+    "display": 40
   },
   "curl": {
     "image": "curl.png",
