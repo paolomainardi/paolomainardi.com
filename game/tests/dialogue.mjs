@@ -115,8 +115,11 @@ for (let i = 0; i < 4; i++) {
   assert.equal(game.speech, null);
   assert.equal(actor.held, false);
 }
-// Each exchange chatters twice: the meows, then while her words show.
-assert.deepEqual(sounds, Array(8).fill(actor.chatter));
+// Each exchange: chatter under the meows, a different chatter under her words, a meow to close.
+assert.deepEqual(
+  sounds,
+  Array(4).fill([actor.chatter, actor.chatterWords, actor.meow]).flat(),
+);
 advance(5);
 advance(0.1);
 assert.equal(actor.animation, "walk-side", "Wandering resumes");

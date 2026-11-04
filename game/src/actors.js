@@ -31,8 +31,9 @@ export function validateActors(configs, world, room) {
       !Object.hasOwn(world.sounds || {}, actor.sound) ||
       (actor.meow !== undefined &&
         !Object.hasOwn(world.sounds || {}, actor.meow)) ||
-      (actor.chatter !== undefined &&
-        !Object.hasOwn(world.sounds || {}, actor.chatter)) ||
+      [actor.chatter, actor.chatterWords].some(
+        (id) => id !== undefined && !Object.hasOwn(world.sounds || {}, id),
+      ) ||
       (actor.name !== undefined &&
         (typeof actor.name !== "string" || !actor.name.trim())) ||
       (actor.speech !== undefined &&

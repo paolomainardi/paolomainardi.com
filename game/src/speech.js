@@ -201,19 +201,21 @@ export class Speech {
     if (!conversation) return;
     const { actor, exchange } = conversation;
     conversation.step++;
+    const play = (id) =>
+      id && this.game.sound.play(id, this.game.sound.effects);
     if (conversation.step === 0) {
       // A talking cat chatters for longer than a single meow.
-      const sound = actor.chatter || actor.meow;
       this.say(exchange.meow, null, actor, actor.chatter ? 4 : 1.6);
-      if (sound) this.game.sound.play(sound, this.game.sound.effects);
+      play(actor.chatter || actor.meow);
     } else if (conversation.step === 1) {
-      // She keeps chattering while the visitor reads what she means.
+      // She keeps chattering, differently, while the visitor reads her words.
       this.say(exchange.words, null, actor);
-      if (actor.chatter)
-        this.game.sound.play(actor.chatter, this.game.sound.effects);
+      play(actor.chatterWords || actor.chatter);
     } else if (conversation.step === 2) this.say(null, exchange.reply);
-    else if (conversation.step === 3) this.say(exchange.end, null, actor, 1.2);
-    else this.clear();
+    else if (conversation.step === 3) {
+      this.say(exchange.end, null, actor, 1.2);
+      play(actor.meow);
+    } else this.clear();
   }
 
   update() {
