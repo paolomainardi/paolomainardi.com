@@ -1,0 +1,54 @@
+{
+  "name": "workshop",
+  "size": [
+    640,
+    360
+  ],
+  "albedo": "albedo.png",
+  "map": true,
+  "states": {
+    "dusk": {
+      "unlit": "night-unlit.png",
+      "lights": {
+        "left-pendant": "night-left-pendant.png",
+        "right-pendant": "night-right-pendant.png",
+        "lantern": "night-lantern.png"
+      }
+    },
+    "night": {
+      "unlit": "night-unlit.png",
+      "lights": {
+        "left-pendant": "night-left-pendant.png",
+        "right-pendant": "night-right-pendant.png",
+        "lantern": "night-lantern.png"
+      }
+    }
+  },
+  "objects": "objects.png",
+  "items": [
+    {
+      "id": "left-pendant",
+      "kind": "light",
+      "color": "#ffff00",
+      "label": "Left pendant",
+      "light": "pendant",
+      "tint": "#fdd08e"
+    },
+    {
+      "id": "right-pendant",
+      "kind": "light",
+      "color": "#ffc000",
+      "label": "Right pendant",
+      "light": "pendant",
+      "tint": "#fdd08e"
+    },
+    {
+      "id": "lantern",
+      "kind": "light",
+      "color": "#ff8000",
+      "label": "Lantern",
+      "light": "oil",
+      "tint": "#fdd08e"
+    }
+  ]
+}

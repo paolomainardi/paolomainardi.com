@@ -26,11 +26,19 @@ const game = await boot({
 });
 ```
 
-`boot` mounts the title screen and returns a controller. `game.state` is `null` until loading finishes after Start. `game.ready` is `null` before Start, then a promise that resolves when the game starts or rejects on a load error.
+`boot` mounts the title screen and returns a controller. `game.state` is `null` until loading finishes after Start. `game.ready` is `null` before Start, then a promise that resolves when the first scene is ready or rejects on a load error.
 
 `game.destroy()` removes the game, its stylesheet and listeners, stops audio, and releases the WebGL context.
 
 URLs resolve against the document base URL. See [CONTRACT.md](CONTRACT.md) for the data format.
+
+## Opening credits
+
+A world can play an intro after either Start button. Living room scenes show sequential credits in the book font, without the visitor or panel. Shots cross-fade over 0.8 seconds; the last scene waits for input. Click, Escape or Enter starts play and fades the theme out over one second. M mutes every bus, including music. Reduced motion keeps the same shot and credit order without fades.
+
+The supplied worlds include an intro. A missing theme file stays silent.
+
+Worlds without `intro` start immediately. Saved hash destinations still restore after the intro. `game.ready` resolves when the first intro scene is ready, or when play starts without an intro. `game.state.intro` is the zero-based shot index during the intro and `null` during play; `position` is `null` during the intro.
 
 ## Module map
 
@@ -55,6 +63,7 @@ URLs resolve against the document base URL. See [CONTRACT.md](CONTRACT.md) for t
 | `src/route.js`       | Hash parsing, shared route targets and hash writing.                                  |
 | `src/inventory.js`   | Permanent pocket items, inventory restoration, persistence, Forget and notice copies. |
 | `src/catalogue.js`   | Accessible catalogue, safe site paths and new-tab links.                              |
+| `src/intro.js`       | Intro configuration validation, shot timing and credit fades.                         |
 | `src/sound.js`       | Audio buses, generators, file decoding, ambience and effects.                         |
 | `src/style.css`      | Container, title, reader dialog and hidden accessible content.                        |
 

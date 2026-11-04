@@ -234,6 +234,10 @@
         "harbour": "map-harbour",
         "lighthouse": "map-lighthouse"
       }
+    },
+    "workshop": {
+      "src": "rooms/workshop/room.json",
+      "books": []
     }
   },
   "book": "book/book.json",
@@ -386,6 +390,9 @@
     "chatter-end": {
       "src": "sounds/chatter-2.mp3",
       "volume": 0.8
+    },
+    "theme": {
+      "src": "sounds/theme.mp3"
     }
   },
   "events": {
@@ -404,7 +411,8 @@
     "master": 0.5,
     "ambience": 0.8,
     "effects": 1.0,
-    "voice": 1
+    "voice": 1,
+    "music": 0.7
   },
   "boards": {
     "links": {
@@ -623,5 +631,45 @@
       "to": "map",
       "look": "pocket-map"
     }
-  ]
+  ],
+  "intro": {
+    "music": "theme",
+    "shots": [
+      {
+        "room": "map",
+        "time": "night",
+        "seconds": 7,
+        "lines": [
+          "paolomainardi.com presents"
+        ]
+      },
+      {
+        "room": "harbour",
+        "time": "night",
+        "seconds": 8,
+        "lines": [
+          "An island made of posts, links and lamps"
+        ]
+      },
+      {
+        "room": "workshop",
+        "time": "night",
+        "seconds": 9,
+        "lines": [
+          "Directed by Paolo Mainardi",
+          "Built by agents",
+          "Voices and sounds by ElevenLabs"
+        ]
+      },
+      {
+        "room": "lighthouse",
+        "time": "night",
+        "seconds": 7,
+        "title": true,
+        "lines": [
+          "Click to begin"
+        ]
+      }
+    ]
+  }
 }

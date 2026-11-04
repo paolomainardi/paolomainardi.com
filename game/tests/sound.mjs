@@ -31,6 +31,21 @@ assert.equal(
 );
 audio.start();
 assert.equal(audio.context.state, "running");
+// Music reaches master through two HRTF speakers, left and right, drifting.
+const split = audio.music.connections[0];
+const panners = split.connections;
+assert.equal(panners.length, 2);
+assert(panners.every((panner) => panner.panningModel === "HRTF"));
+assert(panners[0].positionX.value < 0 && panners[1].positionX.value > 0);
+assert(panners.every((panner) => panner.connections[0] === audio.master));
+assert(
+  audio.context.nodes.some(
+    (node) =>
+      node.started &&
+      node.connections[0]?.connections[0] === panners[0].positionX,
+  ),
+  "a slow oscillator drifts the left speaker",
+);
 assert.equal(audio.master.gain.value, 0.5);
 assert.equal(audio.ambience.gain.value, 0.8);
 assert.equal(audio.effects.gain.value, 1);

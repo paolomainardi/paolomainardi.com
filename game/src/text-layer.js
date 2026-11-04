@@ -25,7 +25,14 @@ export class TextLayer {
     key[9] = game.menu?.selected;
     key[10] = width;
     key[11] = height;
-    const speech = speechLayout(game);
+    const speech = game.intro ? null : speechLayout(game);
+    const credit = game.intro?.text(
+      game.world.title,
+      !!game.renderer.motionPreference?.matches,
+    );
+    key[20] = credit?.value;
+    key[21] = credit?.alpha;
+    key[22] = credit?.title;
     key[12] = game.speech;
     key[13] = speech?.top;
     key[14] = speech?.rows[0]?.x;
@@ -103,6 +110,32 @@ export class TextLayer {
       ))
         text(line.font, line.value, line.x, line.y, line.color);
     }
+    if (credit) {
+      const font = credit.title ? book.fonts.title : book.fonts.body;
+      // Wrap credits to the frame, keeping the title in the centre and lines below.
+      const words = credit.value.split(/\s+/);
+      const lines = [];
+      let line = "";
+      for (const word of words) {
+        const next = line ? line + " " + word : word;
+        if (line && font.measure(next) > width - 40) {
+          lines.push(line);
+          line = word;
+        } else line = next;
+      }
+      lines.push(line);
+      const top =
+        (credit.title ? height / 2 : height * 0.75) -
+        (lines.length * font.lineHeight) / 2;
+      lines.forEach((value, i) => {
+        const x = (width - font.measure(value)) / 2;
+        const y = top + i * font.lineHeight;
+        for (let dy = -1; dy <= 1; dy++)
+          for (let dx = -1; dx <= 1; dx++)
+            if (dx || dy) text(font, value, x + dx, y + dy, "#1e1b17");
+        text(font, value, x, y, game.world.speech || "#feeab3");
+      });
+    }
     if (speech) {
       for (const row of speech.rows) {
         for (let dy = -1; dy <= 1; dy++)
@@ -135,7 +168,8 @@ export class TextLayer {
     }
     const pixels = ctx.getImageData(0, 0, width, height);
     for (let i = 3; i < pixels.data.length; i += 4)
-      pixels.data[i] = pixels.data[i] >= 128 ? 255 : 0;
+      pixels.data[i] =
+        pixels.data[i] >= 128 ? Math.round(255 * (credit?.alpha ?? 1)) : 0;
     ctx.putImageData(pixels, 0, 0);
     return true;
   }

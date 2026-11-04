@@ -62,6 +62,9 @@ export class SoundEngine {
       this.duck = c.createGain();
       this.ambience = c.createGain();
       this.effects = c.createGain();
+      this.music = c.createGain();
+      this.music.gain.value = this.world.mix?.music ?? 0.7;
+      this.music.connect(this.binaural(c) || this.master);
       this.voice = c.createGain();
       this.voice.gain.value = this.world.mix?.voice ?? 1;
       this.voice.connect(this.master);
@@ -82,6 +85,29 @@ export class SoundEngine {
     if (!this.context || this.disposed) return;
     const result = hidden ? this.context.suspend() : this.context.resume();
     result?.catch((error) => this.warn("audio context", error));
+  }
+
+  // Two virtual speakers before the listener, drifting slowly: binaural on headphones.
+  binaural(c) {
+    if (!c.createPanner || !c.createChannelSplitter || !c.createOscillator)
+      return null;
+    const split = c.createChannelSplitter(2);
+    [-1, 1].forEach((side, channel) => {
+      const panner = c.createPanner();
+      panner.panningModel = "HRTF";
+      panner.positionX.value = side * Math.sin(0.7);
+      panner.positionZ.value = -Math.cos(0.7);
+      const drift = c.createOscillator(),
+        depth = c.createGain();
+      drift.frequency.value = 0.04;
+      depth.gain.value = side * 0.25;
+      drift.connect(depth);
+      depth.connect(panner.positionX);
+      drift.start();
+      split.connect(panner, channel);
+      panner.connect(this.master);
+    });
+    return split;
   }
 
   // iOS interrupts audio on lock or calls and only resumes it from a gesture.
@@ -165,7 +191,25 @@ export class SoundEngine {
     }
   }
 
-  buffer(src) {
+  async playMusic(id) {
+    const token = (this.musicToken = {});
+    const voice = await this.play(id, this.music, 1, true);
+    if (this.musicToken !== token || this.disposed) {
+      voice?.source.stop();
+      return;
+    }
+    this.musicVoice = voice;
+  }
+
+  stopMusic() {
+    this.musicToken = null;
+    if (!this.musicVoice || this.disposed) return;
+    this.ramp(this.musicVoice.fade.gain, 0, 1);
+    this.musicVoice.source.stop(this.context.currentTime + 1);
+    this.musicVoice = null;
+  }
+
+  buffer(src, quiet = false) {
     let url;
     try {
       url = resolve(src, this.url);
@@ -183,7 +227,7 @@ export class SoundEngine {
           })
           .then((bytes) => this.context.decodeAudioData(bytes))
           .catch((error) => {
-            this.warn(url, error);
+            if (!quiet) this.warn(url, error);
             return null;
           }),
       );
@@ -191,7 +235,7 @@ export class SoundEngine {
     return this.buffers.get(url);
   }
 
-  async play(id, bus, volume = 1) {
+  async play(id, bus, volume = 1, quiet = false) {
     if (!this.context || this.disposed || !id) return null;
     const definition = this.world.sounds?.[id];
     if (!definition) {
@@ -210,7 +254,7 @@ export class SoundEngine {
     const src = Array.isArray(definition.src)
       ? definition.src[Math.floor(Math.random() * definition.src.length)]
       : definition.src;
-    const buffer = src ? await this.buffer(src) : null;
+    const buffer = src ? await this.buffer(src, quiet) : null;
     if (this.disposed || (definition.src && !buffer)) return null;
     const output = c.createGain(),
       pan = c.createStereoPanner();

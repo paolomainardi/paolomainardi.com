@@ -34,6 +34,7 @@ import { findPath, nearestWalkable } from "./pathfinding.js";
 import { Speech } from "./speech.js";
 import { updateLamps, depth } from "./lighting.js";
 import { advanceActor, idleAnimation } from "./animation.js";
+import { Intro } from "./intro.js";
 import { SoundEngine } from "./sound.js";
 
 export async function startSession({
@@ -375,12 +376,51 @@ export async function startSession({
       speech.clear();
       game.sentenceNotice = null;
       bindRoom(game);
-      enterPending = true;
+      enterPending = !game.intro;
     }
     let initial = parseRoute(location.hash, game.world.start);
     if (!Object.hasOwn(game.world.rooms, initial.room))
       initial = { room: game.world.start, item: null };
-    await changeRoom(initial.room);
+    game.intro = game.world.intro ? new Intro(game.world.intro) : null;
+    await changeRoom(game.intro ? game.intro.shot.room : initial.room);
+    if (game.intro) {
+      game.time = game.intro.shot.time;
+      game.lantern = false;
+    }
+    async function nextIntroShot() {
+      const intro = game.intro;
+      game.loading = true;
+      if (!motionPreference?.matches) renderer.captureIntro();
+      game.intro.next();
+      try {
+        await changeRoom(game.intro.shot.room);
+        if (game.intro !== intro || lifecycle.disposed) return;
+        game.time = game.intro.shot.time;
+      } catch (error) {
+        if (game.intro) say(error.message);
+        await finishIntro();
+      } finally {
+        if (game.intro === intro) game.loading = false;
+      }
+    }
+    async function finishIntro() {
+      if (!game.intro) return;
+      game.intro = null;
+      game.loading = true;
+      game.sound.stopMusic();
+      game.time = "night";
+      game.lantern = true;
+      renderer.clearIntro();
+      try {
+        await changeRoom(initial.room);
+        if (lifecycle.disposed) return;
+        beginPlay();
+      } catch (error) {
+        live.textContent = error.message;
+      } finally {
+        game.loading = false;
+      }
+    }
     function fit() {
       const fit = renderer.resize(root.clientWidth, root.clientHeight);
       const [, height] = game.room.size;
@@ -430,6 +470,7 @@ export async function startSession({
       ];
     }
     on(canvas, "pointermove", (event) => {
+      if (game.intro) return;
       const pocket =
         (game.activeBook || game.activeBoard || game.readerItem) &&
         footerLayout(game).pocket.find((rect) => inside(rect, ...point(event)));
@@ -514,6 +555,10 @@ export async function startSession({
       game.panelHover = null;
     });
     on(root, "contextmenu", (event) => {
+      if (game.intro) {
+        event.preventDefault();
+        return;
+      }
       event.preventDefault();
       enterSpeech();
       if (game.conversation) {
@@ -781,6 +826,7 @@ export async function startSession({
     let suppressBookClick = false;
     let lastVerb = null;
     on(canvas, "pointerdown", (event) => {
+      if (game.intro) return;
       suppressBookClick = false;
       if (
         speech.active() ||
@@ -822,6 +868,10 @@ export async function startSession({
     on(canvas, "pointercancel", (event) => finishDrag(event, true));
     on(canvas, "lostpointercapture", (event) => finishDrag(event, true));
     on(canvas, "click", (event) => {
+      if (game.intro) {
+        finishIntro();
+        return;
+      }
       if (game.loading || game.transition) return;
       enterSpeech();
       if (game.conversation) {
@@ -987,10 +1037,22 @@ export async function startSession({
       )
         if (!game.room.map) walk([x, y], null, event.detail >= 2);
     });
+    on(root, "click", () => {
+      if (game.intro) finishIntro();
+    });
     on(document, "click", (event) => {
       if (game.menu && event.target !== canvas) chooseMenu(-1);
     });
     on(root, "keydown", (event) => {
+      if (game.intro) {
+        if (event.key.toLowerCase() === "m" && !event.repeat)
+          game.sound.toggleMute();
+        if (["Escape", "Enter"].includes(event.key)) {
+          event.preventDefault();
+          finishIntro();
+        }
+        return;
+      }
       if (game.readerItem || game.loading || game.transition) return;
       if (event.key.toLowerCase() === "m") {
         if (!event.repeat) game.sound.toggleMute();
@@ -1039,7 +1101,7 @@ export async function startSession({
       if (event.key.toLowerCase() === "g") game.bloom = !game.bloom;
     });
     async function restoreHash() {
-      if (lifecycle.disposed) return;
+      if (lifecycle.disposed || game.intro) return;
       const state = parseRoute(location.hash, game.world.start);
       if (!Object.hasOwn(game.world.rooms, state.room)) return;
       if (game.room.id !== state.room) {
@@ -1100,7 +1162,14 @@ export async function startSession({
             game.transition = null;
         }
       }
-      if (!game.loading) {
+      if (game.intro && !game.loading) {
+        game.elapsed += dt;
+        advanceActors(game, dt, !!motionPreference?.matches);
+        updateLamps(game, dt);
+        game.sound.update(game);
+        renderer.render(game);
+        if (game.intro.update(dt)) nextIntroShot();
+      } else if (!game.loading && !game.intro) {
         enterSpeech();
         if (!game.readerItem && game.activeBook && game.turning) {
           const turn = game.turning;
@@ -1161,13 +1230,18 @@ export async function startSession({
     game.sound.update(game);
     cover.hidden = true;
     root.focus({ preventScroll: true });
-    const target = routeTarget(game, initial);
-    if (target.board) openBoard(target.board, initial.spread);
-    else if (target.book) openBook(target.book, initial.spread);
-    else if (target.item) openReader(target.item);
-    else writeHash(game);
-    enterPending = false;
-    speech.enter();
+    function beginPlay() {
+      const target = routeTarget(game, initial);
+      if (target.board) openBoard(target.board, initial.spread);
+      else if (target.book) openBook(target.book, initial.spread);
+      else if (target.item) openReader(target.item);
+      else writeHash(game);
+      enterPending = false;
+      speech.enter();
+    }
+    if (game.intro) {
+      if (game.world.intro.music) game.sound.playMusic(game.world.intro.music);
+    } else beginPlay();
     frame = requestAnimationFrame(tick);
     return {
       destroy() {
@@ -1179,6 +1253,7 @@ export async function startSession({
       },
       get state() {
         return {
+          intro: game.intro ? game.intro.index : null,
           room: game.room.id,
           time: game.time,
           lantern: game.lantern,
@@ -1189,7 +1264,8 @@ export async function startSession({
           note: game.activeBoard ? game.boardNote?.id || null : null,
           book: game.activeBook?.id || null,
           spread: game.activeBook ? game.spread : null,
-          position: game.room.map ? null : [game.actor.x, game.actor.y],
+          position:
+            game.intro || game.room.map ? null : [game.actor.x, game.actor.y],
           walking: game.path.length > 0,
           verb: game.verb,
           inventory: game.inventory.map(
