@@ -391,11 +391,11 @@ export async function startSession({
       const intro = game.intro;
       game.loading = true;
       if (!motionPreference?.matches) renderer.captureIntro();
-      game.intro.next();
+      intro.next();
       try {
-        await changeRoom(game.intro.shot.room);
+        await changeRoom(intro.shot.room);
         if (game.intro !== intro || lifecycle.disposed) return;
-        game.time = game.intro.shot.time;
+        game.time = intro.shot.time;
       } catch (error) {
         if (game.intro) say(error.message);
         await finishIntro();
@@ -413,8 +413,7 @@ export async function startSession({
         await changeRoom(intro.shot.room);
         if (game.intro !== intro || lifecycle.disposed) return;
         game.time = intro.shot.time;
-        if (game.world.intro.music)
-          game.sound.playMusic(game.world.intro.music);
+        game.sound.playMusic(game.world.intro.music);
       } finally {
         if (game.intro === intro) game.loading = false;
       }
@@ -571,11 +570,8 @@ export async function startSession({
       game.panelHover = null;
     });
     on(root, "contextmenu", (event) => {
-      if (game.intro) {
-        event.preventDefault();
-        return;
-      }
       event.preventDefault();
+      if (game.intro) return;
       enterSpeech();
       if (game.conversation) {
         speech.clear();
@@ -1195,7 +1191,7 @@ export async function startSession({
         for (const cue of game.intro.due)
           game.sound.play(cue.sound, game.sound.effects, cue.volume ?? 1);
         if (nextShot) nextIntroShot();
-      } else if (!game.loading && !game.intro) {
+      } else if (!game.loading) {
         enterSpeech();
         if (!game.readerItem && game.activeBook && game.turning) {
           const turn = game.turning;
@@ -1265,9 +1261,8 @@ export async function startSession({
       enterPending = false;
       speech.enter();
     }
-    if (game.intro) {
-      if (game.world.intro.music) game.sound.playMusic(game.world.intro.music);
-    } else beginPlay();
+    if (game.intro) game.sound.playMusic(game.world.intro.music);
+    else beginPlay();
     frame = requestAnimationFrame(tick);
     return {
       destroy() {
