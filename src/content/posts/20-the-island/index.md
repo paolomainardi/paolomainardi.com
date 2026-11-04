@@ -154,18 +154,6 @@ The visitor speaks **49 lines**, written by Claude and recorded with **[Eleven v
 
 The hard part of AI voices is expression. Tags for pauses and emotions ended up on every line and sounded unnatural, so only nine lines keep a hesitation, and v4 follows them far better than the older models. You can [listen to the study](/play/data/voices/study-enter.mp3).
 
-## How we worked
-
-**Claude** was the orchestrator. It wrote the design, the data contract and short briefs, then reviewed the results in a browser and sent me screenshots and comparison sheets to decide on. **Codex** wrote most of the engine and drew every image from those briefs, often several runs at once. I gave the direction, rejected what I did not like and approved the rest.
-
-Before publishing, I asked for a review of all the code, a pass to remove what was not needed, a check of the licences and documentation good enough to explain how the engine works. Another agent reviewed the code without knowing the plan, and every finding was fixed.
-
-{{< notice note >}}
-The agents tested every change in a browser, but small visual glitches still got through and I was the one who spotted them. I see this often with more generic web apps too.
-{{< /notice >}}
-
-Can this work on real projects at [SparkFabrik](https://www.sparkfabrik.com/)? Yes, but it needs a strong harness, as we do with [sparkdock](https://github.com/sparkfabrik/sparkdock) and our [agents harness](https://github.com/sparkfabrik/sf-agents-harness), and a very strong CI pipeline. Software engineering skills are more important than ever. For a programmer today, the limits are the ideas and the trust we put in our tools. Whoever wants to embrace this model should invest far more than before in engineering the way software is built, because the code now arrives faster than humans can review it.
-
 ## Conclusion
 
 I am proud of all of it. The change of pace of this market is incredible, emotional and sometimes scary.
