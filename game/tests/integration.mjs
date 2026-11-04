@@ -280,6 +280,7 @@ const controller = await module.namespace.boot({
   world: "./data/world.json",
   content: "./data/content.json",
   element: container,
+  version: "build-7",
 });
 const root = container.children[0],
   canvas = root.children[0],
@@ -345,6 +346,10 @@ assert.equal(
 );
 await controller.ready;
 step();
+// Every asset request carries the build version, so a deploy skips stale caches.
+assert(requests.length > 0);
+for (const url of requests)
+  assert.equal(new URL(url).searchParams.get("v"), "build-7", url);
 assert.equal(AudioContext.instances.length, 1);
 const soundEvents = [];
 const originalSoundEvent = rendered.sound.event.bind(rendered.sound);

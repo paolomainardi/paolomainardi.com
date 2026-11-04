@@ -1,11 +1,18 @@
 // Load book art and fonts, paginate entries, and track page drags.
 import { inside, rectangle } from "./panel.js";
-import { image, json, resolve, matchingItems, newest } from "./assets.js";
+import {
+  image,
+  json,
+  resolve,
+  versioned,
+  matchingItems,
+  newest,
+} from "./assets.js";
 
 export async function loadFonts(book, url) {
   const face = new FontFace(
     book.font.family,
-    `url("${resolve(book.font.regular, url)}")`,
+    `url("${versioned(resolve(book.font.regular, url))}")`,
   );
   await face.load();
   document.fonts.add(face);

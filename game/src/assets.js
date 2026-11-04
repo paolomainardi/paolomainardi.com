@@ -10,14 +10,28 @@ export function resolve(path, base) {
   return url.href;
 }
 
+let version = "";
+
+/** Set the build version that tags every asset request, so a deploy bypasses stale caches. */
+export function setVersion(value) {
+  version = value;
+}
+
+export function versioned(url) {
+  if (!version) return url;
+  const tagged = new URL(url);
+  tagged.searchParams.set("v", version);
+  return tagged.href;
+}
+
 export async function json(url) {
-  const response = await fetch(url);
+  const response = await fetch(versioned(url));
   if (!response.ok) throw new Error(`Cannot load ${url}: ${response.status}`);
   return response.json();
 }
 
 export async function image(url) {
-  const response = await fetch(url);
+  const response = await fetch(versioned(url));
   if (!response.ok) throw new Error(`Cannot load ${url}: ${response.status}`);
   return createImageBitmap(await response.blob(), {
     premultiplyAlpha: "none",
