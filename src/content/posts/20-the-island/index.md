@@ -27,9 +27,9 @@ It is built with:
 
 - **[Claude](https://www.anthropic.com/claude)** and **[Codex](https://openai.com/codex/)**, the agents that wrote the code and drew the art.
 - **[ElevenLabs](https://elevenlabs.io/)** for the voice, the sound effects and the music.
-- A **game engine** in plain JavaScript and **WebGL2**, configured by JSON, with no dependencies ([`game/`](https://github.com/paolomainardi/paolomainardi.com/blob/main/game)).
-- A **lighting engine** that composes one drawing per lamp in a shader.
-- A **sound engine** on **Web Audio**, with synthesized ambience, recorded effects and binaural music.
+- A **game engine** in plain JavaScript and **[WebGL2](https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext)**, configured by JSON, with no dependencies ([`game/`](https://github.com/paolomainardi/paolomainardi.com/blob/main/game)).
+- A **[lighting engine](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/src/lighting.js)** that composes one drawing per lamp in a [shader](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/src/renderer.js).
+- A **[sound engine](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/src/sound.js)** on **[Web Audio](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)**, with synthesized ambience, recorded effects and binaural music.
 - A **walk rig** in Python that moves a cut-out puppet with gait curves ([`rig_walk.py`](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/tools/rig_walk.py)).
 - **[Hugo](https://gohugo.io/)**, which builds the site and writes its content for the game.
 
@@ -51,7 +51,7 @@ I came up with the idea on 1 November while I was out for a walk, and I dictated
 
 - **Not an easter egg**, but an alternative way to navigate the site.
 - **Monkey Island** concepts, with the same art line as the covers.
-- **Lights and atmosphere** first, rendered with **WebGL**.
+- **Lights and atmosphere** first, rendered with **[WebGL](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API)**.
 - Articles **readable** inside the game, rendered by the browser and not redrawn in pixels.
 - **Desktop only**, no mobile version for now.
 - An engine **configured by JSON**, kept separate from the site, so that one day it can work on any site, but without abstracting it too much in a prototype.
@@ -61,9 +61,9 @@ The site and the game share only the build. Hugo writes a [`content.json`](https
 
 ## The intro
 
-The intro is only data. [`world.json`](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/dev/real/world.json) lists its **shots**, each with a room, a time of day, a duration, its credit lines and optional sound cues, plus the music that plays under all of them.
+The [intro](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/src/intro.js) is only data. [`world.json`](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/dev/real/world.json) lists its **shots**, each with a room, a time of day, a duration, its credit lines and optional sound cues, plus the music that plays under all of them.
 
-The engine plays each shot as a room without the visitor or the panel, with the same lights and the same moving sea, and cross-fades from one shot to the next. Each credit line gets an equal part of its shot and fades in and out, drawn with the book's pixel font in a dark band at the bottom of the screen.
+The engine plays each shot as a room without the visitor or the panel, with the same lights and the same moving sea, and cross-fades from one shot to the next. Each credit line gets an equal part of its shot and fades in and out, drawn by the [text layer](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/src/text-layer.js) with the book's pixel font in a dark band at the bottom of the screen.
 
 A sound cue plays at its second of the shot. A click starts the game at any point, the last shot waits for one, and **R** plays the intro again from the first shot.
 
@@ -71,7 +71,7 @@ A sound cue plays at its second of the shot. A click starts the game at any poin
 
 {{< figure src="/images/posts/20-the-island/intro-title.webp" caption="The title shot: the scene dims and the engine draws the title large over it." >}}
 
-The music comes from [ElevenLabs Music](https://elevenlabs.io/music), and the browser plays it **binaurally**, through two Web Audio HRTF panners that slowly drift around your head.
+The music comes from [ElevenLabs Music](https://elevenlabs.io/music), and the browser plays it **binaurally**, through two Web Audio [HRTF panners](https://developer.mozilla.org/en-US/docs/Web/API/PannerNode) that slowly drift around your head.
 
 The music bus is split into its left and right channels, and each one feeds a **virtual speaker** in front of the listener, about 40 degrees to its side. A very slow oscillator, at 0.04 Hz, sways each speaker left and right, so on headphones the music moves gently around you ([`sound.js`](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/src/sound.js)):
 
@@ -109,14 +109,14 @@ The island is the world of the covers, the sea, the stone house, the lighthouses
 
 {{< figure src="/images/posts/20-the-island/study.webp" caption="The study at night. Each book on the shelf is a topic, and the laptop is still awake." >}}
 
-- The **study** in the stone house, where the bookshelf holds six topic books (Linux, AI, Docker, Security, Workstation and Personal). Each opens in a close-up with its table of contents, and the pages turn with a curl.
-- The **harbour**, where a **notice board** holds the links as pinned papers you can read, follow or take.
+- The **study** in the stone house, where the bookshelf holds six [topic books](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/src/book.js) (Linux, AI, Docker, Security, Workstation and Personal). Each opens in a close-up with its table of contents, and the pages turn with a curl.
+- The **harbour**, where a **[notice board](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/src/board.js)** holds the links as pinned papers you can read, follow or take.
 - The **lighthouse**, where a **letter** on the desk is the about page and a **logbook** lists my talks.
 - The **island map**, which connects the three places.
 
 {{< figure src="/images/posts/20-the-island/harbour.webp" caption="The harbour. The notice board holds the links, and the signpost points to the rest of the island." >}}
 
-Articles open in a reader at the browser's own resolution, with the site's fonts, and every close-up shows which section of the site you are in, with a link to the normal page. The things you take go in the **inventory** and stay there on your next visit. It is the second thing on this site that uses the browser's storage, and **Forget** empties it.
+Articles open in a reader at the browser's own resolution, with the site's fonts, and every close-up shows which section of the site you are in, with a link to the normal page. The things you take go in the **[inventory](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/src/inventory.js)** and stay there on your next visit. It is the second thing on this site that uses the browser's storage, and **Forget** empties it.
 
 {{< figure src="/images/posts/20-the-island/lighthouse.webp" caption="The top of the lighthouse, where the letter and the logbook wait on the desk." >}}
 
@@ -124,7 +124,7 @@ Articles open in a reader at the browser's own resolution, with the site's fonts
 
 The frame is **640×360** game pixels with **256 colours**, scaled by whole numbers, so it is three times bigger on a 1080p screen. The first version ran at 320×180 with 32 colours. I found it too low, with too few colours, and I asked for 256, then for a higher resolution that still felt like the 90s.
 
-Light is the part I cared about most. Each room is drawn several times, with every lamp off and then with each lamp lit on its own, at dusk and at night. The **WebGL** shader adds the lamps you switch on, so a lamp lights the room the way it was drawn. Oil lamps flicker, the lighthouse beacon flashes and at night the character's **lantern** throws a warm pool around him. Every visit starts at night, where the lights show best, and the **Time** control in the panel switches to dusk. The sea moves a pixel at a time, from pixels already in the drawing.
+Light is the part I cared about most. Each room is drawn several times, with every lamp off and then with each lamp lit on its own, at dusk and at night. The **WebGL** [shader](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/src/renderer.js) adds the lamps you switch on, so a lamp lights the room the way it was drawn. Oil lamps flicker, the lighthouse beacon flashes and at night the character's **lantern** throws a warm pool around him. Every visit starts at night, where the lights show best, and the **Time** control in the panel switches to dusk. The sea moves a pixel at a time, from pixels already in the drawing.
 
 {{< compare before="/images/posts/20-the-island/harbour-dusk.webp" after="/images/posts/20-the-island/harbour.webp" before-label="Dusk" after-label="Night" alt="The harbour at dusk and at night" >}}
 The same harbour at dusk and at night. At night the street lamp, the door lantern and the lighthouse light the scene.
@@ -138,7 +138,7 @@ Making the character walk was the hardest part, every version looked unnatural. 
 
 First we **measured** the drawn frames. The foot on the ground jumped **36 pixels** in one frame and barely **6** in the next, and the head bobbed 10 pixels, so the drawings could not be patched. I also found the Curse of Monkey Island sprites, which we studied as a reference only, and none of them ships in the game.
 
-Then Claude proposed to stop drawing frames one by one, and to build a **cut-out puppet** moved by recorded human walking data. I did not even imagine that scenario, it was absurdly complex for me, but not for the agents, and it surprised me more than anything else in this project. Claude wrote the rig in Python without Codex. It cuts the legs from a standing pose and moves them with textbook gait curves instead of recordings, in **12 frames** that each move the foot the same **11.3 pixels**.
+Then Claude proposed to stop drawing frames one by one, and to build a **cut-out puppet** moved by recorded human walking data. I did not even imagine that scenario, it was absurdly complex for me, but not for the agents, and it surprised me more than anything else in this project. Claude wrote the [rig in Python](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/tools/rig_walk.py) without Codex. It cuts the legs from a standing pose and moves them with textbook gait curves instead of recordings, in **12 frames** that each move the foot the same **11.3 pixels**.
 
 {{< chart type="bar" data="walk.csv" y="frame" x="px" facet="walk" unit="px" axis="Pixels the planted foot moves in each frame, equal is better" >}}
 The planted foot in four frames of the side walk, in the drawn frames and in the cut-out rig.
@@ -158,11 +158,11 @@ Claude cannot hear, so I listened to every sound and every voice myself. The vis
 
 The issue with AI generated voices is expression. I asked for pauses, emotions and sounds like "mmmh", but they were added to every line and it became unnatural again. In the end only nine lines keep a hesitation.
 
-While I was writing this post, ElevenLabs released **Eleven v4**, which follows those tags much more closely. The first takes were whispering too much, because v4 took every "softly" literally. With lighter tags I really loved it, so every line is now recorded with v4.
+While I was writing this post, ElevenLabs released **[Eleven v4](https://elevenlabs.io/docs/overview/models)**, which follows those tags much more closely. The first takes were whispering too much, because v4 took every "softly" literally. With lighter tags I really loved it, so every line is now recorded with v4.
 
 I chose the voice, **Will**, by taste, because it resembled the character we built and it worked better with a bit of irony. You can [listen to the study](/play/data/voices/study-enter.mp3) and to [the laptop](/play/data/voices/study-laptop.mp3).
 
-The subtitles use the book's pixel font, in a warm colour with a dark outline, above the character's head, as in the old games.
+The [subtitles](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/src/speech.js) use the book's pixel font, in a warm colour with a dark outline, above the character's head, as in the old games.
 
 ## How we worked
 
