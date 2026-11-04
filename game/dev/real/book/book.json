@@ -1,0 +1,57 @@
+{
+  "image": "open.png",
+  "pages": [
+    [
+      100,
+      55,
+      201,
+      214
+    ],
+    [
+      338,
+      55,
+      203,
+      215
+    ]
+  ],
+  "turn": {
+    "sheet": "turn.png",
+    "rect": [
+      60,
+      15,
+      526,
+      277
+    ],
+    "frames": 8,
+    "fps": 16
+  },
+  "ink": "#482c17",
+  "faded": "#786458",
+  "accent": "#b0386b",
+  "curl": {
+    "image": "curl.png",
+    "rects": [
+      [
+        56,
+        266,
+        24,
+        24
+      ],
+      [
+        560,
+        268,
+        24,
+        24
+      ]
+    ]
+  },
+  "font": {
+    "regular": "fonts/NFPixels-Regular.ttf",
+    "family": "NF-Pixels"
+  },
+  "sizes": {
+    "title": 20,
+    "body": 10,
+    "label": 10
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "sheet": "sheet.png",
+  "glow": "glow.png",
+  "frame": [
+    128,
+    234
+  ],
+  "anchor": [
+    64,
+    233
+  ],
+  "animations": {
+    "idle-front": {
+      "row": 0,
+      "frames": 1,
+      "fps": 1
+    },
+    "walk-side": {
+      "row": 1,
+      "frames": 12,
+      "fps": 8,
+      "stride": 135.5
+    },
+    "walk-front": {
+      "row": 2,
+      "frames": 12,
+      "fps": 8,
+      "stride": 67.7
+    },
+    "walk-back": {
+      "row": 3,
+      "frames": 12,
+      "fps": 8,
+      "stride": 67.7
+    },
+    "idle-side": {
+      "row": 5,
+      "frames": 1,
+      "fps": 1
+    },
+    "idle-back": {
+      "row": 6,
+      "frames": 1,
+      "fps": 1
+    }
+  },
+  "lantern": [
+    27,
+    -83
+  ]
+}

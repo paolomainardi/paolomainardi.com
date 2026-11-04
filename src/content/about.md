@@ -1,6 +1,8 @@
 +++
 title = "About me"
 slug = "about"
+# Also published as a script-free page for the adventure's reader.
+outputs = ["html", "reader"]
 +++
 
 Hello, I am Paolo Mainardi, proud **founder** and **CTO** of [Sparkfabrik](https://www.sparkfabrik.com), and Linux Foundation Europe [advisory member](https://linuxfoundation.eu/en/about/advisory-board).

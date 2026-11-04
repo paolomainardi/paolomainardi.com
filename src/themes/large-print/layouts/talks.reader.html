@@ -1,0 +1,25 @@
+{{- /* A standalone page for the game's reader (the talks page), without site chrome or scripts. */ -}}
+<!DOCTYPE html>
+<html lang="{{ site.Language.Locale | default site.Language.Lang }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="robots" content="noindex, follow">
+    <title>{{ .Title }} · {{ site.Title }}</title>
+    <base target="_blank">
+    <link rel="canonical" href="{{ .Permalink }}">
+    {{ partialCached "styles.html" . }}
+</head>
+<body class="colorscheme-{{ site.Params.colorScheme | default "auto" }}">
+    <main class="content">
+        <article class="container page talks">
+            <div class="post-title"><h1 class="title">{{ .Title }}</h1></div>
+            <div class="post-content">
+                <div class="text">{{ .Content }}</div>
+                {{ partial "book/talks-list.html" . }}
+            </div>
+        </article>
+    </main>
+</body>
+</html>

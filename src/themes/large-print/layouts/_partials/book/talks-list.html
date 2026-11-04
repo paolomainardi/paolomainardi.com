@@ -1,0 +1,26 @@
+{{- /* The talks, grouped by year with undated ones last. Used by the talks page and its reader copy. */ -}}
+{{- $talks := hugo.Data.talks.talks -}}
+{{- $dated := where $talks "year" "gt" 0 -}}
+{{- $undated := where $talks "year" "eq" 0 -}}
+{{- $years := slice -}}
+{{- range $dated }}{{ $years = $years | append .year }}{{ end -}}
+{{- $years = sort (uniq $years) "value" "desc" -}}
+
+      {{ range $years }}
+      {{ $year := . }}
+      <section class="year-group">
+        <span class="apparatus"><span class="year">{{ $year }}</span></span>
+        {{ range where $dated "year" $year }}
+        {{ partial "book/talk.html" . }}
+        {{ end }}
+      </section>
+      {{ end }}
+
+      {{ with $undated }}
+      <section class="year-group">
+        <span class="apparatus"><span class="year">Undated</span></span>
+        {{ range . }}
+        {{ partial "book/talk.html" . }}
+        {{ end }}
+      </section>
+      {{ end }}

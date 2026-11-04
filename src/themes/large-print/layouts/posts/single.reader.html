@@ -1,0 +1,43 @@
+{{- /* A standalone article for the game's reader, without site chrome or scripts. */ -}}
+<!DOCTYPE html>
+<html lang="{{ site.Language.Locale | default site.Language.Lang }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="robots" content="noindex, follow">
+    <title>{{ .Title }} · {{ site.Title }}</title>
+    <base target="_blank">
+    <link rel="canonical" href="{{ .Permalink }}">
+    {{ partialCached "styles.html" . }}
+</head>
+<body class="colorscheme-{{ site.Params.colorScheme | default "auto" }}">
+    <main class="content">
+        <article class="container post">
+            <div class="opener">
+                <div class="kicker">
+                    {{- with partial "book/topics.html" (dict "page" . "limit" 3) }}{{ . }} · {{ end -}}
+                    {{ .ReadingTime }} min · {{ .Date | time.Format (site.Params.dateFormat | default "January 2, 2006") }}
+                </div>
+                <div class="post-title"><h1 class="title">{{ .Title }}</h1></div>
+            </div>
+            <div class="post-content">
+                {{- /* The cover as a still picture, with its night drawing; the reader runs no scripts. */ -}}
+                {{ with .Params.featuredImage }}
+                {{ $img := partial "book/asset.html" . }}
+                {{ $nightPath := replaceRE `\.webp$` "-night.webp" . }}
+                {{ $night := cond (and (ne $nightPath .) (resources.Get (strings.TrimPrefix "/" $nightPath))) (partial "book/asset.html" $nightPath) dict }}
+                <picture class="frontispiece-picture">
+                    {{ with $night }}<source media="(prefers-color-scheme: dark)" srcset="{{ or .srcset .url }}"{{ if .srcset }} sizes="(min-width: 868px) 820px, 100vw"{{ end }} />{{ end }}
+                    <img class="frontispiece" src="{{ $img.url | safeURL }}" alt="{{ $.Title }}"
+                        {{- if gt $img.width 0 }} width="{{ $img.width }}" height="{{ $img.height }}"{{ end }}
+                        {{- with $img.srcset }} srcset="{{ . }}" sizes="(min-width: 868px) 820px, 100vw"{{ end }}
+                        loading="eager" decoding="async" />
+                </picture>
+                {{ end }}
+                <div class="text">{{ .Content }}</div>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

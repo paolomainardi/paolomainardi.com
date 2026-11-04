@@ -1,0 +1,133 @@
+{
+  "name": "stone-house",
+  "size": [
+    640,
+    360
+  ],
+  "albedo": "albedo.png",
+  "water": "water.png",
+  "states": {
+    "dusk": {
+      "unlit": "dusk-unlit.png",
+      "lights": {
+        "pendant": "dusk-pendant.png",
+        "oil": "dusk-oil.png"
+      }
+    },
+    "night": {
+      "unlit": "night-unlit.png",
+      "lights": {
+        "pendant": "night-pendant.png",
+        "oil": "night-oil.png"
+      }
+    }
+  },
+  "objects": "objects.png",
+  "items": [
+    {
+      "id": "floor",
+      "kind": "walkable",
+      "color": "#00ff00"
+    },
+    {
+      "id": "chair",
+      "kind": "foreground",
+      "color": "#0000ff"
+    },
+    {
+      "id": "shelf-1",
+      "kind": "slot",
+      "color": "#ff0064"
+    },
+    {
+      "id": "shelf-2",
+      "kind": "slot",
+      "color": "#ff0078"
+    },
+    {
+      "id": "shelf-3",
+      "kind": "slot",
+      "color": "#ff008c"
+    },
+    {
+      "id": "shelf-4",
+      "kind": "slot",
+      "color": "#ff00a0"
+    },
+    {
+      "id": "shelf-5",
+      "kind": "slot",
+      "color": "#ff00b4"
+    },
+    {
+      "id": "shelf-6",
+      "kind": "slot",
+      "color": "#ff00c8"
+    },
+    {
+      "id": "pendant",
+      "kind": "light",
+      "label": "Pendant lamp",
+      "light": "pendant",
+      "color": "#ffff00",
+      "tint": "#ffd08a"
+    },
+    {
+      "id": "oil",
+      "kind": "light",
+      "label": "Oil lamp",
+      "light": "oil",
+      "color": "#ff0000",
+      "tint": "#ffd08a"
+    },
+    {
+      "id": "door",
+      "kind": "exit",
+      "label": "Door",
+      "to": "harbour",
+      "color": "#ff8000"
+    },
+    {
+      "id": "window",
+      "kind": "hotspot",
+      "label": "Window",
+      "look": "The sea, calm tonight.",
+      "color": "#00ffff"
+    },
+    {
+      "id": "about",
+      "kind": "hotspot",
+      "label": "About paper",
+      "look": "A found about paper.",
+      "color": "#00ff80"
+    },
+    {
+      "id": "talk",
+      "kind": "hotspot",
+      "label": "Talk paper",
+      "look": "A found talk paper.",
+      "color": "#0080ff"
+    },
+    {
+      "id": "island",
+      "kind": "exit",
+      "label": "Island map",
+      "to": "map",
+      "color": "#8000ff"
+    }
+  ],
+  "depth": {
+    "far": [
+      192,
+      0.7
+    ],
+    "near": [
+      352,
+      1.0
+    ]
+  },
+  "spawn": [
+    120,
+    300
+  ]
+}

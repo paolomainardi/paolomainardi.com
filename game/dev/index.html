@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#11121d" />
+    <link rel="icon" href="data:," />
+    <title>The engineer's study</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+      }
+      #game {
+        width: 100%;
+        height: 100%;
+        height: 100dvh;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="game"></main>
+    <script type="module">
+      import { boot } from "../src/main.js";
+      const data = new URLSearchParams(location.search).get("data") || "data";
+      window.game = await boot({
+        world: `./${data}/world.json`,
+        content: "./data/content.json",
+        element: document.getElementById("game"),
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,376 @@
+{
+  "items": [
+    {
+      "id": "workstation-1",
+      "type": "post",
+      "title": "A room of one's own",
+      "description": "Part 1 of the workstation series. A room of one's own.",
+      "date": "2026-10-01",
+      "tags": [
+        "linux",
+        "hardware"
+      ],
+      "series": "workstation",
+      "part": 1,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-2",
+      "type": "post",
+      "title": "Choosing the hardware",
+      "description": "Part 2 of the workstation series. Choosing the hardware.",
+      "date": "2026-10-02",
+      "tags": [
+        "linux",
+        "hardware"
+      ],
+      "series": "workstation",
+      "part": 2,
+      "url": "../reader/workstation-2.html",
+      "reader": "../reader/workstation-2.html"
+    },
+    {
+      "id": "workstation-3",
+      "type": "post",
+      "title": "Linux on the desk",
+      "description": "Part 3 of the workstation series. Linux on the desk.",
+      "date": "2026-10-03",
+      "tags": [
+        "linux",
+        "hardware"
+      ],
+      "series": "workstation",
+      "part": 3,
+      "url": "../reader/workstation-3.html",
+      "reader": "../reader/workstation-3.html"
+    },
+    {
+      "id": "workstation-4",
+      "type": "post",
+      "title": "Containers at home",
+      "description": "Part 4 of the workstation series. Containers at home.",
+      "date": "2026-10-04",
+      "tags": [
+        "linux",
+        "hardware"
+      ],
+      "series": "workstation",
+      "part": 4,
+      "url": "../reader/workstation-4.html",
+      "reader": "../reader/workstation-4.html"
+    },
+    {
+      "id": "workstation-5",
+      "type": "post",
+      "title": "A quieter workstation",
+      "description": "Part 5 of the workstation series. A quieter workstation.",
+      "date": "2026-10-05",
+      "tags": [
+        "linux",
+        "hardware"
+      ],
+      "series": "workstation",
+      "part": 5,
+      "url": "../reader/workstation-5.html",
+      "reader": "../reader/workstation-5.html"
+    },
+    {
+      "id": "workstation-6",
+      "type": "post",
+      "title": "The finished build",
+      "description": "Part 6 of the workstation series. The finished build.",
+      "date": "2026-10-06",
+      "tags": [
+        "linux",
+        "hardware"
+      ],
+      "series": "workstation",
+      "part": 6,
+      "url": "../reader/workstation-6.html",
+      "reader": "../reader/workstation-6.html"
+    },
+    {
+      "id": "workstation-7",
+      "type": "post",
+      "title": "Workstation notes 7: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-07",
+      "tags": [
+        "linux",
+        "personal"
+      ],
+      "series": "workstation",
+      "part": 7,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-8",
+      "type": "post",
+      "title": "Workstation notes 8: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-08",
+      "tags": [
+        "linux",
+        "ai"
+      ],
+      "series": "workstation",
+      "part": 8,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-9",
+      "type": "post",
+      "title": "Workstation notes 9: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-09",
+      "tags": [
+        "linux",
+        "docker"
+      ],
+      "series": "workstation",
+      "part": 9,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-10",
+      "type": "post",
+      "title": "Workstation notes 10: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-10",
+      "tags": [
+        "linux",
+        "security"
+      ],
+      "series": "workstation",
+      "part": 10,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-11",
+      "type": "post",
+      "title": "Workstation notes 11: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-11",
+      "tags": [
+        "linux",
+        "personal"
+      ],
+      "series": "workstation",
+      "part": 11,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-12",
+      "type": "post",
+      "title": "Workstation notes 12: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-12",
+      "tags": [
+        "linux",
+        "ai"
+      ],
+      "series": "workstation",
+      "part": 12,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-13",
+      "type": "post",
+      "title": "Workstation notes 13: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-13",
+      "tags": [
+        "linux",
+        "docker"
+      ],
+      "series": "workstation",
+      "part": 13,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-14",
+      "type": "post",
+      "title": "Workstation notes 14: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-14",
+      "tags": [
+        "linux",
+        "security"
+      ],
+      "series": "workstation",
+      "part": 14,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-15",
+      "type": "post",
+      "title": "Workstation notes 15: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-15",
+      "tags": [
+        "linux",
+        "personal"
+      ],
+      "series": "workstation",
+      "part": 15,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-16",
+      "type": "post",
+      "title": "Workstation notes 16: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-16",
+      "tags": [
+        "linux",
+        "ai"
+      ],
+      "series": "workstation",
+      "part": 16,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-17",
+      "type": "post",
+      "title": "Workstation notes 17: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-17",
+      "tags": [
+        "linux",
+        "docker"
+      ],
+      "series": "workstation",
+      "part": 17,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-18",
+      "type": "post",
+      "title": "Workstation notes 18: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-18",
+      "tags": [
+        "linux",
+        "security"
+      ],
+      "series": "workstation",
+      "part": 18,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-19",
+      "type": "post",
+      "title": "Workstation notes 19: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-19",
+      "tags": [
+        "linux",
+        "personal"
+      ],
+      "series": "workstation",
+      "part": 19,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-20",
+      "type": "post",
+      "title": "Workstation notes 20: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-20",
+      "tags": [
+        "linux",
+        "ai"
+      ],
+      "series": "workstation",
+      "part": 20,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-21",
+      "type": "post",
+      "title": "Workstation notes 21: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-21",
+      "tags": [
+        "linux",
+        "docker"
+      ],
+      "series": "workstation",
+      "part": 21,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "workstation-22",
+      "type": "post",
+      "title": "Workstation notes 22: choosing quiet hardware and tools for a Linux development desk",
+      "description": "Placeholder notes for the book close-up.",
+      "date": "2026-10-22",
+      "tags": [
+        "linux",
+        "security"
+      ],
+      "series": "workstation",
+      "part": 22,
+      "url": "../reader/workstation-1.html",
+      "reader": "../reader/workstation-1.html"
+    },
+    {
+      "id": "web-platform",
+      "type": "link",
+      "title": "The web platform",
+      "description": "Standards and tools for building on the web.",
+      "date": "2026-10-20",
+      "tags": [
+        "web"
+      ],
+      "link": "https://www.w3.org/",
+      "url": "/links/web-platform/"
+    },
+    {
+      "id": "linux-kernel",
+      "type": "link",
+      "title": "The Linux kernel",
+      "description": "Follow kernel releases and development.",
+      "date": "2026-10-25",
+      "tags": [
+        "linux"
+      ],
+      "link": "https://www.kernel.org/",
+      "url": "/links/linux-kernel/"
+    },
+    {
+      "id": "found-about",
+      "type": "about",
+      "title": "Found about paper",
+      "description": "A about paper from the study.",
+      "date": "2026-11-01",
+      "reader": "../reader/workstation-1.html",
+      "url": "../reader/workstation-1.html"
+    },
+    {
+      "id": "found-talk",
+      "type": "talk",
+      "title": "Found talk paper",
+      "description": "A talk paper from the study.",
+      "date": "2026-11-01",
+      "reader": "../reader/workstation-1.html",
+      "url": "../reader/workstation-1.html"
+    }
+  ]
+}

@@ -1,0 +1,126 @@
+{
+  "name": "stone-house",
+  "size": [
+    640,
+    360
+  ],
+  "albedo": "albedo.png",
+  "states": {
+    "dusk": {
+      "unlit": "dusk-unlit.png",
+      "lights": {
+        "pendant": "dusk-pendant.png",
+        "oil-lamp": "dusk-oil-lamp.png"
+      }
+    },
+    "night": {
+      "unlit": "night-unlit.png",
+      "lights": {
+        "pendant": "night-pendant.png",
+        "oil-lamp": "night-oil-lamp.png"
+      }
+    }
+  },
+  "objects": "objects.png",
+  "items": [
+    {
+      "id": "floor",
+      "kind": "walkable",
+      "color": "#00ff00"
+    },
+    {
+      "id": "chair",
+      "kind": "foreground",
+      "color": "#0000ff"
+    },
+    {
+      "id": "slot-1",
+      "kind": "slot",
+      "color": "#ff00ff"
+    },
+    {
+      "id": "slot-2",
+      "kind": "slot",
+      "color": "#ff0080"
+    },
+    {
+      "id": "slot-3",
+      "kind": "slot",
+      "color": "#8000ff"
+    },
+    {
+      "id": "slot-4",
+      "kind": "slot",
+      "color": "#00ff80"
+    },
+    {
+      "id": "slot-5",
+      "kind": "slot",
+      "color": "#ff8080"
+    },
+    {
+      "id": "slot-6",
+      "kind": "slot",
+      "color": "#80ff00"
+    },
+    {
+      "id": "pendant",
+      "kind": "light",
+      "color": "#ffff00",
+      "label": "Pendant lamp",
+      "light": "pendant",
+      "tint": "#ff9614"
+    },
+    {
+      "id": "oil-lamp",
+      "kind": "light",
+      "color": "#ffc000",
+      "label": "Oil lamp",
+      "light": "oil",
+      "tint": "#ff9111"
+    },
+    {
+      "id": "door",
+      "kind": "exit",
+      "color": "#ff8000",
+      "label": "Door",
+      "to": "harbour"
+    },
+    {
+      "id": "window",
+      "kind": "hotspot",
+      "color": "#00ffff",
+      "label": "Window",
+      "look": "The sea has kept its own hours."
+    },
+    {
+      "id": "laptop",
+      "kind": "hotspot",
+      "color": "#0080ff",
+      "label": "Laptop",
+      "look": "Work has followed me here."
+    },
+    {
+      "id": "bookshelf",
+      "kind": "hotspot",
+      "color": "#c0c0c0",
+      "label": "Bookshelf",
+      "look": "More shelf than books."
+    }
+  ],
+  "depth": {
+    "far": [
+      279,
+      0.88
+    ],
+    "near": [
+      359,
+      1.0
+    ]
+  },
+  "spawn": [
+    84,
+    292
+  ],
+  "water": "water.png"
+}

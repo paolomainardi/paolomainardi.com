@@ -703,6 +703,12 @@ on one line stack rather than overlap. Below that it follows the
 sentence as a short indented block. Numbers come from a CSS counter, so they
 never need maintaining.
 
+**Adventure.** `/play/` is an isolated, full-viewport game on black, with its
+own engine styles and no site chrome. It is not linked from the site yet.
+Articles opened inside the game use the existing post typography and stylesheet
+in a standalone reader: title, meta line and content, without site chrome or
+scripts. Reader links open in a new tab. Both views stay out of the sitemap.
+
 ## Do's and Don'ts
 
 **Do** keep the body type large. Every other decision is negotiable, that one is

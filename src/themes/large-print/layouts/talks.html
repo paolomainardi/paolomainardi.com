@@ -13,13 +13,6 @@
 
   Talks with year 0 have no recorded year and are listed last.
 */ -}}
-{{- $talks := hugo.Data.talks.talks -}}
-{{- $dated := where $talks "year" "gt" 0 -}}
-{{- $undated := where $talks "year" "eq" 0 -}}
-{{- $years := slice -}}
-{{- range $dated }}{{ $years = $years | append .year }}{{ end -}}
-{{- $years = sort (uniq $years) "value" "desc" -}}
-
 <section class="container page talks">
   <article>
     <header class="opener">
@@ -33,24 +26,7 @@
         {{ .Content }}
       </div>
 
-      {{ range $years }}
-      {{ $year := . }}
-      <section class="year-group">
-        <span class="apparatus"><span class="year">{{ $year }}</span></span>
-        {{ range where $dated "year" $year }}
-        {{ partial "book/talk.html" . }}
-        {{ end }}
-      </section>
-      {{ end }}
-
-      {{ with $undated }}
-      <section class="year-group">
-        <span class="apparatus"><span class="year">Undated</span></span>
-        {{ range . }}
-        {{ partial "book/talk.html" . }}
-        {{ end }}
-      </section>
-      {{ end }}
+      {{ partial "book/talks-list.html" . }}
     </div>
   </article>
 </section>
