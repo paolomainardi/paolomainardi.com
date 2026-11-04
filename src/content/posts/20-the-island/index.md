@@ -53,17 +53,19 @@ The site and the game share only the build. Hugo writes a `content.json` with po
 
 ## The intro
 
-Every adventure game of the 90s opened with an intro, so the island has one too, in the style of Monkey Island.
+The intro is only data. `world.json` lists its **shots**, each with a room, a time of day, a duration, its credit lines and optional sound cues, plus the music that plays under all of them.
 
-For the engine, the intro is only data: a list of **shots** in `world.json`, each with a room, a time of day, a duration, its credit lines and optional sound cues. The engine plays each shot as a room without the visitor or the panel, with the same lights and the same moving sea, cross-fades between them and draws the credits in a dark band at the bottom of the screen, as in the old games.
+The engine plays each shot as a room without the visitor or the panel, with the same lights and the same moving sea, and cross-fades from one shot to the next. Each credit line gets an equal part of its shot and fades in and out, drawn with the book's pixel font in a dark band at the bottom of the screen.
 
-A click skips it and **R** replays it. Two of the rooms, a workshop and a quay with fishermen, exist only for the intro.
+A sound cue plays at its second of the shot. A click starts the game at any point, the last shot waits for one, and **R** plays the intro again from the first shot.
 
-{{< figure src="/images/posts/20-the-island/intro-workshop.webp" caption="The workshop, one of the two rooms drawn only for the intro." >}}
+{{< figure src="/images/posts/20-the-island/intro-workshop.webp" caption="A shot of the intro: the room plays without the visitor or the panel, and the credit sits in the band at the bottom." >}}
 
-{{< figure src="/images/posts/20-the-island/intro-title.webp" caption="The title card, drawn over the lighthouse room with the scene dimmed behind it." >}}
+{{< figure src="/images/posts/20-the-island/intro-title.webp" caption="The title shot: the scene dims and the engine draws the title large over it." >}}
 
-The music comes from [ElevenLabs Music](https://elevenlabs.io/music), and the browser plays it **binaurally**, through two Web Audio HRTF panners that slowly drift around your head. Choosing it was just taste. Sound, like art in general, needs good prompts, and when you are not a musician it is hard to describe in words what the model should produce. Most of the takes I discarded were my poor wording, not the model.
+The music comes from [ElevenLabs Music](https://elevenlabs.io/music), and the browser plays it **binaurally**, through two Web Audio HRTF panners that slowly drift around your head.
+
+Choosing it was just taste. Sound, like art in general, needs good prompts, and when you are not a musician it is hard to describe in words what the model should produce. Most of the takes I discarded were my poor wording, not the model.
 
 ## The island
 
