@@ -1701,7 +1701,17 @@ step();
 assert.deepEqual(Array.from(fresh.state.position), [120, 300]);
 assert.equal(rendered.elapsed, 0, "Elapsed time starts fresh");
 assert.equal(rendered.lantern, true);
-assert.equal(rendered.timeOverride, false);
+assert.equal(rendered.time, "night", "A fresh visit starts at night");
+event(freshRoot.children[0], "click", {
+  clientX: rendered.panel.time.x + 1,
+  clientY: rendered.panel.time.y + 1,
+});
+assert.equal(rendered.time, "dusk", "The panel switch changes the time");
+event(freshRoot.children[0], "click", {
+  clientX: rendered.panel.time.x + 1,
+  clientY: rendered.panel.time.y + 1,
+});
+assert.equal(rendered.time, "night");
 assert(rendered.inventory[0].sprite.texture, "Restored book has its sprite");
 assert(rendered.inventory.at(-1).pin.texture, "Restored notice has its pin");
 // Restored items retain their actions and duplicate protection.

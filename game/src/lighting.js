@@ -134,8 +134,3 @@ export function updateLamps(game, dt) {
     lamp.drift[1] = burning ? 0.45 * game.pixelScale * Math.sin(t * 0.79) : 0;
   }
 }
-
-export function currentTime() {
-  const hour = new Date().getHours();
-  return hour >= 6 && hour < 20 ? "dusk" : "night";
-}

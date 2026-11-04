@@ -31,7 +31,7 @@ import {
 } from "./assets.js";
 import { findPath, nearestWalkable } from "./pathfinding.js";
 import { Speech } from "./speech.js";
-import { currentTime, updateLamps } from "./lighting.js";
+import { updateLamps } from "./lighting.js";
 import { advanceActor, idleAnimation } from "./animation.js";
 import { SoundEngine } from "./sound.js";
 
@@ -74,10 +74,9 @@ export async function startSession({
       root,
       canvas,
       readerItem: null,
-      time: currentTime(),
+      time: "night",
       lantern: true,
       bloom: true,
-      timeOverride: false,
       elapsed: 0,
       verb: null,
       hover: null,
@@ -709,6 +708,14 @@ export async function startSession({
         chooseTarget(menu.target, menu.verbs[index]);
       }
     }
+    function toggleTime() {
+      game.time = game.time === "night" ? "dusk" : "night";
+      game.sound.event("time");
+      say(
+        game.time === "night" ? "Night already…" : "The sun is going down.",
+        game.time === "night" ? "common-night" : "common-dusk",
+      );
+    }
     let suppressBookClick = false;
     let lastVerb = null;
     on(canvas, "pointerdown", (event) => {
@@ -848,6 +855,10 @@ export async function startSession({
         return;
       }
       if (y >= game.verbTop) {
+        if (inside(game.panel.time, x, y)) {
+          toggleTime();
+          return;
+        }
         if (
           game.inventory.some((item) => !item.pocket) &&
           inside(game.panel.forget, x, y)
@@ -937,15 +948,7 @@ export async function startSession({
         if (event.key === "ArrowRight") turnBook(1);
         return;
       }
-      if (event.key.toLowerCase() === "t") {
-        game.timeOverride = true;
-        game.time = game.time === "night" ? "dusk" : "night";
-        game.sound.event("time");
-        say(
-          game.time === "night" ? "Night already…" : "The sun is going down.",
-          game.time === "night" ? "common-night" : "common-dusk",
-        );
-      }
+      if (event.key.toLowerCase() === "t") toggleTime();
       if (event.key.toLowerCase() === "l") {
         game.lantern = !game.lantern;
         game.sound.event("lantern");
@@ -1040,7 +1043,6 @@ export async function startSession({
         }
         game.elapsed += dt;
         if (!game.readerItem && !game.activeBook && !game.activeBoard) {
-          if (!game.timeOverride) game.time = currentTime();
           updateLamps(game, dt);
           for (const contact of advanceActor(game, dt))
             game.sound.event("step", contact);

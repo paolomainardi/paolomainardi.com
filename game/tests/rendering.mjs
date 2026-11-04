@@ -191,7 +191,7 @@ for (const item of game.objects) {
 }
 game.objects = [];
 
-// Sentence truncates to one row, leaving space for the sound control.
+// Sentence truncates to one row, leaving space for the time and sound controls.
 for (const text of ["Walk to Window", "word ".repeat(80)]) {
   const verb = game.verb;
   const hover = game.hover;
@@ -205,7 +205,7 @@ for (const text of ["Walk to Window", "word ".repeat(80)]) {
   );
   assert.deepEqual(
     rows.map((call) => call.args[0]),
-    wrap(text, 91, 1),
+    wrap(text, 77, 1),
   );
   assert(rows.every((call) => call.args[2] === 328));
   game.verb = verb;
