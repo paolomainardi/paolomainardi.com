@@ -694,7 +694,7 @@ console.log(
   "Room actors sort with visitor by feet and keep separate foreground baselines.",
 );
 // Intro scenes keep room actors and omit the visitor and all panel controls.
-game.intro = {};
+game.intro = { text: () => null };
 calls.length = 0;
 renderer.render(game);
 assert(!calls.some((c) => c.type === "sprite" && c.args[0] === texture));

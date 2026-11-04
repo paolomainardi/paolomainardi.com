@@ -128,7 +128,7 @@ export class TextLayer {
       lines.push(line);
       const band = game.verbTop ?? height;
       const top = credit.title
-        ? 24
+        ? (band - lines.length * font.lineHeight) / 2
         : band + (height - band - lines.length * font.lineHeight) / 2;
       lines.forEach((value, i) => {
         const x = (width - font.measure(value)) / 2;

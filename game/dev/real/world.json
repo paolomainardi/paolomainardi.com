@@ -661,10 +661,11 @@
       {
         "room": "workshop",
         "time": "night",
-        "seconds": 9,
+        "seconds": 12,
         "lines": [
           "Directed by Paolo Mainardi",
-          "Built by agents",
+          "Built by Agents\u2122",
+          "Created with the Hyper-Turbo Lantern Engine 3000\u2122",
           "Voices and sounds by ElevenLabs"
         ]
       },
