@@ -1,7 +1,7 @@
 +++
 date = "2026-11-04T18:01:00+01:00"
 title = "This site is now also an island you can walk"
-description = "A 90s point-and-click adventure that browses this site, built in a bunch of hours by AI agents while I directed: art, walk, sound and voices."
+description = "A 90s point-and-click adventure that browses this site: the island, the light, the walk, the sound and the voices."
 slug = "this-site-is-now-an-island"
 tags = ["ai", "agents", "webgl", "games", "design"]
 featuredImage = "/images/posts/20-the-island/harbour.webp"
@@ -15,7 +15,7 @@ series_part = 4
 
 This site can now be browsed as a **point-and-click adventure** in the style of the LucasArts games of the 90s. A visitor walks a small island, opens **topic books** to read posts, takes notes from a **notice board** to follow links and finds the about page as a **letter** in a lighthouse. You can [play it here](/play/), on a desktop browser.
 
-I did not write a line of it. **Claude** and **Codex** built the engine, drew every room and the character, and **ElevenLabs** recorded the voice. I gave the direction and judged every result, in a bunch of hours.
+It is built with **Claude** and **Codex**, and the voice comes from **ElevenLabs**.
 
 ## Introduction
 
@@ -25,7 +25,7 @@ At that point I realized we could take one step further and try to mimic an adve
 
 I played **Monkey Island** from the [first](https://en.wikipedia.org/wiki/The_Secret_of_Monkey_Island) to the [third](https://en.wikipedia.org/wiki/The_Curse_of_Monkey_Island), and I watched them evolve from a bunch of colours and synthetic sounds to advanced graphics, sound and voices. Everything was stunning in that era, from the 386 to the 486 and the first audio card, the mythical **[Sound Blaster Pro](https://en.wikipedia.org/wiki/Sound_Blaster#Sound_Blaster_Pro)**. Pure magic.
 
-The goal was a second way to browse this site, not an easter egg, built by agents while I only direct them.
+The goal was a second way to browse this site, not an easter egg.
 
 ## The rules
 
@@ -102,7 +102,7 @@ The subtitles use the book's pixel font, in a warm colour with a dark outline, a
 
 ## How we worked
 
-I never wrote code. **Claude** was the orchestrator: it wrote the design, the data contract and short briefs, then reviewed the results in a browser and sent me screenshots and comparison sheets to decide on. **Codex** wrote most of the engine and drew every image from those briefs, often several runs at once. I gave the direction, rejected what I did not like and approved the rest.
+**Claude** was the orchestrator. It wrote the design, the data contract and short briefs, then reviewed the results in a browser and sent me screenshots and comparison sheets to decide on. **Codex** wrote most of the engine and drew every image from those briefs, often several runs at once. I gave the direction, rejected what I did not like and approved the rest.
 
 Before publishing, I asked for a review of all the code, a pass to remove what was not needed, a check of the licences and documentation good enough to explain how the engine works. Another agent reviewed the code without knowing the plan, and every finding was fixed.
 
