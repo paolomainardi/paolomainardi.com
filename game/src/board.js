@@ -1,5 +1,6 @@
+// Load notice-board art and lay out notices, notes, and paging controls.
 import { image, json, resolve, matchingItems } from "./assets.js";
-import { wrapText, measure } from "./book.js";
+import { wrapText } from "./book.js";
 
 export async function loadBoard(config, worldURL, renderer) {
   const url = resolve(config.board, worldURL);
@@ -83,13 +84,23 @@ export function boardTitleBox(board, art, fonts) {
   const top = Math.min(...art.notices.map((notice) => notice.at[1]));
   const left = Math.min(...art.notices.map((notice) => notice.at[0]));
   const right = Math.max(
-    ...art.notices.map((notice) => notice.at[0] + art.sprites[notice.paper].size[0]),
+    ...art.notices.map(
+      (notice) => notice.at[0] + art.sprites[notice.paper].size[0],
+    ),
   );
   const lines = [
-    ...wrapText(fonts.title, board.title || "", right - left, 1).map((v) => [fonts.title, v, art.ink]),
-    ...wrapText(fonts.body, board.subtitle || "", right - left, 1).map((v) => [fonts.body, v, art.faded]),
+    ...wrapText(fonts.title, board.title || "", right - left, 1).map((v) => [
+      fonts.title,
+      v,
+      art.ink,
+    ]),
+    ...wrapText(fonts.body, board.subtitle || "", right - left, 1).map((v) => [
+      fonts.body,
+      v,
+      art.faded,
+    ]),
   ];
-  const w = Math.max(...lines.map(([font, value]) => measure(font, value))) + 16;
+  const w = Math.max(...lines.map(([font, value]) => font.measure(value))) + 16;
   const h = lines.reduce((sum, [font]) => sum + font.lineHeight, 0) + 8;
   const [x, y] = art.title
     ? [art.title[0] + Math.floor((art.title[2] - w) / 2), art.title[1]]
@@ -159,14 +170,24 @@ export function boardText(board, page, note, hover, fonts, canTake = true) {
         fonts.body,
         label,
         ...(key === "take" ? noteTakeRect(art) : art.note[key]).slice(0, 2),
-        key === "take" && !canTake ? art.faded : hover === key ? art.accent : art.ink,
+        key === "take" && !canTake
+          ? art.faded
+          : hover === key
+            ? art.accent
+            : art.ink,
       );
   } else {
     const box = boardTitleBox(board, art, fonts);
     if (box) {
       let lineY = box.y + 4;
       for (const [font, value, color] of box.lines) {
-        add(font, value, box.x + Math.floor((box.w - measure(font, value)) / 2), lineY, color);
+        add(
+          font,
+          value,
+          box.x + Math.floor((box.w - font.measure(value)) / 2),
+          lineY,
+          color,
+        );
         lineY += font.lineHeight;
       }
     }
@@ -186,7 +207,7 @@ export function boardText(board, page, note, hover, fonts, canTake = true) {
         fonts.body,
         visible ? label : idle,
         ...art[key].slice(0, 2),
-        !visible ? art.faded : key === "take" && !canTake ? art.faded : hover === key ? art.accent : art.ink,
+        !visible ? art.faded : hover === key ? art.accent : art.ink,
       );
   }
   return lines;

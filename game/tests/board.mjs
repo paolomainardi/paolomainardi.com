@@ -1,3 +1,4 @@
+// Check board behavior against the engine and shipped fixtures.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
@@ -257,7 +258,11 @@ for (const path of [
 }
 
 const pocket = boardText(board, 0, entry.item, "take", fonts, false);
-assert(pocket.some((line) => line.value === "In your pocket" && line.color === art.faded));
+assert(
+  pocket.some(
+    (line) => line.value === "In your pocket" && line.color === art.faded,
+  ),
+);
 game.inventory = [];
 game.boardNote = entry.item;
 layer.update(game);
@@ -266,9 +271,12 @@ assert(layer.update(game), "Taking a notice invalidates the text cache");
 assert(canvas.getContext().calls.some((c) => c.args[0] === "In your pocket"));
 for (const mode of ["activeBook", "activeBoard", "readerItem"]) {
   const view = {
-    room: { size: [640, 360] }, [mode]: { site: "/links/" },
+    room: { size: [640, 360] },
+    [mode]: { site: "/links/" },
     readerSite: mode === "readerItem" ? "/about/" : null,
-    speech: "I'll keep this one.", speechUntil: 4, elapsed: 1,
+    speech: "I'll keep this one.",
+    speechUntil: 4,
+    elapsed: 1,
   };
   texts.length = 0;
   renderer.renderFooter(view);

@@ -37,11 +37,6 @@
       "fps": 8,
       "stride": 96
     },
-    "talk-front": {
-      "row": 4,
-      "frames": 2,
-      "fps": 4
-    },
     "idle-side": {
       "row": 1,
       "frames": 1,

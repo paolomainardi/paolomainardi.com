@@ -28,10 +28,6 @@
   "ink": "#482c17",
   "faded": "#786458",
   "accent": "#b0386b",
-  "fonts": {
-    "title": "fonts/title.json",
-    "body": "fonts/body.json"
-  },
   "curl": {
     "image": "curl.png",
     "rects": [

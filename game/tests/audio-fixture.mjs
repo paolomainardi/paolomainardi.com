@@ -1,3 +1,4 @@
+// Check audio fixture behavior against the engine and shipped fixtures.
 export class AudioParam {
   constructor(value = 1) {
     this.value = value;

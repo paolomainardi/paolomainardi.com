@@ -1,4 +1,5 @@
-// Each hexadecimal digit is one row of a hand-written 5 by 7 bitmap glyph.
+// Build the 5 by 7 bitmap UI font and wrap its fixed-width text.
+// Each pair of hexadecimal digits encodes one glyph row.
 const glyphs = {
   A: "0e11111f111111",
   B: "1e11111e11111e",

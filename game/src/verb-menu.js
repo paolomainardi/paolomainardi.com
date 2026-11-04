@@ -1,4 +1,5 @@
-import { measure, wrapText } from "./book.js";
+// Filter supported target actions and place context menus and exit cursors.
+import { wrapText } from "./book.js";
 import { wrap } from "./font.js";
 
 export function targetVerbs(verbs, target) {
@@ -6,8 +7,13 @@ export function targetVerbs(verbs, target) {
     if (verb === "Walk to" || verb === "Look at") return true;
     if (verb === "Use")
       return ["light", "exit", "inventory"].includes(target.kind);
-    if (verb === "Take") return ["book", "content"].includes(target.kind) ||
-      (target.kind === "hotspot" && (target.board || ["noticeboard", "letter", "logbook"].includes(target.id)));
+    if (verb === "Take")
+      return (
+        ["book", "content"].includes(target.kind) ||
+        (target.kind === "hotspot" &&
+          (target.board ||
+            ["noticeboard", "letter", "logbook"].includes(target.id)))
+      );
     if (verb === "Open")
       return (
         ["book", "content", "inventory"].includes(target.kind) ||
@@ -22,7 +28,7 @@ export function layoutMenu(target, verbs, point, size, font = null) {
   const body = font?.body,
     heading = font?.label;
   const textWidth = (text, role = body) =>
-    role ? measure(role, text) : text.length * 6;
+    role ? role.measure(text) : text.length * 6;
   const name = target.label || target.id;
   const width = Math.min(
     size[0],
@@ -70,4 +76,3 @@ export function exitCursor(target, [width, height]) {
   const arrow = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path transform="rotate(${angle} 12 12)" d="M3 8h9V3l9 9-9 9v-5H3z" fill="#f5e3b8" stroke="#1d202f" stroke-width="2"/></svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(arrow)}") 12 12, pointer`;
 }
-

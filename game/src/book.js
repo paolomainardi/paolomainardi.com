@@ -1,3 +1,4 @@
+// Load book art and fonts, paginate entries, and track routes and page drags.
 import { image, json, resolve, matchingItems } from "./assets.js";
 
 export async function loadFonts(book, url) {
@@ -7,7 +8,7 @@ export async function loadFonts(book, url) {
   );
   await face.load();
   document.fonts.add(face);
-  return [face];
+  return face;
 }
 
 export function bookFonts(book, context) {
@@ -38,7 +39,6 @@ export async function loadBook(url, renderer) {
     image(resolve(book.image, url)),
     image(resolve(book.turn.sheet, url)),
     image(resolve(book.curl.image, url)),
-    loadFonts(book, url),
   ]);
   if (
     bitmap.width !== 640 ||
@@ -49,8 +49,10 @@ export async function loadBook(url, renderer) {
     throw new Error(
       "Book drawings must match the frame and turn strip dimensions.",
     );
+  const fontFace = await loadFonts(book, url);
   return {
     ...book,
+    fontFace,
     texture: renderer.texture(bitmap),
     turn: {
       ...book.turn,
@@ -76,23 +78,19 @@ export function bookItems(items, filter) {
     : matches.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 }
 
-export function measure(font, text) {
-  return font.measure(String(text));
-}
-
 export function wrapText(font, text, width, maxLines = Infinity) {
   const lines = [];
   for (const paragraph of String(text).split("\n")) {
     let line = "";
     for (const word of paragraph.trim().split(/\s+/)) {
       if (!word) continue;
-      if (line && measure(font, line + " " + word) > width) {
+      if (line && font.measure(line + " " + word) > width) {
         lines.push(line);
         line = "";
       }
       if (line) line += " ";
       for (const char of word) {
-        if (line && measure(font, line + char) > width) {
+        if (line && font.measure(line + char) > width) {
           lines.push(line.trimEnd());
           line = "";
         }
@@ -103,13 +101,14 @@ export function wrapText(font, text, width, maxLines = Infinity) {
   }
   if (lines.length > maxLines) {
     let end = lines[maxLines - 1].trimEnd();
-    while (end && measure(font, end + "…") > width)
+    while (end && font.measure(end + "…") > width)
       end = Array.from(end).slice(0, -1).join("");
     return [...lines.slice(0, maxLines - 1), end.trimEnd() + "…"];
   }
   return lines;
 }
 
+// Fill complete entries into paired pages, reserving room for headings and numbers.
 export function layoutBook(book, topic) {
   const pages = [];
   let index = 0;
@@ -189,6 +188,7 @@ export function cornerHit(book, spread, pageCount, x, y) {
   return 0;
 }
 
+// Capture an available outer leaf while leaving entry presses available for reading.
 export function dragPage(book, spread, pageCount, x, y) {
   for (const direction of [-1, 1]) {
     const [px, py, width, height] = book.pages[direction < 0 ? 0 : 1];

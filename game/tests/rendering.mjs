@@ -1,3 +1,4 @@
+// Check rendering behavior against the engine and shipped fixtures.
 import assert from "node:assert/strict";
 import { layoutPanel } from "../src/panel.js";
 import { wrap } from "../src/font.js";
@@ -59,7 +60,6 @@ const game = {
   inventory: [],
   inventoryOffset: 0,
   verbTop: 324,
-  verbScale: 1,
   verb: "Open",
   verbRects: [{ label: "Open", x: 4, y: 170 }],
 };
@@ -172,6 +172,7 @@ Object.assign(upload, {
     getParameter: () => 256,
     bindTexture() {},
     texParameteri() {},
+    texImage2D() {},
     texImage3D(...args) {
       uploads.push(args);
     },
@@ -186,7 +187,7 @@ upload.setRoom({
   foreground: new Uint8Array(width * height * 4),
   items: [{ id: "lamp" }],
   ids,
-  lights: [{ id: "lamp", pixels }],
+  lights: [{ id: "lamp", pixels, position: [0, 0], tint: "#ffd08a" }],
 });
 assert.deepEqual([upload.scene.width, upload.scene.height], [width, height]);
 assert.deepEqual(
@@ -476,4 +477,33 @@ game.speechUntil = 4;
 calls.length = 0;
 renderer.render(game);
 assert(calls.some((call) => call.type === "footer"));
-assert(!calls.some((call) => call.type === "text" && ["Open", game.speech].includes(call.args[0])));
+assert(
+  !calls.some(
+    (call) =>
+      call.type === "text" && ["Open", game.speech].includes(call.args[0]),
+  ),
+);
+
+// Lamp storage is allocated at room load and updated only when values change.
+const lampUploads = [];
+const lamps = Object.create(Renderer.prototype);
+Object.assign(lamps, {
+  lightData: new Float32Array(12),
+  data: {},
+  gl: {
+    activeTexture() {},
+    bindTexture() {},
+    texSubImage2D(...args) {
+      lampUploads.push(args);
+    },
+  },
+});
+const lampRoom = { lights: [{ strength: 0.75, drift: [0.25, 0] }] };
+lamps.lights({ room: lampRoom });
+lamps.lights({ room: lampRoom });
+assert.equal(lampUploads.length, 1);
+lampRoom.lights[0].drift[0] = 0.5;
+lamps.lights({ room: lampRoom });
+assert.equal(lampUploads.length, 2);
+assert.equal(lamps.lightData[2], 0.75);
+assert.equal(lamps.lightData[8], 0.5);

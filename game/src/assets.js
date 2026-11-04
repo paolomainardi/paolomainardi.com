@@ -1,3 +1,4 @@
+// Load world data and room drawings, and derive masks and content bindings.
 import { buildWater } from "./water.js";
 
 export function resolve(path, base) {
@@ -40,17 +41,38 @@ export function matchingItems(items, filter = {}) {
     );
 }
 
-export async function loadWorld(worldURL, contentURL) {
+export async function loadWorld(
+  worldURL,
+  contentURL,
+  origin = new URL(contentURL).origin,
+) {
   const [world, content] = await Promise.all([
     json(worldURL),
     json(contentURL),
   ]);
+  const items = content.items.map((item) => {
+    const reader = item.reader ? resolve(item.reader, contentURL) : null;
+    if (reader && new URL(reader).origin !== origin)
+      throw new Error("Readers must stay on the page origin.");
+    return {
+      ...item,
+      link: item.link ? resolve(item.link, contentURL) : null,
+      url: item.url ? resolve(item.url, contentURL) : null,
+      reader,
+    };
+  });
+  const bitmaps = new Map();
+  const bitmap = (path, base) => {
+    const url = resolve(path, base);
+    if (!bitmaps.has(url)) bitmaps.set(url, image(url));
+    return bitmaps.get(url);
+  };
   const characterURL = resolve(world.character, worldURL);
   const character = await json(characterURL);
   const [palette, sheet, glow, objects] = await Promise.all([
-    image(resolve(world.palette, worldURL)),
-    image(resolve(character.sheet, characterURL)),
-    character.glow ? image(resolve(character.glow, characterURL)) : null,
+    bitmap(world.palette, worldURL),
+    bitmap(character.sheet, characterURL),
+    character.glow ? bitmap(character.glow, characterURL) : null,
     Promise.all(
       Object.entries(world.objects || {}).map(async ([key, value]) => {
         const paths = Array.isArray(value) ? value : [value];
@@ -63,9 +85,7 @@ export async function loadWorld(worldURL, contentURL) {
           );
         return [
           key,
-          await Promise.all(
-            paths.map((path) => image(resolve(path, worldURL))),
-          ),
+          await Promise.all(paths.map((path) => bitmap(path, worldURL))),
         ];
       }),
     ),
@@ -74,12 +94,7 @@ export async function loadWorld(worldURL, contentURL) {
     throw new Error("Character glow must match the sheet grid.");
   return {
     world,
-    items: content.items.map((item) => ({
-      ...item,
-      link: item.link ? resolve(item.link, contentURL) : null,
-      url: item.url ? resolve(item.url, contentURL) : null,
-      reader: item.reader ? resolve(item.reader, contentURL) : null,
-    })),
+    items,
     character: { ...character, sheet, glow },
     palette,
     objects: Object.fromEntries(objects),
@@ -90,7 +105,7 @@ export async function loadWorld(worldURL, contentURL) {
           {
             ...book,
             id,
-            bitmap: await image(resolve(book.sprite, worldURL)),
+            bitmap: await bitmap(book.sprite, worldURL),
           },
         ]),
       ),
@@ -98,8 +113,9 @@ export async function loadWorld(worldURL, contentURL) {
   };
 }
 
+// Derive floor, item ids and foreground baselines from exact mask colours.
 export async function loadRoom(world, worldURL, id, renderer) {
-  const config = world.rooms[id];
+  const config = Object.hasOwn(world.rooms, id) ? world.rooms[id] : null;
   if (!config) throw new Error(`Unknown room: ${id}`);
   const url = resolve(config.src, worldURL),
     room = await json(url);

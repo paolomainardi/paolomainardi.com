@@ -1,3 +1,4 @@
+// Find walkable destinations and smooth eight-direction paths without corner cutting.
 const index = (x, y, width) => y * width + x;
 
 export function nearestWalkable(mask, x, y, [W, H]) {
@@ -39,6 +40,7 @@ function visible(mask, a, b, W) {
   return true;
 }
 
+// Search eight neighbours with A*, then replace visible runs with straight segments.
 export function findPath(mask, from, to, size) {
   const [W, H] = size;
   const start = nearestWalkable(mask, ...from, size),

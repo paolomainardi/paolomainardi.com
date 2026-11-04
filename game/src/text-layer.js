@@ -1,36 +1,41 @@
+// Cache close-up and menu text on a transparent canvas at game resolution.
 import { boardText } from "./board.js";
-import { measure } from "./book.js";
 
 export class TextLayer {
   constructor(canvas = document.createElement("canvas")) {
     this.canvas = canvas;
     this.context = canvas.getContext("2d");
-    this.revision = 0;
+    this.key = [];
+    this.nextKey = [];
   }
   update(game) {
     const [width, height] = game.room.size;
-    const key = [
-      game.activeBook,
-      game.activeBoard,
-      game.boardPage,
-      game.boardNote,
-      game.inventoryNote,
-      game.inventory?.length,
-      game.spread,
-      game.hover,
-      game.menu,
-      game.menu?.selected,
-      width,
-      height,
-    ];
-    if (this.key && key.every((value, i) => value === this.key[i]))
-      return false;
+    const key = this.nextKey;
+    key[0] = game.activeBook;
+    key[1] = game.activeBoard;
+    key[2] = game.boardPage;
+    key[3] = game.boardNote;
+    key[4] = game.inventoryNote;
+    key[5] = game.inventory?.length;
+    key[6] = game.spread;
+    key[7] = game.hover;
+    key[8] = game.menu;
+    key[9] = game.menu?.selected;
+    key[10] = width;
+    key[11] = height;
+    let changed = false;
+    for (let i = 0; i < key.length; i++)
+      if (key[i] !== this.key[i]) {
+        changed = true;
+        break;
+      }
+    if (!changed) return false;
+    this.nextKey = this.key;
     this.key = key;
     this.canvas.width = width;
     this.canvas.height = height;
     const ctx = this.context,
       book = game.bookArt;
-    this.revision++;
     if (!book) return true;
     const text = (font, value, x, y, color) => {
       ctx.font = font.css;
@@ -71,7 +76,7 @@ export class TextLayer {
         text(
           book.fonts.label,
           number,
-          page.x + (page.width - measure(book.fonts.label, number)) / 2,
+          page.x + (page.width - book.fonts.label.measure(number)) / 2,
           page.y + page.height - book.fonts.label.lineHeight,
           book.faded,
         );
@@ -84,7 +89,8 @@ export class TextLayer {
         game.boardNote,
         game.hover,
         book.fonts,
-        !game.inventoryNote && !game.inventory?.some((item) => item.note?.id === game.boardNote?.id),
+        !game.inventoryNote &&
+          !game.inventory?.some((item) => item.note?.id === game.boardNote?.id),
       ))
         text(line.font, line.value, line.x, line.y, line.color);
     }

@@ -1,3 +1,4 @@
+// Check shaders behavior against the engine and shipped fixtures.
 import { Renderer } from "../src/renderer.js";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, writeFileSync } from "node:fs";

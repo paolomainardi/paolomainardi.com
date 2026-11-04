@@ -1,4 +1,5 @@
-// Sound definitions and event bindings belong to the world, never to room logic.
+// Mix world-defined ambience and effects, and manage their audio-context lifetime.
+import { resolve } from "./assets.js";
 const presets = {
   surf: { frequency: 650, duration: 4, level: 0.32 },
   wind: { frequency: 280, duration: 4, level: 0.22 },
@@ -10,18 +11,17 @@ const presets = {
   whoosh: { frequency: 700, duration: 0.5, level: 0.25 },
 };
 
-export function soundPosition(room, actor, entry) {
+export function soundPosition(room, actor, entry, result = {}) {
   const item = room.items.find((item) => item.id === entry.at);
   const position = item?.position;
   const distance = position
     ? Math.hypot(actor.x - position[0], actor.y - position[1]) / room.size[0]
     : 0;
-  return {
-    gain: 1 / (1 + 2 * distance),
-    pan: position
-      ? Math.max(-1, Math.min(1, (position[0] - actor.x) / (room.size[0] / 2)))
-      : 0,
-  };
+  result.gain = 1 / (1 + 2 * distance);
+  result.pan = position
+    ? Math.max(-1, Math.min(1, (position[0] - actor.x) / (room.size[0] / 2)))
+    : 0;
+  return result;
 }
 
 // Both feet contact once per cycle, independent of frame rate and walking speed.
@@ -34,11 +34,13 @@ export class SoundEngine {
     world,
     url,
     Context = globalThis.AudioContext || globalThis.webkitAudioContext,
+    context = null,
   ) {
     this.world = world;
     this.url = url;
     this.Context = Context;
     this.context = null;
+    this.startContext = context;
     this.muted = false;
     this.ducked = false;
     this.disposed = false;
@@ -58,7 +60,7 @@ export class SoundEngine {
   start() {
     if (this.disposed || !this.Context) return;
     if (!this.context) {
-      this.context = new this.Context();
+      this.context = this.startContext || new this.Context();
       const c = this.context;
       this.master = c.createGain();
       this.duck = c.createGain();
@@ -106,7 +108,13 @@ export class SoundEngine {
   }
 
   buffer(src) {
-    const url = new URL(src, this.url).href;
+    let url;
+    try {
+      url = resolve(src, this.url);
+    } catch (error) {
+      this.warn(String(src), error);
+      return Promise.resolve(null);
+    }
     if (!this.buffers.has(url)) {
       this.buffers.set(
         url,
@@ -176,12 +184,14 @@ export class SoundEngine {
       for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
       const filter = c.createBiquadFilter();
       nodes.push(filter);
-      filter.type = ["surf"].includes(definition.synth)
-        ? "lowpass"
-        : "bandpass";
+      filter.type = definition.synth === "surf" ? "lowpass" : "bandpass";
       filter.frequency.value = params.frequency ?? preset.frequency;
       filter.Q.value =
-        definition.synth === "creak" ? 14 : definition.synth === "step" ? 1.4 : 0.7;
+        definition.synth === "creak"
+          ? 14
+          : definition.synth === "step"
+            ? 1.4
+            : 0.7;
       source.playbackRate.value = 0.9 + Math.random() * 0.2;
       source.connect(filter);
       filter.connect(envelope);
@@ -310,7 +320,12 @@ export class SoundEngine {
 
   position(slot, game, seconds = 0.08) {
     const { entry, voice } = slot;
-    const spatial = soundPosition(game.room, game.actor, entry);
+    const spatial = soundPosition(
+      game.room,
+      game.actor,
+      entry,
+      (slot.spatial ||= {}),
+    );
     const lamp = entry.light
       ? (game.room.lights.find((light) => light.id === entry.light)?.level ?? 0)
       : 1;
@@ -327,6 +342,7 @@ export class SoundEngine {
   }
 
   destroy() {
+    if (this.disposed) return;
     this.disposed = true;
     this.loops.forEach((slot) => {
       slot.retired = true;
@@ -336,6 +352,8 @@ export class SoundEngine {
       voice.nodes.forEach((node) => node.disconnect());
     }
     this.voices.clear();
-    this.context?.close().catch((error) => this.warn("audio context", error));
+    (this.context || this.startContext)
+      ?.close()
+      .catch((error) => this.warn("audio context", error));
   }
 }

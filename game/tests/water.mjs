@@ -1,3 +1,4 @@
+// Check water behavior against the engine and shipped fixtures.
 import assert from "node:assert/strict";
 import { buildWater, waterFrame, reflectionPeak } from "../src/water.js";
 import { Renderer } from "../src/renderer.js";

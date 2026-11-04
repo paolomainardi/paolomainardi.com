@@ -63,7 +63,11 @@ class Element extends EventTarget {
 }
 const document = new EventTarget();
 document.baseURI = "https://adventure.test/dev/";
-document.fonts = { add() {} };
+const fontFaces = new Set();
+document.fonts = {
+  add: (face) => fontFaces.add(face),
+  delete: (face) => fontFaces.delete(face),
+};
 document.head = new Element("head");
 document.createElement = (tag) => new Element(tag);
 const window = new EventTarget();
@@ -73,12 +77,14 @@ window.open = (...args) => {
   opened.push({ args, position: [rendered.actor.x, rendered.actor.y] });
   return null; // noopener may return null even when the browser opens the tab.
 };
-const location = { hash: "", origin: "https://page.test" };
-let legacyBooks = true;
+const location = { hash: "", origin: "https://adventure.test" };
+let singleContentMode = true;
 let animationStart = 0;
 let objectPaths,
   contentOverride,
-  legacyRoom = false;
+  missingLampDrawings = false;
+const requests = [];
+let renderCount = 0;
 let nextFrame,
   time = 1000,
   rendered;
@@ -101,12 +107,14 @@ class Renderer {
   setRoom() {}
   resize() {}
   render(game) {
+    renderCount++;
     rendered = game;
   }
   destroy() {
     this.destroyed = true;
   }
 }
+const decodedImages = new Map();
 const context = vm.createContext({
   AudioContext,
   URL,
@@ -139,12 +147,13 @@ const context = vm.createContext({
     nextFrame = null;
   },
   async fetch(url) {
+    requests.push(String(url));
     const path = base + new URL(url).pathname.slice(1);
     return {
       ok: true,
       json: async () => {
         const data = JSON.parse(readFileSync(path, "utf8"));
-        if (path.endsWith("/data/world.json") && legacyBooks) {
+        if (path.endsWith("/data/world.json") && singleContentMode) {
           delete data.books;
           delete data.book;
           delete data.boards;
@@ -152,7 +161,7 @@ const context = vm.createContext({
           data.rooms["stone-house"].content = { series: "workstation" };
           data.rooms["stone-house"].object = "book";
         }
-        if (path.endsWith("/data/content.json") && legacyBooks)
+        if (path.endsWith("/data/content.json") && singleContentMode)
           data.items = data.items.filter(
             (item) => !item.part || item.part <= 6,
           );
@@ -160,9 +169,8 @@ const context = vm.createContext({
           data.objects.book = objectPaths;
         if (path.endsWith("/content.json") && contentOverride)
           data.items = contentOverride;
-        if (path.endsWith("/room.json") && legacyRoom)
+        if (path.endsWith("/room.json") && missingLampDrawings)
           for (const state of Object.values(data.states)) {
-            state.lit = state.unlit;
             delete state.lights;
           }
         if (path.endsWith("/data/character/character.json") && animationStart) {
@@ -175,12 +183,26 @@ const context = vm.createContext({
     };
   },
   async createImageBitmap(blob) {
-    const result = spawnSync(python, [
-      "-c",
-      "from PIL import Image; import sys,struct; i=Image.open(sys.argv[1]).convert('RGBA'); sys.stdout.buffer.write(struct.pack('<II',*i.size)+i.tobytes())",
-      blob.path,
-    ]);
-    if (result.status) throw new Error(result.stderr.toString());
+    let result = decodedImages.get(blob.path);
+    if (!result) {
+      result = spawnSync(
+        python,
+        [
+          "-c",
+          "from PIL import Image; import sys,struct; i=Image.open(sys.argv[1]).convert('RGBA'); sys.stdout.buffer.write(struct.pack('<II',*i.size)+i.tobytes())",
+          blob.path,
+        ],
+        { maxBuffer: 64 * 1024 * 1024 },
+      );
+      if (result.status !== 0)
+        throw result.error || new Error(result.stderr.toString());
+      assert.equal(
+        result.stdout.length,
+        8 + result.stdout.readUInt32LE(0) * result.stdout.readUInt32LE(4) * 4,
+        "PNG decoder must return every pixel",
+      );
+      decodedImages.set(blob.path, result);
+    }
     return {
       width: result.stdout.readUInt32LE(0),
       height: result.stdout.readUInt32LE(4),
@@ -206,6 +228,17 @@ async function moduleAt(url) {
   const module = new vm.SourceTextModule(source, {
     context,
     identifier: url,
+    async importModuleDynamically(specifier, parent) {
+      const imported = await moduleAt(
+        new URL(specifier, parent.identifier).href,
+      );
+      if (imported.status === "unlinked")
+        await imported.link((specifier, parent) =>
+          moduleAt(new URL(specifier, parent.identifier).href),
+        );
+      if (imported.status === "linked") await imported.evaluate();
+      return imported;
+    },
     initializeImportMeta(meta) {
       meta.url = url;
     },
@@ -218,6 +251,12 @@ await module.link((specifier, parent) =>
   moduleAt(new URL(specifier, parent.identifier).href),
 );
 await module.evaluate();
+async function startedBoot(options) {
+  const instance = await module.namespace.boot(options);
+  options.element.children[0].children[1].children[3].click();
+  await instance.ready;
+  return instance;
+}
 const container = new Element("main");
 const controller = await module.namespace.boot({
   world: "./data/world.json",
@@ -263,7 +302,17 @@ assert.equal(
   0,
   "Boot must not create audio before Start",
 );
+assert.equal(requests.length, 0, "No data or drawings before Start");
+assert.equal(controller.state, null);
 event(cover.children[3], "click");
+const firstReady = controller.ready;
+event(cover.children[3], "click");
+assert.equal(
+  controller.ready,
+  firstReady,
+  "Repeated Start clicks share initialization",
+);
+await controller.ready;
 step();
 assert.equal(AudioContext.instances.length, 1);
 const soundEvents = [];
@@ -279,9 +328,15 @@ assert.equal(rendered.sound.muted, false);
 document.hidden = true;
 event(document, "visibilitychange");
 assert.equal(rendered.sound.context.state, "suspended");
+const hiddenRenders = renderCount,
+  hiddenElapsed = rendered.elapsed;
+step(10);
+assert.equal(renderCount, hiddenRenders);
+assert.equal(rendered.elapsed, hiddenElapsed);
 document.hidden = false;
 event(document, "visibilitychange");
 assert.equal(rendered.sound.context.state, "running");
+step();
 // Speed is 120 pixels per second at depth scale 1, and doubles for one walk only.
 const depth = rendered.room.depth;
 rendered.room.depth = { far: [150, 1], near: [265, 1] };
@@ -583,6 +638,7 @@ assert.equal(
   "https://adventure.test/dev/reader/workstation-1.html",
 );
 const frozen = JSON.stringify(controller.state);
+const readerRenders = renderCount;
 click(40, 300);
 key("t");
 key("g");
@@ -592,6 +648,7 @@ assert.equal(
   frozen,
   "Reader pauses input and simulation",
 );
+assert.equal(renderCount, readerRenders, "Reader pauses rendering");
 event(reader, "keydown", { key: "Escape" });
 assert.equal(reader.hidden, true);
 assert.equal(controller.state.reader, null);
@@ -819,7 +876,7 @@ location.hash = "#stone-house/workstation-2";
 objectPaths = "objects/book.png";
 animationStart = 1;
 const secondContainer = new Element("main");
-const second = await module.namespace.boot({
+const second = await startedBoot({
   world: "./data/world.json",
   content: "./data/content.json",
   element: secondContainer,
@@ -901,13 +958,22 @@ for (const field of ["link", "url"]) {
     );
   }
 }
+contentOverride = [
+  { id: "unsafe-reader", reader: "https://other.test/reader.html" },
+];
+await assert.rejects(
+  assetsModule.namespace.loadWorld(
+    "https://adventure.test/dev/data/world.json",
+    "https://adventure.test/dev/data/content.json",
+  ),
+  /Readers must stay on the page origin/,
+);
 contentOverride = undefined;
-// Build an explicit legacy fixture; real artwork may already follow the current contract.
-legacyRoom = true;
-// Legacy shared-lit drawings must fail clearly rather than silently lighting incorrectly.
+// Missing lamp drawings fail at the asset boundary.
+missingLampDrawings = true;
 location.hash = "";
 await assert.rejects(
-  module.namespace.boot({
+  startedBoot({
     world: "./real/world.json",
     content: "./data/content.json",
     element: new Element("main"),
@@ -915,9 +981,9 @@ await assert.rejects(
   /one drawing per lamp/,
 );
 // Load the shipped art as well as the placeholders and walk on its own mask.
-legacyRoom = false;
+missingLampDrawings = false;
 const realContainer = new Element("main");
-const real = await module.namespace.boot({
+const real = await startedBoot({
   world: "./real/world.json",
   content: "./data/content.json",
   element: realContainer,
@@ -946,10 +1012,10 @@ console.log(
 );
 
 // Book mode uses the shipped topic bindings and close-up assets.
-legacyBooks = false;
-location.hash = "#stone-house";
+singleContentMode = false;
+location.hash = "#constructor";
 const bookContainer = new Element("main");
-const books = await module.namespace.boot({
+const books = await startedBoot({
   world: "./data/world.json",
   content: "./data/content.json",
   element: bookContainer,
@@ -1020,7 +1086,7 @@ assert.equal(bookCanvas.style.cursor, "pointer");
 event(bookCanvas, "click", { clientX: entry.x + 1, clientY: entry.y + 1 });
 assert.equal(books.state.reader, entry.item.id);
 assert.equal(bookReader.children[2].href, entry.item.url);
-assert.equal(bookReader.children[2].rel, "noopener");
+assert.equal(bookReader.children[2].rel, "noopener noreferrer");
 assert.equal(bookReader.children[2].target, "_blank");
 let readerEscapeStopped = false;
 bookReader.addEventListener("keydown", (event) => {
@@ -1125,7 +1191,7 @@ assert(bookSoundEvents.includes("page-turn"));
 books.destroy();
 location.hash = "#stone-house/book/workstation/1";
 const reloadContainer = new Element("main");
-const reloaded = await module.namespace.boot({
+const reloaded = await startedBoot({
   world: "./real/world.json",
   content: "./data/content.json",
   element: reloadContainer,
@@ -1156,7 +1222,7 @@ const storage = {
 window.localStorage = storage;
 location.hash = "#stone-house";
 const adventureContainer = new Element("main");
-const adventure = await module.namespace.boot({
+const adventure = await startedBoot({
   world: "./data/world.json",
   content: "./data/content.json",
   element: adventureContainer,
@@ -1230,7 +1296,7 @@ for (const verb of ["Open"]) {
   tap(site.x + 1, site.y + 1);
   assert.equal(
     clickedLinks.at(-1).href,
-    "https://page.test/posts/manage-dotfiles-with-yadm/#series",
+    "https://adventure.test/posts/manage-dotfiles-with-yadm/#series",
   );
   event(adventureRoot, "keydown", { key: "Escape" });
 }
@@ -1324,9 +1390,9 @@ const checkSite = (path) => {
   tap(rect.x + 1, rect.y + 1);
   assert.equal(clickedLinks.length, count + 1);
   assert.deepEqual(clickedLinks.at(-1), {
-    href: `https://page.test${path}`,
+    href: `https://adventure.test${path}`,
     target: "_blank",
-    rel: "noopener",
+    rel: "noopener noreferrer",
   });
   event(adventureCanvas, "pointerleave");
   assert.equal(rendered.siteHover, false);
@@ -1342,7 +1408,7 @@ assert.equal(clickedLinks.length, linksBefore + 1);
 assert.deepEqual(clickedLinks.at(-1), {
   href: linkEntry.link,
   target: "_blank",
-  rel: "noopener",
+  rel: "noopener noreferrer",
 });
 assert.equal(rendered.sentence(), "Opening the link…");
 assert.equal(adventure.state.reader, null);
@@ -1413,7 +1479,11 @@ let taken = rendered.inventory.at(-1);
 assert.equal(taken.sprite, notices.art.sprites[notices.art.notices[0].paper]);
 assert.equal(taken.pin, notices.art.sprites[notices.art.pin]);
 tap(...takeRect.slice(0, 2));
-assert.equal(rendered.speech, "I'll keep this one.", "Inactive take does not speak again");
+assert.equal(
+  rendered.speech,
+  "I'll keep this one.",
+  "Inactive take does not speak again",
+);
 assert.equal(adventure.state.inventory.length, beforeTaking + 1);
 tap(...notices.art.note.back.slice(0, 2));
 assert.equal(adventure.state.note, null);
@@ -1483,7 +1553,7 @@ for (const verb of ["Look at", "Open", "Walk to"]) {
     tap(...notices.art.note.go.slice(0, 2));
     assert.equal(clickedLinks.length, count + 1);
     assert.equal(clickedLinks.at(-1).href, taken.note.link);
-    assert.equal(clickedLinks.at(-1).rel, "noopener");
+    assert.equal(clickedLinks.at(-1).rel, "noopener noreferrer");
     tap(...notices.art.note.back.slice(0, 2));
     assert.equal(adventure.state.board, null);
     assert.equal(location.hash, "#stone-house");
@@ -1604,7 +1674,7 @@ stored.set(
 );
 location.hash = "#stone-house";
 const freshContainer = new Element("main");
-const fresh = await module.namespace.boot({
+const fresh = await startedBoot({
   world: "./data/world.json",
   content: "./data/content.json",
   element: freshContainer,
@@ -1652,7 +1722,7 @@ fresh.destroy();
 contentOverride = undefined;
 for (const value of ["{broken", "null", "{}", '"text"']) {
   stored.set(inventoryKey, value);
-  const instance = await module.namespace.boot({
+  const instance = await startedBoot({
     world: "./data/world.json",
     content: "./data/content.json",
     element: new Element("main"),
@@ -1689,7 +1759,7 @@ for (const failure of [
       },
     };
   const target = new Element("main");
-  const instance = await module.namespace.boot({
+  const instance = await startedBoot({
     world: "./data/world.json",
     content: "./data/content.json",
     element: target,
@@ -1733,7 +1803,7 @@ console.log(
   // Real lighthouse masks and bindings must open the found papers after arrival.
   location.hash = "#lighthouse";
   const realContainer = new Element("main");
-  const real = await module.namespace.boot({
+  const real = await startedBoot({
     world: "./real/world.json",
     content: "./data/content.json",
     element: realContainer,
@@ -1750,8 +1820,13 @@ console.log(
     assert.equal(paper.content.type, kind);
     const take = rendered.verbRects.find((rect) => rect.label === "Take");
     event(realCanvas, "click", { clientX: take.x + 1, clientY: take.y + 1 });
-    const takePixel = rendered.room.ids.findIndex((value) => rendered.room.items[value] === paper);
-    event(realCanvas, "click", { clientX: takePixel % 640, clientY: Math.floor(takePixel / 640) });
+    const takePixel = rendered.room.ids.findIndex(
+      (value) => rendered.room.items[value] === paper,
+    );
+    event(realCanvas, "click", {
+      clientX: takePixel % 640,
+      clientY: Math.floor(takePixel / 640),
+    });
     for (let i = 0; i < 600 && real.state.walking; i++) step();
     assert.equal(rendered.speech, "It belongs to the keeper.");
     assert.equal(real.state.reader, null);
@@ -1782,7 +1857,10 @@ console.log(
       assert.equal(realRoot.children[2].children[1].src, paper.content.reader);
       const elapsed = rendered.elapsed;
       for (let i = 0; i < 200; i++) step();
-      assert(rendered.elapsed >= elapsed + 3, "Reader keeps feedback expiry clock running");
+      assert(
+        rendered.elapsed >= elapsed + 3,
+        "Reader keeps feedback expiry clock running",
+      );
       assert.equal(opened.length, tabs);
       event(realRoot.children[2], "keydown", { key: "Escape" });
       if (verb) {
@@ -1795,7 +1873,8 @@ console.log(
     }
   }
   // Direct lighthouse travel uses the path exit, with the normal fade, bypassing the map.
-  const realTap = (x, y) => event(realCanvas, "click", { clientX: x, clientY: y });
+  const realTap = (x, y) =>
+    event(realCanvas, "click", { clientX: x, clientY: y });
   const enterRoom = async (id) => {
     location.hash = `#${id}`;
     event(window, "hashchange");
@@ -1803,7 +1882,9 @@ console.log(
     step();
   };
   const itemPixel = (item) => {
-    const i = rendered.room.ids.findIndex((value) => rendered.room.items[value] === item);
+    const i = rendered.room.ids.findIndex(
+      (value) => rendered.room.items[value] === item,
+    );
     return [i % 640, Math.floor(i / 640)];
   };
   for (const verb of [null, "Open", "Walk to"]) {
@@ -1818,7 +1899,9 @@ console.log(
     const [px, py] = itemPixel(path);
     event(realCanvas, "pointermove", { clientX: px, clientY: py });
     assert.equal(rendered.sentence(), "Walk to Island path");
-    assert(decodeURIComponent(realCanvas.style.cursor).includes("rotate(0 12 12)"));
+    assert(
+      decodeURIComponent(realCanvas.style.cursor).includes("rotate(0 12 12)"),
+    );
     rendered.verb = "Look at";
     realTap(...itemPixel(target));
     for (let i = 0; i < 600 && real.state.walking; i++) step();
@@ -1830,7 +1913,11 @@ console.log(
     assert.equal(rendered.pending.target.via.id, "path");
     for (let i = 0; i < 600 && real.state.walking; i++) step();
     assert.equal(rendered.transition.to, "lighthouse");
-    const pathPoint = pathfinding.namespace.nearestWalkable(rendered.room.walkable, ...path.position, rendered.room.size);
+    const pathPoint = pathfinding.namespace.nearestWalkable(
+      rendered.room.walkable,
+      ...path.position,
+      rendered.room.size,
+    );
     assert.deepEqual(Array.from(real.state.position), Array.from(pathPoint));
     for (let i = 0; i < 100 && rendered.transition; i++) {
       step();
@@ -1838,15 +1925,23 @@ console.log(
     }
     assert.equal(real.state.room, "lighthouse");
     assert.equal(location.hash, "#lighthouse");
-    assert.equal(rendered.room.items.find((item) => item.id === "stairs").to, "map");
+    assert.equal(
+      rendered.room.items.find((item) => item.id === "stairs").to,
+      "map",
+    );
   }
   // Baselines come from the lowest mask row of each real foreground item.
-  for (const [room, ids] of [["harbour", ["cargo", "quay-posts"]], ["stone-house", ["chair"]]]) {
+  for (const [room, ids] of [
+    ["harbour", ["cargo", "quay-posts"]],
+    ["stone-house", ["chair"]],
+  ]) {
     await enterRoom(room);
     for (const id of ids) {
       const item = rendered.room.items.find((item) => item.id === id);
       const index = rendered.room.items.indexOf(item);
-      const pixels = Array.from(rendered.room.ids).flatMap((value, i) => value === index ? [i] : []);
+      const pixels = Array.from(rendered.room.ids).flatMap((value, i) =>
+        value === index ? [i] : [],
+      );
       const baseline = Math.max(...pixels.map((i) => Math.floor(i / 640)));
       assert.equal(item.baseline, baseline);
       for (const i of pixels) {
@@ -1855,7 +1950,10 @@ console.log(
         assert.equal(mask[3], 255);
       }
       for (const feet of [baseline - 1, baseline, baseline + 1]) {
-        const mask = rendered.room.foreground.slice(pixels[0] * 4, pixels[0] * 4 + 4);
+        const mask = rendered.room.foreground.slice(
+          pixels[0] * 4,
+          pixels[0] * 4 + 4,
+        );
         assert.equal(feet < mask[0] * 256 + mask[1], feet < baseline);
       }
     }
@@ -1863,3 +1961,20 @@ console.log(
   real.destroy();
   console.log("Real lighthouse letter and logbook readers passed.");
 }
+
+// Destroying an untouched title must not load data or create an audio context.
+const beforeIdleRequests = requests.length;
+const beforeIdleAudio = AudioContext.instances.length;
+const idleContainer = new Element("main");
+const idle = await module.namespace.boot({
+  world: "./real/world.json",
+  content: "./data/content.json",
+  element: idleContainer,
+});
+assert.equal(idle.ready, null);
+idle.destroy();
+assert.equal(requests.length, beforeIdleRequests);
+assert.equal(AudioContext.instances.length, beforeIdleAudio);
+assert(idleContainer.children[0].removed);
+
+assert.equal(fontFaces.size, 0, "Destroyed games release their font faces");

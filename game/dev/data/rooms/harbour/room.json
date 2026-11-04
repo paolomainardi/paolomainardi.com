@@ -65,7 +65,8 @@
       "kind": "light",
       "label": "Lighthouse",
       "light": "beacon",
-      "color": "#ffff00"
+      "color": "#ffff00",
+      "tint": "#ffd08a"
     }
   ]
 }

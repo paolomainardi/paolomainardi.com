@@ -1,3 +1,4 @@
+// Lay out verbs, inventory icons, and site links in game coordinates.
 export function layoutPanel([width, height], verbs) {
   const top = height - 36;
   const capacity = Math.max(1, Math.floor((width - 392) / 32));
@@ -69,7 +70,10 @@ export function siteLayout(game) {
     path,
     label,
     x: right - label.length * 6,
-    y: game.activeBook || game.activeBoard || game.readerItem ? height - 16 : height - 32,
+    y:
+      game.activeBook || game.activeBoard || game.readerItem
+        ? height - 16
+        : height - 32,
     width: label.length * 6,
     height: 8,
   };

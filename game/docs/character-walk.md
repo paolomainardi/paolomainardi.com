@@ -1,88 +1,46 @@
 # How a character walks
 
-This guide explains how the engine moves a character, and how to build side, front and back
-walks that looks natural for any character with `tools/rig_walk.py`.
+Draw standing poses, measure their joints in `rig.json`, then run `tools/rig_walk.py` to build side, front and back walks. The tool cuts the legs and lantern from the poses, moves them through a gait cycle and writes the resulting frames into the character sheets.
 
-The short version: draw standing poses, measure their joints, write
-`rig.json`, and run the tool. The tool cuts legs and lanterns from the poses,
-moves them with human gait angles, and writes all three walks into the sheet.
-A separate clean side body and near arm let the free arm swing.
+## Runtime movement
 
-## How the engine moves a character
+The engine finds a path through painted floor and follows it at a speed scaled by depth. Running doubles the distance travelled. Each segment selects `walk-side`, `walk-front` or `walk-back`; hysteresis prevents rapid switching around diagonals. Side motion mirrors for left.
 
-1. **Path.** A click on the floor finds a path through the walkable area. The
-   character follows it at a fixed speed, scaled by depth, twice as fast when
-   running.
-2. **Direction.** Each path segment picks `walk-side`, `walk-front` or
-   `walk-back`. A little hysteresis stops a near-diagonal path from flickering
-   between them. Walking left mirrors the side walk.
-3. **Frames follow distance, not time.** A walk animation with a `stride` (the
-   distance its feet cover in one cycle, at scale 1) shows the frame that
-   matches the distance walked so far:
+Walks with a positive `stride` advance by travelled distance, using the depth at each movement step:
 
-   ```text
-   frame = floor(distance / (stride × depth) × frames) mod frames
-   ```
+```text
+phase += step_distance / (stride × step_depth)
+frame = floor(phase × frames) mod frames
+```
 
-   This is what keeps the feet planted, at any speed and depth. The classic
-   SCUMM engine did the same thing differently: it moved the actor a fixed
-   number of pixels on every animation frame.
+Phase survives changes in direction and stride. Animations without `stride` use elapsed animation time and `fps`. On stopping, the engine selects `idle-side`, `idle-back` or `idle-front`; missing side/back idles fall back to unmirrored `idle-front`.
 
-4. **Standing.** When the path ends, the character keeps facing the way it
-   walked: `idle-side`, `idle-back`, or `idle-front`.
+The engine uses only [character metadata](../CONTRACT.md#characterjson), not the rig. The rig is an authoring input that produces sheet pixels and stride values.
 
-The data lives in `character.json` (see [CONTRACT.md](../CONTRACT.md)). For a
-walk, the fields that matter are `row`, `frames` and `stride`.
+## Prepare the sheets
 
-## What makes a walk look right
+Use a transparent standing pose in each cell, with straight legs, both feet grounded and the side view facing right. Keep the near leg visible below the clothing. Leave a held lantern clear of the body. Use the world palette and consistent cell dimensions.
 
-These rules hold for any walk, drawn by hand or built by the tool.
+Before running the tool, define the standing pose animations and output `walk-side` row in `character.json`. Define `walk-front` and `walk-back` rows when enabling those rigs. The output sheet must already be tall enough for every target row: the tool expands its width for the frame count but does not increase its height. Use separate source-pose rows if repeat generation should preserve the original poses.
 
-- **The planted foot moves back evenly.** Between two frames, the foot on the
-  ground must move back by the same distance every time: `stride / frames`.
-  Uneven spacing makes the feet skate, whatever the engine does.
-- **Small bob.** The body rises when the legs pass each other and is lowest
-  when both feet touch. About 1% of the figure's height (2 px for a 213 px
-  character) is enough; more looks like hopping.
-- **Clear phases.** Heel strike with the toes up, the foot flat, push-off from
-  the toes, then the knee bends as the leg swings forward.
-- **The far side is darker.** The far leg (and arm) a shade darker and cooler,
-  so left and right alternate visibly at small size.
-- **Opposite swing.** Arms swing against the legs. A held object (the lantern)
-  sways a little, behind the motion of the hand.
+A supplied glow sheet must share the sheet grid. The tool writes white flame pixels into the corresponding output rows. If `character.glow` is absent, it writes only the visible sheet.
 
-## Build a side walk with `rig_walk.py`
+## Measure the side pose
 
-### 1. Draw the standing side pose
+Measurements use cell pixels from the top left. Points are `[x, y]`. Crop boxes are `[x0, y0, x1, y1]`, excluding the last edges.
 
-The tool starts from the `idle-side` frame of the sheet, facing right:
+| Measurement     | What to measure                              |
+| --------------- | -------------------------------------------- |
+| `hem`           | Last upper-body row, above the exposed legs. |
+| `joints.hip`    | Hip pivot hidden beneath the coat.           |
+| `joints.knee`   | Knee pivot where trousers bend.              |
+| `joints.ankle`  | Boot pivot above the heel.                   |
+| `shin`          | Trouser-leg box between hem and boot.        |
+| `boot`          | Boot box down to the sole.                   |
+| `lantern.box`   | Held object below the hand.                  |
+| `lantern.pivot` | Hand position from which the lantern swings. |
 
-- both feet flat on the ground, legs straight and together;
-- the near leg fully visible below the clothes;
-- a held object hanging free, away from the body, if there is one;
-- the same palette and cell size as the rest of the sheet.
-
-### 2. Measure the joints
-
-Open the pose enlarged with a pixel ruler (the tool's preview or any image
-editor) and note, in cell pixels, measured from the top left of the cell:
-
-| What            | How to find it                                                           |
-| :-------------- | :----------------------------------------------------------------------- |
-| `hem`           | Last row of the coat or skirt. Everything below it is legs.              |
-| `joints.hip`    | Hidden under the coat: about 53% of the figure's height above the soles. |
-| `joints.knee`   | Where the trouser bends; roughly halfway between hip and ankle.          |
-| `joints.ankle`  | Top of the boot, above the heel.                                         |
-| `shin`          | Box from the hem to the boot top, wide enough for the trouser leg.       |
-| `boot`          | Box around the boot, down to the soles.                                  |
-| `lantern.box`   | Box around the held object, below the hand.                              |
-| `lantern.pivot` | The point where the hand holds it: the object swings from here.          |
-
-Boxes are `[x0, y0, x1, y1]`, with `x1` and `y1` excluded. Points are `[x, y]`.
-
-### 3. Write `rig.json`
-
-Put it next to `character.json`. The current character's file:
+Place `rig.json` beside `character.json`. This side-rig example uses the shipped character's cell measurements:
 
 ```json
 {
@@ -105,144 +63,63 @@ Put it next to `character.json`. The current character's file:
 }
 ```
 
-| Key                        | Meaning                                                                                        |
-| :------------------------- | :--------------------------------------------------------------------------------------------- |
-| `palette`                  | The world palette; every new pixel is mapped to it.                                            |
-| `pose`                     | The animation whose first frame is the standing pose.                                          |
-| `frames`                   | Frames in one walk cycle. 12 is smooth; 8 is enough for small characters.                      |
-| `coat_brightness`          | Optional. Pixels in the shin box brighter than this (sum of R, G and B) are coat, and dropped. |
-| `far_shade`                | Brightness of the far leg, from 0 to 1.                                                        |
-| `upper.hem_columns`        | Columns of the hem that sway with the legs.                                                    |
-| `upper.hem_sway`           | How far the hem sways, in pixels.                                                              |
-| `upper.bob`                | How far the upper body rises when the legs pass, in pixels.                                    |
-| `upper.lean`               | How far the shoulders sway against the steps, in pixels.                                       |
-| `lantern.swing`            | The held object's swing, in degrees.                                                           |
-| `lantern.flame_brightness` | Pixels of the object brighter than this glow (they become the glow sheet).                     |
-| `gait`                     | Optional. Replaces the `hip`, `knee` or `ankle` angle curves (see below).                      |
+`coat_brightness` excludes bright coat pixels from the shin by RGB sum. `far_shade` darkens the far leg and snaps it to the palette. `upper` controls the hem columns, sway, bob and shoulder counter-sway. Omit `lantern` when there is no held object. All fields and defaults are in [the rig contract](../CONTRACT.md#rigjson).
 
-A character without a held object leaves out `lantern`.
+## Build the side walk
 
-### 4. Run the tool
+The tool stretches trouser pixels upward beneath the coat to form a hidden thigh. It rotates thigh, shin and boot about their measured joints. The far leg follows half a cycle behind. Sampling phases at equal planted-foot travel produces a consistent stride.
 
-From `game/`:
+The upper body moves by whole rows: the hem sways with the thigh, while bob and shoulder motion counter the steps. The lowest visible foot is shifted to the cell's last row. The lantern swings behind the hand's motion and its bright pixels supply the glow sheet. Rotations use 4× nearest sampling; shading returns to the palette.
+
+A free side arm can use a separate source so coat and sleeve colours need not be separated automatically:
+
+| Field          | Meaning                                                   |
+| -------------- | --------------------------------------------------------- |
+| `clean_pose`   | Cell-sized pose without the near arm.                     |
+| `arm.source`   | Transparent near sleeve and hand in the same coordinates. |
+| `arm.shoulder` | Rotation pivot.                                           |
+| `arm.elbow`    | Pivot for the small bend during the back swing.           |
+| `arm.swing`    | Maximum shoulder angle, default 18 degrees.               |
+
+The shipped sources are `clean-side.png` and `near-arm.png`, in 128×234 cells. Keep them aligned with the standing pose. The clean body replaces the side pose before the rig cuts its pieces.
+
+## Front and back views
+
+Optional `front` and `back` objects use the same side gait and distance-sampled phases. Each has its own standing `pose`, `hem`, reference `joints`, `shin`, `boot`, and two `legs`. Each leg supplies hip/knee/ankle joints and thigh/shin/boot boxes. Optional `arms` supply exposed boxes, pivots and small swing angles. Optional `lantern` follows the side format.
+
+Thigh and shin project vertically through the cosines of their sagittal angles. The hips sway one pixel. During the half-cycle stance, the foot retreats by `stride / frames` per frame. A correction hidden beneath the coat keeps contact while the knee bends. Swing returns the foot with a small lift; boots do not inherit hip sway. Front and back reverse the depth sign.
+
+`stride_scale` defaults to 0.5 relative to the side stride. `foot_lift` defaults to 5 pixels and `far_shade` to 0.84. Depth arms default to three-degree swings. The current real walks have 12 frames, with a side stride of 135.5 pixels and front/back strides of 67.7 pixels per cycle.
+
+## Gait curves
+
+Each `[phase, angle]` curve repeats over one cycle with smoothstep interpolation. Supplying `gait.hip`, `gait.knee` or `gait.ankle` replaces that entire curve. Hip-positive means thigh forward; ankle-positive points the toes down.
+
+| Joint | Default keys                                                    |
+| ----- | --------------------------------------------------------------- |
+| Hip   | `[0,25] [0.1,22] [0.5,-12] [0.6,-8] [0.85,28]`                  |
+| Knee  | `[0,3] [0.12,15] [0.4,3] [0.55,20] [0.7,58] [0.85,25] [0.95,3]` |
+| Ankle | `[0,-8] [0.1,0] [0.4,-10] [0.55,18] [0.65,10] [0.78,0]`         |
+
+Tune joint measurements before changing the gait. A larger hip range increases stride; excessive knee lift or body bob looks like hopping.
+
+## Generate and inspect
+
+From `game/`, use a Python environment containing Pillow and NumPy:
 
 ```sh
-/home/paolo/webapps/sparkfabrik/agents/site-redesign/adventure-art/.venv/bin/python \
-  tools/rig_walk.py dev/real/character/character.json --preview /tmp/walk.gif
+/path/to/art-venv/bin/python tools/rig_walk.py \
+  dev/real/character/character.json --preview /tmp/walk.gif
 ```
 
-It replaces `walk-side`, plus `walk-front` and `walk-back` when those rigs
-exist, in `sheet.png` and `glow.png`. It sets each walk's `frames` and `stride`
-in `character.json` and prints the distances.
-`--preview` writes a GIF of the character crossing the frame at the right
-speed: the feet must stay planted on the ground line.
+This overwrites walk rows in the sheet and glow, updates `frames` and `stride` in character metadata and removes walk `start` offsets. It prints each generated stride. The GIF shows three cycles at 2×, moving by each view's stride against ground marks. Repeating generation with unchanged source poses and rig is deterministic.
 
-### 5. Check it
+Check these before using the output:
 
-- Watch the GIF for skating feet, a hop, or pieces of clothes left behind.
-- Run the asset check and look at it in the game, walking both ways.
-- Tune the numbers in `rig.json` and run again. The tool is deterministic: the
-  same pose and `rig.json` always give the same sheet.
+- The planted foot retreats evenly between frames, without skating.
+- Bob stays small; feet alternate clearly and the near/far legs remain distinguishable.
+- Coat, shoulder and lantern cuts leave no holes or loose fragments.
+- Front and back feet keep contact while moving in depth.
+- Every animation crop stays in the sheet, with glow inside visible character pixels.
 
-## How the tool builds the walk
-
-1. **Cut-out pieces.** From the pose it takes the upper body (everything above
-   the hem), the shin, the boot and the held object. The thigh is hidden under
-   the coat, so the tool stretches the top of the trouser leg up to the hip.
-2. **Gait angles.** Hip, knee and ankle follow standard curves of human walking
-   over one cycle, from heel strike. The far leg is the same leg half a cycle
-   later, darker.
-3. **Equal steps.** The tool measures how far the planted foot travels through
-   the cycle and picks frames at equal distances, so every frame covers the
-   same ground (11.3 px for the current character).
-4. **Ground contact.** Each frame is moved down until the lowest foot touches
-   the ground. The legs' natural bob comes from this.
-5. **Upper body.** The hem sways with the forward thigh, the body rises and the
-   shoulders sway against the steps. These move whole rows of pixels, so no
-   gaps open in the clothes.
-6. **Free arm.** A separate sleeve and hand rotate around the shoulder against
-   the near leg, reaching about 18 degrees each way. The lower arm bends
-   slightly around the elbow during the back swing. The shoulder follows
-   the body bob and lean.
-7. **Held object.** It swings from the hand, a little behind the steps, and its
-   bright pixels become the glow sheet, so the flame follows it.
-8. **Pixels stay pixels.** Rotations happen at four times the size with
-   nearest-neighbour sampling, and every new colour is mapped to the palette.
-
-The gait curves, in degrees, as `[phase, angle]` keys over one cycle:
-
-| Joint   | Keys                                                                                |
-| :------ | :---------------------------------------------------------------------------------- |
-| `hip`   | `[0, 25] [0.1, 22] [0.5, -12] [0.6, -8] [0.85, 28]` (positive: thigh forward)       |
-| `knee`  | `[0, 3] [0.12, 15] [0.4, 3] [0.55, 20] [0.7, 58] [0.85, 25] [0.95, 3]`              |
-| `ankle` | `[0, -8] [0.1, 0] [0.4, -10] [0.55, 18] [0.65, 10] [0.78, 0]` (positive: toes down) |
-
-A longer stride raises the hip range; a heavier, slower character lowers the
-knee peak.
-
-## Side arm sources and alignment
-
-The sleeve and coat share colours, so the tool does not try to separate them by colour.
-The side rig adds:
-
-| Key            | Meaning                                                                                   |
-| :------------- | :---------------------------------------------------------------------------------------- |
-| `clean_pose`   | A cell-sized PNG of the standing side pose without the near arm.                          |
-| `arm.source`   | A transparent PNG containing only the near sleeve and hand, in the same cell coordinates. |
-| `arm.shoulder` | Shoulder pivot in cell pixels.                                                            |
-| `arm.elbow`    | Pivot for the small back-swing bend.                                                      |
-| `arm.swing`    | Maximum shoulder rotation, in degrees.                                                    |
-
-The current sources are `clean-side.png` and `near-arm.png` beside `rig.json`.
-Both use the world palette and binary alpha in a 128 by 234 cell.
-The source drawings were generated with `idle-side` attached, then cleaned and registered.
-Only the arm area of the original body was replaced, preserving the face, scarf, bag, lantern and legs.
-
-The art workspace holds the generated drawings, reduced sources, exact prompts and
-`arm-alignment.png` in `character/out/a8/`. The comparison shows the original,
-the clean body, and the body with the arm at rest. The preparation script is
-`character/tools/prepare_a8.py`.
-
-## Front and back rigs
-
-Optional `front` and `back` objects in `rig.json` define the other standing views.
-They use the side gait curves and the same distance-sampled phases. Each view has:
-
-| Key                      | Meaning                                                                                                   |
-| :----------------------- | :-------------------------------------------------------------------------------------------------------- |
-| `pose`                   | Standing animation, normally `idle-front` or `idle-back`.                                                 |
-| `hem`                    | Last body row before the separate legs.                                                                   |
-| `joints`, `shin`, `boot` | Reference leg measurements used to initialise the shared rig.                                             |
-| `legs`                   | Two leg objects, each with `joints.hip`, `joints.knee`, `joints.ankle` and `thigh`, `shin`, `boot` boxes. |
-| `arms`                   | Exposed sleeve and hand boxes, each with a `pivot` and small `swing` angle.                               |
-| `lantern`                | Lantern box, hand pivot, swing and flame threshold, as in the side rig.                                   |
-| `far_shade`              | Palette-mapped brightness of the leg stepping away.                                                       |
-| `stride_scale`           | Depth distance divided by side distance. The current value is 0.5.                                        |
-| `foot_lift`              | Extra swinging-foot rise in pixels.                                                                       |
-
-The thigh and shin scale vertically by the cosine of their sagittal angles.
-The foot rises during the swing, and the hips sway one pixel across the screen.
-The leg stepping away from the camera is drawn first, behind the nearer leg.
-Arms and lantern swing a few degrees, and the glow follows the lantern.
-
-Depth contact uses a half-cycle stance followed by a half-cycle swing.
-During stance, the foot moves against the actor by exactly `stride / frames`
-per frame. A vertical correction beneath the coat keeps the planted foot
-on that path while the knee follows the cosine projection. Boot positions do
-not inherit hip sway. Swing returns the foot for its next contact with a small lift.
-Front and back reverse the depth sign, so the same contact rule works in both directions.
-
-The current walks have 12 frames. The side stride is 135.5 pixels per cycle;
-front and back strides are 67.7 pixels, about half the side distance, as in SCUMM.
-The engine uses these distances through the existing animation metadata.
-
-`--preview` shows the three views at 2x, each moving by its own stride against
-fixed ground marks. The approved task preview is `character/out/a8/walks.gif`
-in the art workspace.
-
-## Limits
-
-- At close zoom, cut-out joints and the side shoulder can show where pieces meet.
-- Depth projection uses a fixed camera factor and a coat that hides hip corrections.
-  A short jacket or an unusual body shape needs its own measurements and visual check.
-- The depth arms use exposed sleeve and hand boxes. Large swings would expose the cut boundaries.
+Run `tests/assets.py` and the JavaScript suite, then walk in both directions at near and far depth in the game. Cut-out joints can remain visible at close zoom. Short jackets and unusual silhouettes need different measurements because the method relies on clothing hiding hip corrections. Large depth-arm swings expose crop boundaries.

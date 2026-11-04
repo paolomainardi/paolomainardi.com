@@ -1,530 +1,330 @@
-# Adventure engine: data contract
+# Adventure data contract
 
-The engine reads only these files. Paths inside a file are relative to that file.
+The engine loads `world.json`, `content.json`, room drawings, character sheets, close-up artwork and optional sound files. `rig.json` and `palette.json` are build inputs, not runtime requests. This document describes fields consumed by the engine and its asset tools.
 
-## Frame
+Paths inside JSON resolve against the file that names them. Runtime asset and link URLs must use HTTP or HTTPS. Reader URLs must also share the page's origin. `site` paths resolve against the page origin, independently of asset URLs. Drawings use the palette; data masks do not.
 
-Frame dimensions come from `room.json`'s `size`: 640×360 for this site.
-Every room image must match that size.
+## Coordinates and palette
 
-## palette.png and palette.json
+Coordinates start at the top left; x increases right and y increases down. Points are `[x, y]`. Layout rectangles are `[x, y, width, height]`; crop boxes in rigs are `[x0, y0, x1, y1]`, with the last edges excluded. Hit rectangles include top/left and exclude bottom/right, except room-mask bounds, whose last painted pixel is inclusive.
 
-`palette.png` is N×1 pixels, one colour per pixel, with N up to 256 (VGA style).
-`palette.json` is the same list as `["#rrggbb", ...]`. Every pixel of every room and character image is one of
-these colours, or fully transparent.
+Room dimensions come from `room.size`, two positive integers. Use a common **640×360** frame for the supplied panel and close-up artwork. Low-level rendering accepts other dimensions, but the five-verb inventory panel has fixed horizontal positions and the book drawing is required to be 640×360.
 
-## content.json (written by the site)
+| File                 | Format and use                                                                             |
+| -------------------- | ------------------------------------------------------------------------------------------ |
+| `palette.png`        | An opaque N×1 strip, with 1 to 256 RGB colours. Runtime palette source.                    |
+| `palette.json`       | The same ordered colours as `["#rrggbb", ...]`. Used by drawing tools and checks.          |
+| Room and sprite PNGs | Every visible drawing pixel belongs to the palette; sprite backgrounds may be transparent. |
+
+The palette lookup quantizes RGB to 64 levels per channel and chooses the nearest swatch in OKLab. Ties use palette order. Optional presentation dither perturbs the input by less than one RGB byte. Bloom is added after palette mapping and is not restricted to palette colours.
+
+## content.json
+
+The top-level object has one field, `items`, an array of content records. Stable, unique ids are required for hashes and saved notices.
+
+| Field         | Type                  | Meaning                                                                     |
+| ------------- | --------------------- | --------------------------------------------------------------------------- |
+| `id`          | string                | Content identity, used in routes and inventory.                             |
+| `type`        | string                | Category used by filters, conventionally `post`, `link`, `about` or `talk`. |
+| `title`       | string                | Display title.                                                              |
+| `description` | optional string       | Spoken description or full notice text.                                     |
+| `date`        | optional string       | Display date and descending lexical sort key; use `YYYY-MM-DD`.             |
+| `tags`        | optional string array | Tags matched by filters; omitted means no tags.                             |
+| `series`      | optional string       | Series identity for exact matching.                                         |
+| `part`        | optional number       | Ascending series/slot order; omitted sorts after numbered parts.            |
+| `link`        | optional URL string   | External destination, preferred to `url` when opening a hotspot or notice.  |
+| `url`         | optional URL string   | Canonical website page; used by the reader's website link.                  |
+| `reader`      | optional URL string   | Same-origin script-free reader page.                                        |
+| `cover`       | optional string       | Site metadata; the engine does not load or render it.                       |
 
 ```json
 {
   "items": [
     {
-      "id": "slug",
+      "id": "linux-desk",
       "type": "post",
-      "title": "...",
-      "description": "...",
-      "date": "2026-11-02",
+      "title": "Linux on the desk",
+      "description": "Choosing a development workstation.",
+      "date": "2026-10-03",
       "tags": ["linux"],
       "series": "workstation",
-      "part": 2,
-      "url": "/posts/slug/",
-      "reader": "/posts/slug/reader.html",
-      "cover": "/images/posts/19-x/cover.webp"
+      "part": 3,
+      "url": "/posts/linux-desk/",
+      "reader": "/posts/linux-desk/reader.html"
     }
   ]
 }
 ```
 
-`type` is `post`, `link`, `about` or `talk`. Optional fields may be missing.
-Items of type `link` carry `link`, the external URL of the linked page, plus
-`title`, `date`, `tags`, and the note as `description`. `url` may point to the
-site's own link entry. `link`, `url`, and `reader` resolve relative to `content.json`
-and must use HTTP(S).
+A filter is an object whose fields must all match. Non-tag fields use exact equality. `tags` accepts a string or array and matches any shared tag. An omitted filter matches everything. Slots sort matches by `part` ascending, then `date` descending. Content hotspots and boards re-sort by newest date. Books default to `type: "post"`; a `series` book keeps part order, while other books use newest date.
+
+A reader takes priority over external links. Without a reader, book entries and notices open `link`; a hotspot opens `link` or otherwise `url`. An entry with no usable destination gives a response. The reader's website link is hidden without `url`. Text is rendered as text, never interpreted as HTML.
+
+## world.json
+
+| Field       | Type                | Meaning                                                                                     |
+| ----------- | ------------------- | ------------------------------------------------------------------------------------------- |
+| `title`     | string              | World title, applied when the world loads after Start.                                      |
+| `palette`   | asset path          | Palette strip.                                                                              |
+| `start`     | string              | Initial room id when no valid hash selects another room.                                    |
+| `character` | asset path          | Character JSON. Loaded even when the initial room is a map.                                 |
+| `verbs`     | string array        | Panel and context-menu ordering. Use the five supported labels below.                       |
+| `rooms`     | object              | Room ids mapped to room bindings.                                                           |
+| `objects`   | optional object     | Sprite keys mapped to one path or a non-empty array of paths. Used by single-content slots. |
+| `book`      | optional asset path | Shared book drawing and fonts. Required when books or boards are configured.                |
+| `books`     | optional object     | Topic book ids mapped to book bindings.                                                     |
+| `boards`    | optional object     | Board ids mapped to board bindings.                                                         |
+| `dither`    | optional boolean    | Only literal `true` enables presentation dither; defaults off.                              |
+| `sounds`    | optional object     | Sound ids mapped to sound definitions.                                                      |
+| `events`    | optional object     | Game event names mapped to sound ids.                                                       |
+| `mix`       | optional object     | Audio bus gains.                                                                            |
 
 ```json
 {
-  "id": "linux-kernel",
-  "type": "link",
-  "title": "The Linux kernel",
-  "description": "Follow kernel releases and development.",
-  "date": "2026-10-25",
-  "tags": ["linux"],
-  "link": "https://www.kernel.org/",
-  "url": "/links/linux-kernel/"
-}
-```
-
-## world.json (written by hand)
-
-```json
-{
-  "title": "paolomainardi.com",
+  "title": "The engineer's study",
   "palette": "palette.png",
-  "start": "stone-house",
+  "start": "study",
   "character": "character/character.json",
   "verbs": ["Look at", "Open", "Use", "Take", "Talk to"],
-  "objects": { "book": "objects/book.png" },
-  "rooms": {
-    "stone-house": {
-      "src": "rooms/stone-house/room.json",
-      "content": { "series": "workstation" },
-      "object": "book",
-      "hotspots": { "window": { "content": { "type": "link" } } }
-    }
-  }
-}
-```
-
-`verbs` defines one row in this order: `Look at`, `Open`, `Use`, `Take`, `Talk to`.
-`Open` also reads. No selected verb means `Walk to`; selecting the same verb again deselects it.
-The panel occupies the bottom 36 game pixels (rows 324 through 359 at 640×360).
-The sentence sits above the verb row on the left and inventory on the right.
-Hover and selected verbs use rose. Hit rectangles include their top and left edges and exclude their bottom and right edges.
-Panel clicks never walk. Runtime pathfinding removes floor pixels under the panel, but permits floor up to its top.
-Unsupported actions give a short response. The right-click menu contains supported verbs from this five-verb list.
-
-**Take** on a topic book adds one inventory copy keyed by book id; the shelf
-keeps its book. Duplicates say "I already have it." Inventory survives room
-changes and visits. Only inventory is stored, under the `localStorage` key
-`adventure.inventory`, as a JSON list of `{ "kind": "book" | "notice", "id": "<book id or content item id>" }`
-entries with no other fields. Each inventory change writes that list. After world,
-content, and inventory artwork load, startup restores valid items, drops stale
-identifiers, and rewrites the key. Corrupt JSON is ignored. Every storage read,
-write, and removal is guarded: blocked, full, or missing storage silently keeps
-inventory for the session only. Room, lamps, time of day, and position start fresh;
-hash routing still applies. The small **Forget** label at the end of the inventory
-row says "Pockets emptied.", then clears all items and removes the key. Removing
-`adventure.inventory` from browser site data also clears saved items for the next
-visit. Each icon
-uses its book sprite divided by the smallest integer that fits its slot; output
-sizes and coordinates are whole pixels. Scroll arrows page through occupied
-slots when the inventory is full. **Look at** describes inventory items;
-**Open** opens its close-up. **Use** or a plain click selects an item;
-the next target forms "Use <item> with <target>" and produces a short response.
-Other verbs also produce a short response.
-
-`objects` values accept a sprite path or a non-empty list of sprite paths relative to `world.json`, which content objects cycle through in occupied slot order, starting again in each room.
-
-`content` is a filter on content items: every key must match (`tags` matches when
-any tag is shared). Matching items fill the room's slots in order: `part`
-ascending, then `date` descending.
-
-A room's optional `hotspots` map binds a `room.json` hotspot id to a `content`
-filter. Filters use the same rules as slots, but choose only the newest matching
-item by `date`, ignoring `part`. A missing binding or no matching item leaves the
-hotspot's original label and actions unchanged.
-
-A hotspot binding can instead name a book: `"hotspots": { "noticeboard":
-{ "book": "links" } }`. `book` takes priority over `content` and must name an
-entry in `world.books`. **Open** or a plain click opens the
-book after walking to the hotspot. Hotspot books also support book hash routes.
-
-A hotspot can travel directly: `"hotspots": { "lighthouse": { "go": "lighthouse", "via": "path" } }`.
-`go` must name a world room and `via` must name an exit in the current room.
-**Walk to**, **Open** and a plain click walk to that exit, then fade into `go`, bypassing the exit's `to`.
-**Look at** keeps the hotspot's look line. The lighthouse stairs remain a regular exit to the map.
-
-In rooms, **Take** on a notice board says "Open it and pick a notice.".
-**Take** on the lighthouse letter or logbook says "It belongs to the keeper.".
-
-A bound hotspot's label becomes `<hotspot label>: <item title>`. **Look at** says the hotspot's own `look` line, falling back to the item's title and description, shortened to two lines.
-If the item has a `reader`, **Open** or a plain click opens the embedded reader after walking to it.
-This applies to `about` and `talk` items as well as posts. Reader hash routes also restore hotspot items.
-Otherwise **Open** calls `window.open(url, "_blank", "noopener,noreferrer")` during the click, using `link` if present, otherwise `url`.
-After walking, the character says "Let's see what's out there." Without either URL, it says there is nothing to open.
-Looking at a hotspot or loading a room never opens a tab.
-
-## rooms/<name>/room.json (written by the asset builder)
-
-```json
-{
-  "name": "stone-house",
-  "size": [640, 360],
-  "albedo": "dusk-lit.png",
-  "water": "water.png",
-  "states": {
-    "dusk": {
-      "unlit": "dusk-unlit.png",
-      "lights": {
-        "pendant": "dusk-pendant.png",
-        "oil-lamp": "dusk-oil-lamp.png"
-      }
-    },
-    "night": {
-      "unlit": "night-unlit.png",
-      "lights": {
-        "pendant": "night-pendant.png",
-        "oil-lamp": "night-oil-lamp.png"
-      }
-    }
-  },
-  "objects": "objects.png",
-  "items": [
-    { "id": "floor", "kind": "walkable", "color": "#00ff00" },
-    { "id": "chair", "kind": "foreground", "color": "#0000ff" },
-    { "id": "shelf-1", "kind": "slot", "color": "#ff00ff" },
-    {
-      "id": "pendant",
-      "kind": "light",
-      "label": "Pendant lamp",
-      "light": "pendant",
-      "color": "#ffff00",
-      "tint": "#ffd08a"
-    },
-    {
-      "id": "door",
-      "kind": "exit",
-      "label": "Door",
-      "to": "harbour",
-      "color": "#ff8000"
-    },
-    {
-      "id": "window",
-      "kind": "hotspot",
-      "label": "Window",
-      "look": "The sea, calm tonight.",
-      "color": "#00ffff"
-    }
-  ],
-  "depth": { "far": [279, 0.88], "near": [359, 1.0] },
-  "spawn": [84, 292]
-}
-```
-
-- `states`: `unlit` has every lamp off. `lights` gives, for each light item, the
-  same drawing with only that lamp on. The engine adds each lamp's light as the
-  difference between its drawing and `unlit`, so every lamp lights exactly what its
-  drawing shows.
-- `albedo`: the room in plain, even light, used to colour light that has no drawing
-  of its own, such as the lantern the character carries.
-- `water` (optional): a room-sized RGB mask, relative to `room.json`. Red 255 marks water; green 255 marks its bright reflection and must lie inside red. Use red `#ff0000` for water, yellow `#ffff00` for reflection, and black elsewhere. This is a data mask, exempt from the drawing palette.
-  Water rows shift horizontally by whole pixels within ±2 over an eight-second swell, with greater movement farther from the mask's horizon. Samples clamp to their connected red row span, including around holes and window bars. Sparse green pixels briefly show the brightest painted reflection RGB triplet from each drawing, more often near the reflection's horizon. Both effects update at most four times per second and stop when `prefers-reduced-motion: reduce` matches, including preference changes during play.
-  Unlit and all lamp layers share the water displacement; lamp pool drift does not move water samples outside the mask. The effects run before lighting composition and the usual palette lookup and dithering. No water colour is synthesized. Omitting `water` preserves the existing room rendering.
-- `objects.png`: 640×360, each item painted in its flat `color` on black (#000000).
-  A pixel belongs to at most one item.
-- `foreground`: the lowest painted row of each item in `objects.png` is its baseline, computed at load. The item covers the character only while the feet's y is strictly smaller than that baseline. Equal or larger y draws the character in front. The same rule masks the lantern flame emission and glow. A packed two-byte baseline texture keeps the comparison per pixel without per-item draw calls.
-- `slot`: a free place for one content object. The object stands on the bottom
-  centre of the painted area.
-- `light`: the painted area is the lamp itself (bulb, flame, glass). `light` is
-  `pendant`, `wall`, `oil`, `desk`, `candle` or `beacon`; oil and candle flicker.
-  A beacon stays dark for four seconds, then rises smoothly to full strength and back over one second, repeating every five seconds.
-  It still requires its own lamp drawing in each state. **Use** says "Too far away." without walking or switching it.
-- `depth`: at screen y `far[0]` the character is drawn at scale `far[1]`, at y
-  `near[0]` at scale `near[1]`, linear in between.
-- `spawn`: where the character's feet start when no matching entrance exists.
-
-Hovering an exit shows **Walk to <label>** with no verb selected. Its cursor points towards the nearest frame edge.
-
-Using or walking to an exit travels to the room named by its `to`. Travel fades
-to black over 0.15 seconds, loads the room, then fades back over 0.15 seconds.
-Input is paused during the transition. The destination exit whose `to` names the
-previous room is the entrance. Arrival uses its nearest walkable point above
-the panel and faces towards the room centre, using the corresponding idle
-animation when supplied. Without a matching entrance, arrival uses the nearest
-walkable point to `spawn`. An exit to an undefined room gives a short response.
-
-A room with `"map": true` is an island map. It needs no `depth`, `spawn` or walkable mask pixels.
-It uses the normal room images and exit mask, draws no character, shadow or carried lantern, and never walks.
-Hovering an exit writes `Go to <label>`; clicking travels immediately with the usual fade.
-Arrival from room `map` uses the destination exit whose `to` is `"map"`, otherwise its `spawn`.
-
-## character/character.json
-
-```json
-{
-  "sheet": "sheet.png",
-  "frame": [128, 234],
-  "anchor": [64, 233],
-  "lantern": [27, -83],
-  "animations": {
-    "idle-front": { "row": 0, "frames": 1, "fps": 1 },
-    "walk-side": { "row": 1, "start": 0, "frames": 6, "fps": 8, "stride": 96 },
-    "walk-front": { "row": 2, "frames": 4, "fps": 8, "stride": 96 },
-    "walk-back": { "row": 3, "frames": 4, "fps": 8, "stride": 96 },
-    "idle-side": { "row": 1, "start": 0, "frames": 1, "fps": 1 },
-    "idle-back": { "row": 3, "start": 0, "frames": 1, "fps": 1 },
-    "talk-front": { "row": 4, "frames": 2, "fps": 4 }
-  }
-}
-```
-
-`lantern` is where the light the character carries sits, in pixels from the feet
-at scale 1, for the side view facing right; the engine mirrors it for left.
-
-`glow` (optional) is a sheet on the same grid, white where the lantern's flame and
-bright glass are; the engine makes those pixels glow and flicker when the lantern is on.
-
-`sheet.png` is a grid of `frame`-sized cells on a transparent background, one row per
-animation. `anchor` is the feet point inside a cell. `walk-side` faces right; the
-engine mirrors it for left. The figure is about 230 pixels tall at scale 1, the height of a person at the front of the room.
-
-`start` is the first frame column in the row, default 0. Both the character
-and its optional glow sheet use this column offset.
-
-`stride` is the positive distance in pixels that the feet travel in one walk
-cycle at scale 1. A walk advances by `distance / (stride * depth scale)` cycles,
-with frame `floor(cycles * frames) mod frames`. Running follows the same rule.
-The engine accumulates cycles at the depth of each movement step and keeps the
-phase across path segments, including changes of direction and stride.
-Animations without `stride` use `fps` and elapsed animation time.
-
-On stopping, side walks select `idle-side` with the same mirroring, back walks
-select `idle-back`, and front walks select `idle-front`. Missing idle animations
-fall back to unmirrored `idle-front`. Optional side and back idles may share a
-walk row using `start`. Talking and turning to look at a target keep their
-existing behaviour. Walk direction uses hysteresis around the diagonal to
-avoid switching repeatedly between side and front or back.
-
-## Book close-up
-
-Shared by the art task and the engine task. Paths are relative to the file that
-names them. Frame is 640×360; every colour comes from `palette.json`.
-
-### Topic books in world.json
-
-```json
-{
   "book": "book/book.json",
   "books": {
     "linux": {
       "title": "Linux",
       "content": { "tags": ["linux"] },
-      "sprite": "objects/book-1.png"
-    },
-    "ai": {
-      "title": "AI and agents",
-      "content": { "tags": ["ai", "agents"] },
-      "sprite": "objects/book-2.png"
+      "sprite": "objects/book.png",
+      "site": "/tags/linux/"
     }
   },
   "rooms": {
-    "stone-house": {
-      "src": "rooms/stone-house/room.json",
-      "books": ["linux", "ai"]
-    }
+    "study": { "src": "rooms/study/room.json", "books": ["linux"] }
   }
 }
 ```
 
-- `books` is one book per topic. `content` is the same filter rooms use today;
-  books default to posts; set `"type": "link"` for a links book. Items are ordered by `date`, newest first, except a `series` filter, which
-  keeps `part` ascending.
-- A room's `books` fills its slots in order, one book per slot. A room can still
-  use `content` and `object` as today instead.
+### Room bindings
 
-### book/book.json
+| Field      | Type              | Meaning                                                                                                       |
+| ---------- | ----------------- | ------------------------------------------------------------------------------------------------------------- |
+| `src`      | asset path        | Room JSON, relative to the world.                                                                             |
+| `books`    | optional id array | Fill slots in painted item order with topic books. An empty list fills none. Takes precedence over `content`. |
+| `content`  | optional filter   | Select individual content for slots when `books` is absent.                                                   |
+| `object`   | optional string   | Key in `world.objects` for individual content sprites.                                                        |
+| `hotspots` | optional object   | Room hotspot ids mapped to bindings below.                                                                    |
+| `ambience` | optional object   | `dusk` and `night` arrays of ambient sound entries.                                                           |
 
-```json
-{
-  "image": "open.png",
-  "pages": [[x, y, w, h], [x, y, w, h]],
-  "turn": { "sheet": "turn.png", "rect": [x, y, w, h], "frames": 4, "fps": 12 },
-  "ink": "#rrggbb", "faded": "#rrggbb", "accent": "#rrggbb",
-  "font": {
-    "regular": "fonts/NFPixels-Regular.ttf",
-    "family": "NF-Pixels"
-  },
-  "sizes": { "title": 20, "body": 10, "label": 10 },
-  "curl": { "image": "curl.png", "rects": [[x, y, 24, 24], [x, y, 24, 24]] }
-}
-```
+Slot contents stop when either items or slots run out. Sprite arrays cycle in occupied-slot order, restarting in each room. Each sprite uses its own dimensions, bottom-centred on the slot. There is no automatic room expansion or overflow build check.
 
-- `image`: the whole 640×360 frame, an open book close up, both pages blank.
-- `pages`: the text area of the left and the right page, inside the margins.
-- `turn`: a strip of `frames` cells, each `rect` sized, transparent outside the
-  turning page; drawn over `image` at `rect`, right-to-left for "next", mirrored
-  order for "previous".
-- `ink` for text, `faded` for dates and page numbers, `accent` (the rose) for
-  the entry under the pointer.
+A hotspot binding chooses the first applicable form in this order:
 
-- `font`: the unmodified, self-hosted NF-Pixels TTF, loaded with `FontFace`.
-  Distribute `fonts/NFPixels-OFL.txt` (SIL Open Font License 1.1) alongside it.
-  The font has one weight and a 10 px em, with 7 px capitals and 5 px lowercase.
-- `sizes`: type sizes in game pixels: 20 for the title, 10 for body and labels.
-  Body and label line height is 13 px; title line height is 26 px.
-- `curl`: a two-cell transparent strip, left then right, with destination rectangles
-  in game pixels. `tools/make_curls.py` folds pixels from `open.png`, darkens the
-  back and maps it to the book palette. It detects the paper's outer corners.
+| Fields                     | Effect                                                                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `go`, `via`                | `go` names a destination room; `via` names an exit in the current room. Open or default walk reaches that exit, then travels to `go`. |
+| `board`                    | Open the named world board after arrival.                                                                                             |
+| `book`                     | Open the named world book after arrival.                                                                                              |
+| `content`, optional `site` | Bind the newest matching item, append its title to the hotspot label, and open its reader or destination.                             |
 
-Book and menu text use Canvas 2D font metrics for wrapping and pagination. Each
-page fits as many complete entries as its bottom margin allows, with half a body
-line between entries, rounded to 7 game pixels. Titles have at
-most two lines with ellipsis; dates and page numbers use the label style.
+An unmatched content filter leaves the original hotspot unchanged. Look prefers the hotspot's `look`, then the content title and description. External hotspot links open during the original click to retain browser activation; arrival supplies feedback. The second click of a double-click does not open another tab.
 
-A transparent 640×360 text layer uses whole game-pixel positions and baselines.
-Its alpha is thresholded at 128 to 0 or 255. The texture is composited into the
-game frame before palette mapping and nearest-neighbour upscale. Text redraws
-only when the book, spread, hover, menu or game-frame size changes; screen
-resizing does not change text metrics. The turning leaf masks covered text on
-the GPU. The menu heading uses the same NF-Pixels font as its verbs, set apart
-by `faded` and a one-game-pixel rule. The verb panel and sentence line keep their
-5×7 font.
+### Books, boards and site paths
 
-Lower outer corners curl on hover and show a hand cursor when a turn is available.
-Pressing an outer page half outside an entry captures the pointer. Turn frames
-follow horizontal drag progress towards the spine. Release past halfway commits
-the turn; release before halfway or pointer cancellation returns to the same
-spread. A corner click and the arrow keys also turn pages. The first and last
-spread disable unavailable turn directions.
+| Binding       | Fields                                                                                    |
+| ------------- | ----------------------------------------------------------------------------------------- |
+| `books.<id>`  | Required `title`, `sprite`; optional `content` filter and `site` path.                    |
+| `boards.<id>` | Required `board` path and `content` filter; optional `title`, `subtitle` and `site` path. |
 
-Clicking a book entry with a `reader` opens the embedded reader. An entry without
-`reader` opens its HTTP(S) `link` synchronously from the click, in a new tab with
-`target="_blank"` and `rel="noopener"`. The sentence line shows "Opening the link…".
-The book stays open on the same spread. An entry without either field gives a
-short spoken response.
+`site` must begin with one slash, must resolve to the page origin and may include a fragment. Books and boards display it in their close-up footer. A content hotspot supplies its path to the reader. Paths are also present in the accessible catalogue. Long labels truncate to leave room for Close, the message and sound.
 
-Spreads use zero-based indices in `#<room>/book/<id>/<spread>`. Page numbers start at 1. Invalid spread indices clamp to the book bounds. Closing the reader preserves the current book and spread. Rooms without `books` keep the single-post object behavior.
+### Verbs, routes and storage
 
-## Notice boards
+Use `Look at`, `Open`, `Use`, `Take`, `Talk to`. Labels are action identifiers, not translatable display strings. Unsupported actions respond without changing the world. No selected verb means `Walk to`. The context menu filters this list for each target; `Talk to` currently has no implemented target action.
 
-A world board binds content to close-up art. A hotspot uses `board` instead of `book` or `content`:
+**Take** copies a topic book. Content objects open their reader instead. A board hotspot supports Take with a prompt to open it; hotspots named `noticeboard`, `letter` or `logbook` also expose Take. The latter two give the keeper response when bound to content. These ids currently carry engine-specific behaviour.
 
-```json
-{
-  "boards": {
-    "links": {
-      "title": "Links",
-      "subtitle": "Things I read and think are worth your time, with a line or two on why.",
-      "site": "/links/",
-      "content": { "type": "link" },
-      "board": "board/board.json"
-    }
-  },
-  "rooms": {
-    "harbour": {
-      "src": "rooms/harbour/room.json",
-      "hotspots": { "noticeboard": { "board": "links" } }
-    }
-  }
-}
-```
+| Hash                         | Restored state                                        |
+| ---------------------------- | ----------------------------------------------------- |
+| `#<room>`                    | Room.                                                 |
+| `#<room>/<item>`             | Reader for content bound to a room object or hotspot. |
+| `#<room>/book/<id>/<spread>` | Book and zero-based spread.                           |
+| `#<room>/board/<id>/<page>`  | Board and zero-based page.                            |
 
-**Open** or a plain click walks to the hotspot and opens the board. `board` takes priority over other bindings.
-Items sort by date, newest first, regardless of `part`. Board links join the hidden accessible catalogue.
+Ids are URL-encoded. Missing or non-digit page numbers become zero; numeric values clamp to bounds. Malformed URI escapes fall back to the start room. Unknown initial rooms fall back to `start`; unknown rooms in later hash changes are ignored. A book route must belong to the room or carried inventory; board routes require a board hotspot in the room. Notice detail is not encoded in the hash.
 
-`board/board.json` follows this format. All paths resolve relative to this file. All colours come from `palette.json`:
+Inventory uses only `localStorage["adventure.inventory"]`, containing a JSON array of `{ "kind": "book" | "notice", "id": "..." }`. Restoration checks entry types, current ids, board membership and duplicates. It rewrites the valid list. Corrupt JSON, blocked storage and quota errors do not stop play. Forget empties inventory and removes the key. No other game state persists.
 
-```json
-{
-  "image": "board.png",
-  "notices": [
-    { "paper": "paper-1.png", "at": [60, 40], "text": [68, 52, 144, 88] }
-  ],
-  "pin": "pin.png",
-  "older": [470, 306, 110, 16],
-  "newer": [60, 306, 110, 16],
-  "note": {
-    "image": "note.png",
-    "text": [115, 42, 410, 224],
-    "go": [115, 287, 100, 18],
-    "take": [290, 287, 80, 18],
-    "back": [445, 287, 60, 18]
-  },
-  "ink": "#1d202f",
-  "faded": "#76645f",
-  "accent": "#8a5650"
-}
-```
+## room.json and objects.png
 
-- Optional `title` is a `[x, y, width, height]` rectangle for the board heading. By default it spans the notices horizontally, from the frame top to the highest notice. The world board's `title` uses the book title font. Its optional `subtitle` uses the faded body font, wrapped to at most two lines. Both are centred in the rectangle and hidden in the note view. Leave enough height above notices for the heading.
-- `image` is the empty 640×360 board frame. `notices` supplies six to eight places in reading order. The example shows one place.
-- Each place names a blank paper sprite, its top-left `at`, and an absolute `[x, y, width, height]` text rectangle.
-  The engine draws the paper and a pin at its top centre, followed by the wrapped title and date. Titles truncate with an ellipsis to leave room for the date.
-- Hover lifts the paper, pin and text by one game pixel and tints the paper and title with `accent`.
-- `older` and `newer` are page control rectangles. Each page holds one board-full. A control hides when there is nothing on its side.
-- Clicking a notice draws `note.image`, a 640×360 transparent overlay containing a large paper. Its `text` rectangle holds the title, date, faded link hostname and the item's `description` as Paolo's note, wrapped to fit. Without a description it shows "No note on this one. Worth a look." in faded ink.
-  `go` opens `link` in a new tab with `rel="noopener"`; `back` returns to the same board page.
-- Optional `note.take` is a `[x, y, width, height]` rectangle for **Take it**. Without it, an 80-pixel-wide rectangle is centred in the gap between `go` and `back`, using `go`'s y and height. It copies the notice into inventory and says "I'll keep this one." The board keeps its copy. Repeating it says "I already have it."
-- Notice inventory icons use the paper sprite from the notice's board slot, reduced by an integer divisor, with its pin. Inventory arrows scroll both books and notices. **Look at** says the notice title. **Open** or a plain inventory click shows the same note over the current room, with **Go there**, faded inactive **In your pocket**, and **Back**. Back, Close, Escape and right click return to the current room. Carried notices persist under `adventure.inventory` with books; **Forget** clears both.
-- Text uses the book's NF-Pixels font and sizes. Supply `world.book` with the shared font definition.
+| Field                  | Type                  | Meaning                                                                                                      |
+| ---------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `name`                 | string                | Descriptive authoring name; runtime identity comes from the world room key.                                  |
+| `size`                 | two positive integers | Width and height shared by all room images.                                                                  |
+| `albedo`               | asset path            | Room in even light, used to colour the carried lantern's pool.                                               |
+| `objects`              | asset path            | Flat-colour item mask.                                                                                       |
+| `states`               | object                | Both `dusk` and `night`, each containing `unlit` and `lights`.                                               |
+| `states.<time>.unlit`  | asset path            | Drawing with every room lamp off.                                                                            |
+| `states.<time>.lights` | object                | Every light item id mapped to a drawing with only that lamp on. May be empty.                                |
+| `items`                | array                 | Ordered item records described below.                                                                        |
+| `depth`                | object                | Required in walking rooms: `far: [y, scale]`, `near: [y, scale]`. Use distinct y values and positive scales. |
+| `spawn`                | point                 | Required in walking rooms. Default arrival feet position, snapped to walkable floor.                         |
+| `map`                  | optional boolean      | With `true`, no actor, shadow, carried lantern or walking. Depth and spawn may be omitted.                   |
+| `water`                | optional asset path   | Room-sized water data mask.                                                                                  |
 
-The route is `#<room>/board/<id>/<page>` with zero-based pages clamped to board bounds.
-The bottom bar's **Close**, right click and Escape return to the room. The bar reserves separate places for Close, one hint or temporary message, the site path and sound. Messages spoken while a book, board, note or reader is open replace the hint for three seconds. They truncate to the available space and never draw as speech over the close-up. The hint returns after expiry, including while the reader is open.
-A temporary message replaces the hint and expires while the close-up stays open. Book close-ups use the same bar.
+Each state requires one drawing for every lamp. All room PNG dimensions are checked at load. Lighting is composed in linear colour as `unlit + sum(strength × (lamp drawing - unlit))`, plus lantern light from albedo, then clamped. Lamps start on and fade over 0.4 seconds when toggled.
 
-## Site paths in world.json
+`objects.png` is an RGB mask. Black means no item. Paint each item with its unique exact `#rrggbb` colour, without antialiasing. An item must have painted pixels. The loader derives bounds and bottom-centre position from those pixels. Item regions cannot overlap because each pixel encodes one colour. Walkable floor under the panel is removed at runtime.
 
-Books, boards and content-bound hotspot bindings accept optional `site`, such as `/tags/linux/`, `/links/` or `/about/`. Paths must start with a single slash and resolve against the page's origin, independently of `world.json`, `content.json` and document base URLs. Cross-origin paths are rejected. Fragments are preserved.
+| Item field | Meaning                                                                                                                          |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `id`       | Unique item name used by bindings, sound positions and lamp drawings.                                                            |
+| `kind`     | `walkable`, `foreground`, `slot`, `light`, `exit` or `hotspot`.                                                                  |
+| `color`    | Exact mask colour, distinct from black and all other item colours.                                                               |
+| `label`    | Optional user-facing name; otherwise the id is shown.                                                                            |
+| `look`     | Optional spoken description.                                                                                                     |
+| `to`       | Exit destination room id. Undefined destinations give a response.                                                                |
+| `light`    | Lamp behaviour: `oil` and `candle` flicker; `beacon` flashes; other labels, such as `pendant`, `wall` or `desk`, breathe slowly. |
+| `tint`     | Required for light items: `#rrggbb` bloom colour. Room illumination still comes from drawings.                                   |
 
-While a book, board or reader from a bound hotspot is open, the bottom bar shows its path in faded text before Sound. Hover changes it to the accent colour and shows "Open <path> on the site" in the sentence line. Clicking opens a new tab with `rel="noopener"`. The bar reserves space for Close, the sentence and Sound; long paths and sentences truncate to fit. Readers leave the bar uncovered. Rooms show no path.
+Floor pixels permit eight-direction paths with no diagonal corner cutting. Slot position anchors a sprite's bottom centre. Foreground items use their lowest painted row as a baseline: feet behind that row are covered; feet on or in front of it remain visible. The same test clips lantern emission and glow.
 
-Closing a reader returns to its book or board path. Hotspot reader routes restore the hotspot path. The hidden accessible catalogue includes these destinations as links labelled "<title> on the site".
+Exits travel with a 0.15-second fade each way. The return exit's nearest floor point supplies arrival; otherwise `spawn` does. Arrival faces the frame centre. A map exit travels immediately. Beacon Use responds without walking or toggling: four seconds dark, then one smooth one-second flash, repeating every five seconds.
 
-## Sound in world.json
+### water.png
 
-Sound starts only when a Start button creates or resumes an `AudioContext`.
-Worlds without sound configuration remain silent. Browsers without Web Audio
-keep the game playable.
+Use RGB black outside water, red `#ff0000` for water and yellow `#ffff00` for reflection pixels inside water. The loader treats red 255 as water and green 255 as reflection within it. Palette membership does not apply.
 
-```json
-{
-  "sounds": {
-    "sea": { "synth": "surf", "volume": 0.5, "loop": true },
-    "wind": { "synth": "wind", "volume": 0.3, "loop": true },
-    "flame": { "synth": "crackle", "volume": 0.25, "loop": true },
-    "step": { "synth": "step", "volume": 0.5 },
-    "page": { "synth": "page", "volume": 0.6 },
-    "click": { "synth": "click", "volume": 0.4 },
-    "door": { "synth": "creak", "volume": 0.5 }
-  },
-  "events": {
-    "step": "step",
-    "page-turn": "page",
-    "book-open": "page",
-    "book-close": "page",
-    "lamp": "click",
-    "menu": "click",
-    "door": "door"
-  },
-  "mix": { "master": 0.5, "ambience": 0.8, "effects": 1.0 },
-  "rooms": {
-    "stone-house": {
-      "src": "rooms/stone-house/room.json",
-      "ambience": {
-        "dusk": [{ "sound": "sea", "at": "window" }],
-        "night": [
-          { "sound": "sea", "at": "window" },
-          { "sound": "wind" },
-          { "sound": "flame", "at": "oil-lamp", "light": "oil-lamp" }
-        ]
-      }
-    }
-  }
-}
-```
+Connected row spans keep displacement within coasts, holes and window bars. Horizontal samples shift by integer offsets within ±2 pixels over an eight-second swell. Sparse reflection pixels use the brightest painted RGB triplet of the relevant drawing, more often near the reflection horizon. Both effects update four times per second and stop when `prefers-reduced-motion: reduce` matches. Displacement applies to every lamp drawing and the unlit drawing before composition.
 
-Each sound selects either `synth` or `src`. `src` resolves relative to
-`world.json`; files load after Start and decode once per URL. Unknown sound
-ids, unknown synths and failed files warn once in the console and are skipped.
-`volume` defaults to 1 and `loop` defaults to false. Ambient definitions use
-`loop: true`. Omitted event mappings are silent.
+## character.json
 
-The seven synths use filtered noise: irregular shore swells (`surf`), drifting
-low wind (`wind`), an oil-flame bed with random pops (`crackle`), a low wooden
-footstep (`step`), swept paper (`page`), a brief switch (`click`), and a resonant
-wooden creak (`creak`). Optional `params.frequency` sets the filter centre or
-cutoff in Hz. `params.duration` sets a positive one-shot duration in seconds.
-Noise, pitch, levels and ambient envelopes vary between plays.
+| Field        | Type                | Meaning                                                                             |
+| ------------ | ------------------- | ----------------------------------------------------------------------------------- |
+| `sheet`      | asset path          | Transparent character sprite grid.                                                  |
+| `glow`       | optional asset path | White emission pixels on transparency, matching the sheet dimensions and cell grid. |
+| `frame`      | `[width, height]`   | Size of each cell, currently `[128, 234]`.                                          |
+| `anchor`     | point               | Feet within a cell, currently `[64, 233]`.                                          |
+| `lantern`    | point               | Fallback flame offset from the feet at scale 1.                                     |
+| `animations` | object              | Animation names mapped to cell metadata.                                            |
 
-Each `ambience` list belongs to a time of day in the world's room entry.
-`at` names an item in that room. Gain decreases gently with distance from the
-character's feet, never reaches zero, and pans towards the item's relative
-horizontal position. Without `at`, gain stays constant and pan stays centred.
-`light` names a room lamp and multiplies volume by its current fade level.
-Use the fixture's actual ids: placeholders use `oil`; real art uses `oil-lamp`.
-Time and room changes cross-fade old and new sources over one second.
+Required animation names are `idle-front`, `walk-side`, `walk-front`, `walk-back`. Optional `idle-side` and `idle-back` preserve facing after movement; otherwise standing falls back to unmirrored `idle-front`. Additional sheet rows such as `talk-front` may exist, but the current engine does not select a talking animation.
 
-Master, ambience and effects buses use `mix` gains, defaulting to 0.5, 0.8 and
-1.0. `M` or the panel's `Sound: on` / `Sound: off` label toggles master mute.
-Mute is held only in memory. The reader ducks both buses to 0.25
-(about 12 dB down); closing it restores volume. Book close-ups keep full
-ambience. Hiding the document suspends the context; showing it resumes the
-context. Destroying the game stops sources and closes the context.
+| Animation field | Meaning                                                                                                                          |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `row`           | Zero-based cell row.                                                                                                             |
+| `start`         | Optional first column, default zero.                                                                                             |
+| `frames`        | Positive number of cells in this animation.                                                                                      |
+| `fps`           | Positive time-based playback rate when no stride is supplied.                                                                    |
+| `stride`        | Optional positive pixels travelled per cycle at scale 1. Walking advances by distance divided by stride and current depth scale. |
 
-`step` fires at both half-cycle and whole-cycle foot contacts during movement,
-using distance-based walk phase or the animation clock for animations without
-`stride`. Step gain follows character depth. `page-turn` fires when a turn
-commits, including a successful drag. Cancelled turns stay silent. Opening and
-closing book close-ups fire `book-open` and `book-close`. Using a light fires
-`lamp`; choosing a right-click menu verb fires `menu`. Using or walking to an
-exit fires `door` on arrival. Exit travel loads the destination room after fading out.
+The side sheet faces right and mirrors for left. Front/back selection uses hysteresis near diagonals. Walk phase persists across segments and directions; running changes distance, not frame rules. Feet interpolate the room depth scale, clamped at the far and near rows.
+
+With `glow`, each cell's red×alpha weighted centroid supplies the flame location; an empty cell uses `lantern`. This offset, sheet crop and mirroring follow the current animation. Glow dimensions are checked against the sheet. Authoring checks must ensure every animation stays inside the grid.
+
+## rig.json
+
+`tools/rig_walk.py` reads this beside `character.json`. It uses Pillow and NumPy, rewrites walk rows in `sheet` and optional `glow`, updates animation `frames` and `stride`, removes walk `start` offsets, and optionally writes a preview GIF. Paths resolve relative to the character directory. Side output is always generated; front and back output require their view objects.
+
+| Field               | Default or requirement                                                                                                           |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `palette`           | Required JSON colour-list path.                                                                                                  |
+| `pose`              | Standing animation name, default `idle-side`; uses its `start` column.                                                           |
+| `frames`            | Number of walk frames, default 12.                                                                                               |
+| `clean_pose`        | Optional cell-sized transparent PNG replacing the side pose.                                                                     |
+| `hem`               | Required last upper-body row.                                                                                                    |
+| `joints`            | Required `hip`, `knee`, `ankle` points for a reference leg.                                                                      |
+| `shin`, `boot`      | Required crop boxes for the reference leg.                                                                                       |
+| `coat_brightness`   | Optional sum-of-RGB threshold excluding bright coat pixels from the shin.                                                        |
+| `far_shade`         | Far side brightness, default 0.72 for side, 0.84 for depth views.                                                                |
+| `gait`              | Optional `hip`, `knee`, `ankle` arrays of `[phase, degrees]` keys. Each supplied curve replaces its default.                     |
+| `upper.hem_columns` | Swaying columns `[x0, x1]`, default whole width.                                                                                 |
+| `upper.hem_sway`    | Side hem motion multiplier, default 4.5.                                                                                         |
+| `upper.bob`         | Side vertical bob amount, default 2.                                                                                             |
+| `upper.lean`        | Side shoulder counter-sway, default 2.4.                                                                                         |
+| `lantern`           | Optional object with required `box`, `pivot`; optional `swing` (default 7 side or 4 depth) and `flame_brightness` (default 600). |
+| `arm`               | Optional side arm with required `source`, `shoulder`, `elbow`; optional `swing`, default 18 degrees.                             |
+| `front`, `back`     | Optional depth-view definitions below.                                                                                           |
+
+Depth-view objects require `hem`, reference `joints`, `shin`, `boot`, and two `legs`. Each leg requires `joints.hip`, `joints.knee`, `joints.ankle`, plus `thigh`, `shin`, `boot` crop boxes. A view's optional `pose` defaults to `idle-front` or `idle-back`. `stride_scale` defaults to 0.5 and `foot_lift` to 5 pixels. Optional `arms` entries require `box`, `pivot` and accept `swing` (default 3 degrees). Optional `lantern` follows the common object. Depth views share the side gait; their own gait override is not read by the tool's main procedure.
+
+Curve interpolation is periodic smoothstep. The tool samples side phases at equal planted-foot travel; depth views project those phases with half-cycle stance/swing corrections. Rotations use 4× nearest sampling; shading snaps back to the palette. See [Character walking](docs/character-walk.md) for measurements and visual checks.
+
+## book.json
+
+| Field                                      | Meaning                                                        |
+| ------------------------------------------ | -------------------------------------------------------------- |
+| `image`                                    | Required 640×360 open-book drawing with blank pages.           |
+| `pages`                                    | Two `[x, y, width, height]` text rectangles, left then right.  |
+| `turn.sheet`                               | Transparent horizontal strip of turning-page cells.            |
+| `turn.rect`                                | Destination rectangle and dimensions of one cell.              |
+| `turn.frames`                              | Cell count; strip width must equal cell width times count.     |
+| `turn.fps`                                 | Playback rate for automatic completion or cancellation.        |
+| `curl.image`                               | Two-cell transparent corner strip, left then right.            |
+| `curl.rects`                               | Two destination rectangles, normally 24×24 each.               |
+| `font.regular`                             | Self-hosted font path, currently `fonts/NFPixels-Regular.ttf`. |
+| `font.family`                              | FontFace family, currently `NF-Pixels`.                        |
+| `sizes.title`, `sizes.body`, `sizes.label` | Font sizes in game pixels, currently 20, 10, 10.               |
+| `ink`, `faded`, `accent`                   | Text, secondary text and hover colours as `#rrggbb`.           |
+
+Keep `fonts/NFPixels-OFL.txt` beside the unmodified font. Font metrics set ascent and line height; line height is `round(size × 1.3)`. Entries have at most two title lines plus a date and a half-body-line gap. Page one includes a two-line title and count. Each page reserves label height for its number; pagination throws if later pages cannot fit any entry. Empty books still have one spread.
+
+A cached transparent text canvas matches the room grid. Positions round to whole pixels and alpha thresholds at 128. It redraws when book, board, page, note, inventory count, hover, menu selection or frame size changes. The turning leaf masks text in the shader without rebuilding the text canvas.
+
+Drag an outer half outside an entry towards the spine. Passing halfway commits; cancellation or an earlier release returns. Corner clicks commit without dragging. The next-page strip runs right-to-left; previous turns mirror it. `tools/make_curls.py` derives folded corners from the open drawing and palette.
+
+## board.json
+
+| Field                    | Meaning                                                                                                           |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `image`                  | Empty board drawing, normally 640×360.                                                                            |
+| `pin`                    | Transparent pin sprite.                                                                                           |
+| `notices`                | Non-empty array of notice places in reading order.                                                                |
+| `notices[].paper`        | Blank paper sprite path.                                                                                          |
+| `notices[].at`           | Paper top-left point.                                                                                             |
+| `notices[].text`         | Absolute text rectangle inside that paper.                                                                        |
+| `older`, `newer`         | Paging hit rectangles.                                                                                            |
+| `title`                  | Optional heading rectangle; its x, y and width position the title box. The height is not used for clipping.       |
+| `note.image`             | Large-note overlay, normally transparent 640×360.                                                                 |
+| `note.text`              | Full note text rectangle.                                                                                         |
+| `note.go`, `note.back`   | Go there and Back hit rectangles.                                                                                 |
+| `note.take`              | Optional Take it rectangle. Defaults to an 80-pixel width centred between Go and Back, sharing Go's y and height. |
+| `ink`, `faded`, `accent` | Text, secondary text and hover colours.                                                                           |
+
+One page holds `notices.length` items. Controls stay drawn when inactive, with faded explanatory labels. Hover lifts paper, pin and text one game pixel. Titles wrap to fit the paper and reserve one date line. The full note shows up to three title lines, date, faded hostname and description; missing descriptions use a faded placeholder sentence.
+
+The world board's title and subtitle each wrap to one line above the notices. Without `title`, the box centres over the notice span just above its top edge. With `title`, it centres in that rectangle's width at its y. The title box height follows font line heights, not the rectangle height. Wrapping always uses the horizontal notice span, even when a title rectangle supplies a different width. Leave enough clear space in the drawing.
+
+Take copies the notice and its slot's paper/pin into inventory; the board retains it. A carried notice shows inactive In your pocket. Its Back action closes the overlay to the current room. The book's shared fonts are required for board text.
+
+## Sounds
+
+Sounds live in `world.sounds`; no separate sound JSON is loaded. The shipped real world uses WAV footstep files plus synthesized ambience and effects.
+
+| Sound definition field | Meaning                                                                                                              |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `synth`                | One built-in generator id below; use either this or `src`.                                                           |
+| `src`                  | One audio path or a non-empty array of paths, relative to `world.json`. An array chooses one file randomly per play. |
+| `volume`               | Gain multiplier, default 1.                                                                                          |
+| `loop`                 | Loop flag, default false. Ambient sounds should use true.                                                            |
+| `params.frequency`     | Optional generator filter frequency in Hz.                                                                           |
+| `params.duration`      | Optional generator duration in seconds, clamped to at least 0.02.                                                    |
+
+| Generator | Filter frequency | Duration | Base level |
+| --------- | ---------------- | -------- | ---------- |
+| `surf`    | 650 Hz           | 4 s      | 0.32       |
+| `wind`    | 280 Hz           | 4 s      | 0.22       |
+| `crackle` | 1800 Hz          | 4 s      | 0.09       |
+| `step`    | 900 Hz           | 0.09 s   | 1          |
+| `page`    | 2400 Hz          | 0.32 s   | 0.3        |
+| `click`   | 1400 Hz          | 0.035 s  | 0.25       |
+| `creak`   | 380 Hz           | 0.65 s   | 0.28       |
+| `whoosh`  | 700 Hz           | 0.5 s    | 0.25       |
+
+Generators use filtered noise with pitch and level variation. Loops use eight-second noise beds and evolving envelopes. `surf` uses a low-pass filter; other presets use a band-pass. File duration comes from decoded audio. Missing files, unknown sound ids and unknown synths warn once and remain silent. Audio data is decoded once per resolved URL per game instance.
+
+`world.mix` accepts `master`, `ambience` and `effects`, defaulting to 0.5, 0.8 and 1. Each room's `ambience.dusk` and `ambience.night` contain entries with required `sound`, optional `at` (room item id) and optional `light` (lamp id). Position changes gain and stereo pan; no position means constant gain and centred pan. Lamp binding multiplies gain by fade level. Room/time changes cross-fade loops over one second.
+
+`world.events` maps `step`, `page-turn`, `book-open`, `book-close`, `lamp`, `menu`, `door`, `lantern` and `time` to sound ids. Omitted events stay silent. Footsteps fire at half and whole walk cycles with depth-scaled gain. Cancelled page turns stay silent. Door sound fires on exit arrival before the room fade.
+
+Start unlocks audio. M and the sound label toggle mute in memory. A reader ducks both buses to 0.25. Hidden tabs suspend the context and visible tabs resume it. Destroy stops voices and closes the context.
+
+## Validation boundary
+
+The loader checks fetch status, URL protocols, reader origin, non-empty object sprite lists, palette-strip dimensions, room-image dimensions, required lamp drawings and character-glow dimensions. It is not a complete schema validator. Authors must check ids, colours, animation bounds, floor connectivity, page fit and control geometry. Use `tests/assets.py`, the JavaScript suite and browser checks described in [README.md](README.md#checks-and-tools).

@@ -1,3 +1,4 @@
+// Check logic behavior against the engine and shipped fixtures.
 import assert from "node:assert/strict";
 import { findPath, nearestWalkable } from "../src/pathfinding.js";
 import { matchingItems, resolve } from "../src/assets.js";
@@ -83,7 +84,10 @@ assert(
 assert(wrap("x".repeat(100), 42).every((line) => line.length <= 42));
 assert.deepEqual(wrap("one two three four", 10, 2), ["one two", "three four"]);
 assert.deepEqual(wrap("one two three four five", 10, 2), ["one two", "three…"]);
-assert.deepEqual(wrap("one two three four five six", 9, 2), ["one two", "three…"]);
+assert.deepEqual(wrap("one two three four five six", 9, 2), [
+  "one two",
+  "three…",
+]);
 assert.deepEqual(wrap("one\ntwo\nthree", 10, 2), ["one", "two…"]);
 assert.deepEqual(wrap("abcdefghijk", 4, 2), ["abcd", "efg…"]);
 console.log(

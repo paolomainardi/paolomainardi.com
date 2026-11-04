@@ -1,3 +1,4 @@
+// Check Browser checks for site behavior against the engine and shipped fixtures.
 async (page) => {
   const origin = new URL(page.url()).origin;
   const errors = [];
@@ -9,6 +10,7 @@ async (page) => {
     await page
       .getByRole("button", { name: "Start in window", exact: true })
       .click();
+    await page.waitForFunction(() => !!window.game.state);
     for (const [hash, path, closeup] of [
       ["#harbour/board/links/0", "/links/", true],
       [

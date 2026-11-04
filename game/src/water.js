@@ -37,6 +37,7 @@ export function buildWater(pixels, [width, height]) {
   };
 }
 
+// Reuse one RGBA motion buffer for bounded displacement and reflection flags.
 export function waterFrame(water, seconds, reduced = false) {
   const frame = water.frame;
   frame.fill(0);

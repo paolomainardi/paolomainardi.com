@@ -1,3 +1,4 @@
+// Check sound behavior against the engine and shipped fixtures.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { SoundEngine, soundPosition, footContacts } from "../src/sound.js";
@@ -145,6 +146,16 @@ try {
   assert.equal(audio.context.decoded, 1);
   assert.equal(fetched.filter((url) => url.endsWith("test.wav")).length, 1);
   assert(fetched.includes("https://example.test/data/sounds/test.wav"));
+  const safeFetches = fetched.length;
+  for (const src of ["javascript:alert(1)", "data:audio/wav,invalid"]) {
+    world.sounds.unsafe = { src };
+    assert.equal(await audio.play("unsafe", audio.effects), null);
+  }
+  assert.equal(
+    fetched.length,
+    safeFetches,
+    "Unsafe audio URLs never reach fetch",
+  );
   world.sounds.slow = { src: "slow.wav", loop: true };
   game.room = { ...room, config: { ambience: { night: [{ sound: "slow" }] } } };
   audio.update(game);

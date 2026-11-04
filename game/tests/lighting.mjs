@@ -1,3 +1,4 @@
+// Check lighting behavior against the engine and shipped fixtures.
 import assert from "node:assert/strict";
 import { flame, falloff, lightSourcesAt } from "../src/lighting.js";
 

@@ -1,3 +1,4 @@
+// Build a nearest-colour OKLab lookup table for the presentation shader.
 export const PALETTE_STEPS = 64;
 
 function linear(value) {

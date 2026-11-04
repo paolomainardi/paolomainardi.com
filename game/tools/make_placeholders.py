@@ -60,9 +60,6 @@ def generate_book():
         sizes=dict(title=20, body=10, label=10)))
     from make_curls import generate as generate_curl
     generate_curl(folder)
-    real = ROOT / 'real/book'
-    if not real.exists():
-        shutil.copytree(folder, real)
 
 def generate_board_and_map():
     folder = DATA / 'board'
@@ -149,7 +146,7 @@ def generate():
     d.rectangle((261, 136, 270, 160), fill=COLORS[9])
     d.ellipse((260, 130, 272, 142), fill=COLORS[25])
     d.rectangle((255, 159, 276, 162), fill=COLORS[7])
-    # The chair is baked into both drawings and restored above the actor.
+    # The chair is part of the room drawings and restored above the actor.
     d.rectangle((134, 198, 166, 234), fill=COLORS[6])
     d.rectangle((140, 204, 160, 225), fill=COLORS[2])
     d.rectangle((129, 231, 171, 242), fill=COLORS[7])
@@ -241,12 +238,12 @@ def generate():
                dict(id='study-door', kind='exit', label='Study door', to='stone-house', color='#ff8000'),
                dict(id='noticeboard', kind='hotspot', label='Notice board', color='#00ffff'),
                dict(id='island', kind='exit', label='Island map', to='map', color='#8000ff'),
-               dict(id='beacon', kind='light', label='Lighthouse', light='beacon', color='#ffff00')]))
-    sheet = Image.new('RGBA', (192, 240))
+               dict(id='beacon', kind='light', label='Lighthouse', light='beacon', color='#ffff00', tint='#ffd08a')]))
+    sheet = Image.new('RGBA', (192, 192))
     s = ImageDraw.Draw(sheet)
     glow = Image.new('RGBA', sheet.size)
     g = ImageDraw.Draw(glow)
-    for row, count in enumerate([1, 6, 4, 4, 2]):
+    for row, count in enumerate([1, 6, 4, 4]):
         for frame in range(count):
             x, y = frame * 32, row * 48
             stride = round(math.sin(frame / count * math.tau) * 4) if row in (1, 2, 3) else 0
@@ -263,17 +260,15 @@ def generate():
                 s.point((x+eye_x, y+10-bob), fill=COLORS[0])
                 if row != 1:
                     s.point((x+19, y+10-bob), fill=COLORS[0])
-                if row == 4:
-                    s.rectangle((x+15, y+13, x+18, y+13+frame), fill=COLORS[20])
             s.rectangle((x+7+stride//2, y+18-bob, x+10+stride//2, y+32-bob), fill=COLORS[15])
             s.rectangle((x+23, y+18-bob, x+25, y+29-bob), fill=COLORS[15])
             s.rectangle((x+24, y+30-bob, x+29, y+37-bob), fill=COLORS[8])
             s.rectangle((x+25, y+31-bob, x+28, y+35-bob), fill=COLORS[25])
             g.rectangle((x+25, y+31-bob, x+28, y+35-bob), fill='white')
     # Resize each cell separately so nearest sampling cannot cross animation cells.
-    expanded = Image.new('RGBA', (CHARACTER_FRAME[0] * 6, CHARACTER_FRAME[1] * 5))
+    expanded = Image.new('RGBA', (CHARACTER_FRAME[0] * 6, CHARACTER_FRAME[1] * 4))
     expanded_glow = Image.new('RGBA', expanded.size)
-    for row in range(5):
+    for row in range(4):
         for column in range(6):
             cell = sheet.crop((column * 32, row * 48, (column + 1) * 32, (row + 1) * 48))
             expanded.paste(cell.resize(CHARACTER_FRAME, Image.Resampling.NEAREST),
@@ -285,7 +280,7 @@ def generate():
     expanded_glow.save(char_dir / 'glow.png')
     save_json(char_dir / 'character.json', dict(sheet='sheet.png', glow='glow.png', frame=list(CHARACTER_FRAME), anchor=[64, 233], lantern=[46, -73], animations={
         name: dict(row=i, frames=n, fps=fps, **({'stride': 96} if name.startswith('walk-') else {})) for i, (name, n, fps) in enumerate([
-            ('idle-front', 1, 1), ('walk-side', 6, 8), ('walk-front', 4, 8), ('walk-back', 4, 8), ('talk-front', 2, 4)])}))
+            ('idle-front', 1, 1), ('walk-side', 6, 8), ('walk-front', 4, 8), ('walk-back', 4, 8)])}))
     character = json.loads((char_dir / 'character.json').read_text())
     for direction, row in [('side', 1), ('back', 3)]:
         character['animations'][f'idle-{direction}'] = dict(row=row, frames=1, fps=1)

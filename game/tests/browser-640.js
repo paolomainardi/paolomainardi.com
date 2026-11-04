@@ -1,3 +1,4 @@
+// Check Browser checks for 640 behavior against the engine and shipped fixtures.
 async (page) => {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -7,6 +8,7 @@ async (page) => {
   await page
     .getByRole("button", { name: "Start in window", exact: true })
     .click();
+  await page.waitForFunction(() => !!window.game.state);
   const metrics = await page.evaluate(() => {
     const canvas = document.querySelector("canvas");
     const box = canvas.getBoundingClientRect();

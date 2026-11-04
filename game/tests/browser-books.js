@@ -1,3 +1,4 @@
+// Check Browser checks for books behavior against the engine and shipped fixtures.
 async (page) => {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -11,6 +12,7 @@ async (page) => {
   await page
     .getByRole("button", { name: "Start in window", exact: true })
     .click();
+  await page.waitForFunction(() => !!window.game.state);
   const target = await page.evaluate(async () => {
     const world = await (await fetch("./real/world.json")).json();
     const roomURL = new URL(
@@ -85,8 +87,8 @@ async (page) => {
     name: "Open on the website",
     exact: true,
   });
-  if ((await link.getAttribute("rel")) !== "noopener")
-    throw new Error("Missing noopener");
+  if ((await link.getAttribute("rel")) !== "noopener noreferrer")
+    throw new Error("Missing safe link relation");
   await page.getByRole("button", { name: "Close", exact: true }).click();
   if ((await page.evaluate(() => window.game.state.spread)) !== 1)
     throw new Error("Reader lost spread");
@@ -96,6 +98,7 @@ async (page) => {
   await page
     .getByRole("button", { name: "Start in window", exact: true })
     .click();
+  await page.waitForFunction(() => !!window.game.state);
   await page.waitForFunction(
     () =>
       window.game.state.book === "workstation" &&

@@ -1,3 +1,4 @@
+// Composite room drawings, sprites, text, palette mapping, and bloom with WebGL2.
 import { boardEntries, boardTitleBox } from "./board.js";
 import { inventoryIcon, siteLayout } from "./panel.js";
 import { waterFrame, reflectionPeak } from "./water.js";
@@ -6,12 +7,18 @@ import { animationFrame } from "./animation.js";
 import { fontPixels, wrap } from "./font.js";
 import { buildPaletteLookup, PALETTE_STEPS } from "./palette.js";
 
+// A full-screen triangle supplies UVs for each pass.
+const fontSize = [96, 48];
+const solidSize = [1, 1];
+const whiteTint = [1, 1, 1, 1];
+const textTint = [0.96, 0.89, 0.72, 1];
 const vertex = `#version 300 es
 out vec2 uv;
 void main(){
   vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);
   uv=p; gl_Position=vec4(p*2.-1.,0.,1.);
 }`;
+// Packed red/green bytes hold each foreground item's lowest mask row.
 const foregroundDepth = `
 uniform float uFeet;
 bool covered(vec2 at){
@@ -19,6 +26,7 @@ bool covered(vec2 at){
  float baseline=dot(round(mask.rg*255.),vec2(256.,1.));
  return mask.a>.5&&uFeet<baseline;
 }`;
+// Combine independent lamp drawings and albedo-based lantern light in linear colour.
 const common = `
 precision highp float;
 precision highp sampler2DArray;
@@ -96,6 +104,7 @@ export class Renderer {
       common +
         `uniform bool uFront;void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;if(uFront&&!covered(p/uSize))discard;color=vec4(drawing(p),1.);}`,
     );
+    // Sample nearest sprite cells, add rim and flame light, and optionally emit bloom.
     this.programs.sprite = this.program(`#version 300 es
 precision highp float;
 in vec2 uv;out vec4 color;
@@ -124,6 +133,7 @@ void main(){
  }
  color=vec4(rgb,c.a*uTint.a);
 }`);
+    // Dither a tapered floor shadow away from the nearest lit lamp.
     this.programs.shadow = this.program(`#version 300 es
 ${common}
 uniform vec4 uShadow;
@@ -133,6 +143,7 @@ void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;vec2 d=p-uShadow.xy;
  float r=length((d-uShadow.zw*t)/uShadowSize);
  float a=max(0.,1.-r)*(.28-.16*t);if(a<threshold(p)*.5)discard;color=vec4(0.,0.,0.,.26);
 }`);
+    // Collect lamp masks and visible lantern emission before blur.
     this.programs.glow = this.program(`#version 300 es
 ${common}
 void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;vec3 c=vec3(0);
@@ -142,15 +153,18 @@ void main(){vec2 p=vec2(uv.x,1.-uv.y)*uSize;vec3 c=vec3(0);
  if(!covered(p/uSize))c+=vec3(1.,.7,.32)*max(0.,1.-distance(p,uLantern.xy)/(uSize.x/80.))*uLantern.z;
  color=vec4(c,1.);
 }`);
+    // Blur the bloom horizontally or vertically with a nine-tap kernel.
     this.programs.blur = this.program(`#version 300 es
 precision highp float;in vec2 uv;out vec4 color;uniform sampler2D uImage;uniform vec2 uStep;
 void main(){color=texture(uImage,uv)*.227027;for(int i=1;i<=4;i++){float w=i==1?.1945946:i==2?.1216216:i==3?.054054:.016216;color+=(texture(uImage,uv+uStep*float(i))+texture(uImage,uv-uStep*float(i)))*w;}}`);
+    // Map the scene through the palette lookup and add screen-resolution bloom.
     this.programs.present = this.program(`#version 300 es
 precision highp float;precision highp sampler3D;in vec2 uv;out vec4 color;
 uniform sampler2D uImage,uGlow,uGlowCore;uniform sampler3D uPalette;uniform float uBloom,uDither,uScale;
 const float bayer[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
 void main(){ivec2 q=ivec2(floor(gl_FragCoord.xy/uScale))%4;vec3 c=clamp(texture(uImage,uv).rgb+uDither*((bayer[q.y*4+q.x]+.5)/16.-.5)/255.,0.,1.);vec3 mapped=texture(uPalette,(floor(c*${PALETTE_STEPS - 1}.+.5)+.5)/${PALETTE_STEPS}.).rgb;color=vec4(mapped+(texture(uGlow,uv).rgb*.45+texture(uGlowCore,uv).rgb*.12)*uBloom,1.);}`);
 
+    // Mask cached page text beneath the turning leaf.
     this.programs.text = this.program(`#version 300 es
 precision highp float;in vec2 uv;out vec4 color;
 uniform sampler2D uImage,uCover;
@@ -436,30 +450,16 @@ void main(){
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     this.lightData = new Float32Array(count * 3 * 4);
-  }
-  lights(game) {
-    const gl = this.gl,
-      room = game.room,
-      count = Math.max(1, room.lights.length);
     room.lights.forEach((light, i) => {
-      this.lightData.set([...light.position, light.strength, 0], i * 4);
-      this.lightData.set(
-        [...(light.drift || [0, 0]), 0, 0],
-        (count * 2 + i) * 4,
-      );
-      this.lightData.set(
-        [
-          ...light.tint
-            .slice(1)
-            .match(/../g)
-            .map((v) => parseInt(v, 16) / 255),
-          1,
-        ],
-        (count + i) * 4,
-      );
+      const offset = i * 4;
+      this.lightData[offset] = light.position[0];
+      this.lightData[offset + 1] = light.position[1];
+      const color = parseInt(light.tint.slice(1), 16);
+      this.lightData[(count + i) * 4] = ((color >> 16) & 255) / 255;
+      this.lightData[(count + i) * 4 + 1] = ((color >> 8) & 255) / 255;
+      this.lightData[(count + i) * 4 + 2] = (color & 255) / 255;
+      this.lightData[(count + i) * 4 + 3] = 1;
     });
-    gl.activeTexture(gl.TEXTURE0 + 7);
-    gl.bindTexture(gl.TEXTURE_2D, this.data);
     gl.texImage2D(
       gl.TEXTURE_2D,
       0,
@@ -467,6 +467,44 @@ void main(){
       count,
       3,
       0,
+      gl.RGBA,
+      gl.FLOAT,
+      this.lightData,
+    );
+  }
+  lights(game) {
+    const gl = this.gl,
+      room = game.room,
+      count = Math.max(1, room.lights.length);
+    let changed = false;
+    for (let i = 0; i < room.lights.length; i++) {
+      const light = room.lights[i],
+        offset = i * 4,
+        drift = (count * 2 + i) * 4;
+      const strength = Math.fround(light.strength);
+      const x = Math.fround(light.drift[0]),
+        y = Math.fround(light.drift[1]);
+      if (
+        this.lightData[offset + 2] === strength &&
+        this.lightData[drift] === x &&
+        this.lightData[drift + 1] === y
+      )
+        continue;
+      this.lightData[offset + 2] = strength;
+      this.lightData[drift] = x;
+      this.lightData[drift + 1] = y;
+      changed = true;
+    }
+    if (!changed) return;
+    gl.activeTexture(gl.TEXTURE0 + 7);
+    gl.bindTexture(gl.TEXTURE_2D, this.data);
+    gl.texSubImage2D(
+      gl.TEXTURE_2D,
+      0,
+      0,
+      0,
+      count,
+      3,
       gl.RGBA,
       gl.FLOAT,
       this.lightData,
@@ -506,21 +544,28 @@ void main(){
     this.integer("uWaterMotion", moving ? 1 : 0);
     this.integer("uCount", game.room.lights.length);
     this.uniform("uLanternRadius", game.lanternRadius);
-    this.uniform("uLantern", [
-      ...game.lanternPosition(),
-      game.lanternStrength(),
-    ]);
+    const lantern = (this.lanternUniform ||= [0, 0, 0]);
+    const position = game.lanternPosition(lantern);
+    lantern[0] = position[0];
+    lantern[1] = position[1];
+    lantern[2] = game.lanternStrength();
+    this.uniform("uLantern", lantern);
   }
   sprite(
     texture,
     size,
     rect,
-    source = [0, 0, ...size],
-    tint = [1, 1, 1, 1],
+    source,
+    tint = whiteTint,
     mirror = false,
     rim = 0,
     character = null,
   ) {
+    if (!source) {
+      source = this.spriteSource ||= [0, 0, 0, 0];
+      source[2] = size[0];
+      source[3] = size[1];
+    }
     this.use(this.programs.sprite);
     this.bind("uImage", texture);
     this.integer("uCharacter", character ? 1 : 0);
@@ -547,19 +592,26 @@ void main(){
     this.draw();
   }
   rect(x, y, w, h, tint) {
-    this.sprite(this.white, [1, 1], [x, y, w, h], undefined, tint);
+    const rect = (this.solidRect ||= [0, 0, 0, 0]);
+    rect[0] = x;
+    rect[1] = y;
+    rect[2] = w;
+    rect[3] = h;
+    this.sprite(this.white, solidSize, rect, undefined, tint);
   }
-  text(text, x, y, tint = [0.96, 0.89, 0.72, 1], scale = 1) {
+  text(text, x, y, tint = textTint, scale = 1) {
+    const rect = (this.glyphRect ||= [0, 0, 0, 0]);
+    const source = (this.glyphSource ||= [0, 0, 6, 8]);
+    rect[1] = Math.round(y);
+    rect[2] = 6 * scale;
+    rect[3] = 8 * scale;
     for (const char of String(text)) {
       const code = char.charCodeAt(0),
-        c = char === "…" ? 127 : code >= 32 && code < 128 ? code : 63;
-      this.sprite(
-        this.font,
-        [96, 48],
-        [Math.round(x), Math.round(y), 6 * scale, 8 * scale],
-        [((c - 32) % 16) * 6, Math.floor((c - 32) / 16) * 8, 6, 8],
-        tint,
-      );
+        cell = char === "…" ? 127 : code >= 32 && code < 128 ? code : 63;
+      rect[0] = Math.round(x);
+      source[0] = ((cell - 32) % 16) * 6;
+      source[1] = Math.floor((cell - 32) / 16) * 8;
+      this.sprite(this.font, fontSize, rect, source, tint);
       x += 6 * scale;
     }
   }
@@ -673,18 +725,6 @@ void main(){
     }
     this.renderFooter(game);
     gl.disable(gl.BLEND);
-    this.into(this.scene);
-    if (game.inventoryNote || game.readerItem) {
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      if (game.inventoryNote) {
-        const art = game.activeBoard.art,
-          note = art.sprites[art.note.image];
-        this.sprite(note.texture, note.size, [0, 0, ...note.size]);
-      }
-      this.renderFooter(game);
-      gl.disable(gl.BLEND);
-    }
     this.compositeText(game);
     this.into(null);
     this.use(this.programs.present);
@@ -705,7 +745,8 @@ void main(){
     const message =
       game.siteHover && site
         ? `Open ${site.path} on the site`
-        : (game.sentenceNotice || game.speech) && game.speechUntil > game.elapsed
+        : (game.sentenceNotice || game.speech) &&
+            game.speechUntil > game.elapsed
           ? game.sentenceNotice || game.speech
           : "or right click, Esc";
     this.text(
@@ -738,8 +779,26 @@ void main(){
     draw(art.image);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    const box =
-      !game.boardNote && boardTitleBox(board, art, game.bookArt.fonts);
+    let layout = this.boardLayout;
+    if (
+      !layout ||
+      layout.board !== board ||
+      layout.items !== board.items ||
+      layout.count !== board.items.length ||
+      layout.page !== game.boardPage
+    ) {
+      const rgb = art.accent.match(/\w\w/g).map((c) => parseInt(c, 16) / 255);
+      layout = this.boardLayout = {
+        board,
+        items: board.items,
+        count: board.items.length,
+        page: game.boardPage,
+        entries: boardEntries(board, game.boardPage),
+        title: boardTitleBox(board, art, game.bookArt.fonts),
+        lifted: rgb.map((c) => 0.85 + c * 0.15).concat(1),
+      };
+    }
+    const box = !game.boardNote && layout.title;
     if (box) {
       const color = (hex) =>
         hex
@@ -755,15 +814,9 @@ void main(){
         [0.96, 0.9, 0.78, 1],
       );
     }
-    for (const entry of boardEntries(board, game.boardPage)) {
+    for (const entry of layout.entries) {
       const lift = Number(!game.boardNote && game.hover === entry.item);
-      const rgb = art.accent.match(/\w\w/g).map((c) => parseInt(c, 16) / 255);
-      draw(
-        entry.paper,
-        entry.at,
-        lift,
-        lift ? rgb.map((c) => 0.85 + c * 0.15).concat(1) : undefined,
-      );
+      draw(entry.paper, entry.at, lift, lift ? layout.lifted : undefined);
       const paper = art.sprites[entry.paper],
         pin = art.sprites[art.pin];
       draw(
@@ -870,39 +923,33 @@ void main(){
       this.draw();
       animation = game.character.animations[actor.animation];
       frame = (animation.start || 0) + animationFrame(actor, animation);
-      const sources = game.lightSourcesAt(actor.x, actor.y),
-        brightest = sources.reduce(
-          (best, light) =>
-            light.strength > (best?.strength || 0) ? light : best,
-          null,
-        ),
-        tint = [0, 1, 2].map(
-          (channel) =>
-            0.7 +
-            0.3 *
-              Math.min(
-                1,
-                sources.reduce(
-                  (sum, light) =>
-                    sum +
-                    (light.strength * light.tint[channel]) /
-                      Math.max(...light.tint, 0.001),
-                  0,
-                ),
-              ),
-        );
-      rect = [
-        Math.round(
-          actor.x -
-            (actor.mirror
-              ? game.character.frame[0] - game.character.anchor[0]
-              : game.character.anchor[0]) *
-              scale,
-        ),
-        Math.round(actor.y - game.character.anchor[1] * scale),
-        Math.round(game.character.frame[0] * scale),
-        Math.round(game.character.frame[1] * scale),
-      ];
+      const sources = game.lightSourcesAt(actor.x, actor.y);
+      let brightest = null,
+        red = 0,
+        green = 0,
+        blue = 0;
+      for (const light of sources) {
+        if (light.strength > (brightest?.strength || 0)) brightest = light;
+        const strength = light.strength / Math.max(...light.tint, 0.001);
+        red += strength * light.tint[0];
+        green += strength * light.tint[1];
+        blue += strength * light.tint[2];
+      }
+      const tint = (this.actorTint ||= [0, 0, 0, 1]);
+      tint[0] = 0.7 + 0.3 * Math.min(1, red);
+      tint[1] = 0.7 + 0.3 * Math.min(1, green);
+      tint[2] = 0.7 + 0.3 * Math.min(1, blue);
+      rect = this.actorRect ||= [0, 0, 0, 0];
+      rect[0] = Math.round(
+        actor.x -
+          (actor.mirror
+            ? game.character.frame[0] - game.character.anchor[0]
+            : game.character.anchor[0]) *
+            scale,
+      );
+      rect[1] = Math.round(actor.y - game.character.anchor[1] * scale);
+      rect[2] = Math.round(game.character.frame[0] * scale);
+      rect[3] = Math.round(game.character.frame[1] * scale);
       this.sprite(
         game.character.texture,
         game.character.size,
@@ -912,7 +959,7 @@ void main(){
           animation.row * game.character.frame[1],
           ...game.character.frame,
         ],
-        [...tint, 1],
+        tint,
         actor.mirror,
         brightest
           ? Math.sign(brightest.position[0] - actor.x) *
@@ -925,13 +972,19 @@ void main(){
     this.lighting(game);
     this.integer("uFront", 1);
     this.draw();
-    const [width, height] = game.room.size;
+    const [width] = game.room.size;
     const pixelScale = width / 480,
       ui = game.uiScale,
       margin = width / 80,
       sentenceY = 9 * pixelScale;
     if (!game.inventoryNote && !game.readerItem) this.renderPanel(game);
-    if (!game.room.map && !game.inventoryNote && !game.readerItem && game.speech && game.speechUntil > game.elapsed) {
+    if (
+      !game.room.map &&
+      !game.inventoryNote &&
+      !game.readerItem &&
+      game.speech &&
+      game.speechUntil > game.elapsed
+    ) {
       const lines = game.speechLines,
         top = Math.max(
           sentenceY + 8 * pixelScale,
@@ -1079,12 +1132,13 @@ void main(){
       this.text("<", game.panel.previous.x + 4, top + 21, accent);
     if (game.inventoryOffset + game.panel.slots.length < game.inventory.length)
       this.text(">", game.panel.next.x + 4, top + 21, accent);
-    this.text(
-      "Forget",
-      game.panel.forget.x,
-      game.panel.forget.y,
-      [0.62, 0.63, 0.64, 1],
-    );
+    if (game.inventory.length)
+      this.text(
+        "Forget",
+        game.panel.forget.x,
+        game.panel.forget.y,
+        [0.62, 0.63, 0.64, 1],
+      );
   }
   destroy() {
     const gl = this.gl;

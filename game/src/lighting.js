@@ -1,6 +1,7 @@
-export const LANTERN_COLOUR = [1, 0.7, 0.32];
+// Sample drawing-based lighting and animate lamp and lantern strengths.
+const LANTERN_COLOUR = [1, 0.7, 0.32];
 
-export function linear(value) {
+function linear(value) {
   value /= 255;
   return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
 }
@@ -25,37 +26,54 @@ export function falloff(x, y, position, radius) {
   return 1 - t * t * (3 - 2 * t);
 }
 
+// Reuse samples between calls; consumers read the result before sampling another point.
+const samples = new WeakMap();
 export function lightSourcesAt(game, x, y) {
-  const [width, height] = game.room.size,
-    state = game.room.states[game.time];
-  const sources = game.room.lights.map((light) => {
+  const room = game.room,
+    [width, height] = room.size;
+  const state = room.states[game.time];
+  const count = room.lights.length + Number(!room.map);
+  let cached = samples.get(game);
+  let sources = cached?.sources;
+  if (
+    !cached ||
+    cached.room !== room ||
+    cached.lights !== room.lights ||
+    sources.length !== count
+  ) {
+    sources = Array.from({ length: count }, () => ({
+      position: [0, 0],
+      tint: [0, 0, 0],
+      strength: 0,
+    }));
+    samples.set(game, { room, lights: room.lights, sources });
+  }
+  for (let i = 0; i < room.lights.length; i++) {
+    const light = room.lights[i],
+      sample = sources[i];
     const px = Math.max(0, Math.min(width - 1, Math.floor(x + light.drift[0])));
     const py = Math.max(
       0,
       Math.min(height - 1, Math.floor(y + light.drift[1])),
     );
     const index = (py * width + px) * 4;
-    const tint = [0, 1, 2].map((c) =>
-      Math.max(
+    for (let channel = 0; channel < 3; channel++)
+      sample.tint[channel] = Math.max(
         0,
-        linear(state.lightPixels[light.id][index + c]) -
-          linear(state.unlitPixels[index + c]),
-      ),
-    );
-    return {
-      position: light.position,
-      tint,
-      strength: Math.max(...tint) * light.strength,
-    };
-  });
-  if (game.room.map) return sources;
-  const position = game.lanternPosition();
-  sources.push({
-    position,
-    tint: LANTERN_COLOUR,
-    strength:
-      falloff(x, y, position, game.lanternRadius) * game.lanternStrength(),
-  });
+        linear(state.lightPixels[light.id][index + channel]) -
+          linear(state.unlitPixels[index + channel]),
+      );
+    sample.position = light.position;
+    sample.strength = Math.max(...sample.tint) * light.strength;
+  }
+  if (!room.map) {
+    const sample = sources[count - 1];
+    sample.position = game.lanternPosition(sample.position);
+    sample.tint = LANTERN_COLOUR;
+    sample.strength =
+      falloff(x, y, sample.position, game.lanternRadius) *
+      game.lanternStrength();
+  }
   return sources;
 }
 

@@ -1,3 +1,4 @@
+// Check Browser checks for lighting behavior against the engine and shipped fixtures.
 async (page) => {
   return page.evaluate(async () => {
     const { Renderer } = await import("/src/renderer.js");

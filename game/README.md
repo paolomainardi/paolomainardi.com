@@ -1,280 +1,169 @@
 # Adventure engine
 
-A standalone WebGL2 point-and-click prototype. No runtime dependencies or build step.
+A standalone point-and-click adventure built with JavaScript modules and WebGL2. The engine reads JSON and local artwork. It has no runtime package dependencies and does not depend on Hugo.
 
-From this folder:
+## Run locally
+
+Serve this directory over HTTP:
 
 ```sh
 python3 -m http.server 8000
 ```
 
-Open <http://localhost:8000/dev/>. **Start** requests fullscreen; **Start in window** stays windowed. Click the floor to walk. Select a verb, then a lamp, book, window, or door. `T` switches dusk/night, `L` toggles the lantern, `G` toggles bloom for comparison, `M` toggles sound, and `Esc` closes the reader.
+Open <http://localhost:8000/dev/> for placeholders or <http://localhost:8000/dev/?data=real> for the island artwork. **Start** requests fullscreen. **Start in window** keeps the frame inside the page. Both buttons load the world only after the click. WebGL2 is required; Web Audio is optional.
 
-Embed the engine in a container with a defined width and height:
+To embed the engine, give the container a width and height:
 
 ```js
 import { boot } from "./src/main.js";
 
 const game = await boot({
-  world: "./dev/data/world.json",
+  world: "./dev/real/world.json",
   content: "./dev/data/content.json",
   element: document.querySelector("#game"),
 });
-// game.destroy() removes the game and its listeners.
 ```
 
-Paths follow [CONTRACT.md](CONTRACT.md), including reader URLs relative to `content.json`. Hashes restore the room and reader after Start.
+`boot` mounts the title screen and returns a controller. `game.state` is `null` until loading finishes after Start. `game.ready` is `null` before Start, then a promise that resolves when the game starts or rejects on a load error. `game.destroy()` removes the game, its stylesheet and listeners, stops audio, and releases the WebGL context. URLs resolve against the document base URL. See [CONTRACT.md](CONTRACT.md) for the data format.
 
-## Verb panel and inventory
+## Module map
 
-The dark, translucent panel occupies the bottom 36 pixels of the 640×360 frame.
-Its sentence line sits above five verbs on the left and inventory on the right:
-**Look at**, **Open**, **Use**, **Take**, **Talk to**. **Open** also reads.
-With no verb selected, clicks use **Walk to**. Click the selected verb again to deselect it.
-Hover and selected verbs use rose. Panel clicks never walk, and floor can reach the panel's top.
-Unsupported actions say "I can't do that."
+| Module               | Responsibility                                                                    |
+| -------------------- | --------------------------------------------------------------------------------- |
+| `src/main.js`        | Title screen, Start activation, deferred session loading and controller lifetime. |
+| `src/session.js`     | World setup, room state, input, actions, routing and frame scheduling.            |
+| `src/assets.js`      | JSON and bitmap loading, content filtering, masks and lamp drawing pixels.        |
+| `src/renderer.js`    | WebGL passes, sprite placement, UI, texture uploads and presentation.             |
+| `src/palette.js`     | A 64³ nearest-colour lookup table built in OKLab.                                 |
+| `src/lighting.js`    | CPU light sampling, flame variation, falloff and beacon timing.                   |
+| `src/water.js`       | Connected water spans, integer swell and painted reflection sampling.             |
+| `src/pathfinding.js` | Nearest floor point, eight-direction A* and path smoothing.                       |
+| `src/animation.js`   | Frame selection from travelled distance or an animation clock.                    |
+| `src/book.js`        | Font loading, pagination, entry hits, page drags and hash parsing.                |
+| `src/board.js`       | Board artwork, notice paging, heading layout and note text.                       |
+| `src/text-layer.js`  | Cached Canvas 2D text for close-ups and menus.                                    |
+| `src/font.js`        | Embedded 5×7 UI glyphs and fixed-width wrapping.                                  |
+| `src/panel.js`       | Verb, inventory and site-link geometry.                                           |
+| `src/verb-menu.js`   | Target verbs, menu placement and exit arrows.                                     |
+| `src/sound.js`       | Audio buses, generators, file decoding, ambience and effects.                     |
+| `src/style.css`      | Container, title, reader dialog and hidden accessible content.                    |
 
-**Take** copies a topic book into the inventory while leaving its shelf
-copy in place. Once carried, **Take it** becomes **In your pocket**, faded and inactive. Icons use each book's
-sprite, reduced by an integer divisor into whole pixels. Arrows scroll full
-inventories. **Look at** describes an item; **Open** opens its book.
-Select **Use** or leave the verb unselected, click an inventory item, then a target to form
-"Use <item> with <target>" and hear a short response. Other verbs give a short
-response. Inventory survives room changes and visits. The game saves only a JSON
-list of `{ "kind": "book" | "notice", "id": "<id>" }` entries in `localStorage`
-under `adventure.inventory`, whenever items change. On start it restores current
-books and notices, drops stale identifiers, and rewrites the list. Room, lamps,
-time of day, and position start fresh; existing hash routes still apply.
-Blocked, full, or missing storage silently leaves inventory in the session only.
-Click **Forget** at the end of the inventory row to hear "Pockets emptied." and
-clear every item and the storage key. Removing `adventure.inventory` from browser
-site data also clears saved inventory before the next visit.
+`src/reader-frame.png` supplies the reader border. `dev/data/` holds generated fixtures; `dev/real/` holds the real artwork. Tools generate placeholders, walking frames, page curls, the site's world and a load-size report. Tests exercise logic and simulated rendering; browser scripts check actual GPU output.
 
-## Right-click verb menu
+## Frame and rendering
 
-Right-click a hotspot, lamp, exit, content object, or topic book to open a
-parchment menu beside the pointer. The menu stays inside the game frame and
-shows the target's name and its supported verbs in world order. Hover a verb
-to highlight it in rose and preview the sentence. The heading uses NF-Pixels in the faded colour with a one-game-pixel rule;
-verbs use the same font and weight. Worlds without
-book art retain the 5×7 menu font.
+All rooms in a world should share a frame size. The supplied worlds use **640×360**; the panel occupies the bottom 36 rows. Coordinates, masks, character depth and hit tests use game pixels.
 
-Click a verb, or use Up/Down and Enter, to walk over and run it. **Take** copies
-a topic book into the inventory. A content object still opens its reader. The panel keeps its selected
-verb. Escape, an outside click, an empty-floor right click, or a room change
-closes the menu. The browser context menu is suppressed over the game.
-
-## Topic books
-
-Each room's `books` list fills its shelf slots in order. Each id names a book in
-`world.json`'s `books` map, with a title, content filter, and its own sprite.
-Series books sort by part; other topics sort by newest date. Books contain posts
-unless their filter sets another content type, such as `"type": "link"`.
-The window still opens the newest link.
-
-Click a book with no verb selected, or choose **Open**, to walk over and open its close-up. **Look at**
-says the title and entry count. The first page shows the title and count, followed
-by post titles and dates. Titles wrap to two lines with an ellipsis. NF-Pixels uses 10 px body text with 13 px line height and 20 px titles.
-Entries have half a line of spacing, rounded to 7 game pixels. Font metrics fill
-pages to the bottom margin. Text uses the book's ink, faded and accent colours
-on a 640×360 Canvas 2D layer, with alpha thresholded to 0 or 255 and whole
-game-pixel positions. The layer composites into the game frame before upscale
-and redraws only when the book, spread, hover, menu or game-frame size changes. The verb panel and sentence line keep the 5×7 font.
-
-Hover an entry to highlight it, then click to read. The reader's **Open on the
-website** link opens its URL in a new tab. Closing the reader returns to the same
-spread. Hover a lower outer corner to curl it and show a hand cursor. Drag a
-page's outer half towards the spine, away from entries, to control the turn.
-Release past halfway to finish, or release earlier to fall back. Pointer
-cancellation also falls back. A corner click or left/right arrows turn pages.
-Escape, the **Close**
-label, or a right click returns to the room at the same position.
-
-`#stone-house/book/workstation/2` restores spread 2 after Start, including on
-reload. The DOM contains a visually hidden catalogue of every book and its post
-links. Pagination follows font metrics and the supplied page rectangles. Real-art books use
-placeholder close-up art until a `dev/real/book/` folder is supplied; generation
-never replaces an existing real-art book folder. See [CONTRACT.md](CONTRACT.md)
-for the font and book data formats.
-
-Both book fixtures bundle the unmodified NF-Pixels TTF and its SIL Open Font
-License 1.1 in `fonts/NFPixels-OFL.txt`. The engine loads the local font with
-`FontFace` without access to the site. Regenerate
-palette-mapped corner sprites with `python tools/make_curls.py` using a
-Pillow-enabled Python.
-
-In `world.json`, each `objects` value accepts a single sprite path or a non-empty list, such as `"book": ["objects/book.png", "objects/book-green.png", "objects/book-blue.png"]`. Content objects cycle through that list in occupied slot order, starting from the first sprite in each room. Drawing and hit areas use each sprite's own dimensions. The placeholders show six books cycling through red, green and blue.
-
-Bind room hotspots to content in `world.json`:
-
-```json
-"hotspots": { "window": { "content": { "type": "link" } } }
+```text
+Room drawings + water displacement
+  -> linear lamp differences + lantern on albedo
+  -> objects, shadow and character
+  -> foreground coverage using mask baselines
+  -> panel, speech or close-up footer
+  -> cached book / board / menu text
+  -> nearest palette colour + optional subtle dither
+  -> integer upscale + screen-resolution bloom
 ```
 
-The id refers to a hotspot in that room's `room.json`. Filters follow slot rules,
-but hotspots select the newest matching item by `date`, regardless of `part`.
-The label includes the item's title. **Look at** gives the hotspot’s own `look` line, falling back to the title and note in at most two lines. For items without a reader, **Open** opens `link`, or `url` when `link` is absent, in a new tab
-directly from the click with `noopener,noreferrer`. The character then walks to
-the hotspot and says "Let's see what's out there." A bound item with a `reader`, including `about` and `talk`, opens the embedded reader with **Open** or a plain click. Unbound hotspots and filters without matches keep their original
-behavior. Link items carry the external URL in `link` and their note in
-`description`; content URLs resolve relative to `content.json` and require HTTP(S).
-The placeholder and real-art demo worlds bind the window to two sample links.
+A room supplies an unlit drawing and a separate drawing with each lamp lit, for both dusk and night. The shader adds each lamp's difference from the unlit drawing in linear colour. Lamps fade when switched. Oil lamps and candles flicker and drift slightly; other lamps breathe slowly. Beacons flash for one second after four dark seconds.
 
-A hotspot can instead open a whole book:
+At night, the carried lantern adds a warm pool using the room's albedo. CPU samples of the same lamp drawings tint the character, with a brightness floor of 70%. The strongest sampled source sets the rim; the nearest lit room lamp sets the shadow direction. Foreground masks cover the character and flame only when the feet are behind their lowest painted row.
 
-```json
-"hotspots": { "noticeboard": { "book": "links" } }
+The final pass uses a 64³ OKLab lookup into the world's palette. Nearest sampling preserves whole pixels. The largest integer scale that fits is centred in the container; smaller displays shrink the CSS canvas to fit. Bloom comes from lamp masks and lantern emission, blurred at the output resolution and added after palette mapping. Consequently bloom may produce colours outside the drawing palette.
+
+Books and boards replace the room view and use palette mapping without room lighting or bloom. NF-Pixels text is drawn at game resolution, with alpha thresholded to 0 or 255. The text texture changes only when its content or layout state changes. Lamp data uses an existing GPU texture, updated only when strength or drift changes. Water uploads at most four times per second and stops under reduced motion.
+
+Hidden tabs skip simulation and rendering and suspend audio. Readers freeze movement and lamp animation. While a reader is open, the frame redraws only for footer changes, such as hover, mute or message expiry; the audio scheduler and feedback clock continue.
+
+## Input and verbs
+
+Click floor to walk; double-click floor or an object to run for that walk. Walking speed is `90 × (frame width / 480) × depth scale` pixels per second; running doubles it. Paths stay on painted floor, cannot cut diagonal corners, and stop before the panel. An unreachable target gives a short response.
+
+The panel uses the order in `world.verbs`, normally **Look at**, **Open**, **Use**, **Take**, **Talk to**. Select a verb, then a target. Selecting the same verb again clears it. With no verb selected, the default is **Walk to**; books, boards and readable papers open after arrival. Unsupported actions give a short response.
+
+Right-click a target for its supported actions in world order. Click an action or use Up/Down and Enter. Escape, an outside click or an empty-floor right-click closes the menu. The selected panel verb stays unchanged.
+
+| Key        | Action                                     |
+| ---------- | ------------------------------------------ |
+| `T`        | Override local time and switch dusk/night. |
+| `L`        | Toggle the carried lantern.                |
+| `G`        | Toggle bloom.                              |
+| `M`        | Toggle sound.                              |
+| Escape     | Close the menu, book, board or reader.     |
+| Left/Right | Turn an open book's spread.                |
+
+Dusk runs from 06:00 through 19:59 in the visitor's local time; night covers the other hours. Room simulation follows the clock until `T` overrides it.
+
+## Rooms and travel
+
+Room artwork describes floor, slots, lamps, exits, foreground and hotspots in a flat-colour object mask. World bindings decide which books or content occupy slots and what hotspots open. Excess slot content is truncated; runtime loading does not reject overflow. Topic books paginate their entries.
+
+An exit names its destination room. Travel fades out, loads the destination, then fades in. The character arrives at the nearest floor point to an exit pointing back, facing into the room; otherwise it uses `spawn`. A travel hotspot can walk through a named exit but choose a different destination. Maps draw no character and travel immediately when a place is clicked.
+
+Use [Adding a room](docs/adding-a-room.md) for the drawing-to-world workflow. Use [Character walking](docs/character-walk.md) to build distance-based walks from standing poses.
+
+## Books, boards and readers
+
+A topic book uses a content filter. Series sort by part; other books sort by newest date and default to posts. Entries wrap to two title lines, followed by a date. Pages fill from font metrics and always form complete spreads. Hover highlights an entry; click opens its reader or link. Drag an outer page half towards the spine to turn; release past halfway commits. Corner clicks and arrow keys also turn. Close returns to the same room position.
+
+A notice board sorts entries by date, newest first. Hover lifts a paper and pin by one pixel. Click a notice to read its title, date, link hostname and description. **Go there** opens its external `link`. **Take it** keeps a copy. **Back** returns to the same board page; older/newer controls page through notices. Taken notices show an inactive **In your pocket** action.
+
+The reader is a same-origin iframe at normal browser resolution. It runs without scripts inside a sandbox. Close, Escape or leaving fullscreen returns focus to the game and preserves the underlying book spread. The reader's website link uses the item's `url`. All game-created links use HTTP(S) and `noopener noreferrer`.
+
+Books, boards and content-bound hotspots can show a site path in the footer. Clicking it opens that section of the site. Hashes restore rooms, readers and close-ups after Start:
+
+```text
+#stone-house
+#stone-house/post-id
+#stone-house/book/workstation/1
+#harbour/board/links/0
 ```
 
-The book id names `world.books`. **Open** or a click with no verb selected
-walks to the hotspot and opens that book. The second placeholder room, the
-harbour, has a notice board bound to a links book. Clicking an entry without a
-`reader` opens its `link` in a new tab with `rel="noopener"` and shows
-"Opening the link…" in the sentence line.
+## Inventory and storage
 
-Using an exit or walking to it fades the scene to black, loads its destination,
-and fades back. The character arrives at the destination exit whose `to` points
-back to the previous room, at the nearest walkable point, facing into the room.
-Without a matching exit, arrival uses the nearest walkable point to `spawn`.
-The placeholder study and harbour have exits in both directions.
+**Take** copies a topic book while leaving it on the shelf. Board notices also stay on the board. Inventory arrows scroll full rows. **Look at** describes a carried item; **Open** opens its book or notice. A plain click selects a carried book for **Use**, while a carried notice opens directly. Item combinations currently give a response rather than changing the world.
 
-Frame dimensions come from each room's `size`, shared by every room in a world. The placeholders use 640×360 room images and 128×234 character cells. Masks, paths, pointer coordinates, and render targets use the room dimensions.
-Movement and effect distances scale with frame width relative to 480. The bitmap font stays at one buffer pixel per font pixel.
+Only inventory persists, under `localStorage` key `adventure.inventory`, as a list of `{ "kind": "book" | "notice", "id": "..." }`. Startup checks types, resolves current ids, removes duplicates and stale entries, and rewrites valid entries. Invalid JSON is ignored. Unavailable storage leaves a session-only inventory. **Forget** empties inventory and removes the key. Position, lamp state, time overrides and mute are not stored.
 
-Room light adds each lamp's drawing minus the unlit drawing in linear colour, then clamps the result. Each lamp fades over 0.4 seconds. Oil and candle lamps flicker irregularly between 0.85 and 1.0 with slight pool drift; other lamps breathe slowly. There are no lighting bands. The final OKLab palette lookup stays. Set `"dither": true` in `world.json` for a subtle ordered palette dither; it defaults to false.
+## Sound and accessibility
 
-Rooms can supply `"water": "water.png"`, a room-sized mask with red water, yellow reflection, and black elsewhere. The sea swells in whole-pixel steps up to two pixels, clamped inside each water span. Sparse reflection sparkles reuse the brightest painted colours. The eight-second swell and four updates per second keep the motion calm; reduced motion disables both effects. Water moves identically in the unlit and lamp drawings before palette mapping and optional dithering. Rooms without the mask keep their existing rendering.
+Start creates and resumes the audio context during the button gesture. World sound definitions select noise generators or audio files; files decode once per URL. Ambience follows room and time, cross-fades over one second, pans towards named objects and can follow a lamp's fade level. Effects cover foot contacts, page turns, books, switches, menus, doors and time/lantern changes. The reader lowers both audio buses to 25%; mute lasts only for the instance.
 
-The demo includes a disposable window-water mask in `dev/data/rooms/stone-house/water.png`; `tools/make_placeholders.py` regenerates it. The real-art mask and its room reference are supplied by the art task.
+The title uses native buttons. A hidden navigation list exposes book and board links and site destinations, and a polite live region announces spoken responses. Data text uses DOM `textContent` or canvas text. The reader is a labelled dialog with a Close button, iframe Escape handling and focus return. Keyboard menus and page turns work, but movement and most canvas controls still require a pointer. The engine is not a fully keyboard-accessible game. Reduced motion disables water motion; it does not disable every animation.
 
-At night the lantern adds warm light coloured by the room's `albedo`, with a smooth falloff over one third of the frame height. The character samples lamp brightness and colour at its feet, keeps a 70% brightness floor, and receives a rim from the strongest source. The lantern also lights the character near the carrying hand. Bloom follows lit lamps' painted areas and the lantern; `G` toggles it.
+NF-Pixels is bundled unmodified under SIL OFL 1.1 beside each font file.
 
-The renderer uses the largest whole pixel scale that fits, centred with black bars. On a viewport smaller than one frame, the canvas fits the available space while keeping its native render resolution.
+## Checks and tools
 
-- `src/`: WebGL2 renderer, OKLab palette lookup, mask loader, A\*, bitmap font, interaction, and reader frame.
-- `dev/data/`: generated per-lamp drawings, albedo, masks, palette, sprites, world, 22 sample posts, and two sample links.
-- `dev/reader/`: readable sample articles.
-- `tools/make_placeholders.py`: regenerates demo data and `src/reader-frame.png` using Pillow and NumPy.
-- `tests/`: logic, asset, shader, simulated interaction, and browser checks.
-
-## Notice board, map and beacons
-
-The placeholder harbour has a notice board. Open it or click with no verb selected.
-Notices show titles and dates; hover lifts and accents a paper. Click to read Paolo's note, then choose **Go there** to open its link safely in a new tab.
-**Take it** keeps a copy in the inventory and says "I'll keep this one." The notice stays on the board. Once carried, **Take it** becomes **In your pocket**, faded and inactive.
-Paper icons use the board's paper sprite and pin, reduced to whole pixels. Inventory arrows scroll books and notices.
-**Open** or a plain click on a carried notice shows its note over the current room, with **Go there**, faded inactive **In your pocket**, and **Back**. **Look at** says its title.
-Every note shows the link hostname under its date in faded ink. Notes without a description say "No note on this one. Worth a look." in faded ink.
-**Back** returns to the same board page, or closes a carried note to the current room. **Older notices** and **Newer notices** page through the links.
-The route `#harbour/board/links/0` restores the board after Start. Board links also appear in the hidden accessible catalogue.
-
-Close boards and books with the bottom bar's **Close**, right click or Escape.
-Messages spoken inside books, boards, notes and readers replace the bar hint for three seconds. They leave separate space for Close, the site path and sound.
-Boards show their title in the book title font and an optional faded subtitle above the notices. The subtitle wraps to two lines. An optional `title` rectangle in the board art contract sets the heading area.
-
-Add `site` to a world book, board or content-bound hotspot, for example `"site": "/links/"`. The open view shows this path before Sound in the bottom bar. Hover highlights it and shows "Open <path> on the site"; clicking opens a new tab with `noopener`. Paths resolve against the page origin, including when world assets live elsewhere. The accessible catalogue includes the same links. Long paths truncate to keep controls separate. Rooms show no path.
-
-The placeholders live in `dev/data/board/`; their data format is in [CONTRACT.md](CONTRACT.md#notice-boards).
-
-Choose **Island map** in the study or harbour to visit the placeholder map.
-Map rooms set `"map": true`, draw no character or carried lantern, and do not walk.
-Hover a place to see **Go to <label>**, then click to travel with a fade.
-Arrival uses the destination exit back to the map, falling back to `spawn` when none exists.
-
-In the real-art harbour, a plain click, **Walk to** or **Open** on the distant lighthouse walks to **Island path**, then fades directly to the lighthouse. **Look at** keeps its description. Configure this with `"hotspots": { "lighthouse": { "go": "lighthouse", "via": "path" } }` in the room's world binding. The stairs still lead to the map. Exit cursors point towards the nearest frame edge; hovering the path with no verb selected says "Walk to Island path".
-
-**Take** on a room's notice board says "Open it and pick a notice." **Take** on the lighthouse letter or logbook says "It belongs to the keeper."
-
-Foreground items use their lowest painted mask row as a baseline. They cover the character and lantern glow only when the character's feet are behind that baseline. At or in front of it, the character stays visible. Each item's baseline is computed once when the room loads.
-
-The harbour's lighthouse uses `light: "beacon"`: four seconds dark, then a smooth one-second flash, repeating every five seconds.
-**Use** says "Too far away." Found **about** and **talk** papers in the study open in the reader; **Look at** keeps their own descriptions.
-
-## Sound
-
-Start enables low-volume Web Audio. Click the panel's `Sound: on` label or
-press `M` to mute; the setting lasts only for this game instance. The reader
-lowers all sound by about 12 dB. Book close-ups keep full ambience. Hidden tabs
-suspend audio until visible again.
-
-Both demo worlds configure sea at the window, plus wind and lamp crackle at
-night. Nearby sources get louder and pan towards their room position. Switching
-the oil lamp off fades its crackle. Room and time changes cross-fade ambience
-over one second. Wooden footsteps follow both foot contacts while walking or
-running. Pages, book close-ups, lamp switches, menu choices and exits have effects.
-
-Define `sounds`, `events`, `mix` and each room's `ambience` in `world.json`.
-Use built-in filtered-noise synths or a `src` audio file relative to the world.
-Files decode once; missing files and unknown synths warn once and stay silent.
-See [the sound contract](CONTRACT.md#sound-in-worldjson) for all fields,
-generators and event bindings. Placeholder regeneration preserves this setup.
-
-## Replace the character
-
-Point `world.json`'s `character` at a new `character.json`, or replace the existing character files. The `sheet` path resolves relative to `character.json`. Keep sprite colours in the world's palette, with a transparent background.
-
-Set `frame` to the cell width and height, `anchor` to the feet inside each cell, and `lantern` to the light offset from the feet at scale 1. The engine mirrors both the anchor and lantern when facing left. Supply the animation names from [CONTRACT.md](CONTRACT.md), with each animation's `row`, `frames`, and `fps`. Dimensions, offsets, and animation timing come from this file; no engine edits are needed.
-
-To build a natural side walk for a new character from its standing side pose, see [docs/character-walk.md](docs/character-walk.md): it explains how the engine moves a character and how to run `tools/rig_walk.py`.
-
-Optional `glow` points to a white-on-transparent sheet matching the character grid. Its pixels brighten and warm with the lantern, feed bloom, and dim when the lantern is off. The engine derives the flame position from the glow pixels in each animation frame. Without a glow sheet it uses the `lantern` offset. The placeholders include a glow sheet.
-
-Rooms must supply `albedo` and, for each state, `unlit` plus `lights`, keyed by light item id. Every drawing must match the room size. Greyscale pools and shared `lit` drawings are no longer read. The `dev/real/` artwork also supplies per-lamp and albedo drawings.
-
-Regenerate assets:
+Run from this directory with Node and a Python environment containing Pillow and NumPy. On this project, use the existing art virtual environment; do not install packages globally. `glslangValidator` is required for shader checks.
 
 ```sh
-/home/paolo/webapps/sparkfabrik/agents/site-redesign/adventure-art/.venv/bin/python tools/make_placeholders.py
+for test in logic lighting water sound panel verb-menu board books rendering shaders; do
+  node "tests/$test.mjs" || break
+done
+ART_PYTHON=/path/to/art-venv/bin/python node --experimental-vm-modules tests/integration.mjs
+/path/to/art-venv/bin/python tests/assets.py
 ```
 
-Checks:
+The integration suite runs actual loaders and masks with simulated DOM, GPU and audio interfaces. PNG fixture decoding is cached, with fresh pixel buffers for each load. This checks interactions and lifecycle, not rendered appearance.
 
-```sh
-node tests/sound.mjs # mock AudioContext, mixing, spatial sound, fades, events and missing files
-node tests/panel.mjs # panel grid, boundaries and inventory icon sizing
-node tests/verb-menu.mjs # target verbs, edge placement, row hits
-node tests/board.mjs # board layout, paging, note view, footer replacement and beacon timing
-node tests/books.mjs # layout, routes, entry hits, font loading
-node tests/logic.mjs
-node tests/water.mjs # integer swell, mask bounds, glitter and reduced motion
-node tests/lighting.mjs # linear brightness, independent lamps, flame and falloff
-node tests/shaders.mjs # requires glslangValidator
-node tests/rendering.mjs # sprite geometry and UI placement with a mock GPU
-node --experimental-vm-modules tests/integration.mjs
-/home/paolo/webapps/sparkfabrik/agents/site-redesign/adventure-art/.venv/bin/python tests/assets.py
-```
-
-The object checks cover single paths, lists, cycling across slots and rooms, relative URLs, invalid lists, distinct book colours, and sprite-specific drawing and hit areas.
-
-Hotspot checks cover newest-date selection independent of part, combined filters,
-labels, short descriptions, direct-click tab opening, URL preference and fallback,
-missing URLs, unmatched filters, and preservation of article readers. The browser
-smoke check also checks a real popup, user activation, and its missing opener.
-
-The integration check covers taking notices, inactive carried-note controls, carried-note actions across rooms, inventory restoration, stale identifiers, corrupt JSON, storage failures, and Forget. It also uses the real lighthouse world and masks with the about/talk content fixture: plain clicks and **Open** walk to the letter and logbook before opening their embedded readers.
-
-The integration check uses real data and PNGs with simulated DOM/GPU interfaces. Set `ART_PYTHON` to another Pillow-enabled Python if needed. It does not verify rendered output.
-
-With the server running, browser verification is available through Playwright CLI:
+For real GPU checks, serve the directory and run:
 
 ```sh
 playwright-cli -s=adventure open http://localhost:8000/dev/
-playwright-cli -s=adventure run-code --filename=tests/browser-site.js
-playwright-cli -s=adventure run-code --filename=tests/browser-books.js
 playwright-cli -s=adventure run-code --filename=tests/browser-smoke.js
+playwright-cli -s=adventure run-code --filename=tests/browser-books.js
+playwright-cli -s=adventure run-code --filename=tests/browser-site.js
 playwright-cli -s=adventure run-code --filename=tests/browser-lighting.js
 playwright-cli -s=adventure run-code --filename=tests/browser-depth.js
 playwright-cli -s=adventure run-code --filename=tests/browser-640.js
 playwright-cli -s=adventure close
 ```
 
-The depth browser check tests real harbour cargo and quay-post masks and the study chair, with feet behind, equal to and in front of their baselines. It checks foreground drawing, flame emission and lantern glow.
+These scripts check interaction, same-origin site paths, reader return, lamp composition, foreground depth, scaling, overflow and WebGL errors. Inspect screenshots at narrow and wide widths in dusk and night. Browser execution may require a less restricted environment than the coding sandbox.
 
-The browser checks cover rendered linear light sums, independent lamp switches, fractional fades, albedo lighting, flame dimming and bloom sources, plus walking, lamp switching, readers, iframe Escape, hashes, integer scaling, overflow, and WebGL errors. It saves dusk/night screenshots at four widths under `.playwright-cli/`.
+`tools/make_placeholders.py` rebuilds `dev/data/` and sample reader pages and writes the shared reader border. `tools/make_curls.py` rebuilds page curls for both demo books. `tools/rig_walk.py` writes walk rows from a rig. `tools/site_world.py` derives the site's world from the real demo. Regeneration overwrites the named outputs.
 
-The automated suite covers sound, books, panel layout and boundaries, inventory,
-hotspot books, safe link tabs, room arrival and fades, rendering, assets, lighting,
-and shaders. Browser rendering remains unchecked: the current sandbox denies
-local server sockets. The verb font covers ASCII; NF-Pixels is bundled under
-SIL OFL 1.1. Cross-origin readers need the close button when iframe focus owns
-Escape.
+`node tools/measure-load.mjs` counts real loader calls and local payload bytes, using `dev/real/world.json` and the existing Hugo `../output/play/content.json`. It does not measure HTTP compression, headers, latency, JS, CSS or reader-page resources. Pass alternative world and content file paths as arguments, relative to the tool's directory or as absolute paths.
+
+On 2026-11-04, the real study start and existing Hugo content snapshot used **35 loader requests and 2,528,561 payload bytes** (35 unique files). No world data was requested before Start. This is an offline loader measurement, not a browser network trace; script, CSS, HTML, HTTP overhead, later rooms, footsteps and reader resources are excluded.

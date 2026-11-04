@@ -1,10 +1,10 @@
+// Check books behavior against the engine and shipped fixtures.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
   bookFonts,
   loadFonts,
   wrapText,
-  measure,
   layoutBook,
   hitEntry,
   parseRoute,
@@ -46,7 +46,7 @@ for (const page of pages) {
     const previous = page.entries[page.entries.indexOf(entry) - 1];
     if (previous) assert.equal(entry.y - previous.y - previous.height, 7);
     assert(
-      entry.lines.every((line) => measure(book.fonts.body, line) <= page.width),
+      entry.lines.every((line) => book.fonts.body.measure(line) <= page.width),
     );
     assert(
       entry.y + entry.height <=
@@ -86,13 +86,19 @@ for (const page of pages) {
 assert(wrapText(book.fonts.body, "word ".repeat(100), 70, 2)[1].endsWith("…"));
 assert(
   wrapText(book.fonts.body, "x".repeat(100), 70, 2).every(
-    (line) => measure(book.fonts.body, line) <= 70,
+    (line) => book.fonts.body.measure(line) <= 70,
   ),
 );
-assert(measure(book.fonts.body, "WWW") > measure(book.fonts.body, "iii"));
+assert(book.fonts.body.measure("WWW") > book.fonts.body.measure("iii"));
 assert.deepEqual(
   parseRoute(bookRoute("stone house", "Linux / AI", 2), "start"),
-  { room: "stone house", board: null, book: "Linux / AI", spread: 2, item: null },
+  {
+    room: "stone house",
+    board: null,
+    book: "Linux / AI",
+    spread: 2,
+    item: null,
+  },
 );
 assert.equal(parseRoute("#%xx/book/linux/2", "start").room, "start");
 assert.equal(parseRoute("#room/book/linux/nope", "start").spread, 0);
