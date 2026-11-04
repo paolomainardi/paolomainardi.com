@@ -241,7 +241,58 @@
     },
     "fishermen": {
       "src": "rooms/fishermen/room.json",
-      "books": []
+      "books": [],
+      "actors": [
+        {
+          "id": "cat",
+          "label": "Rosa",
+          "sheet": "cat/cat.json",
+          "path": [
+            [
+              212,
+              255
+            ],
+            [
+              246,
+              253
+            ]
+          ],
+          "speed": 10,
+          "sit": [
+            4,
+            9
+          ],
+          "look": "harbour-cat",
+          "pet": "harbour-cat-pet",
+          "take": "harbour-cat-take",
+          "sound": "purr",
+          "meow": "meow",
+          "name": "Rosa",
+          "speech": "#ffa3b0",
+          "talk": [
+            {
+              "meow": "Meow. Mrrp\u2026 meow meow.",
+              "words": "About time. They all went up to the lighthouse\u2026 and nobody fed me.",
+              "reply": "rosa-reply-1",
+              "end": "Meow."
+            },
+            {
+              "meow": "Mrrow\u2026 meow?",
+              "words": "You're the new one. You walk like you're lost.",
+              "reply": "rosa-reply-2",
+              "end": "Mrrp."
+            },
+            {
+              "meow": "Meow meow. Mrrrow.",
+              "words": "The lamp in the study is still warm because I sleep next to it.",
+              "reply": "rosa-reply-3",
+              "end": "Purr."
+            }
+          ],
+          "chatter": "chatter",
+          "chatterEnd": "chatter-end"
+        }
+      ]
     }
   },
   "book": "book/book.json",
