@@ -208,27 +208,17 @@ export class Speech {
       this.say(exchange.meow, null, actor, actor.chatter ? 4 : 1.6);
       play(actor.chatter || actor.meow);
     } else if (conversation.step === 1) {
-      // She keeps chattering, differently, after a short breath.
+      // The chatter started with her meows carries on under her words.
       this.say(exchange.words, null, actor);
-      conversation.delayed = {
-        id: actor.chatterWords || actor.chatter,
-        at: this.game.elapsed + 0.6,
-      };
     } else if (conversation.step === 2) this.say(null, exchange.reply);
     else if (conversation.step === 3) {
-      this.say(exchange.end, null, actor, 1.2);
-      play(actor.meow);
+      this.say(exchange.end, null, actor, actor.chatterEnd ? 2.4 : 1.2);
+      play(actor.chatterEnd || actor.meow);
     } else this.clear();
   }
 
   update() {
-    const conversation = this.game.conversation;
-    if (!conversation) return;
-    if (conversation.delayed && this.game.elapsed >= conversation.delayed.at) {
-      const { id } = conversation.delayed;
-      conversation.delayed = null;
-      if (id) this.game.sound.play(id, this.game.sound.effects);
-    }
+    if (!this.game.conversation) return;
     if (
       this.game.path.length ||
       this.game.activeBook ||

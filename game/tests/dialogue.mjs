@@ -99,11 +99,9 @@ for (let i = 0; i < 4; i++) {
   assert.equal(game.speech, exchange.words);
   const reading = Math.max(3.5, exchange.words.length * 0.055);
   assert(Math.abs(game.speechUntil - game.elapsed - reading) < 1e-10);
-  // The second chatter waits for a short breath after the first.
-  assert.notEqual(sounds.at(-1), actor.chatterWords);
-  advance(0.65);
-  assert.equal(sounds.at(-1), actor.chatterWords);
-  advance(reading - 0.65 - 0.01);
+  // No second chatter: the first one carries on under her words.
+  assert.equal(sounds.at(-1), actor.chatter);
+  advance(reading - 0.01);
   assert.equal(game.speech, exchange.words);
   advance(0.011);
   await new Promise(setImmediate);
@@ -111,18 +109,18 @@ for (let i = 0; i < 4; i++) {
   assert.equal(game.speechActor, null);
   advance(game.speechUntil - game.elapsed + 0.001);
   assert.equal(game.speech, exchange.end);
-  assert(Math.abs(game.speechUntil - game.elapsed - 1.2) < 1e-10);
-  advance(1.19);
+  assert(Math.abs(game.speechUntil - game.elapsed - 2.4) < 1e-10);
+  advance(2.39);
   assert.equal(game.speech, exchange.end);
   advance(0.011);
   assert.equal(game.conversation, null);
   assert.equal(game.speech, null);
   assert.equal(actor.held, false);
 }
-// Each exchange: chatter under the meows, a different chatter under her words, a meow to close.
+// Each exchange: one chatter under the meows and her words, another to close.
 assert.deepEqual(
   sounds,
-  Array(4).fill([actor.chatter, actor.chatterWords, actor.meow]).flat(),
+  Array(4).fill([actor.chatter, actor.chatterEnd]).flat(),
 );
 advance(5);
 advance(0.1);

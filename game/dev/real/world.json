@@ -163,7 +163,7 @@
             }
           ],
           "chatter": "chatter",
-          "chatterWords": "chatter-words"
+          "chatterEnd": "chatter-end"
         }
       ]
     },
@@ -383,7 +383,7 @@
       "src": "sounds/chatter.mp3",
       "volume": 0.8
     },
-    "chatter-words": {
+    "chatter-end": {
       "src": "sounds/chatter-2.mp3",
       "volume": 0.8
     }
