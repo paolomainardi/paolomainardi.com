@@ -130,13 +130,30 @@ export class TextLayer {
       const top = credit.title
         ? (band - lines.length * font.lineHeight) / 2
         : band + (height - band - lines.length * font.lineHeight) / 2;
-      lines.forEach((value, i) => {
-        const x = (width - font.measure(value)) / 2;
-        const y = top + i * font.lineHeight;
+      // The font draws ™ at full size, so it is set small and raised instead.
+      const mark = book.fonts.body;
+      const outlined = (f, value, x, y) => {
         for (let dy = -1; dy <= 1; dy++)
           for (let dx = -1; dx <= 1; dx++)
-            if (dx || dy) text(font, value, x + dx, y + dy, "#1e1b17");
-        text(font, value, x, y, game.world.speech || "#feeab3");
+            if (dx || dy) text(f, value, x + dx, y + dy, "#1e1b17");
+        text(f, value, x, y, game.world.speech || "#feeab3");
+      };
+      lines.forEach((value, i) => {
+        const parts = value.split("\u2122");
+        const markWidth = mark.measure("TM") + 1;
+        const lineWidth =
+          parts.reduce((sum, part) => sum + font.measure(part), 0) +
+          (parts.length - 1) * markWidth;
+        let x = (width - lineWidth) / 2;
+        const y = top + i * font.lineHeight;
+        parts.forEach((part, j) => {
+          outlined(font, part, x, y);
+          x += font.measure(part);
+          if (j < parts.length - 1) {
+            outlined(mark, "TM", x + 1, y + font.ascent - mark.ascent * 2);
+            x += markWidth;
+          }
+        });
       });
     }
     if (speech) {
