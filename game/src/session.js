@@ -318,6 +318,7 @@ export async function startSession({
     });
     async function changeRoom(id, from = null) {
       game.menu = null;
+      game.selectedItem = null;
       const request = ++roomRequest;
       const room = await loadRoom(game.world, worldURL, id, renderer);
       if (request !== roomRequest || lifecycle.disposed) return;
@@ -615,6 +616,8 @@ export async function startSession({
             !!motionPreference?.matches,
             game.actor.x,
           );
+          if (target.feed.sound)
+            game.sound.play(target.feed.sound, game.sound.effects);
           speech.feed(target);
         } else if (verb === "Look at") say(null, target.look);
         else if (verb === "Take") say(null, target.take);
@@ -634,8 +637,10 @@ export async function startSession({
         if (verb === "Look at") say("Nothing unusual.", target.look);
         else if (verb === "Take") say("I already have it.", "common-have-it");
         else if (verb === "Open" || verb === "Use" || verb === "Walk to") {
-          if (target.to && game.room.id === target.to)
+          if (game.room.id === target.to)
             say("I'm already looking at it.", "common-already-map");
+          else if (!target.to && game.room.map)
+            say("I can't do that.", "common-cant");
           else {
             if (game.readerItem) hideReader(false);
             if (game.activeBook || game.activeBoard) closeBook();
@@ -767,6 +772,12 @@ export async function startSession({
         return;
       }
       const item = game.selectedItem;
+      // Keep the selection while the actor is still busy being petted.
+      if (item && target.petting) {
+        game.verb = "Use";
+        say("I can't do that.", "common-cant");
+        return;
+      }
       if (item) {
         game.selectedItem = null;
         game.path = [];

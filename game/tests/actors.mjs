@@ -72,12 +72,18 @@ const feed = {
 };
 validatePocket(fedWorld);
 validateActors([{ ...config, feed }], fedWorld, room);
+validateActors(
+  [{ ...config, feed: { ...feed, sound: "purr" } }],
+  fedWorld,
+  room,
+);
 for (const patch of [
   { item: "map" },
   { item: "missing" },
   { say: "missing" },
   { meow: "" },
   { words: " " },
+  { sound: "missing" },
 ])
   assert.throws(() =>
     validateActors(

@@ -2476,6 +2476,18 @@ const treatsVerb = (label) => {
 };
 const treatsSlot = rendered.panel.slots[1];
 const treats = rendered.inventory[1];
+const treatsVoices = [],
+  treatsSounds = [];
+const treatsPlayVoice = rendered.sound.playVoice.bind(rendered.sound);
+const treatsPlay = rendered.sound.play.bind(rendered.sound);
+rendered.sound.playVoice = (id, ...rest) => {
+  treatsVoices.push(id);
+  return treatsPlayVoice(id, ...rest);
+};
+rendered.sound.play = (id, ...rest) => {
+  treatsSounds.push(id);
+  return treatsPlay(id, ...rest);
+};
 assert.deepEqual(Array.from(treatsGame.state.inventory), ["map", "treats"]);
 assert(treats.pocket && treats.sprite.texture);
 treatsVerb("Look at");
@@ -2503,8 +2515,12 @@ for (const verb of ["Use", null]) {
   assert.equal(rendered.selectedItem, treats);
   treatsTap(fed.x, fed.y - 5);
   assert.equal(fed.held, true);
+  treatsVoices.length = treatsSounds.length = 0;
   for (let i = 0; i < 600 && treatsGame.state.walking; i++) step();
   step();
+  assert(treatsSounds.includes(fed.feed.sound));
+  assert(treatsSounds.includes(fed.sound));
+  assert(!treatsVoices.includes(fed.pet), "Feeding never says the pet line");
   assert.equal(rendered.actor.mirror, fed.x < rendered.actor.x);
   assert(fed.petting > 0);
   assert.equal(fed.animation, "pet");
@@ -2519,6 +2535,17 @@ for (const verb of ["Use", null]) {
   assert.equal(rendered.conversation, null);
   assert.equal(fed.held, false);
   assert.deepEqual(Array.from(treatsGame.state.inventory), ["map", "treats"]);
+  if (verb) {
+    // A second treat waits until she has finished eating the first.
+    assert(fed.petting > 0);
+    treatsTap(treatsSlot.x + 1, treatsSlot.y + 1);
+    treatsTap(fed.x, fed.y - 5);
+    assert.equal(rendered.speech, rendered.world.voices["common-cant"].text);
+    assert.equal(rendered.selectedItem, treats);
+    assert.equal(rendered.conversation, null);
+    treatsVerb("Use");
+    assert.equal(rendered.selectedItem, null);
+  }
   step(200);
 }
 rendered.inventory.push({
@@ -2532,6 +2559,39 @@ event(treatsCanvas, "click", {
   clientY: rendered.panel.forget.y + 1,
 });
 assert.deepEqual(Array.from(treatsGame.state.inventory), ["map", "treats"]);
+// Changing room drops a selection, and the map refuses to select the treats.
+treatsVerb("Use");
+treatsTap(treatsSlot.x + 1, treatsSlot.y + 1);
+assert.equal(rendered.selectedItem, treats);
+location.hash = "#map";
+rawEvent(window, "hashchange");
+await new Promise(setImmediate);
+step();
+assert.equal(treatsGame.state.room, "map");
+assert.equal(rendered.selectedItem, null);
+treatsTap(5, 5);
+treatsVerb("Use");
+treatsTap(treatsSlot.x + 1, treatsSlot.y + 1);
+assert.equal(rendered.speech, rendered.world.voices["common-cant"].text);
+assert.equal(rendered.selectedItem, null);
+treatsTap(5, 5);
+const harbourPlace = rendered.room.ids.findIndex(
+  (id) => rendered.room.items[id]?.to === "harbour",
+);
+treatsTap(harbourPlace % 640, Math.floor(harbourPlace / 640));
+assert.equal(rendered.transition?.to, "harbour");
+for (let i = 0; i < 100 && rendered.transition; i++) {
+  step();
+  await new Promise(setImmediate);
+}
+assert.equal(treatsGame.state.room, "harbour");
+assert.equal(rendered.selectedItem, null);
+treatsTap(5, 5);
+const harbourDoor = rendered.room.ids.findIndex(
+  (id) => rendered.room.items[id]?.id === "door",
+);
+treatsTap(harbourDoor % 640, Math.floor(harbourDoor / 640));
+assert.equal(rendered.pending?.target.id, "door", "The door still travels");
 treatsGame.destroy();
 console.log(
   "Cat treats pocket, Forget, look, refusal and feeding Rosa passed.",

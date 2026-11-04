@@ -126,7 +126,7 @@ The reader's website link is hidden without `url`. Catalogue entries link to `li
 
 Pocket items precede collected books and notices. They cannot be dropped, never enter storage, and survive Forget. Forget appears only when non-pocket items are present.
 
-With `to`, Open, Use and a plain click (including Walk to) travel immediately with the exit fade. At the destination, the reply uses `common-already-map`, falling back to "I'm already looking at it." Without `to`, the same actions select the item for Use, like a carried book, closing any close-up first. The next target is fed if it is an actor whose `feed` names the item; any other target says the `use` voice, falling back to `common-cant`. Using an item never removes it. Look at uses the entry's `look` voice, Take uses `common-have-it`, and Talk to uses `common-cant`.
+With `to`, Open, Use and a plain click (including Walk to) travel immediately with the exit fade. At the destination, the reply uses `common-already-map`, falling back to "I'm already looking at it." Without `to`, the same actions select the item for Use, like a carried book, closing any close-up first; on a map they reply with `common-cant`. Changing room clears the selection. The next target is fed if it is an actor whose `feed` names the item; any other target says the `use` voice, falling back to `common-cant`. Using an item never removes it. Look at uses the entry's `look` voice, Take uses `common-have-it`, and Talk to uses `common-cant`.
 
 Book, board and reader footers also show pocket icons. Clicking a footer icon closes the close-up and travels, regardless of the selected room verb. Hovering an inventory icon uses the normal action sentence.
 
@@ -193,11 +193,12 @@ Optional `feed` lets the visitor give the actor a pocket item:
   "item": "treats",
   "say": "rosa-feed",
   "meow": "Mrrp! Nom nom… meow.",
-  "words": "Salmon. Finally, someone on this island with manners."
+  "words": "Salmon. Finally, someone on this island with manners.",
+  "sound": "cat-eat"
 }
 ```
 
-`item` names a pocket entry without `to`, `say` names an existing voice, and `meow` and `words` are nonempty strings. Using that item on the actor approaches it like Use. The actor faces the visitor and plays `pet` for three seconds with hearts and its `meow` and `sound` effects, without the `pet` voice. The visitor says `say`, then the actor says `meow` for 1.6 seconds with its `meow` sound, then `words` for their reading time, in its speech colour. Clicks skip and cancel as in a talk exchange.
+`item` names a pocket entry without `to`, `say` names an existing voice, and `meow` and `words` are nonempty strings. Optional `sound` names a sound definition played as the actor starts eating. Using that item on the actor approaches it like Use. The actor faces the visitor and plays `pet` for three seconds with hearts and its `meow` and `sound` effects, without the `pet` voice. While the actor is still being petted, the item stays selected and the reply is `common-cant`. The visitor says `say`, then the actor says `meow` for 1.6 seconds with its `meow` sound, then `words` for their reading time, in its speech colour. Clicks skip and cancel as in a talk exchange.
 
 Optional `name` is a nonempty display name; set `label` to the same value for hover and menus. Optional `speech` is a six-digit `#rrggbb` subtitle colour, falling back to `world.speech`. Optional `talk` is a nonempty list of exchanges:
 

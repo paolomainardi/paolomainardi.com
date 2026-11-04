@@ -152,13 +152,13 @@ The tuxedo cat walks between quay waypoints, rests and sometimes plays an idle g
 
 In the real world the cat is **Rosa**, including hover labels and menus. Look at describes her; Take explains that cats belong to themselves. A plain click or Use walks the visitor beside her, then she turns towards the visitor and plays a three-second pet animation with pixel hearts, a meow, a synthesized purr and a voice line. While it wanders it meows every 15 to 40 seconds, from where it stands; the meow is a CC0 recording. Open gives the usual refusal.
 
-Use the cat treats on Rosa and the visitor walks to her and offers one with a line, while she eats with the petting animation, hearts, purr and meow. She answers with a meow, then words. The treats stay in the pocket.
+Use the cat treats on Rosa and the visitor walks to her and offers one with a line, while she eats with the petting animation, hearts, purr, meow and an eating sound. She answers with a meow, then words. The treats stay in the pocket.
 
 Talk to Rosa plays the next of three exchanges, looping in order. She waits while the visitor approaches, sits facing him, and meows with a rose subtitle above her head. After 1.6 seconds the meows become words, held for their reading time. The visitor replies, then Rosa ends with a meow for 1.2 seconds. She resumes wandering afterward. Clicking skips one step; clicking walkable floor walks away and cancels. Right click or Escape cancels the exchange. Reduced motion keeps the same dialogue and seated pose.
 
 The cat waits while the visitor approaches. It pauses in books, boards, readers and hidden tabs. Reduced motion keeps it seated and shows still hearts during petting. Actor state lasts only until leaving the room.
 
-Both demo worlds bind the cat in `rooms.harbour.actors`. Its sheet uses the visitor's cell format with `walk-side`, `sit`, `idle` and `pet` animations. The placeholder world uses fixture art; the real world loads the supplied tuxedo sheet. The `harbour-cat*` and `rosa-reply-1` through `rosa-reply-3` recordings are optional and will be added later. Actors accept optional `name`, `speech` (`#rrggbb`), `talk` exchanges with `meow`, `words`, `reply` and `end`, and a `feed` with `item`, `say`, `meow` and `words`. Each reply names an existing voice. Actors without `talk`, including the placeholder cat, keep petting on Talk to.
+Both demo worlds bind the cat in `rooms.harbour.actors`. Its sheet uses the visitor's cell format with `walk-side`, `sit`, `idle` and `pet` animations. The placeholder world uses fixture art; the real world loads the supplied tuxedo sheet. Actors accept optional `name`, `speech` (`#rrggbb`), `talk` exchanges with `meow`, `words`, `reply` and `end`, and a `feed` with `item`, `say`, `meow`, `words` and optional `sound`. Each reply names an existing voice. Actors without `talk`, including the placeholder cat, keep petting on Talk to.
 
 ## Books, boards and readers
 

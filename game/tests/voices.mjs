@@ -150,20 +150,14 @@ const real = JSON.parse(
   readFileSync(new URL("../dev/real/world.json", import.meta.url)),
 );
 const ids = Object.keys(real.voices);
-const textOnly = [];
 for (const id of ids) {
-  if (!Object.hasOwn(real.voices[id], "src")) {
-    textOnly.push(id);
-    continue;
-  }
+  if (!real.voices[id].src) continue;
   assert.equal(real.voices[id].src, `voices/${id}.mp3`);
   assert(
     existsSync(new URL(`../dev/real/${real.voices[id].src}`, import.meta.url)),
     id,
   );
 }
-if (textOnly.length)
-  console.log(`Text-only voices awaiting recordings: ${textOnly.join(", ")}`);
 const bound = new Set(
   (real.pocket || []).flatMap((item) => [item.look, item.use]),
 );

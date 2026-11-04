@@ -1,4 +1,4 @@
-// Pocket items travel with `to` or wait for a Use target without it.
+// Validate permanent pocket entries.
 export function validatePocket(world) {
   const pocket = world.pocket === undefined ? [] : world.pocket;
   const voice = (id) => Object.hasOwn(world.voices || {}, id);
