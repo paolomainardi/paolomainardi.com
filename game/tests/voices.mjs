@@ -144,34 +144,35 @@ try {
   console.warn = oldWarn;
 }
 
-// Existing lines have recordings. Cat lines and Rosa replies are recorded separately.
+// A line with `src` has its recording; a line without stays text only.
 // Every place line, including actor replies, must remain bound.
 const real = JSON.parse(
   readFileSync(new URL("../dev/real/world.json", import.meta.url)),
 );
 const ids = Object.keys(real.voices);
-const pendingRecordings = new Set([
-  "harbour-cat",
-  "harbour-cat-pet",
-  "harbour-cat-take",
-  "rosa-reply-1",
-  "rosa-reply-2",
-  "rosa-reply-3",
-]);
+const textOnly = [];
 for (const id of ids) {
+  if (!Object.hasOwn(real.voices[id], "src")) {
+    textOnly.push(id);
+    continue;
+  }
   assert.equal(real.voices[id].src, `voices/${id}.mp3`);
   assert(
-    pendingRecordings.has(id) ||
-      existsSync(
-        new URL(`../dev/real/${real.voices[id].src}`, import.meta.url),
-      ),
+    existsSync(new URL(`../dev/real/${real.voices[id].src}`, import.meta.url)),
+    id,
   );
 }
-const bound = new Set((real.pocket || []).map((item) => item.look));
+if (textOnly.length)
+  console.log(`Text-only voices awaiting recordings: ${textOnly.join(", ")}`);
+const bound = new Set(
+  (real.pocket || []).flatMap((item) => [item.look, item.use]),
+);
 for (const room of Object.values(real.rooms)) {
   bound.add(room.enter);
   for (const actor of room.actors || []) {
-    [actor.look, actor.pet, actor.take].forEach((id) => bound.add(id));
+    [actor.look, actor.pet, actor.take, actor.feed?.say].forEach((id) =>
+      bound.add(id),
+    );
     for (const exchange of actor.talk || []) bound.add(exchange.reply);
   }
   Object.values(room.looks || {}).forEach((id) => bound.add(id));

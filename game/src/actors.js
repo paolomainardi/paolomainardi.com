@@ -51,6 +51,17 @@ export function validateActors(configs, world, room) {
               typeof exchange.reply === "string" &&
               Object.hasOwn(world.voices || {}, exchange.reply),
           ))) ||
+      (actor.feed !== undefined &&
+        !(
+          actor.feed &&
+          (world.pocket || []).some(
+            (item) => item?.id === actor.feed.item && item.to === undefined,
+          ) &&
+          Object.hasOwn(world.voices || {}, actor.feed.say) &&
+          [actor.feed.meow, actor.feed.words].every(
+            (text) => typeof text === "string" && text.trim(),
+          )
+        )) ||
       room.map
     )
       throw new Error("Invalid room actor configuration.");

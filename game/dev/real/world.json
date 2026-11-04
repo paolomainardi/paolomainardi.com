@@ -163,7 +163,13 @@
             }
           ],
           "chatter": "chatter",
-          "chatterEnd": "chatter-end"
+          "chatterEnd": "chatter-end",
+          "feed": {
+            "item": "treats",
+            "say": "rosa-feed",
+            "meow": "Mrrp! Nom nom… meow.",
+            "words": "Salmon. Finally, someone on this island with manners."
+          }
         }
       ]
     },
@@ -625,6 +631,15 @@
     "rosa-reply-3": {
       "text": "That explains a lot. Not everything.",
       "src": "voices/rosa-reply-3.mp3"
+    },
+    "pocket-treats": {
+      "text": "A bag of cat treats, salmon flavour. I don't own a cat. I came prepared anyway."
+    },
+    "pocket-treats-use": {
+      "text": "Nobody here wants a salmon treat. Nobody without whiskers, anyway."
+    },
+    "rosa-feed": {
+      "text": "A small offering for Madam Mayor. Strictly off the record."
     }
   },
   "pocket": [
@@ -634,6 +649,13 @@
       "icon": "items/map.png",
       "to": "map",
       "look": "pocket-map"
+    },
+    {
+      "id": "treats",
+      "label": "Cat treats",
+      "icon": "items/treats.png",
+      "look": "pocket-treats",
+      "use": "pocket-treats-use"
     }
   ],
   "intro": {

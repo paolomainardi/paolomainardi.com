@@ -196,6 +196,21 @@ export class Speech {
     this.nextTalk();
   }
 
+  // The visitor offers the actor's `feed` item, then the actor answers.
+  feed(actor) {
+    this.clear();
+    actor.held = true;
+    this.game.path = [];
+    this.game.pending = null;
+    this.game.conversation = {
+      actor,
+      exchange: actor.feed,
+      step: -1,
+      feed: true,
+    };
+    this.nextTalk();
+  }
+
   nextTalk() {
     const conversation = this.game.conversation;
     if (!conversation) return;
@@ -203,7 +218,14 @@ export class Speech {
     conversation.step++;
     const play = (id) =>
       id && this.game.sound.play(id, this.game.sound.effects);
-    if (conversation.step === 0) {
+    if (conversation.feed) {
+      if (conversation.step === 0) this.say(null, exchange.say);
+      else if (conversation.step === 1) {
+        this.say(exchange.meow, null, actor, 1.6);
+        play(actor.meow);
+      } else if (conversation.step === 2) this.say(exchange.words, null, actor);
+      else this.clear();
+    } else if (conversation.step === 0) {
       // A talking cat chatters for longer than a single meow.
       this.say(exchange.meow, null, actor, actor.chatter ? 4 : 1.6);
       play(actor.chatter || actor.meow);

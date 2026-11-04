@@ -1,6 +1,7 @@
 // Load world data and room drawings, and derive masks and content bindings.
 import { validateActors, validateActorSheet, createActor } from "./actors.js";
 import { validateIntro } from "./intro.js";
+import { validatePocket } from "./inventory.js";
 import { buildWater } from "./water.js";
 
 export function resolve(path, base) {
@@ -63,6 +64,7 @@ export async function loadWorld(worldURL, contentURL, origin) {
     json(contentURL),
   ]);
   validateIntro(world);
+  validatePocket(world);
   const items = content.items.map((item) => {
     const reader = item.reader ? resolve(item.reader, contentURL) : null;
     if (reader && new URL(reader).origin !== origin)

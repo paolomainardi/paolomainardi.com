@@ -115,17 +115,18 @@ The reader's website link is hidden without `url`. Catalogue entries link to `li
 
 ### Permanent pocket items
 
-`pocket` is optional and defaults to an empty list. Each entry requires a unique `id`, display `label`, transparent `icon` path, destination room id `to`, and voice id `look`. Icons resolve against `world.json`, fit within 24×14 pixels, and render in inventory slots.
+`pocket` is optional and defaults to an empty list. Each entry requires a unique `id`, display `label`, transparent `icon` path and voice id `look`. Optional `to` names a destination room; optional `use` names a voice. Icons resolve against `world.json`, fit within 24×14 pixels, and render in inventory slots. The loader rejects a pocket that is not a list, a duplicate or empty id, label or icon, an unknown room, or an unknown voice.
 
 ```json
 "pocket": [
-  { "id": "map", "label": "Island map", "icon": "items/map.png", "to": "map", "look": "pocket-map" }
+  { "id": "map", "label": "Island map", "icon": "items/map.png", "to": "map", "look": "pocket-map" },
+  { "id": "treats", "label": "Cat treats", "icon": "items/treats.png", "look": "pocket-treats", "use": "pocket-treats-use" }
 ]
 ```
 
 Pocket items precede collected books and notices. They cannot be dropped, never enter storage, and survive Forget. Forget appears only when non-pocket items are present.
 
-Open, Use and a plain click (including Walk to) travel immediately with the exit fade. At the destination, the reply uses `common-already-map`, falling back to "I'm already looking at it." Look at uses the entry's `look` voice, Take uses `common-have-it`, and Talk to uses `common-cant`.
+With `to`, Open, Use and a plain click (including Walk to) travel immediately with the exit fade. At the destination, the reply uses `common-already-map`, falling back to "I'm already looking at it." Without `to`, the same actions select the item for Use, like a carried book, closing any close-up first. The next target is fed if it is an actor whose `feed` names the item; any other target says the `use` voice, falling back to `common-cant`. Using an item never removes it. Look at uses the entry's `look` voice, Take uses `common-have-it`, and Talk to uses `common-cant`.
 
 Book, board and reader footers also show pocket icons. Clicking a footer icon closes the close-up and travels, regardless of the selected room verb. Hovering an inventory icon uses the normal action sentence.
 
@@ -184,6 +185,19 @@ The sheet uses `frame`, `anchor` and `animations` as described under `character.
 Actors share visitor scaling, lamp tint, lantern light at night, shadows and foreground baselines. Characters sort by feet position. Each character applies its own foreground mask.
 
 Look at and Take say their configured voices. Use and the default click hold the actor seated while the visitor approaches, then play `pet` for three seconds with rising pixel hearts, the configured sound and the `pet` voice. The actor resumes its route afterward. Open gives `common-cant`. The right-click menu offers Look at, Use, Take and Talk to in world verb order.
+
+Optional `feed` lets the visitor give the actor a pocket item:
+
+```json
+"feed": {
+  "item": "treats",
+  "say": "rosa-feed",
+  "meow": "Mrrp! Nom nom… meow.",
+  "words": "Salmon. Finally, someone on this island with manners."
+}
+```
+
+`item` names a pocket entry without `to`, `say` names an existing voice, and `meow` and `words` are nonempty strings. Using that item on the actor approaches it like Use. The actor faces the visitor and plays `pet` for three seconds with hearts and its `meow` and `sound` effects, without the `pet` voice. The visitor says `say`, then the actor says `meow` for 1.6 seconds with its `meow` sound, then `words` for their reading time, in its speech colour. Clicks skip and cancel as in a talk exchange.
 
 Optional `name` is a nonempty display name; set `label` to the same value for hover and menus. Optional `speech` is a six-digit `#rrggbb` subtitle colour, falling back to `world.speech`. Optional `talk` is a nonempty list of exchanges:
 
@@ -522,6 +536,6 @@ The fixed answers use `common-cant`, `common-lamp-on`, `common-lamp-off`, `commo
 
 ## Validation boundary
 
-The loader checks fetch status, URL protocols, reader origin, palette-strip dimensions, room-image dimensions, required lamp drawings, character-glow dimensions and room actor configuration and sheet bounds. It is not a complete schema validator. Authors must check ids, colours, animation bounds, floor connectivity, page fit and control geometry.
+The loader checks fetch status, URL protocols, reader origin, palette-strip dimensions, room-image dimensions, required lamp drawings, character-glow dimensions, pocket entries and room actor configuration and sheet bounds. It is not a complete schema validator. Authors must check ids, colours, animation bounds, floor connectivity, page fit and control geometry.
 
 Use `tests/assets.py`, the JavaScript suite and browser checks described in [README.md](README.md#checks-and-tools).

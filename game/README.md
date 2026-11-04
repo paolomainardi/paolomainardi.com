@@ -64,7 +64,7 @@ Worlds without `intro` start immediately. Saved hash destinations still restore 
 | `src/panel.js`       | Verb, inventory and shared footer geometry; action sentences.                         |
 | `src/verb-menu.js`   | Target verbs, menu placement and exit arrows.                                         |
 | `src/route.js`       | Hash parsing, shared route targets and hash writing.                                  |
-| `src/inventory.js`   | Permanent pocket items, inventory restoration, persistence, Forget and notice copies. |
+| `src/inventory.js`   | Pocket validation, inventory restoration, persistence, Forget and notice copies.      |
 | `src/catalogue.js`   | Accessible catalogue, safe site paths and new-tab links.                              |
 | `src/intro.js`       | Intro configuration validation, shot timing and credit fades.                         |
 | `src/sound.js`       | Audio buses, generators, file decoding, ambience and effects.                         |
@@ -152,11 +152,13 @@ The tuxedo cat walks between quay waypoints, rests and sometimes plays an idle g
 
 In the real world the cat is **Rosa**, including hover labels and menus. Look at describes her; Take explains that cats belong to themselves. A plain click or Use walks the visitor beside her, then she turns towards the visitor and plays a three-second pet animation with pixel hearts, a meow, a synthesized purr and a voice line. While it wanders it meows every 15 to 40 seconds, from where it stands; the meow is a CC0 recording. Open gives the usual refusal.
 
+Use the cat treats on Rosa and the visitor walks to her and offers one with a line, while she eats with the petting animation, hearts, purr and meow. She answers with a meow, then words. The treats stay in the pocket.
+
 Talk to Rosa plays the next of three exchanges, looping in order. She waits while the visitor approaches, sits facing him, and meows with a rose subtitle above her head. After 1.6 seconds the meows become words, held for their reading time. The visitor replies, then Rosa ends with a meow for 1.2 seconds. She resumes wandering afterward. Clicking skips one step; clicking walkable floor walks away and cancels. Right click or Escape cancels the exchange. Reduced motion keeps the same dialogue and seated pose.
 
 The cat waits while the visitor approaches. It pauses in books, boards, readers and hidden tabs. Reduced motion keeps it seated and shows still hearts during petting. Actor state lasts only until leaving the room.
 
-Both demo worlds bind the cat in `rooms.harbour.actors`. Its sheet uses the visitor's cell format with `walk-side`, `sit`, `idle` and `pet` animations. The placeholder world uses fixture art; the real world loads the supplied tuxedo sheet. The `harbour-cat*` and `rosa-reply-1` through `rosa-reply-3` recordings are optional and will be added later. Actors accept optional `name`, `speech` (`#rrggbb`) and `talk` exchanges with `meow`, `words`, `reply` and `end`. Each reply names an existing voice. Actors without `talk`, including the placeholder cat, keep petting on Talk to.
+Both demo worlds bind the cat in `rooms.harbour.actors`. Its sheet uses the visitor's cell format with `walk-side`, `sit`, `idle` and `pet` animations. The placeholder world uses fixture art; the real world loads the supplied tuxedo sheet. The `harbour-cat*` and `rosa-reply-1` through `rosa-reply-3` recordings are optional and will be added later. Actors accept optional `name`, `speech` (`#rrggbb`), `talk` exchanges with `meow`, `words`, `reply` and `end`, and a `feed` with `item`, `say`, `meow` and `words`. Each reply names an existing voice. Actors without `talk`, including the placeholder cat, keep petting on Talk to.
 
 ## Books, boards and readers
 
@@ -189,13 +191,15 @@ Books, boards and content-bound hotspots can show a site path in the footer. Cli
 
 ## Inventory and storage
 
-**Island map** stays first in inventory. Open, Use or a plain click travels to the map room with the usual exit fade. In the map room it says “I'm already looking at it.” Look at describes the folded map; Take says it is already carried. The map also appears in book, board and reader footers. Clicking it closes the close-up and travels, regardless of the selected room verb.
+**Island map** stays first in inventory, followed by **Cat treats**. Open, Use or a plain click travels to the map room with the usual exit fade. In the map room it says “I'm already looking at it.” Look at describes the folded map; Take says it is already carried. The map also appears in book, board and reader footers. Clicking it closes the close-up and travels, regardless of the selected room verb.
+
+**Cat treats** are always carried too. Look at describes them. Open, Use or a plain click selects them for Use, and a footer click closes the close-up first. Used on Rosa they feed her; used on anything else the visitor declines. They are never used up.
 
 **Take** copies a topic book while leaving it on the shelf. Board notices also stay on the board. Inventory arrows scroll full rows.
 
 **Look at** describes a carried item; **Open** opens its book or notice.
 
-A plain click selects a carried book for **Use**, while a carried notice opens directly. Item combinations currently give a response rather than changing the world.
+A plain click selects a carried book for **Use**, while a carried notice opens directly. Item combinations give a response rather than changing the world, except treats on Rosa.
 
 Only inventory persists, under `localStorage` key `adventure.inventory`, as a list of `{ "kind": "book" | "notice", "id": "..." }`. Startup checks types, resolves current ids, removes duplicates and stale entries, and rewrites valid entries.
 
@@ -215,7 +219,7 @@ Each line shows a subtitle and plays its optional recording. Subtitles use the b
 
 The block sits above the character’s head, falls below it when there is no room above, and stays inside the frame above the panel. Maps centre the block. Books, boards and readers keep speech in the bottom bar with the same font and case. Subtitles last until audio ends, or for reading time without audio. A click on the frame cuts the line short and still does what was clicked; a right click only skips. A new line stops the previous one.
 
-Each recording is `dev/real/voices/<id>.mp3`, named by its voice id. A line without a file stays text only. Files load on first use and cache for the session; a failed file warns once. No recordings load at Start unless an entry line requests one.
+Each recording is `dev/real/voices/<id>.mp3`, named by its voice id. A line without `src` stays text only and requests no file; add `src` when its recording lands. Files load on first use and cache for the session; a failed file warns once. No recordings load at Start unless an entry line requests one.
 
 Voices have their own `mix.voice` level, default 1. During playback, ambience and effects lower by about 6 dB. M mutes voices too.
 

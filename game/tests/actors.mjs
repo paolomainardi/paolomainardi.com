@@ -10,6 +10,7 @@ import {
 } from "../src/actors.js";
 import { animationFrame } from "../src/animation.js";
 import { targetVerbs } from "../src/verb-menu.js";
+import { validatePocket } from "../src/inventory.js";
 
 // Rest and meow timings are random; fix them so timing assertions are stable.
 Math.random = () => 0;
@@ -55,6 +56,46 @@ for (const patch of [
   assert.throws(() => validateActors([{ ...config, ...patch }], world, room));
 assert.throws(() => validateActors({}, world, room));
 assert.throws(() => validateActors([config, config], world, room));
+// A feed names a held pocket item, a visitor voice and the actor's answer.
+const held = {
+  id: "treats",
+  label: "Treats",
+  icon: "t.png",
+  look: "pocket-map",
+};
+const fedWorld = { ...world, pocket: [...world.pocket, held] };
+const feed = {
+  item: "treats",
+  say: "harbour-cat",
+  meow: "Mrrp.",
+  words: "Fish.",
+};
+validatePocket(fedWorld);
+validateActors([{ ...config, feed }], fedWorld, room);
+for (const patch of [
+  { item: "map" },
+  { item: "missing" },
+  { say: "missing" },
+  { meow: "" },
+  { words: " " },
+])
+  assert.throws(() =>
+    validateActors(
+      [{ ...config, feed: { ...feed, ...patch } }],
+      fedWorld,
+      room,
+    ),
+  );
+assert.throws(() => validateActors([{ ...config, feed }], world, room));
+for (const pocket of [
+  {},
+  [held, held],
+  [{ ...held, to: "missing" }],
+  [{ ...held, use: "missing" }],
+  [{ ...held, look: "missing" }],
+  [{ ...held, icon: "" }],
+])
+  assert.throws(() => validatePocket({ ...world, pocket }));
 for (const patch of [
   { frame: [0, 3] },
   { anchor: [-1, 3] },
