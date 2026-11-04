@@ -494,7 +494,7 @@ File duration comes from decoded audio.
 
 Missing files, unknown sound ids and unknown synths warn once and remain silent. Audio data is decoded once per resolved URL per game instance.
 
-`world.mix` accepts `master`, `ambience`, `effects`, `voice` and `music`, defaulting to 0.5, 0.8, 1, 1 and 0.7. Each room's `ambience.dusk` and `ambience.night` contain entries with required `sound`, optional `at` (room item id) and optional `light` (lamp id). Position changes gain and stereo pan; no position means constant gain and centred pan.
+`world.mix` accepts `master`, `ambience`, `effects`, `voice` and `music`, defaulting to 0.5, 0.8, 1, 1 and 0.7. Each room's `ambience.dusk` and `ambience.night` contain entries with required `sound`, optional `at` (room item id) and optional `light` (lamp id). Position changes gain and direction: an HRTF panner turns the loop from the left ear, through the front, to the right ear, with a stereo pan where panner position params are missing. No position means constant gain and a centred stereo pan.
 
 Lamp binding multiplies gain by fade level. Room/time changes cross-fade loops over one second.
 

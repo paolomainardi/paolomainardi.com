@@ -93,6 +93,24 @@ assert.deepEqual(sea.fade.gain.calls.at(-1), ["linear", 0, 3]);
 assert.equal(sea.source.stopTime, 3);
 assert.equal(audio.loops.length, 3);
 const fire = audio.loops[2].voice;
+// Placed loops turn an HRTF panner in front towards their source; others stay stereo.
+const night = audio.loops.map((slot) => slot.voice);
+const facing = (voice) => [
+  voice.pan.positionX.calls.at(-1)[1],
+  voice.pan.positionZ.calls.at(-1)[1],
+];
+assert.equal(night[0].pan.panningModel, "HRTF");
+assert.equal(fire.pan.panningModel, "HRTF");
+assert.equal(night[1].pan.positionX, undefined);
+assert(Math.abs(facing(night[0])[0]) < 1e-9 && facing(night[0])[1] === -1);
+assert(facing(fire)[0] > 0 && facing(fire)[1] < 0, "lamp to the right");
+game.actor.x = 600;
+audio.update(game);
+assert.equal(facing(night[0])[0], -1, "window at the left ear");
+assert(Math.abs(facing(night[0])[1]) < 1e-9);
+assert(facing(fire)[0] < 0 && facing(fire)[1] < 0, "lamp to the left");
+game.actor.x = 100;
+audio.update(game);
 room.lights[0].level = 0.5;
 audio.update(game);
 const half = fire.output.gain.calls.at(-1)[1];
@@ -217,3 +235,9 @@ const oldAudio = new SoundEngine(
 );
 oldAudio.start();
 assert.equal(oldAudio.music.connections[0], oldAudio.master);
+// Placed loops pan in stereo there too.
+oldAudio.update({ room, actor: { x: 600, y: 100 }, time: "night" });
+await Promise.resolve();
+const oldSea = oldAudio.loops[0].voice;
+assert.equal(oldSea.pan.panningModel, undefined);
+assert.equal(oldSea.pan.pan.calls.at(-1)[1], -1);

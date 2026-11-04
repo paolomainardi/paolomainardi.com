@@ -42,6 +42,8 @@ The visitor speaks. Each place has a line for the first visit, and Look at gives
 
 The recordings were generated with ElevenLabs (`eleven_v4`, voice "Will", 44.1 kHz 128 kbps MP3). To change a line, edit its text in `world.json`, record the new take under the same id, and replace the file. The [engine README](../game/README.md) has the full behaviour.
 
+Ambience tied to an object, such as the sea at a window or a lamp's flame, is binaural: on headphones it comes from the left or right of the visitor and turns as they walk.
+
 ## Intro
 
 Start plays a short intro before the first room, like the opening of Monkey Island 2. Five living scenes (the island map, the harbour, the agents' workshop, the fishermen and the lighthouse) carry fading credits and the title, over a theme generated with ElevenLabs Music. On headphones the theme is binaural: the browser places it on two virtual speakers in front of the listener. A click, Escape or Enter skips it, and R replays it. The shots live in `world.json` under `intro`.

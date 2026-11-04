@@ -58,6 +58,8 @@ export class SoundEngine {
     if (!this.context) {
       this.context = this.startContext;
       const c = this.context;
+      // Old Safari has panners without position params.
+      this.hrtf = !!c.createPanner?.().positionX;
       this.master = c.createGain();
       this.duck = c.createGain();
       this.ambience = c.createGain();
@@ -89,12 +91,7 @@ export class SoundEngine {
 
   // Two virtual speakers before the listener, drifting slowly: binaural on headphones.
   binaural(c) {
-    if (
-      !c.createPanner ||
-      !c.createChannelSplitter ||
-      !c.createOscillator ||
-      !c.createPanner().positionX
-    )
+    if (!this.hrtf || !c.createChannelSplitter || !c.createOscillator)
       return null;
     const split = c.createChannelSplitter(2);
     [-1, 1].forEach((side, channel) => {
@@ -240,7 +237,7 @@ export class SoundEngine {
     return this.buffers.get(url);
   }
 
-  async play(id, bus, volume = 1, quiet = false) {
+  async play(id, bus, volume = 1, quiet = false, placed = false) {
     if (!this.context || this.disposed || !id) return null;
     const definition = this.world.sounds?.[id];
     if (!definition) {
@@ -261,8 +258,10 @@ export class SoundEngine {
       : definition.src;
     const buffer = src ? await this.buffer(src, quiet) : null;
     if (this.disposed || (definition.src && !buffer)) return null;
+    // Placed loops use an HRTF panner where supported.
     const output = c.createGain(),
-      pan = c.createStereoPanner();
+      pan = placed && this.hrtf ? c.createPanner() : c.createStereoPanner();
+    if (pan.positionX) pan.panningModel = "HRTF";
     const envelope = c.createGain(),
       fade = c.createGain();
     const source = c.createBufferSource();
@@ -383,18 +382,20 @@ export class SoundEngine {
         (entry) => {
           const slot = { entry, voice: null, retired: false };
           // Start silently, including files whose decode finishes after a room change.
-          this.play(entry.sound, this.ambience, 0).then((voice) => {
-            if (!voice) return;
-            if (slot.retired || this.disposed) {
-              voice.source.stop();
-              return;
-            }
-            slot.voice = voice;
-            voice.fade.gain.value = 0;
-            this.ramp(voice.fade.gain, 1, 1);
-            voice.level = voice.definition.volume ?? 1;
-            this.position(slot, game);
-          });
+          this.play(entry.sound, this.ambience, 0, false, !!entry.at).then(
+            (voice) => {
+              if (!voice) return;
+              if (slot.retired || this.disposed) {
+                voice.source.stop();
+                return;
+              }
+              slot.voice = voice;
+              voice.fade.gain.value = 0;
+              this.ramp(voice.fade.gain, 1, 1);
+              voice.level = voice.definition.volume ?? 1;
+              this.position(slot, game);
+            },
+          );
           return slot;
         },
       );
@@ -456,7 +457,12 @@ export class SoundEngine {
       slot.target = target;
     }
     if (slot.pan !== spatial.pan) {
-      this.ramp(voice.pan.pan, spatial.pan);
+      // Pan -1 to 1 turns the source from the left ear, through the front, to the right.
+      const azimuth = (spatial.pan * Math.PI) / 2;
+      if (voice.pan.positionX) {
+        this.ramp(voice.pan.positionX, Math.sin(azimuth));
+        this.ramp(voice.pan.positionZ, -Math.cos(azimuth));
+      } else this.ramp(voice.pan.pan, spatial.pan);
       slot.pan = spatial.pan;
     }
   }
