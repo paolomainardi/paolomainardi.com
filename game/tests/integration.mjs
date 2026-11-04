@@ -1405,6 +1405,14 @@ for (const [verb, voice] of [
 select("Open");
 tap(cat.x, cat.y - 5);
 assert.equal(rendered.speech, "I can't do that.");
+// Standing beside the cat but facing away, the visitor turns to her.
+rendered.actor.x = cat.x + 40;
+rendered.actor.y = cat.y;
+rendered.actor.mirror = false;
+rendered.path.length = 0;
+select("Look at");
+tap(cat.x, cat.y - 5);
+assert.equal(rendered.actor.mirror, true, "the visitor faces the cat");
 for (const verb of ["Talk to", "Use", "Walk to"]) {
   select(verb);
   tap(cat.x, cat.y - 5);
@@ -1414,6 +1422,11 @@ for (const verb of ["Talk to", "Use", "Walk to"]) {
   assert.equal(cat.x, heldX);
   arrive();
   step();
+  assert.equal(
+    rendered.actor.mirror,
+    cat.x < rendered.actor.x,
+    `${verb}: the visitor faces the cat`,
+  );
   assert(cat.petting > 0 && cat.petting <= 3);
   assert.equal(cat.animation, "pet");
   assert.equal(rendered.speech, rendered.world.voices["harbour-cat-pet"].text);

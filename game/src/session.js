@@ -590,6 +590,11 @@ export async function startSession({
     });
     function act(target, verb) {
       if (target.kind === "actor") {
+        // Face the actor, whichever side the visitor arrived on.
+        if (!game.room.map && target.x !== game.actor.x) {
+          game.actor.mirror = target.x < game.actor.x;
+          if (!game.path.length) game.actor.animation = "idle-side";
+        }
         if (verb === "Look at") say(null, target.look);
         else if (verb === "Take") say(null, target.take);
         else if (verb === "Talk to" && target.talk) speech.talk(target);
