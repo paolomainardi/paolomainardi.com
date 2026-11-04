@@ -31,6 +31,26 @@ export function validateActors(configs, world, room) {
       !Object.hasOwn(world.sounds || {}, actor.sound) ||
       (actor.meow !== undefined &&
         !Object.hasOwn(world.sounds || {}, actor.meow)) ||
+      [actor.chatter, actor.chatterEnd].some(
+        (id) => id !== undefined && !Object.hasOwn(world.sounds || {}, id),
+      ) ||
+      (actor.name !== undefined &&
+        (typeof actor.name !== "string" || !actor.name.trim())) ||
+      (actor.speech !== undefined &&
+        (typeof actor.speech !== "string" ||
+          !/^#[0-9a-f]{6}$/i.test(actor.speech))) ||
+      (actor.talk !== undefined &&
+        (!Array.isArray(actor.talk) ||
+          !actor.talk.length ||
+          !actor.talk.every(
+            (exchange) =>
+              exchange &&
+              [exchange.meow, exchange.words, exchange.end].every(
+                (text) => typeof text === "string" && text.trim(),
+              ) &&
+              typeof exchange.reply === "string" &&
+              Object.hasOwn(world.voices || {}, exchange.reply),
+          ))) ||
       room.map
     )
       throw new Error("Invalid room actor configuration.");
@@ -130,7 +150,12 @@ export function advanceActors(game, dt, reduced = false) {
   if (game.readerItem || game.activeBook || game.activeBoard || game.hidden)
     return;
   for (const actor of game.actors || []) {
-    if (actor.held && game.pending?.target !== actor) actor.held = false;
+    if (
+      actor.held &&
+      game.pending?.target !== actor &&
+      game.conversation?.actor !== actor
+    )
+      actor.held = false;
     if (actor.petting) {
       actor.petting = Math.max(0, actor.petting - dt);
       actor.animation = reduced ? "sit" : "pet";

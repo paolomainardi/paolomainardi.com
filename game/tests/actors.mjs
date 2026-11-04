@@ -10,6 +10,9 @@ import {
 } from "../src/actors.js";
 import { animationFrame } from "../src/animation.js";
 import { targetVerbs } from "../src/verb-menu.js";
+
+// Rest and meow timings are random; fix them so timing assertions are stable.
+Math.random = () => 0;
 import { SoundEngine } from "../src/sound.js";
 import { AudioContext } from "./audio-fixture.mjs";
 const world = JSON.parse(

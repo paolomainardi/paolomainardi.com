@@ -1539,14 +1539,24 @@ tap(...notices.art.older.slice(0, 2));
 assert.equal(adventure.state.page, 2, "Last page cannot advance");
 tap(...notices.art.newer.slice(0, 2));
 assert.equal(adventure.state.page, 1);
+// Opening and taking a notice both rustle paper.
+const paperEvents = [];
+const noticeSound = rendered.sound.event.bind(rendered.sound);
+rendered.sound.event = (name, ...rest) => {
+  paperEvents.push(name);
+  return noticeSound(name, ...rest);
+};
 tap(...notices.art.notices[0].at);
 assert.equal(adventure.state.note, "notice-6");
+assert.deepEqual(paperEvents, ["paper"]);
 const boardModule = await moduleAt("https://adventure.test/src/board.js");
 const takeRect = boardModule.namespace.noteTakeRect(notices.art);
 const beforeTaking = adventure.state.inventory.length;
 tap(takeRect.x, takeRect.y);
 assert.equal(rendered.speech, "I'll keep this one.");
 assert(Math.abs(rendered.speechUntil - rendered.elapsed - 3.5) < 1e-9);
+assert.deepEqual(paperEvents, ["paper", "paper"]);
+rendered.sound.event = noticeSound;
 assert.equal(adventure.state.inventory.length, beforeTaking + 1);
 assert.deepEqual(JSON.parse(stored.get(inventoryKey)).at(-1), {
   kind: "notice",
@@ -2086,14 +2096,7 @@ rawEvent(voiceCanvas, "click", {
   clientY: lookVoice.y + 1,
 });
 assert.equal(rendered.speech, null, "Click skips text-only entry speech");
-assert.equal(rendered.verb, null, "Skip click cannot select a verb");
-assert.equal(rendered.path.length, 0);
-assert.equal(rendered.pending, null);
-rawEvent(voiceCanvas, "click", {
-  clientX: lookVoice.x + 1,
-  clientY: lookVoice.y + 1,
-});
-assert.equal(rendered.verb, "Look at");
+assert.equal(rendered.verb, "Look at", "The same click still picks the verb");
 const voiceWindow = rendered.room.items.find((item) => item.id === "window");
 const voicePixel = rendered.room.ids.findIndex(
   (id) => rendered.room.items[id] === voiceWindow,
@@ -2162,6 +2165,71 @@ assert.equal(rendered.speech, rendered.world.voices["map-enter"].text);
 rawEvent(voiceCanvas, "click", { clientX: 5, clientY: 5 });
 await voiceReturn("harbour");
 assert.equal(rendered.speech, null);
+// Rosa uses real input handlers for approach, skips, cancellation and petting.
+const rosa = rendered.actors[0];
+const rosaTap = (x, y) =>
+  rawEvent(voiceCanvas, "click", { clientX: x, clientY: y });
+const startRosa = () => {
+  const talk = rendered.verbRects.find((rect) => rect.label === "Talk to");
+  rosaTap(talk.x + 1, talk.y + 1);
+  rosaTap(rosa.x, rosa.y - 5);
+  assert.equal(rosa.held, true);
+  for (let i = 0; i < 600 && voiceGame.state.walking; i++) step();
+  step();
+  assert(rendered.conversation);
+  assert.equal(rosa.animation, "sit");
+  assert.equal(rosa.petting, 0);
+};
+rawEvent(voiceCanvas, "pointermove", { clientX: rosa.x, clientY: rosa.y - 5 });
+assert.equal(rendered.hover.label, "Rosa");
+rawEvent(voiceRoot, "contextmenu", { clientX: rosa.x, clientY: rosa.y - 5 });
+assert.equal(rendered.menu.header, "Rosa");
+rawEvent(voiceRoot, "keydown", { key: "Escape" });
+startRosa();
+assert.equal(rendered.speech, rosa.talk[0].meow);
+rosaTap(5, 5);
+assert.equal(rendered.speech, rosa.talk[0].words);
+rosaTap(5, 5);
+assert.equal(rendered.speech, rendered.world.voices[rosa.talk[0].reply].text);
+rosaTap(5, 5);
+assert.equal(rendered.speech, rosa.talk[0].end);
+rosaTap(5, 5);
+assert.equal(rendered.conversation, null);
+for (let i = 1; i <= 3; i++) {
+  startRosa();
+  assert.equal(rendered.speech, rosa.talk[i % 3].meow);
+  if (i === 1) rawEvent(voiceRoot, "keydown", { key: "Escape" });
+  else if (i === 2)
+    rawEvent(voiceRoot, "contextmenu", { clientX: 5, clientY: 5 });
+  else {
+    const floor = rendered.room.walkable.findIndex(
+      (value, index) =>
+        value &&
+        index % 640 > 230 &&
+        index % 640 < 260 &&
+        Math.floor(index / 640) > 295,
+    );
+    assert(floor >= 0);
+    rosaTap(floor % 640, Math.floor(floor / 640));
+    assert(voiceGame.state.walking);
+    for (let j = 0; j < 600 && voiceGame.state.walking; j++) step();
+  }
+  assert.equal(rendered.conversation, null);
+  assert.equal(rosa.held, false);
+}
+for (const verb of ["Use", null]) {
+  if (verb) {
+    const rect = rendered.verbRects.find((rect) => rect.label === verb);
+    rosaTap(rect.x + 1, rect.y + 1);
+  }
+  rosaTap(rosa.x, rosa.y - 5);
+  for (let i = 0; i < 600 && voiceGame.state.walking; i++) step();
+  step();
+  assert(rosa.petting > 0);
+  assert.equal(rendered.conversation, null);
+  step(200);
+}
+rosaTap(5, 5);
 const voiceSlot = rendered.panel.slots[0];
 rawEvent(voiceCanvas, "click", {
   clientX: lookVoice.x + 1,

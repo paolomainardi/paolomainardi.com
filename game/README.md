@@ -138,11 +138,13 @@ Use [Adding a room](docs/adding-a-room.md) for the drawing-to-world workflow. Us
 
 The tuxedo cat walks between quay waypoints, rests and sometimes plays an idle gesture. It shares the visitor's depth scale, lighting, shadow and foreground masks. Characters draw in feet order.
 
-Hover shows **Cat**. Look at describes it; Take explains that cats belong to themselves. A plain click, Talk to or Use walks the visitor beside it, then the cat turns towards the visitor and plays a three-second pet animation with pixel hearts, a meow, a synthesized purr and a voice line. While it wanders it meows every 15 to 40 seconds, from where it stands; the meow is a CC0 recording. Open gives the usual refusal.
+In the real world the cat is **Rosa**, including hover labels and menus. Look at describes her; Take explains that cats belong to themselves. A plain click or Use walks the visitor beside her, then she turns towards the visitor and plays a three-second pet animation with pixel hearts, a meow, a synthesized purr and a voice line. While it wanders it meows every 15 to 40 seconds, from where it stands; the meow is a CC0 recording. Open gives the usual refusal.
+
+Talk to Rosa plays the next of three exchanges, looping in order. She waits while the visitor approaches, sits facing him, and meows with a rose subtitle above her head. After 1.6 seconds the meows become words, held for their reading time. The visitor replies, then Rosa ends with a meow for 1.2 seconds. She resumes wandering afterward. Clicking skips one step; clicking walkable floor walks away and cancels. Right click or Escape cancels the exchange. Reduced motion keeps the same dialogue and seated pose.
 
 The cat waits while the visitor approaches. It pauses in books, boards, readers and hidden tabs. Reduced motion keeps it seated and shows still hearts during petting. Actor state lasts only until leaving the room.
 
-Both demo worlds bind the cat in `rooms.harbour.actors`. Its sheet uses the visitor's cell format with `walk-side`, `sit`, `idle` and `pet` animations. The placeholder world uses fixture art; the real world loads the supplied tuxedo sheet. The three `harbour-cat*` recordings are optional and will be added later.
+Both demo worlds bind the cat in `rooms.harbour.actors`. Its sheet uses the visitor's cell format with `walk-side`, `sit`, `idle` and `pet` animations. The placeholder world uses fixture art; the real world loads the supplied tuxedo sheet. The `harbour-cat*` and `rosa-reply-1` through `rosa-reply-3` recordings are optional and will be added later. Actors accept optional `name`, `speech` (`#rrggbb`) and `talk` exchanges with `meow`, `words`, `reply` and `end`. Each reply names an existing voice. Actors without `talk`, including the placeholder cat, keep petting on Talk to.
 
 ## Books, boards and readers
 
@@ -199,7 +201,7 @@ Voice lines live in `world.voices`. Rooms use `enter` for a first-visit line and
 
 Each line shows a subtitle and plays its optional recording. Subtitles use the book’s NF-Pixels body font in the original case. Balanced rows fit within 200 game pixels and about 34 characters. Warm pale gold text has a one-pixel dark outline in all eight directions, with no background box and binary alpha. Set `world.speech` to a `#rrggbb` colour to override the default `#feeab3`.
 
-The block sits above the character’s head, falls below it when there is no room above, and stays inside the frame above the panel. Maps centre the block. Books, boards and readers keep speech in the bottom bar with the same font and case. Subtitles last until audio ends, or for reading time without audio. Click the frame to skip a line; that click performs no action. A new line stops the previous one.
+The block sits above the character’s head, falls below it when there is no room above, and stays inside the frame above the panel. Maps centre the block. Books, boards and readers keep speech in the bottom bar with the same font and case. Subtitles last until audio ends, or for reading time without audio. A click on the frame cuts the line short and still does what was clicked; a right click only skips. A new line stops the previous one.
 
 Each recording is `dev/real/voices/<id>.mp3`, named by its voice id. A line without a file stays text only. Files load on first use and cache for the session; a failed file warns once. No recordings load at Start unless an entry line requests one.
 

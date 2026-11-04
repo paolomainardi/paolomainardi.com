@@ -44,6 +44,11 @@ export function speechLines(font, text, width = 200, characters = 34) {
   return best[words.length].lines;
 }
 
+// Pixels from the anchor up to the top of the head; small sprites set `head`.
+function speakerHead(character) {
+  return character.head ?? character.anchor[1];
+}
+
 export function speechLayout(game) {
   if (!game.speech || game.speechUntil <= game.elapsed) return null;
   const font = game.bookArt.fonts.body;
@@ -68,11 +73,21 @@ export function speechLayout(game) {
   if (footer) {
     top = footerLayout(game).close.y + 8 - (lines.length - 1) * font.lineHeight;
   } else {
+    const speaker = game.speechActor || game.actor;
     const head = game.room.map
       ? game.verbTop / 2
-      : game.actor.y - game.character.anchor[1] * depth(game);
+      : speaker.y -
+        speakerHead(game.speechActor?.character || game.character) *
+          depth(game, speaker);
     const half = Math.max(...lines.map((line) => font.measure(line))) / 2;
-    center = game.room.map ? width / 2 : game.actor.x;
+    center = game.room.map ? width / 2 : speaker.x;
+    // Keep another speaker's lines clear of the visitor standing beside them.
+    if (game.speechActor && !game.room.map) {
+      const reach = 38 * depth(game, game.actor) + half + 4;
+      const gap = center - game.actor.x;
+      if (Math.abs(gap) < reach)
+        center = game.actor.x + (gap < 0 ? -reach : reach);
+    }
     center = Math.max(1 + half, Math.min(width - 1 - half, center));
     top = head - 5 - blockHeight;
     if (top < 1) top = head + 5;
@@ -116,6 +131,17 @@ export class Speech {
   }
 
   clear() {
+    const conversation = this.game.conversation;
+    if (conversation) {
+      conversation.actor.held = false;
+      conversation.actor.rest = conversation.actor.sit[0];
+      this.game.conversation = null;
+    }
+    this.clearLine();
+  }
+
+  clearLine() {
+    this.game.speechActor = null;
     this.line = null;
     this.game.sound.stopVoice();
     this.game.speech = null;
@@ -125,8 +151,9 @@ export class Speech {
     this.live.textContent = "";
   }
 
-  say(fallback, id) {
-    this.clear();
+  say(fallback, id, speaker = null, duration) {
+    this.clearLine();
+    this.game.speechActor = speaker;
     const game = this.game;
     const text = game.world.voices?.[id]?.text ?? fallback;
     if (!text) return;
@@ -137,7 +164,7 @@ export class Speech {
       text,
       Math.min(200, game.room.size[0] - 2),
     );
-    const readingTime = Math.max(3.5, String(text).length * 0.055);
+    const readingTime = duration ?? Math.max(3.5, String(text).length * 0.055);
     game.speechUntil = game.elapsed + readingTime;
     this.live.textContent = String(text);
     if (!game.world.voices?.[id]?.src) return;
@@ -151,6 +178,56 @@ export class Speech {
         if (this.line === line && !playing)
           game.speechUntil = game.elapsed + readingTime;
       });
+  }
+
+  talk(actor) {
+    this.clear();
+    actor.talkIndex = actor.talkIndex || 0;
+    const exchange = actor.talk[actor.talkIndex];
+    actor.talkIndex = (actor.talkIndex + 1) % actor.talk.length;
+    actor.held = true;
+    actor.petting = 0;
+    actor.animation = "sit";
+    actor.clock = 0;
+    actor.mirror = this.game.actor.x < actor.x;
+    this.game.path = [];
+    this.game.pending = null;
+    this.game.conversation = { actor, exchange, step: -1 };
+    this.nextTalk();
+  }
+
+  nextTalk() {
+    const conversation = this.game.conversation;
+    if (!conversation) return;
+    const { actor, exchange } = conversation;
+    conversation.step++;
+    const play = (id) =>
+      id && this.game.sound.play(id, this.game.sound.effects);
+    if (conversation.step === 0) {
+      // A talking cat chatters for longer than a single meow.
+      this.say(exchange.meow, null, actor, actor.chatter ? 4 : 1.6);
+      play(actor.chatter || actor.meow);
+    } else if (conversation.step === 1) {
+      // The chatter started with her meows carries on under her words.
+      this.say(exchange.words, null, actor);
+    } else if (conversation.step === 2) this.say(null, exchange.reply);
+    else if (conversation.step === 3) {
+      this.say(exchange.end, null, actor, actor.chatterEnd ? 2.4 : 1.2);
+      play(actor.chatterEnd || actor.meow);
+    } else this.clear();
+  }
+
+  update() {
+    if (!this.game.conversation) return;
+    if (
+      this.game.path.length ||
+      this.game.activeBook ||
+      this.game.activeBoard ||
+      this.game.readerItem ||
+      this.game.transition
+    )
+      this.clear();
+    else if (!this.active()) this.nextTalk();
   }
 
   enter() {

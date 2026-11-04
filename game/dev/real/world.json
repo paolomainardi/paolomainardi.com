@@ -88,13 +88,13 @@
       "ambience": {
         "dusk": [
           {
-            "sound": "sea",
+            "sound": "harbour",
             "at": "boat"
           }
         ],
         "night": [
           {
-            "sound": "sea",
+            "sound": "harbour",
             "at": "boat"
           },
           {
@@ -114,7 +114,7 @@
       "actors": [
         {
           "id": "cat",
-          "label": "Cat",
+          "label": "Rosa",
           "sheet": "cat/cat.json",
           "path": [
             [
@@ -139,7 +139,31 @@
           "pet": "harbour-cat-pet",
           "take": "harbour-cat-take",
           "sound": "purr",
-          "meow": "meow"
+          "meow": "meow",
+          "name": "Rosa",
+          "speech": "#ffa3b0",
+          "talk": [
+            {
+              "meow": "Meow. Mrrp\u2026 meow meow.",
+              "words": "About time. They all went up to the lighthouse\u2026 and nobody fed me.",
+              "reply": "rosa-reply-1",
+              "end": "Meow."
+            },
+            {
+              "meow": "Mrrow\u2026 meow?",
+              "words": "You're the new one. You walk like you're lost.",
+              "reply": "rosa-reply-2",
+              "end": "Mrrp."
+            },
+            {
+              "meow": "Meow meow. Mrrrow.",
+              "words": "The lamp in the study is still warm because I sleep next to it.",
+              "reply": "rosa-reply-3",
+              "end": "Purr."
+            }
+          ],
+          "chatter": "chatter",
+          "chatterEnd": "chatter-end"
         }
       ]
     },
@@ -165,15 +189,12 @@
       "ambience": {
         "dusk": [
           {
-            "sound": "sea"
+            "sound": "lighthouse"
           }
         ],
         "night": [
           {
-            "sound": "sea"
-          },
-          {
-            "sound": "wind"
+            "sound": "lighthouse"
           },
           {
             "sound": "flame",
@@ -309,8 +330,8 @@
       "volume": 0.4
     },
     "door": {
-      "synth": "creak",
-      "volume": 0.5
+      "src": "sounds/door.mp3",
+      "volume": 0.6
     },
     "flare": {
       "synth": "whoosh",
@@ -329,24 +350,55 @@
       }
     },
     "purr": {
-      "synth": "purr",
-      "volume": 0.8
+      "src": "sounds/purr.mp3",
+      "volume": 0.45
     },
     "meow": {
-      "src": "sounds/cat-mewpurr.wav",
-      "volume": 0.7
+      "src": "sounds/meow.mp3",
+      "volume": 0.38
+    },
+    "book": {
+      "src": "sounds/book.mp3",
+      "volume": 0.6
+    },
+    "lamp": {
+      "src": "sounds/lamp.mp3",
+      "volume": 0.6
+    },
+    "paper": {
+      "src": "sounds/paper.mp3",
+      "volume": 0.6
+    },
+    "harbour": {
+      "src": "sounds/harbour.wav",
+      "volume": 0.5,
+      "loop": true
+    },
+    "lighthouse": {
+      "src": "sounds/lighthouse.wav",
+      "volume": 0.45,
+      "loop": true
+    },
+    "chatter": {
+      "src": "sounds/chatter.mp3",
+      "volume": 0.8
+    },
+    "chatter-end": {
+      "src": "sounds/chatter-2.mp3",
+      "volume": 0.8
     }
   },
   "events": {
     "step": "step",
     "page-turn": "page",
-    "book-open": "page",
+    "book-open": "book",
     "book-close": "page",
-    "lamp": "click",
+    "lamp": "lamp",
     "menu": "click",
     "door": "door",
     "lantern": "flare",
-    "time": "gust"
+    "time": "gust",
+    "paper": "paper"
   },
   "mix": {
     "master": 0.5,
@@ -419,7 +471,7 @@
       "src": "voices/book-personal.mp3"
     },
     "harbour-enter": {
-      "text": "Salt air\u2026 and nobody around. Notes on a board, a boat tied up, a light on the point. Very welcoming, for a ghost town.",
+      "text": "Salt air\u2026 and nobody around. Except a cat, sitting there like the mayor of this place. I'd better introduce myself.",
       "src": "voices/harbour-enter.mp3"
     },
     "harbour-noticeboard": {
@@ -539,16 +591,28 @@
       "src": "voices/common-already-map.mp3"
     },
     "harbour-cat": {
-      "text": "A tuxedo cat. The only one here who isn't hiding.",
+      "text": "The mayor of the harbour. Her collar says Rosa. Black tie, white shirt\u2026 always dressed for office.",
       "src": "voices/harbour-cat.mp3"
     },
     "harbour-cat-pet": {
-      "text": "Hello, friend. At least someone's glad to see me.",
+      "text": "Pleased to meet you, Madam Mayor. The island is in good paws.",
       "src": "voices/harbour-cat-pet.mp3"
     },
     "harbour-cat-take": {
-      "text": "Take a cat? Cats belong only to themselves.",
+      "text": "Kidnap the mayor? I'd never get off this island.",
       "src": "voices/harbour-cat-take.mp3"
+    },
+    "rosa-reply-1": {
+      "text": "Did\u2026 did the cat just talk?",
+      "src": "voices/rosa-reply-1.mp3"
+    },
+    "rosa-reply-2": {
+      "text": "I prefer 'exploring'.",
+      "src": "voices/rosa-reply-2.mp3"
+    },
+    "rosa-reply-3": {
+      "text": "That explains a lot. Not everything.",
+      "src": "voices/rosa-reply-3.mp3"
     }
   },
   "pocket": [

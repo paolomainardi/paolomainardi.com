@@ -144,7 +144,7 @@ try {
   console.warn = oldWarn;
 }
 
-// Existing lines have recordings. The three cat recordings are commissioned separately.
+// Existing lines have recordings. Cat lines and Rosa replies are recorded separately.
 // Every place line, including actor replies, must remain bound.
 const real = JSON.parse(
   readFileSync(new URL("../dev/real/world.json", import.meta.url)),
@@ -154,6 +154,9 @@ const pendingRecordings = new Set([
   "harbour-cat",
   "harbour-cat-pet",
   "harbour-cat-take",
+  "rosa-reply-1",
+  "rosa-reply-2",
+  "rosa-reply-3",
 ]);
 for (const id of ids) {
   assert.equal(real.voices[id].src, `voices/${id}.mp3`);
@@ -167,8 +170,10 @@ for (const id of ids) {
 const bound = new Set((real.pocket || []).map((item) => item.look));
 for (const room of Object.values(real.rooms)) {
   bound.add(room.enter);
-  for (const actor of room.actors || [])
+  for (const actor of room.actors || []) {
     [actor.look, actor.pet, actor.take].forEach((id) => bound.add(id));
+    for (const exchange of actor.talk || []) bound.add(exchange.reply);
+  }
   Object.values(room.looks || {}).forEach((id) => bound.add(id));
   Object.values(room.hotspots || {}).forEach((binding) => {
     if (binding.look) bound.add(binding.look);
