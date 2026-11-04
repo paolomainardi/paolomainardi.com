@@ -83,7 +83,7 @@ export function speechLayout(game) {
     center = game.room.map ? width / 2 : speaker.x;
     // Keep another speaker's lines clear of the visitor standing beside them.
     if (game.speechActor && !game.room.map) {
-      const reach = 30 * depth(game, game.actor) + half + 4;
+      const reach = 38 * depth(game, game.actor) + half + 4;
       const gap = center - game.actor.x;
       if (Math.abs(gap) < reach)
         center = game.actor.x + (gap < 0 ? -reach : reach);
