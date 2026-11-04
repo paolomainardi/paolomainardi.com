@@ -189,7 +189,7 @@ Only inventory persists, under `localStorage` key `adventure.inventory`, as a li
 
 Invalid JSON is ignored. Unavailable storage leaves a session-only inventory. **Forget** removes collected books and notices and removes the key. Permanent pocket items survive Forget and never enter storage. Forget appears only when collected items are present.
 
-Rooms already entered are stored under `adventure.visited`, a list of room ids, so each entry line plays once per browser rather than once per session. Position, lamp state, time overrides, room actors and mute are not stored.
+Position, lamp state, time overrides, room actors and mute are not stored.
 
 ## Sound and accessibility
 
@@ -197,7 +197,7 @@ Start creates and resumes the audio context during the button gesture. World sou
 
 Effects cover foot contacts, page turns, books, switches, menus, doors and time/lantern changes. The reader lowers ambience and effects to 25%; mute lasts only for the instance.
 
-Voice lines live in `world.voices`. Rooms use `enter` for a first-visit line and `looks` for item or topic book descriptions. Hotspot bindings use `look`. Common replies use the `common-*` voice ids. Entry lines play once per room per browser, after fade-in.
+Voice lines live in `world.voices`. Rooms use `enter` for a first-visit line and `looks` for item or topic book descriptions. Hotspot bindings use `look`. Common replies use the `common-*` voice ids. Entry lines play once per room per session, after fade-in.
 
 Each line shows a subtitle and plays its optional recording. Subtitles use the book’s NF-Pixels body font in the original case. Balanced rows fit within 200 game pixels and about 34 characters. Warm pale gold text has a one-pixel dark outline in all eight directions, with no background box and binary alpha. Set `world.speech` to a `#rrggbb` colour to override the default `#feeab3`.
 

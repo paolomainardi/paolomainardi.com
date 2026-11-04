@@ -170,8 +170,7 @@ Run `just` or `just --list` to see all recipes.
   rather than assume. No browser storage, with two exceptions: the colour scheme
   toggle remembers the reader's choice in `localStorage`, and the adventure at
   `/play/` keeps the ids of the items the visitor took in
-  `adventure.inventory` and the rooms already entered in `adventure.visited`.
-  The scripts are
+  `adventure.inventory`. The scripts are
   concatenated into one deferred bundle by `layouts/_partials/scripts.html`.
   The one exception is `scheme-init.js`, inlined at the top of the body so a
   stored colour scheme is applied before the first paint.

@@ -138,7 +138,7 @@ Book, board and reader footers also show pocket icons. Clicking a footer icon cl
 | `hotspots` | optional object   | Room hotspot ids mapped to bindings below.                                              |
 | `ambience` | optional object   | `dusk` and `night` arrays of ambient sound entries.                                     |
 
-`enter` names a voice said once per room per browser (see `adventure.visited`), after the room fades in. `looks` maps room item ids or topic book ids to voice ids. A hotspot binding can name its voice with `look`, including alongside `go`, `board` or `content`, or by itself. Look bindings take priority over drawing descriptions and content metadata. Carried books retain their look binding.
+`enter` names a voice said once per room per session, after the room fades in. `looks` maps room item ids or topic book ids to voice ids. A hotspot binding can name its voice with `look`, including alongside `go`, `board` or `content`, or by itself. Look bindings take priority over drawing descriptions and content metadata. Carried books retain their look binding.
 
 Slot books stop when either books or slots run out. Each sprite uses its own dimensions, bottom-centred on the slot. There is no automatic room expansion or overflow build check.
 
@@ -238,7 +238,7 @@ Inventory uses only `localStorage["adventure.inventory"]`, containing a JSON arr
 
 Corrupt JSON, blocked storage and quota errors do not stop play.
 
-Forget removes collected books and notices and removes the key. Pocket items remain. `localStorage["adventure.visited"]` holds a JSON array of entered room ids; a listed room skips its entry line. No other game state persists.
+Forget removes collected books and notices and removes the key. Pocket items remain. No other game state persists.
 
 ## room.json and objects.png
 
