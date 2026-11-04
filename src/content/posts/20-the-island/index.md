@@ -65,6 +65,32 @@ A sound cue plays at its second of the shot. A click starts the game at any poin
 
 The music comes from [ElevenLabs Music](https://elevenlabs.io/music), and the browser plays it **binaurally**, through two Web Audio HRTF panners that slowly drift around your head.
 
+The music bus is split into its left and right channels, and each one feeds a **virtual speaker** in front of the listener, about 40 degrees to its side. A very slow oscillator, at 0.04 Hz, sways each speaker left and right, so on headphones the music moves gently around you ([`sound.js`](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/src/sound.js)):
+
+```js
+binaural(c) {
+  if (!c.createPanner || !c.createChannelSplitter || !c.createOscillator)
+    return null;
+  const split = c.createChannelSplitter(2);
+  [-1, 1].forEach((side, channel) => {
+    const panner = c.createPanner();
+    panner.panningModel = "HRTF";
+    panner.positionX.value = side * Math.sin(0.7);
+    panner.positionZ.value = -Math.cos(0.7);
+    const drift = c.createOscillator(),
+      depth = c.createGain();
+    drift.frequency.value = 0.04;
+    depth.gain.value = side * 0.25;
+    drift.connect(depth);
+    depth.connect(panner.positionX);
+    drift.start();
+    split.connect(panner, channel);
+    panner.connect(this.master);
+  });
+  return split;
+}
+```
+
 {{< notice info >}}
 Music is hard to describe with a prompt. When you are not a musician, it is hard to put in words what the model should produce.
 {{< /notice >}}
