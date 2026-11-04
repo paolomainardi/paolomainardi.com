@@ -1,9 +1,9 @@
-walk,step,px
-Drawn frames,Step 1,36
-Drawn frames,Step 2,6
-Drawn frames,Step 3,11
-Drawn frames,Step 4,13
-Cut-out rig,Step 1,11.3
-Cut-out rig,Step 2,11.3
-Cut-out rig,Step 3,11.3
-Cut-out rig,Step 4,11.3
+walk,frame,px
+Drawn frames,Frame 1,36
+Drawn frames,Frame 2,6
+Drawn frames,Frame 3,11
+Drawn frames,Frame 4,13
+Cut-out rig,Frame 1,11.3
+Cut-out rig,Frame 2,11.3
+Cut-out rig,Frame 3,11.3
+Cut-out rig,Frame 4,11.3
