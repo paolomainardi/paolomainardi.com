@@ -149,7 +149,10 @@ export async function startSession({
     );
     const labels = game.world.verbs;
     const speech = new Speech(game, live);
-    const say = (text, id) => speech.say(text, id);
+    const say = (text, id) => {
+      speech.clear();
+      speech.say(text, id);
+    };
     let enterPending = false;
     function enterSpeech() {
       if (!enterPending || game.transition || game.loading) return;
@@ -513,6 +516,10 @@ export async function startSession({
     on(root, "contextmenu", (event) => {
       event.preventDefault();
       enterSpeech();
+      if (game.conversation) {
+        speech.clear();
+        return;
+      }
       if (speech.active()) {
         speech.clear();
         return;
@@ -540,6 +547,7 @@ export async function startSession({
       if (target.kind === "actor") {
         if (verb === "Look at") say(null, target.look);
         else if (verb === "Take") say(null, target.take);
+        else if (verb === "Talk to" && target.talk) speech.talk(target);
         else if (["Walk to", "Use", "Talk to"].includes(verb))
           petActor(
             target,
@@ -658,6 +666,7 @@ export async function startSession({
       } else say("I can't do that.", "common-cant");
     }
     function walk(destination, pending = null, running = false) {
+      if (game.conversation) speech.clear();
       game.pending = pending;
       game.running = running;
       game.path = findPath(
@@ -815,6 +824,20 @@ export async function startSession({
     on(canvas, "click", (event) => {
       if (game.loading || game.transition) return;
       enterSpeech();
+      if (game.conversation) {
+        const [x, y] = point(event);
+        if (
+          x >= 0 &&
+          x < game.room.size[0] &&
+          y >= 0 &&
+          y < game.verbTop &&
+          !hit(x, y) &&
+          game.room.walkable[Math.floor(y) * game.room.size[0] + Math.floor(x)]
+        )
+          walk([x, y], null, event.detail >= 2);
+        else speech.nextTalk();
+        return;
+      }
       // A click cuts the current line short and still does what was clicked.
       if (speech.active()) speech.clear();
       const pocket =
@@ -973,6 +996,11 @@ export async function startSession({
         if (!event.repeat) game.sound.toggleMute();
         return;
       }
+      if (event.key === "Escape" && game.conversation) {
+        event.preventDefault();
+        speech.clear();
+        return;
+      }
       if (game.menu) {
         if (["Escape", "ArrowUp", "ArrowDown", "Enter"].includes(event.key))
           event.preventDefault();
@@ -1098,6 +1126,7 @@ export async function startSession({
         }
         game.elapsed += dt;
         if (!game.readerItem && !game.activeBook && !game.activeBoard) {
+          speech.update();
           advanceActors(game, dt, !!motionPreference?.matches);
           updateLamps(game, dt);
           for (const contact of advanceActor(game, dt))

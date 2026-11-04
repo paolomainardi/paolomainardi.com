@@ -32,7 +32,7 @@ export class TextLayer {
     key[15] = speech?.footer;
     key[16] = game.readerItem;
     key[17] = game.sentenceNotice;
-    key[18] = game.world?.speech;
+    key[18] = game.speechActor?.speech || game.world?.speech;
     key[19] = speech && !speech.footer ? game.actor.x : null;
     let changed = false;
     for (let i = 0; i < key.length; i++)
@@ -114,7 +114,7 @@ export class TextLayer {
           row.line,
           row.x,
           row.y,
-          game.world.speech || "#feeab3",
+          game.speechActor?.speech || game.world.speech || "#feeab3",
         );
       }
     }

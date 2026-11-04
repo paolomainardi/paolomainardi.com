@@ -183,7 +183,22 @@ The sheet uses `frame`, `anchor` and `animations` as described under `character.
 
 Actors share visitor scaling, lamp tint, lantern light at night, shadows and foreground baselines. Characters sort by feet position. Each character applies its own foreground mask.
 
-Look at and Take say their configured voices. Talk to, Use and the default click hold the actor seated while the visitor approaches, then play `pet` for three seconds with rising pixel hearts, the configured sound and the `pet` voice. The actor resumes its route afterward. Open gives `common-cant`. The right-click menu offers Look at, Use, Take and Talk to in world verb order.
+Look at and Take say their configured voices. Use and the default click hold the actor seated while the visitor approaches, then play `pet` for three seconds with rising pixel hearts, the configured sound and the `pet` voice. The actor resumes its route afterward. Open gives `common-cant`. The right-click menu offers Look at, Use, Take and Talk to in world verb order.
+
+Optional `name` is a nonempty display name; set `label` to the same value for hover and menus. Optional `speech` is a six-digit `#rrggbb` subtitle colour, falling back to `world.speech`. Optional `talk` is a nonempty list of exchanges:
+
+```json
+{
+  "meow": "Meow. Mrrp… meow meow.",
+  "words": "About time. They all went up to the lighthouse… and nobody fed me.",
+  "reply": "rosa-reply-1",
+  "end": "Meow."
+}
+```
+
+Each exchange requires nonempty `meow`, `words` and `end` strings and a `reply` naming an existing voice. Talk to approaches the actor, holds it seated facing the visitor and plays the next exchange, looping in list order. The actor's `meow` sound plays once with the first subtitle. Its `meow` text lasts 1.6 seconds, then `words` lasts `max(3.5, text.length × 0.055)` seconds. The visitor says `reply` using normal voice timing, then the actor says `end` for 1.2 seconds and resumes its route. Actor subtitles share visitor font, outline, wrapping and frame clamping, positioned above the actor's own head in its speech colour. Replies appear above the visitor in the world's speech colour.
+
+During an exchange a click skips one step. Clicking walkable floor walks away and cancels; right click or Escape cancels without another action. Other speech, room changes and close-ups cancel the exchange. Reduced motion preserves the text and timing with the actor seated. Actors without `talk` keep petting on Talk to. Exchange order resets on room re-entry.
 
 Books, boards, readers and hidden tabs pause actors. Reduced motion keeps them seated, including during petting, with static hearts. Actor state is never saved.
 
@@ -202,7 +217,7 @@ Paths are also present in the accessible catalogue. Long labels truncate to leav
 
 Use `Look at`, `Open`, `Use`, `Take`, `Talk to`. Labels are action identifiers, not translatable display strings. Unsupported actions respond without changing the world.
 
-No selected verb means `Walk to`. The context menu filters this list for each target; `Talk to` pets a room actor.
+No selected verb means `Walk to`. The context menu filters this list for each target; `Talk to` starts an actor exchange when `talk` is configured, otherwise pets it.
 
 **Take** copies a topic book. Board hotspots prompt the visitor to open the board and pick a notice. Content-bound hotspots give the keeper response, including when their filter matches nothing.
 

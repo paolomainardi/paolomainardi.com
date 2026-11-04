@@ -114,7 +114,7 @@
       "actors": [
         {
           "id": "cat",
-          "label": "Cat",
+          "label": "Rosa",
           "sheet": "cat/cat.json",
           "path": [
             [
@@ -139,7 +139,29 @@
           "pet": "harbour-cat-pet",
           "take": "harbour-cat-take",
           "sound": "purr",
-          "meow": "meow"
+          "meow": "meow",
+          "name": "Rosa",
+          "speech": "#ffa3b0",
+          "talk": [
+            {
+              "meow": "Meow. Mrrp… meow meow.",
+              "words": "About time. They all went up to the lighthouse… and nobody fed me.",
+              "reply": "rosa-reply-1",
+              "end": "Meow."
+            },
+            {
+              "meow": "Mrrow… meow?",
+              "words": "You're the new one. You walk like you're lost.",
+              "reply": "rosa-reply-2",
+              "end": "Mrrp."
+            },
+            {
+              "meow": "Meow meow. Mrrrow.",
+              "words": "The lamp in the study is still warm because I sleep next to it.",
+              "reply": "rosa-reply-3",
+              "end": "Purr."
+            }
+          ]
         }
       ]
     },
@@ -387,11 +409,11 @@
   },
   "voices": {
     "study-enter": {
-      "text": "Hello\u2026? The lamp is still warm. Whoever lives here left a moment ago. Or maybe\u2026 they never really left.",
+      "text": "Hello…? The lamp is still warm. Whoever lives here left a moment ago. Or maybe… they never really left.",
       "src": "voices/study-enter.mp3"
     },
     "study-window": {
-      "text": "The sea, keeping its own hours. Something blinked out there\u2026 or I need more sleep.",
+      "text": "The sea, keeping its own hours. Something blinked out there… or I need more sleep.",
       "src": "voices/study-window.mp3"
     },
     "study-laptop": {
@@ -399,11 +421,11 @@
       "src": "voices/study-laptop.mp3"
     },
     "study-bookshelf": {
-      "text": "Six books, six subjects. Either a very curious mind\u2026 or a very short attention span.",
+      "text": "Six books, six subjects. Either a very curious mind… or a very short attention span.",
       "src": "voices/study-bookshelf.mp3"
     },
     "study-pendant": {
-      "text": "A lamp over the desk. Someone works late in here. On what, I wonder\u2026 and who pays the electricity bill.",
+      "text": "A lamp over the desk. Someone works late in here. On what, I wonder… and who pays the electricity bill.",
       "src": "voices/study-pendant.mp3"
     },
     "study-oil-lamp": {
@@ -411,7 +433,7 @@
       "src": "voices/study-oil-lamp.mp3"
     },
     "study-door": {
-      "text": "I can hear the sea through the door\u2026 and footsteps? No. Just my own. Probably.",
+      "text": "I can hear the sea through the door… and footsteps? No. Just my own. Probably.",
       "src": "voices/study-door.mp3"
     },
     "book-workstation": {
@@ -419,11 +441,11 @@
       "src": "voices/book-workstation.mp3"
     },
     "book-linux": {
-      "text": "Linux. The most worn spine on the shelf. Read again and again\u2026 or recompiled.",
+      "text": "Linux. The most worn spine on the shelf. Read again and again… or recompiled.",
       "src": "voices/book-linux.mp3"
     },
     "book-ai": {
-      "text": "AI and agents. The ink still looks wet. Did someone write this\u2026 or something?",
+      "text": "AI and agents. The ink still looks wet. Did someone write this… or something?",
       "src": "voices/book-ai.mp3"
     },
     "book-docker": {
@@ -431,15 +453,15 @@
       "src": "voices/book-docker.mp3"
     },
     "book-security": {
-      "text": "Security. It won't open at first\u2026 then it does. Not very secure, then.",
+      "text": "Security. It won't open at first… then it does. Not very secure, then.",
       "src": "voices/book-security.mp3"
     },
     "book-personal": {
-      "text": "Personal. I really shouldn't\u2026 then again, I'm already in their house.",
+      "text": "Personal. I really shouldn't… then again, I'm already in their house.",
       "src": "voices/book-personal.mp3"
     },
     "harbour-enter": {
-      "text": "Salt air\u2026 and nobody around. Except a cat, sitting there like the mayor of this place. I'd better introduce myself.",
+      "text": "Salt air… and nobody around. Except a cat, sitting there like the mayor of this place. I'd better introduce myself.",
       "src": "voices/harbour-enter.mp3"
     },
     "harbour-noticeboard": {
@@ -447,7 +469,7 @@
       "src": "voices/harbour-noticeboard.mp3"
     },
     "harbour-boat": {
-      "text": "Two oars, still wet. Someone came back not long ago\u2026 and left me the rowing.",
+      "text": "Two oars, still wet. Someone came back not long ago… and left me the rowing.",
       "src": "voices/harbour-boat.mp3"
     },
     "harbour-lighthouse": {
@@ -455,15 +477,15 @@
       "src": "voices/harbour-lighthouse.mp3"
     },
     "harbour-beacon": {
-      "text": "There it goes again\u2026 one flash, then the dark. Either it's calling someone, or the bulb is dying.",
+      "text": "There it goes again… one flash, then the dark. Either it's calling someone, or the bulb is dying.",
       "src": "voices/harbour-beacon.mp3"
     },
     "harbour-street-lamp": {
-      "text": "The quay lamp. Someone lit it before nightfall\u2026 then vanished. Very considerate. Very suspicious.",
+      "text": "The quay lamp. Someone lit it before nightfall… then vanished. Very considerate. Very suspicious.",
       "src": "voices/harbour-street-lamp.mp3"
     },
     "harbour-door-lantern": {
-      "text": "A lantern by the door, so nobody comes home in the dark. Nobody being\u2026 whom, exactly?",
+      "text": "A lantern by the door, so nobody comes home in the dark. Nobody being… whom, exactly?",
       "src": "voices/harbour-door-lantern.mp3"
     },
     "harbour-door": {
@@ -475,15 +497,15 @@
       "src": "voices/harbour-path.mp3"
     },
     "lighthouse-enter": {
-      "text": "All those stairs\u2026 and the light, still turning. Somebody keeps it burning. And nobody kept a lift.",
+      "text": "All those stairs… and the light, still turning. Somebody keeps it burning. And nobody kept a lift.",
       "src": "voices/lighthouse-enter.mp3"
     },
     "lighthouse-lens": {
-      "text": "The great lens. It turns the dark into a signal. For whom, I wonder\u2026 ships? Me? The neighbours?",
+      "text": "The great lens. It turns the dark into a signal. For whom, I wonder… ships? Me? The neighbours?",
       "src": "voices/lighthouse-lens.mp3"
     },
     "lighthouse-desk-lamp": {
-      "text": "A small lamp for long nights. The chair is still pulled out. They left in a hurry\u2026 or they're very relaxed.",
+      "text": "A small lamp for long nights. The chair is still pulled out. They left in a hurry… or they're very relaxed.",
       "src": "voices/lighthouse-desk-lamp.mp3"
     },
     "lighthouse-letter": {
@@ -491,7 +513,7 @@
       "src": "voices/lighthouse-letter.mp3"
     },
     "lighthouse-logbook": {
-      "text": "The keeper's logbook. Places, dates, faces\u2026 a whole life of travelling to talk. Keepers aren't usually this chatty.",
+      "text": "The keeper's logbook. Places, dates, faces… a whole life of travelling to talk. Keepers aren't usually this chatty.",
       "src": "voices/lighthouse-logbook.mp3"
     },
     "lighthouse-stairs": {
@@ -499,7 +521,7 @@
       "src": "voices/lighthouse-stairs.mp3"
     },
     "map-enter": {
-      "text": "So this is the whole island. Small\u2026 but full of things somebody left behind. Like a desk, but bigger.",
+      "text": "So this is the whole island. Small… but full of things somebody left behind. Like a desk, but bigger.",
       "src": "voices/map-enter.mp3"
     },
     "map-house": {
@@ -511,7 +533,7 @@
       "src": "voices/map-harbour.mp3"
     },
     "map-lighthouse": {
-      "text": "The lighthouse. Whoever lives here\u2026 I think they're up there. Waiting, maybe.",
+      "text": "The lighthouse. Whoever lives here… I think they're up there. Waiting, maybe.",
       "src": "voices/map-lighthouse.mp3"
     },
     "common-cant": {
@@ -523,7 +545,7 @@
       "src": "voices/common-lamp-on.mp3"
     },
     "common-lamp-off": {
-      "text": "A little less light\u2026 and a little more mystery.",
+      "text": "A little less light… and a little more mystery.",
       "src": "voices/common-lamp-off.mp3"
     },
     "common-too-far": {
@@ -543,7 +565,7 @@
       "src": "voices/common-pockets.mp3"
     },
     "common-night": {
-      "text": "Night already\u2026 everything looks more mysterious now. And darker. Mostly darker.",
+      "text": "Night already… everything looks more mysterious now. And darker. Mostly darker.",
       "src": "voices/common-night.mp3"
     },
     "common-dusk": {
@@ -559,16 +581,28 @@
       "src": "voices/common-already-map.mp3"
     },
     "harbour-cat": {
-      "text": "The mayor of the harbour, I presume. Black tie, white shirt\u2026 always dressed for office.",
+      "text": "The mayor of the harbour. Her collar says Rosa. Black tie, white shirt… always dressed for office.",
       "src": "voices/harbour-cat.mp3"
     },
     "harbour-cat-pet": {
-      "text": "Pleased to meet you, Mister Mayor. The island is in good paws.",
+      "text": "Pleased to meet you, Madam Mayor. The island is in good paws.",
       "src": "voices/harbour-cat-pet.mp3"
     },
     "harbour-cat-take": {
       "text": "Kidnap the mayor? I'd never get off this island.",
       "src": "voices/harbour-cat-take.mp3"
+    },
+    "rosa-reply-1": {
+      "text": "Did… did the cat just talk?",
+      "src": "voices/rosa-reply-1.mp3"
+    },
+    "rosa-reply-2": {
+      "text": "I prefer 'exploring'.",
+      "src": "voices/rosa-reply-2.mp3"
+    },
+    "rosa-reply-3": {
+      "text": "That explains a lot. Not everything.",
+      "src": "voices/rosa-reply-3.mp3"
     }
   },
   "pocket": [
