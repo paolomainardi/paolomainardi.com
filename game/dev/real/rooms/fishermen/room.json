@@ -1,0 +1,65 @@
+{
+  "name": "fishermen",
+  "size": [
+    640,
+    360
+  ],
+  "map": true,
+  "albedo": "albedo.png",
+  "water": "water.png",
+  "objects": "objects.png",
+  "items": [
+    {
+      "id": "left-lantern",
+      "kind": "light",
+      "color": "#ffff00",
+      "label": "Left lantern",
+      "light": "oil",
+      "tint": "#fdd08e"
+    },
+    {
+      "id": "net-lantern",
+      "kind": "light",
+      "color": "#ffc000",
+      "label": "Net lantern",
+      "light": "oil",
+      "tint": "#fdd08e"
+    },
+    {
+      "id": "tip-lantern",
+      "kind": "light",
+      "color": "#ff8000",
+      "label": "Tip lantern",
+      "light": "oil",
+      "tint": "#fdd08e"
+    },
+    {
+      "id": "beacon",
+      "kind": "light",
+      "color": "#ff8080",
+      "label": "Lighthouse",
+      "light": "beacon",
+      "tint": "#fffdb4"
+    }
+  ],
+  "states": {
+    "dusk": {
+      "unlit": "night-unlit.png",
+      "lights": {
+        "left-lantern": "night-left-lantern.png",
+        "net-lantern": "night-net-lantern.png",
+        "tip-lantern": "night-tip-lantern.png",
+        "beacon": "night-beacon.png"
+      }
+    },
+    "night": {
+      "unlit": "night-unlit.png",
+      "lights": {
+        "left-lantern": "night-left-lantern.png",
+        "net-lantern": "night-net-lantern.png",
+        "tip-lantern": "night-tip-lantern.png",
+        "beacon": "night-beacon.png"
+      }
+    }
+  }
+}

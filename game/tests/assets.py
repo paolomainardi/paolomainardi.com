@@ -127,7 +127,7 @@ for folder in [data / 'book', real / 'book']:
     assert (folder / book['font']['regular']).read_bytes() == (real / 'book/fonts/NFPixels-Regular.ttf').read_bytes()
     assert (folder / 'fonts/NFPixels-OFL.txt').read_bytes() == (real / 'book/fonts/NFPixels-OFL.txt').read_bytes()
     assert b'SIL OPEN FONT LICENSE Version 1.1' in (folder / 'fonts/NFPixels-OFL.txt').read_bytes()
-    assert book['sizes'] == dict(title=20, body=10, label=10)
+    assert book['sizes'] == dict(title=20, body=10, label=10, credit=20, display=40)
     curl = np.array(Image.open(folder / book['curl']['image']).convert('RGBA'))
     colors = palette if folder == data / 'book' else real_palette
     assert set(map(tuple, curl[..., :3][curl[..., 3] > 0])) <= colors

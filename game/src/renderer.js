@@ -201,6 +201,11 @@ void main(){
  }
  color=texture(uImage,at);
 }`);
+    this.programs.introFade = this.program(`#version 300 es
+precision highp float;
+in vec2 uv; out vec4 color;
+uniform sampler2D uImage; uniform float uAlpha;
+void main(){color=vec4(texture(uImage,uv).rgb,uAlpha);}`);
     this.textLayer = new TextLayer(document.createElement("canvas"));
     this.black = this.texture(new Uint8Array([0, 0, 0, 0]), 1, 1);
     this.white = this.texture(new Uint8Array([255, 255, 255, 255]), 1, 1);
@@ -619,6 +624,7 @@ void main(){
   }
   compositeText(game) {
     if (
+      !game.intro &&
       !game.activeBook &&
       !game.activeBoard &&
       !game.menu &&
@@ -912,7 +918,7 @@ void main(){
     const actor = game.actor;
     if (!game.room.map) {
       const cast = [
-        { actor, character: game.character },
+        ...(game.intro ? [] : [{ actor, character: game.character }]),
         ...(game.actors || []).map((actor) => ({
           actor,
           character: actor.character,
@@ -942,14 +948,34 @@ void main(){
       }
     }
     const pixelScale = game.pixelScale;
-    if (!game.inventoryNote && !game.readerItem) this.renderPanel(game);
+    if (!game.intro && !game.inventoryNote && !game.readerItem)
+      this.renderPanel(game);
+    // The intro keeps the panel band dark, like a film's credit strip, and
+    // dims the scene behind the title card.
+    if (game.intro) {
+      const credit = game.intro.text(game.world.title);
+      if (credit?.title)
+        this.rect(0, 0, game.room.size[0], game.verbTop, [
+          0,
+          0,
+          0,
+          0.55 * credit.alpha,
+        ]);
+      this.rect(
+        0,
+        game.verbTop,
+        game.room.size[0],
+        game.room.size[1] - game.verbTop,
+        [0, 0, 0, 1],
+      );
+    }
     if (game.menu) this.renderMenu(game);
     gl.disable(gl.BLEND);
     this.into(this.glow[2]);
     this.use(this.programs.glow);
     this.lighting(game);
     this.draw();
-    if (!game.room.map && game.character.glowTexture) {
+    if (!game.intro && !game.room.map && game.character.glowTexture) {
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.ONE, gl.ONE);
       this.sprite(
@@ -996,6 +1022,44 @@ void main(){
     }
     this.compositeText(game);
     this.present(game.bloom);
+    if (game.intro && this.introTexture) {
+      const alpha = this.motionPreference?.matches
+        ? 0
+        : Math.max(0, 1 - game.intro.elapsed / 0.8);
+      if (alpha > 0) {
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        this.use(this.programs.introFade);
+        this.bind("uImage", this.introTexture);
+        this.uniform("uAlpha", alpha);
+        this.draw();
+        gl.disable(gl.BLEND);
+      } else this.clearIntro();
+    }
+  }
+  captureIntro() {
+    this.clearIntro();
+    const gl = this.gl;
+    this.introTexture = this.texture(
+      null,
+      this.canvas.width,
+      this.canvas.height,
+    );
+    gl.bindTexture(gl.TEXTURE_2D, this.introTexture);
+    gl.copyTexImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      0,
+      0,
+      this.canvas.width,
+      this.canvas.height,
+      0,
+    );
+  }
+  clearIntro() {
+    if (this.introTexture) this.gl.deleteTexture(this.introTexture);
+    this.introTexture = null;
   }
   renderActor(game, actor, character) {
     const scale = depth(game, actor),
@@ -1130,6 +1194,7 @@ void main(){
       );
   }
   destroy() {
+    this.clearIntro();
     const gl = this.gl;
     const extension = gl.getExtension("WEBGL_lose_context");
     extension?.loseContext();

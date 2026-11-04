@@ -93,7 +93,7 @@ The reader's website link is hidden without `url`. Catalogue entries link to `li
 
 ```json
 {
-  "title": "The engineer's study",
+  "title": "The Context Island",
   "palette": "palette.png",
   "start": "study",
   "character": "character/character.json",
@@ -421,6 +421,45 @@ Take copies the notice and its slot's paper/pin into inventory; the board retain
 
 The book's shared fonts are required for board text.
 
+## Intro
+
+Optional `world.intro` plays after every Start, before restoring the initial room or hash destination. Omitting it preserves immediate startup.
+
+```json
+{
+  "intro": {
+    "music": "theme",
+    "shots": [
+      {
+        "room": "map",
+        "time": "night",
+        "seconds": 7,
+        "lines": ["paolomainardi.com presents"]
+      },
+      {
+        "room": "harbour",
+        "time": "night",
+        "seconds": 8,
+        "title": true,
+        "lines": ["Click to begin"]
+      }
+    ]
+  },
+  "sounds": { "theme": { "src": "sounds/theme.mp3" } },
+  "mix": { "music": 0.7 }
+}
+```
+
+`shots` must be non-empty. Every shot requires a room listed in `world.rooms`, `time` set to `night` or `dusk`, finite positive `seconds`, and a `lines` array of strings. Optional `title` is boolean. A title shot shows `world.title` large and centred before its lines. Lines appear sequentially in the lower third, using the book font and speech outline. Each title or line gets an equal part of the shot duration and fades in and out. The last line of the last shot remains visible until input.
+
+Rooms keep their lights, water, beacon and actors. The intro hides the visitor, carried lantern, panel and hotspots, blocks game actions and suppresses entry speech. Intro-only rooms need no incoming exits. Shots cross-fade over 0.8 seconds using a captured outgoing frame over the living incoming scene. Loading pauses shot timing. Hidden tabs pause the intro. Reduced motion removes shot and text fades while keeping their order.
+
+Click, Escape or Enter skips any shot, including during room loading, and restores normal startup with entry speech. Music fades out over one second. M toggles mute without skipping. R restarts the intro from its first shot, with the music from the top.
+
+A shot's optional `sounds` lists cues `{ "sound": "meow", "at": 3, "volume": 0.6 }`: each names a `sounds` entry and plays once on the effects bus `at` seconds into the shot (before its end), at `volume` (default 1).
+
+Optional `music` names a `sounds` entry with a single file `src` and no looping. It plays once on its own bus, through two HRTF panners in front of the listener (plain stereo where unsupported), using `mix.music` (default 0.7). Missing music files stay silent without an engine warning. Pending music loads cannot begin after a skip or destruction. Music does not duck with speech or readers. `mix.music`, when supplied with an intro, must be finite and non-negative.
+
 ## Sounds
 
 The `purr` generator filters soft noise with a 24 Hz rumble and two breathing envelopes. Use `{"synth":"purr"}` in `world.sounds`; an actor's `sound` names that definition.
@@ -454,7 +493,7 @@ File duration comes from decoded audio.
 
 Missing files, unknown sound ids and unknown synths warn once and remain silent. Audio data is decoded once per resolved URL per game instance.
 
-`world.mix` accepts `master`, `ambience`, `effects` and `voice`, defaulting to 0.5, 0.8, 1 and 1. Each room's `ambience.dusk` and `ambience.night` contain entries with required `sound`, optional `at` (room item id) and optional `light` (lamp id). Position changes gain and stereo pan; no position means constant gain and centred pan.
+`world.mix` accepts `master`, `ambience`, `effects`, `voice` and `music`, defaulting to 0.5, 0.8, 1, 1 and 0.7. Each room's `ambience.dusk` and `ambience.night` contain entries with required `sound`, optional `at` (room item id) and optional `light` (lamp id). Position changes gain and stereo pan; no position means constant gain and centred pan.
 
 Lamp binding multiplies gain by fade level. Room/time changes cross-fade loops over one second.
 

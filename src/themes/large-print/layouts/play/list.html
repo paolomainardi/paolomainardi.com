@@ -23,6 +23,7 @@
     <script type="module">
         import { boot } from {{ $game.RelPermalink }};
         boot({
+            title: {{ .Title }},
             world: "/play/data/world.json",
             content: {{ (.OutputFormats.Get "adventure").RelPermalink }},
             element: document.getElementById("game")

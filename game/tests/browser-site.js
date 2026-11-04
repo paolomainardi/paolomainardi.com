@@ -11,6 +11,13 @@ async (page) => {
       .getByRole("button", { name: "Start in window", exact: true })
       .click();
     await page.waitForFunction(() => !!window.game.state);
+    if (await page.evaluate(() => window.game.state.intro !== null)) {
+      await page.keyboard.press("Enter");
+      await page.waitForFunction(
+        () =>
+          window.game.state.intro === null && window.game.state.room !== "map",
+      );
+    }
     for (const [hash, path, closeup] of [
       ["#harbour/board/links/0", "/links/", true],
       [

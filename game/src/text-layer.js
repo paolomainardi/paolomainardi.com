@@ -25,7 +25,14 @@ export class TextLayer {
     key[9] = game.menu?.selected;
     key[10] = width;
     key[11] = height;
-    const speech = speechLayout(game);
+    const speech = game.intro ? null : speechLayout(game);
+    const credit = game.intro?.text(
+      game.world.title,
+      !!game.renderer.motionPreference?.matches,
+    );
+    key[20] = credit?.value;
+    key[21] = credit?.alpha;
+    key[22] = credit?.title;
     key[12] = game.speech;
     key[13] = speech?.top;
     key[14] = speech?.rows[0]?.x;
@@ -103,6 +110,52 @@ export class TextLayer {
       ))
         text(line.font, line.value, line.x, line.y, line.color);
     }
+    if (credit) {
+      const font = credit.title
+        ? book.fonts.display || book.fonts.title
+        : book.fonts.credit || book.fonts.body;
+      // Credits sit in the dark band at the bottom; the title in the sky.
+      const words = credit.value.split(/\s+/);
+      const lines = [];
+      let line = "";
+      for (const word of words) {
+        const next = line ? line + " " + word : word;
+        if (line && font.measure(next) > width - 40) {
+          lines.push(line);
+          line = word;
+        } else line = next;
+      }
+      lines.push(line);
+      const band = game.verbTop ?? height;
+      const top = credit.title
+        ? (band - lines.length * font.lineHeight) / 2
+        : band + (height - band - lines.length * font.lineHeight) / 2;
+      // The font draws ™ at full size, so it is set small and raised instead.
+      const mark = book.fonts.body;
+      const outlined = (f, value, x, y) => {
+        for (let dy = -1; dy <= 1; dy++)
+          for (let dx = -1; dx <= 1; dx++)
+            if (dx || dy) text(f, value, x + dx, y + dy, "#1e1b17");
+        text(f, value, x, y, game.world.speech || "#feeab3");
+      };
+      lines.forEach((value, i) => {
+        const parts = value.split("\u2122");
+        const markWidth = mark.measure("TM") + 1;
+        const lineWidth =
+          parts.reduce((sum, part) => sum + font.measure(part), 0) +
+          (parts.length - 1) * markWidth;
+        let x = (width - lineWidth) / 2;
+        const y = top + i * font.lineHeight;
+        parts.forEach((part, j) => {
+          outlined(font, part, x, y);
+          x += font.measure(part);
+          if (j < parts.length - 1) {
+            outlined(mark, "TM", x + 1, y + font.ascent - mark.ascent * 2);
+            x += markWidth;
+          }
+        });
+      });
+    }
     if (speech) {
       for (const row of speech.rows) {
         for (let dy = -1; dy <= 1; dy++)
@@ -135,7 +188,8 @@ export class TextLayer {
     }
     const pixels = ctx.getImageData(0, 0, width, height);
     for (let i = 3; i < pixels.data.length; i += 4)
-      pixels.data[i] = pixels.data[i] >= 128 ? 255 : 0;
+      pixels.data[i] =
+        pixels.data[i] >= 128 ? Math.round(255 * (credit?.alpha ?? 1)) : 0;
     ctx.putImageData(pixels, 0, 0);
     return true;
   }

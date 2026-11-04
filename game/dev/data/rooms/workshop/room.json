@@ -1,0 +1,86 @@
+{
+  "name": "workshop",
+  "size": [
+    640,
+    360
+  ],
+  "albedo": "../stone-house/albedo.png",
+  "water": "../stone-house/water.png",
+  "states": {
+    "dusk": {
+      "unlit": "../stone-house/dusk-unlit.png",
+      "lights": {
+        "pendant": "../stone-house/dusk-pendant.png",
+        "oil": "../stone-house/dusk-oil.png"
+      }
+    },
+    "night": {
+      "unlit": "../stone-house/night-unlit.png",
+      "lights": {
+        "pendant": "../stone-house/night-pendant.png",
+        "oil": "../stone-house/night-oil.png"
+      }
+    }
+  },
+  "objects": "objects.png",
+  "items": [
+    {
+      "id": "floor",
+      "kind": "walkable",
+      "color": "#00ff00"
+    },
+    {
+      "id": "chair",
+      "kind": "foreground",
+      "color": "#0000ff"
+    },
+    {
+      "id": "pendant",
+      "kind": "light",
+      "label": "Pendant lamp",
+      "light": "pendant",
+      "color": "#ffff00",
+      "tint": "#ffd08a"
+    },
+    {
+      "id": "oil",
+      "kind": "light",
+      "label": "Oil lamp",
+      "light": "oil",
+      "color": "#ff0000",
+      "tint": "#ffd08a"
+    },
+    {
+      "id": "window",
+      "kind": "hotspot",
+      "label": "Window",
+      "color": "#00ffff"
+    },
+    {
+      "id": "about",
+      "kind": "hotspot",
+      "label": "About paper",
+      "color": "#00ff80"
+    },
+    {
+      "id": "talk",
+      "kind": "hotspot",
+      "label": "Talk paper",
+      "color": "#0080ff"
+    }
+  ],
+  "depth": {
+    "far": [
+      192,
+      0.7
+    ],
+    "near": [
+      352,
+      1.0
+    ]
+  },
+  "spawn": [
+    120,
+    300
+  ]
+}

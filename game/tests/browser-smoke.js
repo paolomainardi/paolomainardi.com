@@ -16,6 +16,13 @@ async (page) => {
     .getByRole("button", { name: "Start in window", exact: true })
     .click();
   await page.waitForFunction(() => !!window.game.state);
+  if (await page.evaluate(() => window.game.state.intro !== null)) {
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(
+      () =>
+        window.game.state.intro === null && window.game.state.room !== "map",
+    );
+  }
   const canvas = page.locator("canvas");
   async function click(x, y) {
     await page.waitForFunction(
@@ -174,6 +181,13 @@ async (page) => {
     .getByRole("button", { name: "Start in window", exact: true })
     .click();
   await page.waitForFunction(() => !!window.game.state);
+  if (await page.evaluate(() => window.game.state.intro !== null)) {
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(
+      () =>
+        window.game.state.intro === null && window.game.state.room !== "map",
+    );
+  }
   await page.waitForFunction(
     () =>
       window.game.state.book === "workstation" &&

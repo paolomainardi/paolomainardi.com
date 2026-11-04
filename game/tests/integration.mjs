@@ -96,6 +96,7 @@ const location = { hash: "", origin: "https://adventure.test" };
 let animationStart = 0;
 // Retain coverage for worlds that omit the optional pocket list.
 let includePocket = false;
+let includeIntro = false;
 let contentOverride,
   missingLampDrawings = false;
 const requests = [];
@@ -120,6 +121,12 @@ class Renderer {
   }
   palette() {}
   setRoom() {}
+  captureIntro() {
+    this.captured = true;
+  }
+  clearIntro() {
+    this.captured = false;
+  }
   resize() {
     return 1;
   }
@@ -172,6 +179,11 @@ const context = vm.createContext({
       ok: true,
       json: async () => {
         const data = JSON.parse(readFileSync(path, "utf8"));
+        if (path.endsWith("/world.json") && includeIntro) {
+          data.rooms["stone-house"].enter = "intro-entry";
+          data.voices["intro-entry"] = { text: "The start room entry." };
+        }
+        if (path.endsWith("/world.json") && !includeIntro) delete data.intro;
         if (path.endsWith("/world.json") && !includePocket) delete data.pocket;
         if (path.endsWith("/content.json") && contentOverride)
           data.items = contentOverride;
@@ -1393,6 +1405,14 @@ for (const [verb, voice] of [
 select("Open");
 tap(cat.x, cat.y - 5);
 assert.equal(rendered.speech, "I can't do that.");
+// Standing beside the cat but facing away, the visitor turns to her.
+rendered.actor.x = cat.x + 40;
+rendered.actor.y = cat.y;
+rendered.actor.mirror = false;
+rendered.path.length = 0;
+select("Look at");
+tap(cat.x, cat.y - 5);
+assert.equal(rendered.actor.mirror, true, "the visitor faces the cat");
 for (const verb of ["Talk to", "Use", "Walk to"]) {
   select(verb);
   tap(cat.x, cat.y - 5);
@@ -1402,6 +1422,11 @@ for (const verb of ["Talk to", "Use", "Walk to"]) {
   assert.equal(cat.x, heldX);
   arrive();
   step();
+  assert.equal(
+    rendered.actor.mirror,
+    cat.x < rendered.actor.x,
+    `${verb}: the visitor faces the cat`,
+  );
   assert(cat.petting > 0 && cat.petting <= 3);
   assert.equal(cat.animation, "pet");
   assert.equal(rendered.speech, rendered.world.voices["harbour-cat-pet"].text);
@@ -2422,4 +2447,69 @@ assert.equal(fontFaces.size, 0);
 assert(AudioContext.instances.every((context) => context.closeCalls === 1));
 console.log(
   "Pocket map startup, storage, Forget, actions, travel and close-ups passed.",
+);
+// Intro runs on each new Start, isolates inputs, and restores the usual entry line.
+includeIntro = true;
+location.hash = "";
+async function flushIntro() {
+  for (let i = 0; i < 50; i++)
+    await new Promise((resolve) => setImmediate(resolve));
+}
+for (const skip of ["click", "Escape", "Enter", "border"]) {
+  const host = new Element("main");
+  const instance = await startedBoot({
+    world: "./data/world.json",
+    content: "./data/content.json",
+    element: host,
+  });
+  step();
+  assert.equal(instance.state.intro, 0);
+  assert.equal(instance.state.room, "map");
+  assert.equal(instance.state.position, null);
+  assert.equal(rendered.speech, null);
+  const introRoot = host.children[0],
+    introCanvas = introRoot.children[0];
+  rawEvent(introRoot, "keydown", { key: "m" });
+  assert.equal(rendered.sound.muted, true);
+  rawEvent(introRoot, "keydown", { key: "t" });
+  assert.equal(instance.state.time, "night");
+  if (skip === "click") {
+    for (const [frames, room, index] of [
+      [440, "harbour", 1],
+      [505, "workshop", 2],
+      [570, "stone-house", 3],
+    ]) {
+      step(frames);
+      await flushIntro();
+      step();
+      assert.equal(instance.state.room, room);
+      assert.equal(instance.state.intro, index);
+      assert.equal(rendered.speech, null);
+    }
+    step(1000);
+    assert.equal(instance.state.intro, 3, "Last shot holds");
+    // R replays the intro from its first shot.
+    rawEvent(introRoot, "keydown", { key: "r" });
+    await flushIntro();
+    step();
+    assert.equal(instance.state.intro, 0, "R replays the intro");
+    assert.equal(instance.state.room, "map");
+    rawEvent(introCanvas, "click", { clientX: 200, clientY: 280 });
+  } else {
+    // Skip while the next room is loading too.
+    if (skip === "Escape") step(440);
+    if (skip === "border") rawEvent(introRoot, "click");
+    else rawEvent(introRoot, "keydown", { key: skip });
+  }
+  await flushIntro();
+  step();
+  assert.equal(instance.state.intro, null);
+  assert.equal(instance.state.room, "stone-house");
+  assert(instance.state.position);
+  assert.equal(instance.state.lantern, true);
+  assert.equal(rendered.speech, rendered.world.voices["intro-entry"].text);
+  instance.destroy();
+}
+console.log(
+  "Intro order, holding, repeat Start, input isolation and click/Escape/Enter skips passed.",
 );

@@ -9,6 +9,13 @@ async (page) => {
     .getByRole("button", { name: "Start in window", exact: true })
     .click();
   await page.waitForFunction(() => !!window.game.state);
+  if (await page.evaluate(() => window.game.state.intro !== null)) {
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(
+      () =>
+        window.game.state.intro === null && window.game.state.room !== "map",
+    );
+  }
   const metrics = await page.evaluate(() => {
     const canvas = document.querySelector("canvas");
     const box = canvas.getBoundingClientRect();

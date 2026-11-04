@@ -1,6 +1,6 @@
 {
   "speech": "#feeab3",
-  "title": "The engineer's study",
+  "title": "The Context Island",
   "palette": "palette.png",
   "start": "stone-house",
   "character": "character/character.json",
@@ -234,6 +234,14 @@
         "harbour": "map-harbour",
         "lighthouse": "map-lighthouse"
       }
+    },
+    "workshop": {
+      "src": "rooms/workshop/room.json",
+      "books": []
+    },
+    "fishermen": {
+      "src": "rooms/fishermen/room.json",
+      "books": []
     }
   },
   "book": "book/book.json",
@@ -386,6 +394,9 @@
     "chatter-end": {
       "src": "sounds/chatter-2.mp3",
       "volume": 0.8
+    },
+    "theme": {
+      "src": "sounds/theme.mp3"
     }
   },
   "events": {
@@ -404,7 +415,8 @@
     "master": 0.5,
     "ambience": 0.8,
     "effects": 1.0,
-    "voice": 1
+    "voice": 1,
+    "music": 0.7
   },
   "boards": {
     "links": {
@@ -623,5 +635,62 @@
       "to": "map",
       "look": "pocket-map"
     }
-  ]
+  ],
+  "intro": {
+    "music": "theme",
+    "shots": [
+      {
+        "room": "map",
+        "time": "night",
+        "seconds": 7,
+        "lines": [
+          "paolomainardi.com presents"
+        ]
+      },
+      {
+        "room": "harbour",
+        "time": "night",
+        "seconds": 8,
+        "lines": [
+          "An island made of posts, links and lamps"
+        ],
+        "sounds": [
+          {
+            "sound": "meow",
+            "at": 3,
+            "volume": 0.6
+          }
+        ]
+      },
+      {
+        "room": "workshop",
+        "time": "night",
+        "seconds": 12,
+        "lines": [
+          "Directed by Paolo Mainardi",
+          "Built by Agents\u2122",
+          "Powered by the L.A.M.P.\u2122 engine",
+          "Lanterns, Agents, Markdown and Pixels"
+        ]
+      },
+      {
+        "room": "fishermen",
+        "time": "night",
+        "seconds": 11,
+        "lines": [
+          "Voices and sounds by ElevenLabs",
+          "No fish were harmed in the making of this island"
+        ]
+      },
+      {
+        "room": "lighthouse",
+        "time": "night",
+        "seconds": 7,
+        "title": true,
+        "lines": [
+          "Click to begin, or press R to replay the intro"
+        ]
+      }
+    ]
+  }
 }

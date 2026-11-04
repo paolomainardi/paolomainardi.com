@@ -1,6 +1,6 @@
 // Mount the title screen and reader, then start and dispose the game session.
 /** Boot an isolated game in a supplied container. URLs resolve against the document. */
-export async function boot({ world, content, element }) {
+export async function boot({ world, content, element, title = "Adventure" }) {
   if (!(element instanceof HTMLElement))
     throw new Error("boot requires a container element.");
   const worldURL = new URL(world, document.baseURI).href,
@@ -27,7 +27,7 @@ export async function boot({ world, content, element }) {
   const cover = document.createElement("div");
   cover.className = "adventure-start";
   const heading = document.createElement("h1");
-  heading.textContent = "The engineer’s study";
+  heading.textContent = title;
   const help = document.createElement("p");
   help.textContent =
     "Click to walk. Double click to run. Choose a verb, then an object. T: dusk / night. L: lantern. G: bloom. M: sound.";

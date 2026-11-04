@@ -70,6 +70,19 @@ export class AudioContext {
   createBiquadFilter() {
     return this.node();
   }
+  createPanner() {
+    const node = this.node();
+    node.positionX = new AudioParam(0);
+    node.positionY = new AudioParam(0);
+    node.positionZ = new AudioParam(0);
+    return node;
+  }
+  createChannelSplitter() {
+    return this.node();
+  }
+  createOscillator() {
+    return this.node();
+  }
   createBuffer(channels, length, rate) {
     const data = new Float32Array(length);
     return { duration: length / rate, getChannelData: () => data };
