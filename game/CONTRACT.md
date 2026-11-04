@@ -375,6 +375,7 @@ See [Character walking](docs/character-walk.md) for measurements and visual chec
 | `font.regular`                             | Self-hosted font path, currently `fonts/NFPixels-Regular.ttf`. |
 | `font.family`                              | FontFace family, currently `NF-Pixels`.                        |
 | `sizes.title`, `sizes.body`, `sizes.label` | Font sizes in game pixels, currently 20, 10, 10.               |
+| `sizes.credit`, `sizes.display`            | Optional intro credit and title sizes, currently 20, 40.       |
 | `ink`, `faded`, `accent`                   | Text, secondary text and hover colours as `#rrggbb`.           |
 
 Keep `fonts/NFPixels-OFL.txt` beside the unmodified font. Font metrics set ascent and line height; line height is `round(size × 1.3)`. Entries have at most two title lines plus a date and a half-body-line gap.
@@ -450,7 +451,7 @@ Optional `world.intro` plays after every Start, before restoring the initial roo
 }
 ```
 
-`shots` must be non-empty. Every shot requires a room listed in `world.rooms`, `time` set to `night` or `dusk`, finite positive `seconds`, and a `lines` array of strings. Optional `title` is boolean. A title shot requires a string `world.title` and shows it large and centred before its lines. Lines appear sequentially in the lower third, using the book font and speech outline. Each title or line gets an equal part of the shot duration and fades in and out. The last line of the last shot remains visible until input.
+`shots` must be non-empty. Every shot requires a room listed in `world.rooms`, `time` set to `night` or `dusk`, finite positive `seconds`, and a `lines` array of strings. Optional `title` is boolean. A title shot requires a string `world.title` and shows it large and centred over a dimmed scene, in the book font at `sizes.display` (else `sizes.title`), before its lines. Lines appear sequentially in a dark band over the panel rows, at `sizes.credit` (else `sizes.body`), with the speech outline. A `™` in the text is drawn as a small raised TM. Each title or line gets an equal part of the shot duration and fades in and out. The last line of the last shot remains visible until input.
 
 Rooms keep their lights, water, beacon and actors. The intro hides the visitor, carried lantern, panel and hotspots, blocks game actions and suppresses entry speech. Intro-only rooms need no incoming exits. Shots cross-fade over 0.8 seconds using a captured outgoing frame over the living incoming scene. Loading pauses shot timing. Hidden tabs pause the intro. Reduced motion removes shot and text fades while keeping their order.
 
