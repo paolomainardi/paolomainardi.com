@@ -54,4 +54,36 @@ Only inventory persists, in browser key `adventure.inventory`. It contains curre
 
 ## Removing the adventure
 
-_To be filled in separately._
+The adventure is an experiment, kept apart from the site so it can be dropped
+in one change. Removing everything below gives a site that builds byte for byte
+like it did before the adventure (checked by building both and comparing every
+file).
+
+**Delete:**
+
+- `game/` and `adventure/`
+- `src/content/play/`
+- `src/themes/large-print/layouts/play/`
+- `src/themes/large-print/layouts/posts/single.reader.html`
+- `src/themes/large-print/layouts/single.reader.html`
+- `src/themes/large-print/layouts/talks.reader.html`
+- `docs/adventure.md`
+
+**Edit `src/hugo.toml`:**
+
+- remove the `[[module.mounts]]` block under `[module]` (the default mounts
+  are restated there only because the game adds its own);
+- remove `[outputFormats.reader]` and `[outputFormats.adventure]`;
+- set the posts cascade back to `outputs = ["html", "markdown"]`.
+
+**Edit the pages and notes:**
+
+- `src/content/about.md` and `src/content/talks.md`: remove the
+  `outputs = ["html", "reader"]` line and its comment;
+- `AGENTS.md`: remove the adventure from the browser storage exceptions;
+- `DESIGN.md`: remove the **Adventure** paragraph;
+- `.gitignore`: remove the `src/assets/jsconfig.json` line.
+
+`layouts/_partials/book/talks-list.html` can stay: the talks page uses it.
+
+Then build and check that `/play/` and every `reader.html` are gone.
