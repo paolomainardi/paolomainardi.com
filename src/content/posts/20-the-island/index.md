@@ -1,12 +1,12 @@
 +++
-date = "2026-11-04T18:01:00+01:00"
+date = "2026-11-04T15:01:00+01:00"
 title = "This site is now also an island you can walk"
 description = "A 90s point-and-click adventure that browses this site: the island, the light, the walk, the sound and the voices."
 slug = "this-site-is-now-an-island"
 tags = ["ai", "agents", "webgl", "games", "design"]
 featuredImage = "/images/posts/20-the-island/harbour.webp"
 images = ["/images/posts/20-the-island/harbour.webp"]
-draft = "true"
+draft = "false"
 series = "agents"
 series_part = 4
 +++
