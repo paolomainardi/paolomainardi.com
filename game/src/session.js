@@ -30,7 +30,7 @@ import {
   resolve,
 } from "./assets.js";
 import { findPath, nearestWalkable } from "./pathfinding.js";
-import { wrap } from "./font.js";
+import { Speech } from "./speech.js";
 import { currentTime, updateLamps } from "./lighting.js";
 import { advanceActor, idleAnimation } from "./animation.js";
 import { SoundEngine } from "./sound.js";
@@ -124,6 +124,13 @@ export async function startSession({
         ]),
       ),
     );
+    for (const item of game.pocket) {
+      item.sprite = {
+        texture: renderer.texture(item.bitmap),
+        size: [item.bitmap.width, item.bitmap.height],
+      };
+      game.inventory.push(item);
+    }
     restoreInventory(game);
     root.append(catalogue(game));
     game.character.texture = renderer.texture(game.character.sheet);
@@ -136,26 +143,19 @@ export async function startSession({
       : null;
     flameCentroids(game.character, renderer);
     const labels = game.world.verbs;
-    function say(text) {
-      game.sentenceNotice = null;
-      game.speech = String(text);
-      game.speechLines = wrap(
-        text,
-        Math.max(1, Math.floor((game.room.size[0] * 0.8) / 6)),
-        2,
-      );
-      game.speechUntil =
-        game.elapsed +
-        (game.activeBook || game.activeBoard || game.readerItem
-          ? 3
-          : Math.max(3.5, String(text).length * 0.055));
-      live.textContent = String(text);
+    const speech = new Speech(game, live);
+    const say = (text, id) => speech.say(text, id);
+    let enterPending = false;
+    function enterSpeech() {
+      if (!enterPending || game.transition || game.loading) return;
+      enterPending = false;
+      speech.enter();
     }
     function openBoard(board, page = 0, update = true) {
       game.siteHover = false;
       game.activeBook = null;
       game.activeBoard = board;
-      game.speech = null;
+      speech.clear();
       game.turning = null;
       game.corner = 0;
       game.boardPage = boardPage(board, page);
@@ -174,7 +174,7 @@ export async function startSession({
       game.inventoryNote = false;
       game.sentenceNotice = null;
       game.activeBook = book;
-      game.speech = null;
+      speech.clear();
       game.spread = Math.max(
         0,
         Math.min(Math.floor(spread), book.pages.length / 2 - 1),
@@ -236,7 +236,7 @@ export async function startSession({
       game.path = [];
       game.pending = null;
       game.readerItem = item;
-      game.speech = null;
+      speech.clear();
       game.sentenceNotice = null;
       game.readerSite =
         [...game.objects, ...game.room.items].find(
@@ -359,9 +359,10 @@ export async function startSession({
       game.pending = null;
       game.hover = null;
       game.panelHover = null;
-      game.speech = null;
+      speech.clear();
       game.sentenceNotice = null;
       bindRoom(game);
+      enterPending = true;
     }
     let initial = parseRoute(location.hash, game.world.start);
     if (!Object.hasOwn(game.world.rooms, initial.room))
@@ -412,6 +413,15 @@ export async function startSession({
       ];
     }
     on(canvas, "pointermove", (event) => {
+      const pocket =
+        (game.activeBook || game.activeBoard || game.readerItem) &&
+        footerLayout(game).pocket.find((rect) => inside(rect, ...point(event)));
+      if (pocket) {
+        game.siteHover = false;
+        game.hover = pocket.item;
+        canvas.style.cursor = "pointer";
+        return;
+      }
       const site = footerLayout(game).site;
       game.siteHover = !!(site && inside(site, ...point(event)));
       if (game.siteHover) {
@@ -419,7 +429,10 @@ export async function startSession({
         canvas.style.cursor = "pointer";
         return;
       }
-      if (game.readerItem || game.loading || game.transition) return;
+      if (game.readerItem || game.loading || game.transition) {
+        game.hover = null;
+        return;
+      }
       const [x, y] = point(event);
       if (game.turning?.dragging) {
         movePage(game.turning, x);
@@ -471,7 +484,7 @@ export async function startSession({
           : game.hover ||
               game.corner ||
               (!game.activeBook &&
-                game.inventory.length &&
+                game.inventory.some((item) => !item.pocket) &&
                 inside(game.panel.forget, x, y))
             ? "pointer"
             : "crosshair";
@@ -485,6 +498,11 @@ export async function startSession({
     });
     on(root, "contextmenu", (event) => {
       event.preventDefault();
+      enterSpeech();
+      if (speech.active()) {
+        speech.clear();
+        return;
+      }
       game.menu = null;
       if ((game.activeBook || game.activeBoard) && !game.readerItem) {
         closeBook();
@@ -505,13 +523,37 @@ export async function startSession({
         );
     });
     function act(target, verb) {
+      if (target.pocket) {
+        if (verb === "Look at") say("Nothing unusual.", target.look);
+        else if (verb === "Take") say("I already have it.", "common-have-it");
+        else if (verb === "Open" || verb === "Use" || verb === "Walk to") {
+          if (game.room.id === target.to)
+            say("I'm already looking at it.", "common-already-map");
+          else {
+            if (game.readerItem) hideReader(false);
+            if (game.activeBook || game.activeBoard) closeBook();
+            game.selectedItem = game.hover = game.pending = null;
+            game.path = [];
+            act({ kind: "exit", to: target.to }, "Walk to");
+          }
+        } else say("I can't do that.", "common-cant");
+        return;
+      }
+      const voiceId =
+        game.room.config.looks?.[target.book?.id || target.id] ||
+        game.room.config.hotspots?.[target.id]?.look ||
+        target.book?.voiceLook;
+      if (verb === "Look at" && game.world.voices?.[voiceId]) {
+        say(null, voiceId);
+        return;
+      }
       if (target.note) {
         if (verb === "Open") {
           openBoard(target.board, 0, false);
           game.boardNote = target.note;
           game.inventoryNote = true;
         } else if (verb === "Look at") say(target.note.title);
-        else say("I can't do that.");
+        else say("I can't do that.", "common-cant");
         return;
       }
       if (verb === "Take" && target.kind === "hotspot") {
@@ -533,13 +575,13 @@ export async function startSession({
           say(`${target.book.title}. ${target.book.items.length} entries.`);
         else if (verb === "Take" && target.kind === "book") {
           if (game.inventory.some((item) => item.book?.id === target.book.id))
-            say("I already have it.");
+            say("I already have it.", "common-have-it");
           else {
             game.inventory.push({ ...target, kind: "inventory" });
             saveInventory(game);
-            say(`Taken ${target.book.title}.`);
+            say(`Taken ${target.book.title}.`, "common-keep");
           }
-        } else say("I can't do that.");
+        } else say("I can't do that.", "common-cant");
         return;
       }
       if (target.kind === "exit") {
@@ -576,13 +618,16 @@ export async function startSession({
       else if (verb === "Use" && target.kind === "light") {
         const lamp = game.room.lights.find((light) => light.id === target.id);
         if (lamp.light === "beacon") {
-          say("Too far away.");
+          say("Too far away.", "common-too-far");
           return;
         }
         lamp.on = !lamp.on;
         game.sound.event("lamp");
-        say(lamp.on ? "Let there be light." : "A little less light.");
-      } else say("I can't do that.");
+        say(
+          lamp.on ? "Let there be light." : "A little less light.",
+          lamp.on ? "common-lamp-on" : "common-lamp-off",
+        );
+      } else say("I can't do that.", "common-cant");
     }
     function walk(destination, pending = null, running = false) {
       game.pending = pending;
@@ -595,13 +640,18 @@ export async function startSession({
       );
       if (!game.path.length) {
         game.pending = null;
-        say("I can't reach that.");
+        say("I can't reach that.", "common-too-far");
       }
     }
     function chooseTarget(target, verb, running = false) {
       verb ||= "Walk to";
+      if (target.pocket) {
+        act(target, verb);
+        return;
+      }
       if (game.room.map) {
-        if (target.kind === "exit") act(target, "Walk to");
+        if (verb === "Look at") act(target, verb);
+        else if (target.kind === "exit") act(target, "Walk to");
         return;
       }
       if (game.selectedItem) {
@@ -610,7 +660,7 @@ export async function startSession({
         game.path = [];
         game.pending = null;
         const sentence = `Use ${item.label} with ${target.label || target.id}`;
-        say("I can't use those together.");
+        say("I can't use those together.", "common-cant");
         game.sentenceNotice = sentence;
         return;
       }
@@ -621,7 +671,7 @@ export async function startSession({
       )
         verb = "Open";
       if (verb !== "Walk to" && !targetVerbs(labels, target).includes(verb)) {
-        say("I can't do that.");
+        say("I can't do that.", "common-cant");
         return;
       }
       if (target.light === "beacon" && verb === "Use") {
@@ -663,6 +713,7 @@ export async function startSession({
     on(canvas, "pointerdown", (event) => {
       suppressBookClick = false;
       if (
+        speech.active() ||
         event.button !== 0 ||
         game.readerItem ||
         game.loading ||
@@ -701,6 +752,19 @@ export async function startSession({
     on(canvas, "pointercancel", (event) => finishDrag(event, true));
     on(canvas, "lostpointercapture", (event) => finishDrag(event, true));
     on(canvas, "click", (event) => {
+      if (game.loading || game.transition) return;
+      enterSpeech();
+      if (speech.active()) {
+        speech.clear();
+        return;
+      }
+      const pocket =
+        (game.activeBook || game.activeBoard || game.readerItem) &&
+        footerLayout(game).pocket.find((rect) => inside(rect, ...point(event)));
+      if (pocket) {
+        chooseTarget(pocket.item, null);
+        return;
+      }
       const site = footerLayout(game).site;
       if (site && inside(site, ...point(event))) {
         openLink(siteURL(site.path));
@@ -741,12 +805,12 @@ export async function startSession({
         } else if (hit === "take") {
           const note = game.boardNote;
           if (game.inventory.some((item) => item.note?.id === note.id))
-            say("I already have it.");
+            say("I already have it.", "common-have-it");
           else {
             const board = game.activeBoard;
             game.inventory.push(carriedNotice(note, board));
             saveInventory(game);
-            say("I'll keep this one.");
+            say("I'll keep this one.", "common-keep");
           }
         } else if (hit === "go")
           openReader({ ...game.boardNote, reader: null });
@@ -783,8 +847,11 @@ export async function startSession({
         return;
       }
       if (y >= game.verbTop) {
-        if (game.inventory.length && inside(game.panel.forget, x, y)) {
-          say("Pockets emptied.");
+        if (
+          game.inventory.some((item) => !item.pocket) &&
+          inside(game.panel.forget, x, y)
+        ) {
+          say("Pockets emptied.", "common-pockets");
           forgetInventory(game);
           return;
         }
@@ -865,6 +932,10 @@ export async function startSession({
         game.timeOverride = true;
         game.time = game.time === "night" ? "dusk" : "night";
         game.sound.event("time");
+        say(
+          game.time === "night" ? "Night already…" : "The sun is going down.",
+          game.time === "night" ? "common-night" : "common-dusk",
+        );
       }
       if (event.key.toLowerCase() === "l") {
         game.lantern = !game.lantern;
@@ -935,6 +1006,7 @@ export async function startSession({
         }
       }
       if (!game.loading) {
+        enterSpeech();
         if (!game.readerItem && game.activeBook && game.turning) {
           const turn = game.turning;
           if (!turn.dragging) {
@@ -972,6 +1044,7 @@ export async function startSession({
           }
         }
         game.sound.update(game);
+        if (!speech.active() && live.textContent) live.textContent = "";
         const readerSpeech = game.speechUntil > game.elapsed;
         if (
           !game.readerItem ||
@@ -997,6 +1070,8 @@ export async function startSession({
     else if (target.book) openBook(target.book, initial.spread);
     else if (target.item) openReader(target.item);
     else writeHash(game);
+    enterPending = false;
+    speech.enter();
     frame = requestAnimationFrame(tick);
     return {
       destroy() {
@@ -1022,7 +1097,7 @@ export async function startSession({
           walking: game.path.length > 0,
           verb: game.verb,
           inventory: game.inventory.map(
-            (item) => item.note?.id || item.book.id,
+            (item) => item.note?.id || item.book?.id || item.id,
           ),
           lamps: game.room.lights.map((l) => ({
             id: l.id,

@@ -1,4 +1,5 @@
 {
+  "speech": "#feeab3",
   "title": "The engineer's study",
   "palette": "palette.png",
   "start": "stone-house",
@@ -73,7 +74,8 @@
   "mix": {
     "master": 0.5,
     "ambience": 0.8,
-    "effects": 1.0
+    "effects": 1.0,
+    "voice": 1
   },
   "book": "book/book.json",
   "boards": {
@@ -220,7 +222,42 @@
     },
     "map": {
       "src": "rooms/map/room.json",
-      "books": []
+      "books": [],
+      "enter": "map-enter",
+      "looks": {
+        "study": "map-house"
+      }
     }
-  }
+  },
+  "voices": {
+    "map-enter": {
+      "text": "So this is the whole island. Small\u2026 but full of things somebody left behind. Like a desk, but bigger.",
+      "src": "voices/map-enter.mp3"
+    },
+    "map-house": {
+      "text": "The stone house. Where the lamp was still warm.",
+      "src": "voices/map-house.mp3"
+    },
+    "common-night": {
+      "text": "Night already\u2026 everything looks more mysterious now. And darker. Mostly darker.",
+      "src": "voices/common-night.mp3"
+    },
+    "pocket-map": {
+      "text": "My map of the island. Folded wrong, like every map.",
+      "src": "voices/pocket-map.mp3"
+    },
+    "common-already-map": {
+      "text": "I'm already looking at it.",
+      "src": "voices/common-already-map.mp3"
+    }
+  },
+  "pocket": [
+    {
+      "id": "map",
+      "label": "Island map",
+      "icon": "items/map.png",
+      "to": "map",
+      "look": "pocket-map"
+    }
+  ]
 }

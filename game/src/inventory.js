@@ -4,10 +4,12 @@ export function saveInventory(game) {
     window.localStorage.setItem(
       "adventure.inventory",
       JSON.stringify(
-        game.inventory.map((item) => ({
-          kind: item.note ? "notice" : "book",
-          id: item.note ? item.note.id : item.book.id,
-        })),
+        game.inventory
+          .filter((item) => !item.pocket)
+          .map((item) => ({
+            kind: item.note ? "notice" : "book",
+            id: item.note ? item.note.id : item.book.id,
+          })),
       ),
     );
   } catch {}
@@ -61,7 +63,7 @@ export function restoreInventory(game) {
 }
 
 export function forgetInventory(game) {
-  game.inventory = [];
+  game.inventory = game.inventory.filter((item) => item.pocket);
   game.inventoryOffset = 0;
   game.selectedItem = game.hover = game.sentenceNotice = null;
   try {

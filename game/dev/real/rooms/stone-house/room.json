@@ -90,22 +90,19 @@
       "id": "window",
       "kind": "hotspot",
       "color": "#00ffff",
-      "label": "Window",
-      "look": "The sea has kept its own hours."
+      "label": "Window"
     },
     {
       "id": "laptop",
       "kind": "hotspot",
       "color": "#0080ff",
-      "label": "Laptop",
-      "look": "Work has followed me here."
+      "label": "Laptop"
     },
     {
       "id": "bookshelf",
       "kind": "hotspot",
       "color": "#c0c0c0",
-      "label": "Bookshelf",
-      "look": "More shelf than books."
+      "label": "Bookshelf"
     }
   ],
   "depth": {

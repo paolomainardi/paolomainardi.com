@@ -270,13 +270,17 @@ for (const mode of ["activeBook", "activeBoard", "readerItem"]) {
     room: { size: [640, 360] },
     [mode]: { site: "/links/" },
     readerSite: mode === "readerItem" ? "/about/" : null,
+    bookArt: game.bookArt,
     speech: "I'll keep this one.",
     speechUntil: 4,
     elapsed: 1,
   };
   texts.length = 0;
   renderer.renderFooter(view);
-  assert(texts.some((row) => row[0] === view.speech));
+  assert(
+    !texts.some((row) => row[0] === view.speech),
+    "Speech uses the NF-Pixels text layer",
+  );
   assert(!texts.some((row) => row[0] === "or right click, Esc"));
   const sorted = texts.toSorted((a, b) => a[1] - b[1]);
   for (let i = 1; i < sorted.length; i++)

@@ -63,15 +63,13 @@
       "id": "letter",
       "kind": "hotspot",
       "label": "Letter",
-      "color": "#00ffff",
-      "look": "A folded letter. Someone kept it close."
+      "color": "#00ffff"
     },
     {
       "id": "logbook",
       "kind": "hotspot",
       "label": "Logbook",
-      "color": "#0080ff",
-      "look": "Winds, tides, and long nights."
+      "color": "#0080ff"
     },
     {
       "id": "stairs",

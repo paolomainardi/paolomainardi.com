@@ -77,6 +77,14 @@ export async function loadWorld(worldURL, contentURL, origin) {
     items,
     character: { ...character, sheet, glow },
     palette,
+    pocket: await Promise.all(
+      (world.pocket || []).map(async (item) => ({
+        ...item,
+        kind: "inventory",
+        pocket: true,
+        bitmap: await bitmap(item.icon, worldURL),
+      })),
+    ),
     books: Object.fromEntries(
       await Promise.all(
         Object.entries(world.books || {}).map(async ([id, book]) => [
@@ -84,6 +92,9 @@ export async function loadWorld(worldURL, contentURL, origin) {
           {
             ...book,
             id,
+            voiceLook: Object.values(world.rooms).find((room) =>
+              room.books?.includes(id),
+            )?.looks?.[id],
             bitmap: await bitmap(book.sprite, worldURL),
           },
         ]),
@@ -274,6 +285,7 @@ export function bindRoom(game) {
       if (!hotspot.board) throw new Error(`Unknown board: ${binding.board}`);
       continue;
     }
+    if (!binding.content) continue;
     hotspot.binding = "content";
     const item = newest(matchingItems(game.items, binding.content))[0];
     if (item) {

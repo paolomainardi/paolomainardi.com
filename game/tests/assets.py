@@ -166,3 +166,17 @@ for kind in ['about', 'talk']:
     assert (content_path.parent / paper['reader']).is_file()
     assert world['rooms']['stone-house']['hotspots'][kind]['content'] == {'type': kind}
 print('Five verbs, board sprites and text areas, map without floor or depth, and found about/talk readers passed.')
+
+for folder in [data, real]:
+    pocket_world = load(folder / 'world.json')
+    pocket_palette = {tuple(bytes.fromhex(c[1:])) for c in load(folder / 'palette.json')}
+    assert [item['id'] for item in pocket_world['pocket']] == ['map']
+    for item in pocket_world['pocket']:
+        assert item['to'] in pocket_world['rooms']
+        assert item['look'] in pocket_world['voices']
+        icon = Image.open(folder / item['icon']).convert('RGBA')
+        assert 0 < icon.width <= 24 and 0 < icon.height <= 14
+        pixels = np.array(icon)
+        assert np.any(pixels[..., 3] == 0) and np.any(pixels[..., 3] == 255)
+        assert set(map(tuple, pixels[..., :3][pixels[..., 3] > 0])) <= pocket_palette
+print('Pocket map destinations, voices, transparent icon dimensions and palettes passed.')

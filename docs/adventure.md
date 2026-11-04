@@ -31,6 +31,21 @@ Posts get a `reader` output through the Hugo cascade. The about and talks pages 
 
 The game opens these same-origin pages in a sandboxed iframe at normal browser resolution. The reader lowers sound and freezes movement; Close or Escape restores the underlying room or book. A separate website link opens the canonical page. The normal article URL remains canonical.
 
+## Sound and voices
+
+The visitor speaks. Each place has a line for the first visit, and Look at gives most objects their own line. The engine's short replies, such as "I can't do that.", are voiced too.
+
+- **Text** lives in `world.json` under `voices`, keyed by id. Rooms and hotspots point at those ids. The text is also the subtitle.
+- **Recordings** are `game/dev/real/voices/<id>.mp3`, one per id. They load on first use. A missing file leaves the line as text only, so a new line can ship before its recording.
+- **Subtitles** are drawn in the book font above the character, in a warm colour with a dark outline. Close-ups show them in the footer.
+- **Mixing:** voices have their own `mix.voice` level. Ambience and effects dip while a line plays, and mute silences everything.
+
+The recordings were generated with ElevenLabs (`eleven_v3`, voice "Will", 44.1 kHz 128 kbps MP3). To change a line, edit its text in `world.json`, record the new take under the same id, and replace the file. The [engine README](../game/README.md) has the full behaviour.
+
+## Pocket map
+
+A folded island map is always in the inventory. Open, Use or a click on it goes to the island map from any room or close-up. It is declared in `world.json` under `pocket`, is never stored and survives Forget.
+
 ## Site world
 
 Hugo mounts `game/dev/real/` directly under `/play/data/`, including its world file. Book filters default to posts in the engine, so the site needs no generated world or second mount. Paths stay relative to the published world.

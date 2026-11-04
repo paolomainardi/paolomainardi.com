@@ -15,6 +15,7 @@ import {
   siteSentence,
 } from "./panel.js";
 import { waterFrame, reflectionPeak } from "./water.js";
+import { speechLayout } from "./speech.js";
 import { TextLayer } from "./text-layer.js";
 import { animationFrame } from "./animation.js";
 import { fontPixels, wrap } from "./font.js";
@@ -613,7 +614,13 @@ void main(){
     }
   }
   compositeText(game) {
-    if (!game.activeBook && !game.activeBoard && !game.menu) return;
+    if (
+      !game.activeBook &&
+      !game.activeBoard &&
+      !game.menu &&
+      !(game.speech && game.speechUntil > game.elapsed)
+    )
+      return;
     const layer = this.textLayer;
     if (layer.update(game)) {
       if (!this.textTexture) this.textTexture = this.texture(layer.canvas);
@@ -718,18 +725,53 @@ void main(){
       top = close.y;
     this.rect(0, top, this.size[0], 24, [0.025, 0.03, 0.05, 0.85]);
     this.text("Close", close.x, top + 8);
+    const pockets = footerLayout(game).pocket;
+    for (const slot of pockets) {
+      const item = slot.item;
+      this.rect(
+        slot.x,
+        slot.y,
+        slot.width,
+        slot.height,
+        game.hover === item ? [0.32, 0.18, 0.24, 1] : [0.09, 0.1, 0.14, 1],
+      );
+      this.sprite(
+        item.sprite.texture,
+        item.sprite.size,
+        inventoryIcon(item.sprite, slot),
+        [0, 0, ...item.sprite.size],
+      );
+    }
     const site = this.siteLabel(game);
+    if (game.speech && game.speechUntil > game.elapsed) {
+      const layout = speechLayout(game);
+      this.rect(
+        64,
+        layout.top - 2,
+        layout.width + 8,
+        layout.height + 2,
+        [0.025, 0.03, 0.05, 0.85],
+      );
+      this.soundLabel(game);
+      return;
+    }
     const message =
       game.siteHover && site
         ? siteSentence(site)
-        : (game.sentenceNotice || game.speech) &&
-            game.speechUntil > game.elapsed
-          ? game.sentenceNotice || game.speech
-          : "or right click, Esc";
+        : game.sentenceNotice && game.speechUntil > game.elapsed
+          ? game.sentenceNotice
+          : game.hover?.pocket
+            ? `Open ${game.hover.label}`
+            : "or right click, Esc";
     this.text(
       wrap(
         message,
-        Math.max(1, Math.floor(((site?.x ?? this.size[0] - 82) - 76) / 6)),
+        Math.max(
+          1,
+          Math.floor(
+            ((site?.x ?? this.size[0] - 82 - pockets.length * 32) - 76) / 6,
+          ),
+        ),
         1,
       )[0],
       68,
@@ -929,38 +971,8 @@ void main(){
     this.lighting(game);
     this.integer("uFront", 1);
     this.draw();
-    const [width] = game.room.size;
-    const pixelScale = game.pixelScale,
-      margin = width / 80,
-      sentenceY = 9 * pixelScale;
+    const pixelScale = game.pixelScale;
     if (!game.inventoryNote && !game.readerItem) this.renderPanel(game);
-    if (
-      !game.room.map &&
-      !game.inventoryNote &&
-      !game.readerItem &&
-      game.speech &&
-      game.speechUntil > game.elapsed
-    ) {
-      const lines = game.speechLines,
-        top = Math.max(
-          sentenceY + 8 * pixelScale,
-          rect[1] - (lines.length * 9 + 8) * pixelScale,
-        );
-      lines.forEach((line, i) => {
-        const x = Math.max(
-          margin,
-          Math.min(width - margin - line.length * 6, actor.x - line.length * 3),
-        );
-        this.rect(
-          x - 2 * pixelScale,
-          top + i * 9 * pixelScale - pixelScale,
-          line.length * 6 + 4 * pixelScale,
-          9 * pixelScale,
-          [0.025, 0.03, 0.05, 0.85],
-        );
-        this.text(line, x, top + i * 9 * pixelScale);
-      });
-    }
     if (game.menu) this.renderMenu(game);
     gl.disable(gl.BLEND);
     this.into(this.glow[2]);
@@ -1076,7 +1088,7 @@ void main(){
       this.text("<", game.panel.previous.x + 4, top + 21, accent);
     if (game.inventoryOffset + game.panel.slots.length < game.inventory.length)
       this.text(">", game.panel.next.x + 4, top + 21, accent);
-    if (game.inventory.length)
+    if (game.inventory.some((item) => !item.pocket))
       this.text(
         "Forget",
         game.panel.forget.x,

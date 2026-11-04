@@ -1,4 +1,5 @@
-// Cache close-up and menu text on a transparent canvas at game resolution.
+// Cache subtitles, close-up and menu text on a transparent canvas at game resolution.
+import { speechLayout } from "./speech.js";
 import { canTake } from "./inventory.js";
 import { boardText } from "./board.js";
 
@@ -24,6 +25,15 @@ export class TextLayer {
     key[9] = game.menu?.selected;
     key[10] = width;
     key[11] = height;
+    const speech = speechLayout(game);
+    key[12] = game.speech;
+    key[13] = speech?.top;
+    key[14] = speech?.rows[0]?.x;
+    key[15] = speech?.footer;
+    key[16] = game.readerItem;
+    key[17] = game.sentenceNotice;
+    key[18] = game.world?.speech;
+    key[19] = speech && !speech.footer ? game.actor.x : null;
     let changed = false;
     for (let i = 0; i < key.length; i++)
       if (key[i] !== this.key[i]) {
@@ -92,6 +102,21 @@ export class TextLayer {
         canTake(game),
       ))
         text(line.font, line.value, line.x, line.y, line.color);
+    }
+    if (speech) {
+      for (const row of speech.rows) {
+        for (let dy = -1; dy <= 1; dy++)
+          for (let dx = -1; dx <= 1; dx++)
+            if (dx || dy)
+              text(speech.font, row.line, row.x + dx, row.y + dy, "#1e1b17");
+        text(
+          speech.font,
+          row.line,
+          row.x,
+          row.y,
+          game.world.speech || "#feeab3",
+        );
+      }
     }
     const menu = game.menu;
     if (menu) {

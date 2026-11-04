@@ -43,16 +43,16 @@ URLs resolve against the document base URL. See [CONTRACT.md](CONTRACT.md) for t
 | `src/palette.js`     | A 64³ nearest-colour lookup table built in OKLab.                                     |
 | `src/lighting.js`    | Depth, lantern position, CPU light sampling and per-frame lamp updates.               |
 | `src/water.js`       | Connected water spans, integer swell and painted reflection sampling.                 |
-| `src/pathfinding.js` | Nearest floor point, eight-direction A* and path smoothing.                           |
+| `src/pathfinding.js` | Nearest floor point, eight-direction A\* and path smoothing.                          |
 | `src/animation.js`   | Walking steps, foot contacts and frame selection.                                     |
 | `src/book.js`        | Font loading, pagination, entry hits, page drags.                                     |
 | `src/board.js`       | Board artwork, notice paging, heading layout and note text.                           |
-| `src/text-layer.js`  | Cached Canvas 2D text for close-ups and menus.                                        |
+| `src/text-layer.js`  | Cached Canvas 2D text for subtitles, close-ups and menus.                             |
 | `src/font.js`        | Embedded 5×7 UI glyphs and fixed-width wrapping.                                      |
 | `src/panel.js`       | Verb, inventory and shared footer geometry; action sentences.                         |
 | `src/verb-menu.js`   | Target verbs, menu placement and exit arrows.                                         |
 | `src/route.js`       | Hash parsing, shared route targets and hash writing.                                  |
-| `src/inventory.js`   | Inventory restoration, persistence, Forget and notice copies.                         |
+| `src/inventory.js`   | Permanent pocket items, inventory restoration, persistence, Forget and notice copies. |
 | `src/catalogue.js`   | Accessible catalogue, safe site paths and new-tab links.                              |
 | `src/sound.js`       | Audio buses, generators, file decoding, ambience and effects.                         |
 | `src/style.css`      | Container, title, reader dialog and hidden accessible content.                        |
@@ -164,6 +164,8 @@ Books, boards and content-bound hotspots can show a site path in the footer. Cli
 
 ## Inventory and storage
 
+**Island map** stays first in inventory. Open, Use or a plain click travels to the map room with the usual exit fade. In the map room it says “I'm already looking at it.” Look at describes the folded map; Take says it is already carried. The map also appears in book, board and reader footers. Clicking it closes the close-up and travels, regardless of the selected room verb.
+
 **Take** copies a topic book while leaving it on the shelf. Board notices also stay on the board. Inventory arrows scroll full rows.
 
 **Look at** describes a carried item; **Open** opens its book or notice.
@@ -172,7 +174,7 @@ A plain click selects a carried book for **Use**, while a carried notice opens d
 
 Only inventory persists, under `localStorage` key `adventure.inventory`, as a list of `{ "kind": "book" | "notice", "id": "..." }`. Startup checks types, resolves current ids, removes duplicates and stale entries, and rewrites valid entries.
 
-Invalid JSON is ignored. Unavailable storage leaves a session-only inventory. **Forget** empties inventory and removes the key.
+Invalid JSON is ignored. Unavailable storage leaves a session-only inventory. **Forget** removes collected books and notices and removes the key. Permanent pocket items survive Forget and never enter storage. Forget appears only when collected items are present.
 
 Position, lamp state, time overrides and mute are not stored.
 
@@ -180,7 +182,17 @@ Position, lamp state, time overrides and mute are not stored.
 
 Start creates and resumes the audio context during the button gesture. World sound definitions select noise generators or audio files; files decode once per URL. Ambience follows room and time, cross-fades over one second, pans towards named objects and can follow a lamp's fade level.
 
-Effects cover foot contacts, page turns, books, switches, menus, doors and time/lantern changes. The reader lowers both audio buses to 25%; mute lasts only for the instance.
+Effects cover foot contacts, page turns, books, switches, menus, doors and time/lantern changes. The reader lowers ambience and effects to 25%; mute lasts only for the instance.
+
+Voice lines live in `world.voices`. Rooms use `enter` for a first-visit line and `looks` for item or topic book descriptions. Hotspot bindings use `look`. Common replies use the `common-*` voice ids. Entry lines play once per room per session, after fade-in.
+
+Each line shows a subtitle and plays its optional recording. Subtitles use the book’s NF-Pixels body font in the original case. Balanced rows fit within 200 game pixels and about 34 characters. Warm pale gold text has a one-pixel dark outline in all eight directions, with no background box and binary alpha. Set `world.speech` to a `#rrggbb` colour to override the default `#feeab3`.
+
+The block sits above the character’s head, falls below it when there is no room above, and stays inside the frame above the panel. Maps centre the block. Books, boards and readers keep speech in the bottom bar with the same font and case. Subtitles last until audio ends, or for reading time without audio. Click the frame to skip a line; that click performs no action. A new line stops the previous one.
+
+Each recording is `dev/real/voices/<id>.mp3`, named by its voice id. A line without a file stays text only. Files load on first use and cache for the session; a failed file warns once. No recordings load at Start unless an entry line requests one.
+
+Voices have their own `mix.voice` level, default 1. During playback, ambience and effects lower by about 6 dB. M mutes voices too.
 
 The title uses native buttons. A hidden navigation list exposes book and board links and site destinations, and a polite live region announces spoken responses. Data text uses DOM `textContent` or canvas text.
 
@@ -213,6 +225,7 @@ playwright-cli -s=adventure run-code --filename=tests/browser-site.js
 playwright-cli -s=adventure run-code --filename=tests/browser-lighting.js
 playwright-cli -s=adventure run-code --filename=tests/browser-depth.js
 playwright-cli -s=adventure run-code --filename=tests/browser-640.js
+playwright-cli -s=adventure run-code --filename=tests/browser-voices.js
 playwright-cli -s=adventure close
 ```
 
