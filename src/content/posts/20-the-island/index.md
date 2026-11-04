@@ -1,0 +1,115 @@
++++
+date = "2026-11-04T18:01:00+01:00"
+title = "This site is now also an island you can walk"
+description = "A 90s point-and-click adventure that browses this site, built in a bunch of hours by AI agents while I directed: art, walk, sound and voices."
+slug = "this-site-is-now-an-island"
+tags = ["ai", "agents", "webgl", "games", "design"]
+featuredImage = "/images/posts/20-the-island/harbour.webp"
+images = ["/images/posts/20-the-island/harbour.webp"]
+draft = "true"
+series = "agents"
+series_part = 4
++++
+
+## TL;DR
+
+This site can now be browsed as a **point-and-click adventure** in the style of the LucasArts games of the 90s. A visitor walks a small island, opens **topic books** to read posts, takes notes from a **notice board** to follow links and finds the about page as a **letter** in a lighthouse. You can [play it here](/play/), on a desktop browser.
+
+I did not write a line of it. **Claude** and **Codex** built the engine, drew every room and the character, and **ElevenLabs** recorded the voice. I gave the direction and judged every result, in a bunch of hours.
+
+## Introduction
+
+This is the fourth step of a journey I started a few weeks ago, to see what the new generation of models can do with art. I started with [images](/posts/how-the-image-engine-works/), the illustrated covers of this site. Then came animations, then interactivity, with lamps you can switch on and off and a [Halloween scene](/posts/what-the-cover-engine-learned-on-halloween/) with a cat you can pet.
+
+At that point I realized we could take one step further and try to mimic an adventure game, and even the design of the covers pushed me there. I am not a gamer, but I loved the LucasArts games so much. They always inspired me for their aesthetic and their mood.
+
+I played **Monkey Island** from the [first](https://en.wikipedia.org/wiki/The_Secret_of_Monkey_Island) to the [third](https://en.wikipedia.org/wiki/The_Curse_of_Monkey_Island), and I watched them evolve from a bunch of colours and synthetic sounds to advanced graphics, sound and voices. Everything was stunning in that era, from the 386 to the 486 and the first audio card, the mythical **[Sound Blaster Pro](https://en.wikipedia.org/wiki/Sound_Blaster#Sound_Blaster_Pro)**. Pure magic.
+
+The goal was a second way to browse this site, not an easter egg, built by agents while I only direct them.
+
+## The rules
+
+I came up with the idea on 1 November while I was out for a walk, and I dictated it to Claude in Italian. Before any code, I set some rules:
+
+- **Not an easter egg**, but an alternative way to navigate the site.
+- **Monkey Island** concepts, with the same art line as the covers.
+- **Lights and atmosphere** first, rendered with **WebGL**.
+- Articles **readable** inside the game, rendered by the browser and not redrawn in pixels.
+- **Desktop only**, no mobile version for now.
+- An engine **configured by JSON**, kept separate from the site, so that one day it can work on any site, but without abstracting it too much in a prototype.
+- **Only Claude and Codex** as AI models, the rule I already had for the covers. The voices became the one exception.
+
+The site and the game share only the build. Hugo writes a `content.json` with posts, links and pages, and the engine reads it together with a hand-written `world.json` and the room drawings. Every other page of the site builds byte for byte as before, and the whole game can be removed in a single change ([`docs/adventure.md`](https://github.com/paolomainardi/paolomainardi.com/blob/main/docs/adventure.md)).
+
+## The island
+
+The island is the world of the covers, the sea, the stone house, the lighthouses and the rose container, reduced to 90s pixels. There are **four places** to visit.
+
+{{< figure src="/images/posts/20-the-island/study.webp" caption="The study at dusk. Each book on the shelf is a topic, and the laptop is still awake." >}}
+
+- The **study** in the stone house, where the bookshelf holds six topic books (Linux, AI, Docker, Security, Workstation and Personal). Each opens in a close-up with its table of contents, and the pages turn with a curl.
+- The **harbour**, where a **notice board** holds the links as pinned papers you can read, follow or take.
+- The **lighthouse**, where a **letter** on the desk is the about page and a **logbook** lists my talks.
+- The **island map**, which connects the three places.
+
+{{< figure src="/images/posts/20-the-island/harbour.webp" caption="The harbour. The notice board holds the links, and the signpost points to the rest of the island." >}}
+
+Articles open in a reader at the browser's own resolution, with the site's fonts, and every close-up shows which section of the site you are in, with a link to the normal page. The things you take go in the **inventory** and stay there on your next visit. It is the second thing on this site that uses the browser's storage, and **Forget** empties it.
+
+{{< figure src="/images/posts/20-the-island/lighthouse.webp" caption="The top of the lighthouse, where the letter and the logbook wait on the desk." >}}
+
+## How it is drawn
+
+The frame is **640×360** game pixels with **256 colours**, scaled by whole numbers, so it is three times bigger on a 1080p screen. We started at 320×180 with 32 colours. I found it too low, with too few colours, and I asked for 256, then for a higher resolution that still felt like the 90s.
+
+Light is the part I cared about most. Each room is drawn several times, with every lamp off and then with each lamp lit on its own, at dusk and at night. The **WebGL** shader adds the lamps you switch on, so a lamp lights the room the way the painter drew it. Oil lamps flicker, the lighthouse beacon flashes and at night the character's **lantern** throws a warm pool around him. The sea moves a pixel at a time, from pixels already in the drawing.
+
+{{< figure src="/images/posts/20-the-island/map.webp" caption="The island map, with the stone house, the harbour and the lighthouse." >}}
+
+## The walk
+
+This is the moment that surprised me the most. The character walked in a very unnatural way, and I said so.
+
+Before touching anything, Claude **measured** the drawn frames. The foot on the ground jumped **36 pixels** in one frame and barely **6** in the next, and the head bobbed 10 pixels. The drawings could not be patched. It then read the [ScummVM](https://github.com/scummvm/scummvm/blob/master/engines/scumm/actor.cpp) source to see how the original engine moved a character, one fixed step per frame with separate limbs. It also studied the Curse of Monkey Island sprites I had found, as a reference only.
+
+Then it proposed to stop drawing frames one by one, and to build a **cut-out puppet** moved by recorded human walking data. I did not even imagine that scenario, it was absurdly complex for me, but not for the agents. Claude wrote the rig in Python without Codex. It cuts the legs from a standing pose and moves them with textbook gait curves, with **12 frames** and the same **11.3 pixels** for every step.
+
+{{< chart type="bar" data="walk.csv" y="step" x="px" facet="walk" unit="px" axis="Pixels the planted foot moves in each step, even is better" >}}
+The planted foot in four steps of the side walk, in the drawn frames and in the cut-out rig.
+{{< /chart >}}
+
+Later the same rig gained the arm swing, a small bob and the front and back walks, and [`character-walk.md`](https://github.com/paolomainardi/paolomainardi.com/blob/main/game/docs/character-walk.md) explains how to do it for a new character.
+
+## Sound and voices
+
+Monkey Island went from synthetic sounds to voices, and so did this island. The **sea**, the **wind**, the lamp crackle and the page turns are synthesized in the browser with Web Audio. They change with the room and the time of day and they pan towards what makes them. The footsteps are three [CC0 recordings](https://opengameart.org/node/5701) of steps on wood by TinyWorlds, played when a foot touches the ground.
+
+Claude cannot hear, so I listened to every sound and every voice myself. The visitor speaks **43 lines**, a thought on entering each place, a line for most things you look at and the short replies of the game. Claude wrote the script, with some mystery, some curiosity and a bit of irony, as in the study.
+
+> Hello…? The lamp is still warm. Whoever lives here left a moment ago. Or maybe… they never really left.
+
+The issue with AI generated voices is expression. I asked for pauses, emotions and sounds like "mmmh", but they were added to every line and it became unnatural again. In the end only nine lines keep a hesitation. I chose the voice, **Will**, by taste, because it resembled the character we built and it worked better with a bit of irony. You can [listen to the study](/play/data/voices/study-enter.mp3) and to [the laptop](/play/data/voices/study-laptop.mp3).
+
+The subtitles use the book's pixel font, in a warm colour with a dark outline, above the character's head, as in the old games.
+
+## How we worked
+
+I never wrote code. **Claude** was the orchestrator: it wrote the design, the data contract and short briefs, then reviewed the results in a browser and sent me screenshots and comparison sheets to decide on. **Codex** wrote most of the engine and drew every image from those briefs, often several runs at once. I gave the direction, rejected what I did not like and approved the rest.
+
+Before publishing, I asked for a review of all the code, a pass to remove what was not needed, a check of the licences and documentation good enough to explain how the engine works. Another agent reviewed the code without knowing the plan, and every finding was fixed.
+
+{{< notice note >}}
+The agents tested every change in a browser, but small visual glitches still got through and I was the one who spotted them. I see this often with more generic web apps too.
+{{< /notice >}}
+
+Can this work on real projects at [SparkFabrik](https://www.sparkfabrik.com/)? Yes, but it needs a strong harness, as we do with [sparkdock](https://github.com/sparkfabrik/sparkdock) and our [agents harness](https://github.com/sparkfabrik/sf-agents-harness), and a very strong CI pipeline. Software engineering skills are more important than ever. For a programmer today, the limits are the ideas and the trust we put in our tools. Whoever wants to embrace this model should invest far more than before in engineering the way software is built, because the lines of code and the results can now be slowed down a lot by human reviewers.
+
+## Conclusion
+
+I am proud of all of it. The change of pace is incredible, emotional and sometimes scary.
+
+I know programming, but I know nothing about design or making games. I hope this inspires other programmers to understand what can be achieved once we stop being intimidated, press the gas pedal and let the agents do their work, compressing weeks or months of human work into a bunch of hours.
+
+The goal was a **reusable engine** without over-engineering it, and I think we got there. The next step may be to invest more in it, maybe as an open source project of its own.
+
+If you have questions or just want to talk about the island, just drop me a message on the contacts you can find [here](/about) or open a thread in the [discussions](https://github.com/paolomainardi/paolomainardi.com/discussions).
