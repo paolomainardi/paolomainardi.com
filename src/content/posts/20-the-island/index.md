@@ -156,8 +156,8 @@ The hard part of AI voices is expression. Tags for pauses and emotions ended up 
 
 ## Conclusion
 
-I am proud of the island. I am a programmer and I knew nothing about design or how games are made, yet this site now has a small adventure with its own engine, lights, sounds and voices.
+All of this was a lot of fun. It started with plain [images](/posts/how-the-image-engine-works/) for the covers, then they became animations, then shaders with lamps you can switch on, a [Halloween scene](/posts/what-the-cover-engine-learned-on-halloween/) with a cat, and in the end a game engine. Every step opened the next one, and the creative flow seemed endless.
 
-The goal was a **reusable engine** without over-engineering it, and I think we got there: the rooms, the intro, the sounds and the voices are all data. The next step may be to invest more in it, maybe as an open source project of its own.
+It is a new way to be in the flow, in the AI era. I am a programmer and I knew nothing about design or how games are made, yet every idea could turn into something to play with, and the next idea was already there.
 
-The pace of this market is incredible, emotional and sometimes scary. I hope the island shows other programmers how far we can go outside our own field once we stop being intimidated by these tools.
+The next step may be to invest more in the engine, maybe as an open source project of its own.
