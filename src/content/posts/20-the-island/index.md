@@ -156,8 +156,8 @@ The hard part of AI voices is expression. Tags for pauses and emotions ended up 
 
 ## Conclusion
 
-I am proud of all of it. The change of pace of this market is incredible, emotional and sometimes scary.
+I am proud of the island. I am a programmer and I knew nothing about design or how games are made, yet this site now has a small adventure with its own engine, lights, sounds and voices.
 
-I am a programmer, and I knew nothing about design or how games are made. Still, the island exists. I hope it shows other programmers how far we can go outside our own field once we stop being intimidated by these tools. Press the gas pedal, let the agents do their work, and weeks or months of human work fit into a bunch of hours.
+The goal was a **reusable engine** without over-engineering it, and I think we got there: the rooms, the intro, the sounds and the voices are all data. The next step may be to invest more in it, maybe as an open source project of its own.
 
-The goal was a **reusable engine** without over-engineering it, and I think we got there. The next step may be to invest more in it, maybe as an open source project of its own.
+The pace of this market is incredible, emotional and sometimes scary. I hope the island shows other programmers how far we can go outside our own field once we stop being intimidated by these tools.
