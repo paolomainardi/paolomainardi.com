@@ -13,7 +13,7 @@ series_part = 4
 
 ## TL;DR
 
-This site can now be browsed as a **point-and-click adventure** in the style of the LucasArts games of the 90s, called **The Context Island**. It opens with an **intro**, then a visitor walks a small island, opens **topic books** to read posts, takes notes from a **notice board** to follow links and finds the about page as a **letter** in a lighthouse, while **Rosa**, the harbour cat, has opinions about all of it. You can [play it here](/play/) on a desktop browser.
+This site can now be browsed as a **point-and-click adventure** in the style of the LucasArts games of the 90s. It opens with an **intro**, then a visitor walks a small island, opens **topic books** to read posts, takes notes from a **notice board** to follow links and finds the about page as a **letter** in a lighthouse, and the game is called **The Context Island**. You can [play it here](/play/) on a desktop browser.
 
 {{< notice tip "How to play" >}}
 - **Click** a spot to walk there, or a book or paper to open it.
@@ -26,7 +26,7 @@ This site can now be browsed as a **point-and-click adventure** in the style of 
 It is built with **[Claude](https://www.anthropic.com/claude)** and **[Codex](https://openai.com/codex/)**, and the voice, the sound effects and the music come from **[ElevenLabs](https://elevenlabs.io/)**.
 
 {{< notice note "Updated on 5 November 2026" >}}
-The island now has an intro, a cat called Rosa and recorded sound effects, and this post covers them.
+The island now has an intro and recorded sound effects, and this post covers them.
 {{< /notice >}}
 
 ## Introduction
@@ -55,23 +55,13 @@ The site and the game share only the build. Hugo writes a `content.json` with po
 
 A game has an intro, so the island got one too. I wanted it to feel like the little game we built, a 90s interactive adventure like Monkey Island, from the first frame.
 
-It plays after **Start**, in five shots of about 45 seconds in all, with the credits in a dark band at the bottom of the screen, as in the old games:
+For the engine, the intro is only data: a list of **shots** in `world.json`, each with a room, a time of day, a duration, its credit lines and optional sound cues. The engine plays each shot as a room without the visitor or the panel, with the same lights and the same moving sea, cross-fades between them and draws the credits in a dark band at the bottom of the screen, as in the old games.
 
-- the **island map**, with "paolomainardi.com presents";
-- the **harbour**, where Rosa meows softly;
-- a **workshop** where robots build the island under a glass dome, for the credits "Directed by Paolo Mainardi", "Built by Agents™" and "Powered by the L.A.M.P.™ engine" _(Lanterns, Agents, Markdown and Pixels)_;
-- the **fishermen**, dressed a bit like pirates, with a robot in a sou'wester, for "Voices and sounds by ElevenLabs" and "No fish were harmed in the making of this island";
-- the **lighthouse**, with the title.
+A click skips it and **R** replays it. Two of the rooms, a workshop and a quay with fishermen, exist only for the intro.
 
-{{< figure src="/images/posts/20-the-island/intro-workshop.webp" caption="The workshop, where the agents build the island under a glass dome." >}}
+{{< figure src="/images/posts/20-the-island/intro-workshop.webp" caption="The workshop, one of the two rooms drawn only for the intro." >}}
 
-{{< figure src="/images/posts/20-the-island/intro-fishermen.webp" caption="The fishermen, with Rosa painted into the scene and a robot that took up fishing." >}}
-
-The workshop and the fishermen exist only in the intro. Codex drew them like every other room, and the engine plays them as rooms without the visitor or the panel, with the same lights and the same moving sea.
-
-The game also got a name, **The Context Island** _(a joke about context windows)_.
-
-{{< figure src="/images/posts/20-the-island/intro-title.webp" caption="The title card, over the lighthouse lamp." >}}
+{{< figure src="/images/posts/20-the-island/intro-title.webp" caption="The title card, drawn over the lighthouse room with the scene dimmed behind it." >}}
 
 The music comes from [ElevenLabs Music](https://elevenlabs.io/music), and the browser plays it **binaurally**, through two Web Audio HRTF panners that slowly drift around your head. Choosing it was just taste. Sound, like art in general, needs good prompts, and when you are not a musician it is hard to describe in words what the model should produce. Most of the takes I discarded were my poor wording, not the model.
 
@@ -82,7 +72,7 @@ The island is the world of the covers, the sea, the stone house, the lighthouses
 {{< figure src="/images/posts/20-the-island/study.webp" caption="The study at night. Each book on the shelf is a topic, and the laptop is still awake." >}}
 
 - The **study** in the stone house, where the bookshelf holds six topic books (Linux, AI, Docker, Security, Workstation and Personal). Each opens in a close-up with its table of contents, and the pages turn with a curl.
-- The **harbour**, where a **notice board** holds the links as pinned papers you can read, follow or take, and where **Rosa** walks the quay.
+- The **harbour**, where a **notice board** holds the links as pinned papers you can read, follow or take.
 - The **lighthouse**, where a **letter** on the desk is the about page and a **logbook** lists my talks.
 - The **island map**, which connects the three places.
 
@@ -120,11 +110,11 @@ Later the same rig gained the arm swing, a small bob and the front and back walk
 
 ## Sound and voices
 
-The first version synthesized every sound in the browser with Web Audio. ElevenLabs can also produce sound effects, so we tested that too, to get the exact sounds we needed, as part of the same experiment. The doors, the books, the lamps, the papers, Rosa's meows and purr and the ambience of the harbour and the lighthouse are now [ElevenLabs Sound Effects](https://elevenlabs.io/sound-effects).
+The first version synthesized every sound in the browser with Web Audio. ElevenLabs can also produce sound effects, so we tested that too, to get the exact sounds we needed, as part of the same experiment. The doors, the books, the lamps, the papers, the cat's meows and purr and the ambience of the harbour and the lighthouse are now [ElevenLabs Sound Effects](https://elevenlabs.io/sound-effects).
 
 The **sea**, the **wind** and the flames are still synthesized. They change with the room and the time of day and they pan towards what makes them. The footsteps are three [CC0 recordings](https://opengameart.org/node/5701) of steps on wood by TinyWorlds, played when a foot touches the ground.
 
-Claude cannot hear, so I listened to every sound and every voice myself. The visitor speaks **49 lines**, a thought on entering each place, a line for most things you look at, his answers to Rosa and the short replies of the game. Claude wrote the script, with some mystery, some curiosity and a bit of irony, as in the study.
+Claude cannot hear, so I listened to every sound and every voice myself. The visitor speaks **49 lines**, a thought on entering each place, a line for most things you look at, a few answers to the harbour cat and the short replies of the game. Claude wrote the script, with some mystery, some curiosity and a bit of irony, as in the study.
 
 > Hello…? The lamp is still warm. Whoever lives here left a moment ago. Or maybe… they never really left.
 
