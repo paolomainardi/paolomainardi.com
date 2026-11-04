@@ -238,6 +238,10 @@
     "workshop": {
       "src": "rooms/workshop/room.json",
       "books": []
+    },
+    "fishermen": {
+      "src": "rooms/fishermen/room.json",
+      "books": []
     }
   },
   "book": "book/book.json",
@@ -668,6 +672,14 @@
           "Powered by the L.A.M.P.\u2122 engine",
           "Lanterns, Agents, Markdown and Pixels",
           "Voices and sounds by ElevenLabs"
+        ]
+      },
+      {
+        "room": "fishermen",
+        "time": "night",
+        "seconds": 8,
+        "lines": [
+          "No fish were harmed in the making of this island"
         ]
       },
       {
