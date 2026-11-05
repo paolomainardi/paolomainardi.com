@@ -198,7 +198,7 @@ Optional `feed` lets the visitor give the actor a pocket item:
 }
 ```
 
-`item` names a pocket entry without `to`, `say` names an existing voice, and `meow` and `words` are nonempty strings. Optional `sound` names a sound definition played as the actor starts eating. Using that item on the actor approaches it like Use. The actor faces the visitor and plays `pet` for three seconds with hearts and its `meow` and `sound` effects, without the `pet` voice. While the actor is still being petted, the item stays selected and the reply is `common-cant`. The visitor says `say`, then the actor says `meow` for 1.6 seconds with its `meow` sound, then `words` for their reading time, in its speech colour. Clicks skip and cancel as in a talk exchange.
+`item` names a pocket entry without `to`, `say` names an existing voice, and `meow` and `words` are nonempty strings. Optional `sound` names a sound definition played under the actor's `meow` line, in place of its `meow` sound. Using that item on the actor approaches it like Use. The actor faces the visitor and plays `pet` for three seconds with hearts and its `meow` and `sound` effects, without the `pet` voice. While the actor is still being petted, the item stays selected and the reply is `common-cant`. The visitor says `say`, then the actor says `meow` with the feed `sound` for 3 seconds, or with its `meow` sound for 1.6 seconds without one, then `words` for their reading time, in its speech colour. Clicks skip and cancel as in a talk exchange.
 
 Optional `name` is a nonempty display name; set `label` to the same value for hover and menus. Optional `speech` is a six-digit `#rrggbb` subtitle colour, falling back to `world.speech`. Optional `talk` is a nonempty list of exchanges:
 

@@ -2518,7 +2518,7 @@ for (const verb of ["Use", null]) {
   treatsVoices.length = treatsSounds.length = 0;
   for (let i = 0; i < 600 && treatsGame.state.walking; i++) step();
   step();
-  assert(treatsSounds.includes(fed.feed.sound));
+  assert(!treatsSounds.includes(fed.feed.sound), "Eating waits for her line");
   assert(treatsSounds.includes(fed.sound));
   assert(!treatsVoices.includes(fed.pet), "Feeding never says the pet line");
   assert.equal(rendered.actor.mirror, fed.x < rendered.actor.x);
@@ -2528,6 +2528,7 @@ for (const verb of ["Use", null]) {
   assert.equal(rendered.speech, rendered.world.voices["rosa-feed"].text);
   treatsTap(5, 5);
   assert.equal(rendered.speech, fed.feed.meow);
+  assert(treatsSounds.includes(fed.feed.sound));
   assert.equal(rendered.speechActor, fed);
   treatsTap(5, 5);
   assert.equal(rendered.speech, fed.feed.words);

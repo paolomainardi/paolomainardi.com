@@ -221,8 +221,9 @@ export class Speech {
     if (conversation.feed) {
       if (conversation.step === 0) this.say(null, exchange.say);
       else if (conversation.step === 1) {
-        this.say(exchange.meow, null, actor, 1.6);
-        play(actor.meow);
+        // Her eating sound, when there is one, plays under her meow line.
+        this.say(exchange.meow, null, actor, exchange.sound ? 3 : 1.6);
+        play(exchange.sound || actor.meow);
       } else if (conversation.step === 2) this.say(exchange.words, null, actor);
       else this.clear();
     } else if (conversation.step === 0) {

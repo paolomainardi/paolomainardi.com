@@ -152,7 +152,7 @@ The tuxedo cat walks between quay waypoints, rests and sometimes plays an idle g
 
 In the real world the cat is **Rosa**, including hover labels and menus. Look at describes her; Take explains that cats belong to themselves. A plain click or Use walks the visitor beside her, then she turns towards the visitor and plays a three-second pet animation with pixel hearts, a meow, a synthesized purr and a voice line. While it wanders it meows every 15 to 40 seconds, from where it stands; the meow is a CC0 recording. Open gives the usual refusal.
 
-Use the cat treats on Rosa and the visitor walks to her and offers one with a line, while she eats with the petting animation, hearts, purr, meow and an eating sound. She answers with a meow, then words. The treats stay in the pocket.
+Use the cat treats on Rosa and the visitor walks to her and offers one with a line, while she eats with the petting animation, hearts, purr and meow. She answers with a meow line over the sound of her eating, then words. The treats stay in the pocket.
 
 Talk to Rosa plays the next of three exchanges, looping in order. She waits while the visitor approaches, sits facing him, and meows with a rose subtitle above her head. After 1.6 seconds the meows become words, held for their reading time. The visitor replies, then Rosa ends with a meow for 1.2 seconds. She resumes wandering afterward. Clicking skips one step; clicking walkable floor walks away and cancels. Right click or Escape cancels the exchange. Reduced motion keeps the same dialogue and seated pose.
 

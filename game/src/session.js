@@ -616,8 +616,6 @@ export async function startSession({
             !!motionPreference?.matches,
             game.actor.x,
           );
-          if (target.feed.sound)
-            game.sound.play(target.feed.sound, game.sound.effects);
           speech.feed(target);
         } else if (verb === "Look at") say(null, target.look);
         else if (verb === "Take") say(null, target.take);
