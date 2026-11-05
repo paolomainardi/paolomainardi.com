@@ -1,3 +1,24 @@
+// Validate permanent pocket entries.
+export function validatePocket(world) {
+  const pocket = world.pocket === undefined ? [] : world.pocket;
+  const voice = (id) => Object.hasOwn(world.voices || {}, id);
+  if (
+    !Array.isArray(pocket) ||
+    !pocket.every(
+      (item, i) =>
+        item &&
+        [item.id, item.label, item.icon].every(
+          (text) => typeof text === "string" && text,
+        ) &&
+        pocket.findIndex((other) => other?.id === item.id) === i &&
+        voice(item.look) &&
+        (item.to === undefined || Object.hasOwn(world.rooms, item.to)) &&
+        (item.use === undefined || voice(item.use)),
+    )
+  )
+    throw new Error("Invalid pocket configuration.");
+}
+
 // Persist carried books and notices by their content ids.
 export function saveInventory(game) {
   try {

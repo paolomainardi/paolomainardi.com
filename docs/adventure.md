@@ -36,7 +36,7 @@ The game opens these same-origin pages in a sandboxed iframe at normal browser r
 The visitor speaks. Each place has a line for the first visit, and Look at gives most objects their own line. The engine's short replies, such as "I can't do that.", are voiced too.
 
 - **Text** lives in `world.json` under `voices`, keyed by id. Rooms and hotspots point at those ids. The text is also the subtitle.
-- **Recordings** are `game/dev/real/voices/<id>.mp3`, one per id. They load on first use. A missing file leaves the line as text only, so a new line can ship before its recording.
+- **Recordings** are `game/dev/real/voices/<id>.mp3`, one per id. They load on first use. A line without `src` is text only, so a new line can ship before its recording: add `src` with the file.
 - **Subtitles** are drawn in the book font above the character, in a warm colour with a dark outline. Close-ups show them in the footer.
 - **Mixing:** voices have their own `mix.voice` level. Ambience and effects dip while a line plays, and mute silences everything.
 
@@ -48,9 +48,9 @@ Ambience tied to an object, such as the sea at a window or a lamp's flame, is bi
 
 Start plays a short intro before the first room, like the opening of Monkey Island 2. Five living scenes (the island map, the harbour, the agents' workshop, the fishermen and the lighthouse) carry fading credits and the title, over a theme generated with ElevenLabs Music. On headphones the theme is binaural: the browser places it on two virtual speakers in front of the listener. A click, Escape or Enter skips it, and R replays it. The shots live in `world.json` under `intro`.
 
-## Pocket map
+## Pocket map and cat treats
 
-A folded island map is always in the inventory. Open, Use or a click on it goes to the island map from any room or close-up. It is declared in `world.json` under `pocket`, is never stored and survives Forget.
+A folded island map is always in the inventory. Open, Use or a click on it goes to the island map from any room or close-up. A bag of cat treats is always there too: use it on Rosa, the harbour cat, and she eats and answers; on anything else the visitor declines. Both are declared in `world.json` under `pocket`, are never stored and survive Forget. The feeding lines live on Rosa's `feed` entry.
 
 ## Site world
 

@@ -184,7 +184,11 @@ const context = vm.createContext({
           data.voices["intro-entry"] = { text: "The start room entry." };
         }
         if (path.endsWith("/world.json") && !includeIntro) delete data.intro;
-        if (path.endsWith("/world.json") && !includePocket) delete data.pocket;
+        if (path.endsWith("/world.json") && !includePocket) {
+          delete data.pocket;
+          for (const room of Object.values(data.rooms))
+            for (const actor of room.actors || []) delete actor.feed;
+        }
         if (path.endsWith("/content.json") && contentOverride)
           data.items = contentOverride;
         if (path.endsWith("/room.json") && missingLampDrawings)
@@ -2452,6 +2456,145 @@ assert.equal(fontFaces.size, 0);
 assert(AudioContext.instances.every((context) => context.closeCalls === 1));
 console.log(
   "Pocket map startup, storage, Forget, actions, travel and close-ups passed.",
+);
+// Cat treats stay in the pocket, refuse other targets and feed Rosa.
+stored.clear();
+location.hash = "#harbour";
+const treatsContainer = new Element("main");
+const treatsGame = await startedBoot({
+  world: "./real/world.json",
+  content: "./data/content.json",
+  element: treatsContainer,
+});
+step();
+const treatsCanvas = treatsContainer.children[0].children[0];
+const treatsTap = (x, y) =>
+  rawEvent(treatsCanvas, "click", { clientX: x, clientY: y });
+const treatsVerb = (label) => {
+  const rect = rendered.verbRects.find((rect) => rect.label === label);
+  treatsTap(rect.x + 1, rect.y + 1);
+};
+const treatsSlot = rendered.panel.slots[1];
+const treats = rendered.inventory[1];
+const treatsVoices = [],
+  treatsSounds = [];
+const treatsPlayVoice = rendered.sound.playVoice.bind(rendered.sound);
+const treatsPlay = rendered.sound.play.bind(rendered.sound);
+rendered.sound.playVoice = (id, ...rest) => {
+  treatsVoices.push(id);
+  return treatsPlayVoice(id, ...rest);
+};
+rendered.sound.play = (id, ...rest) => {
+  treatsSounds.push(id);
+  return treatsPlay(id, ...rest);
+};
+assert.deepEqual(Array.from(treatsGame.state.inventory), ["map", "treats"]);
+assert(treats.pocket && treats.sprite.texture);
+treatsVerb("Look at");
+treatsTap(treatsSlot.x + 1, treatsSlot.y + 1);
+assert.equal(rendered.speech, rendered.world.voices["pocket-treats"].text);
+treatsTap(5, 5);
+const lighthouse = rendered.room.items.find(
+  (item) => item.id === "lighthouse",
+);
+const lighthousePixel = rendered.room.ids.findIndex(
+  (id) => rendered.room.items[id] === lighthouse,
+);
+treatsVerb("Use");
+treatsTap(treatsSlot.x + 1, treatsSlot.y + 1);
+assert.equal(rendered.selectedItem, treats);
+treatsTap(lighthousePixel % 640, Math.floor(lighthousePixel / 640));
+assert.equal(rendered.speech, rendered.world.voices["pocket-treats-use"].text);
+assert.equal(rendered.path.length, 0);
+assert.equal(rendered.selectedItem, null);
+treatsTap(5, 5);
+const fed = rendered.actors[0];
+for (const verb of ["Use", null]) {
+  if (verb) treatsVerb(verb);
+  treatsTap(treatsSlot.x + 1, treatsSlot.y + 1);
+  assert.equal(rendered.selectedItem, treats);
+  treatsTap(fed.x, fed.y - 5);
+  assert.equal(fed.held, true);
+  treatsVoices.length = treatsSounds.length = 0;
+  for (let i = 0; i < 600 && treatsGame.state.walking; i++) step();
+  step();
+  assert(treatsSounds.includes(fed.feed.sound));
+  assert(treatsSounds.includes(fed.sound));
+  assert(!treatsVoices.includes(fed.pet), "Feeding never says the pet line");
+  assert.equal(rendered.actor.mirror, fed.x < rendered.actor.x);
+  assert(fed.petting > 0);
+  assert.equal(fed.animation, "pet");
+  assert.equal(rendered.conversation?.feed, true);
+  assert.equal(rendered.speech, rendered.world.voices["rosa-feed"].text);
+  treatsTap(5, 5);
+  assert.equal(rendered.speech, fed.feed.meow);
+  assert.equal(rendered.speechActor, fed);
+  treatsTap(5, 5);
+  assert.equal(rendered.speech, fed.feed.words);
+  treatsTap(5, 5);
+  assert.equal(rendered.conversation, null);
+  assert.equal(fed.held, false);
+  assert.deepEqual(Array.from(treatsGame.state.inventory), ["map", "treats"]);
+  if (verb) {
+    // A second treat waits until she has finished eating the first.
+    assert(fed.petting > 0);
+    treatsTap(treatsSlot.x + 1, treatsSlot.y + 1);
+    treatsTap(fed.x, fed.y - 5);
+    assert.equal(rendered.speech, rendered.world.voices["common-cant"].text);
+    assert.equal(rendered.selectedItem, treats);
+    assert.equal(rendered.conversation, null);
+    treatsVerb("Use");
+    assert.equal(rendered.selectedItem, null);
+  }
+  step(200);
+}
+rendered.inventory.push({
+  kind: "inventory",
+  label: rendered.books.workstation.title,
+  book: rendered.books.workstation,
+  sprite: rendered.books.workstation.sprite,
+});
+event(treatsCanvas, "click", {
+  clientX: rendered.panel.forget.x + 1,
+  clientY: rendered.panel.forget.y + 1,
+});
+assert.deepEqual(Array.from(treatsGame.state.inventory), ["map", "treats"]);
+// Changing room drops a selection, and the map refuses to select the treats.
+treatsVerb("Use");
+treatsTap(treatsSlot.x + 1, treatsSlot.y + 1);
+assert.equal(rendered.selectedItem, treats);
+location.hash = "#map";
+rawEvent(window, "hashchange");
+await new Promise(setImmediate);
+step();
+assert.equal(treatsGame.state.room, "map");
+assert.equal(rendered.selectedItem, null);
+treatsTap(5, 5);
+treatsVerb("Use");
+treatsTap(treatsSlot.x + 1, treatsSlot.y + 1);
+assert.equal(rendered.speech, rendered.world.voices["common-cant"].text);
+assert.equal(rendered.selectedItem, null);
+treatsTap(5, 5);
+const harbourPlace = rendered.room.ids.findIndex(
+  (id) => rendered.room.items[id]?.to === "harbour",
+);
+treatsTap(harbourPlace % 640, Math.floor(harbourPlace / 640));
+assert.equal(rendered.transition?.to, "harbour");
+for (let i = 0; i < 100 && rendered.transition; i++) {
+  step();
+  await new Promise(setImmediate);
+}
+assert.equal(treatsGame.state.room, "harbour");
+assert.equal(rendered.selectedItem, null);
+treatsTap(5, 5);
+const harbourDoor = rendered.room.ids.findIndex(
+  (id) => rendered.room.items[id]?.id === "door",
+);
+treatsTap(harbourDoor % 640, Math.floor(harbourDoor / 640));
+assert.equal(rendered.pending?.target.id, "door", "The door still travels");
+treatsGame.destroy();
+console.log(
+  "Cat treats pocket, Forget, look, refusal and feeding Rosa passed.",
 );
 // Intro runs on each new Start, isolates inputs, and restores the usual entry line.
 includeIntro = true;

@@ -318,6 +318,7 @@ export async function startSession({
     });
     async function changeRoom(id, from = null) {
       game.menu = null;
+      game.selectedItem = null;
       const request = ++roomRequest;
       const room = await loadRoom(game.world, worldURL, id, renderer);
       if (request !== roomRequest || lifecycle.disposed) return;
@@ -600,14 +601,25 @@ export async function startSession({
           game.bookArt.fonts,
         );
     });
-    function act(target, verb) {
+    function act(target, verb, item = null) {
       if (target.kind === "actor") {
         // Face the actor, whichever side the visitor arrived on.
         if (!game.room.map && target.x !== game.actor.x) {
           game.actor.mirror = target.x < game.actor.x;
           if (!game.path.length) game.actor.animation = "idle-side";
         }
-        if (verb === "Look at") say(null, target.look);
+        if (item) {
+          petActor(
+            target,
+            game.sound,
+            () => {},
+            !!motionPreference?.matches,
+            game.actor.x,
+          );
+          if (target.feed.sound)
+            game.sound.play(target.feed.sound, game.sound.effects);
+          speech.feed(target);
+        } else if (verb === "Look at") say(null, target.look);
         else if (verb === "Take") say(null, target.take);
         else if (verb === "Talk to" && target.talk) speech.talk(target);
         else if (["Walk to", "Use", "Talk to"].includes(verb))
@@ -627,12 +639,18 @@ export async function startSession({
         else if (verb === "Open" || verb === "Use" || verb === "Walk to") {
           if (game.room.id === target.to)
             say("I'm already looking at it.", "common-already-map");
+          else if (!target.to && game.room.map)
+            say("I can't do that.", "common-cant");
           else {
             if (game.readerItem) hideReader(false);
             if (game.activeBook || game.activeBoard) closeBook();
             game.selectedItem = game.hover = game.pending = null;
             game.path = [];
-            act({ kind: "exit", to: target.to }, "Walk to");
+            if (target.to) act({ kind: "exit", to: target.to }, "Walk to");
+            else {
+              game.selectedItem = target;
+              game.verb = "Use";
+            }
           }
         } else say("I can't do that.", "common-cant");
         return;
@@ -753,15 +771,24 @@ export async function startSession({
         else if (target.kind === "exit") act(target, "Walk to");
         return;
       }
-      if (game.selectedItem) {
-        const item = game.selectedItem;
+      const item = game.selectedItem;
+      // Keep the selection while the actor is still busy being petted.
+      if (item && target.petting) {
+        game.verb = "Use";
+        say("I can't do that.", "common-cant");
+        return;
+      }
+      if (item) {
         game.selectedItem = null;
         game.path = [];
         game.pending = null;
-        const sentence = `Use ${item.label} with ${target.label || target.id}`;
-        say("I can't use those together.", "common-cant");
-        game.sentenceNotice = sentence;
-        return;
+        if (target.feed?.item !== item.id) {
+          const sentence = `Use ${item.label} with ${target.label || target.id}`;
+          say("I can't use those together.", item.use || "common-cant");
+          game.sentenceNotice = sentence;
+          return;
+        }
+        verb = "Use";
       }
       if (
         target.kind !== "inventory" &&
@@ -799,7 +826,7 @@ export async function startSession({
                 depth(game, target),
             target.y,
           ],
-          { target, verb },
+          { target, verb, item },
           running,
         );
         if (game.pending) {
@@ -1226,7 +1253,7 @@ export async function startSession({
             if (game.pending) {
               const pending = game.pending;
               game.pending = null;
-              act(pending.target, pending.verb);
+              act(pending.target, pending.verb, pending.item);
             }
           }
         }
