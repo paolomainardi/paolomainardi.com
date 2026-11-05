@@ -374,7 +374,7 @@
     },
     "cat-eat": {
       "src": "sounds/cat-eat.mp3",
-      "volume": 0.5
+      "volume": 0.8
     },
     "book": {
       "src": "sounds/book.mp3",
