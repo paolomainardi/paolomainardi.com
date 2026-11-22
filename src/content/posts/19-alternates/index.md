@@ -107,6 +107,6 @@ Only two machines have a host file, and the others need nothing.
 
 First, use a tool to manage your dotfiles, your future self will thank you. And if you work on macOS and Linux, share them, because the configurations are almost always identical, and when they are not, there are several techniques, yadm alternates being one.
 
-Next week: the few secrets I still keep in the repository, and how `yadm encrypt` handles them.
+Next week: how I bootstrap a new Linux machine in one command.
 
 If you have questions or just want to talk about dotfiles, just drop me a message [here](https://github.com/paolomainardi/paolomainardi.com/discussions).
