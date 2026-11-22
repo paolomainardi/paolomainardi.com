@@ -11,7 +11,7 @@
 
 workstation:
   title: My Linux Workstation, Versioned
-  parts: 16
+  parts: 15
 
 agents:
   title: Agents at work on this blog, an ongoing hacking experiment

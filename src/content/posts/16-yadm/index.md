@@ -63,7 +63,7 @@ Commits per year. 2026 is not over yet and it is already the busiest year, for a
 
 Not everything belongs in the repository. Secrets are almost entirely out of it. I still keep a few files there for convenience, because yadm can encrypt them, but today I prefer a proper secret manager.
 
-Keeping encrypted secrets in a repository is always a risk: someone can copy them now and decrypt them later, once quantum computers make that practical. It even has a name: [harvest now, decrypt later](https://en.wikipedia.org/wiki/Harvest_now,_decrypt_later). More on this in the post about secrets.
+Keeping encrypted secrets in a repository is always a risk: someone can copy them now and decrypt them later, once quantum computers make that practical. It even has a name: [harvest now, decrypt later](https://en.wikipedia.org/wiki/Harvest_now,_decrypt_later).
 
 ## The agents commit too
 
